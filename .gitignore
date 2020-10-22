@@ -1,0 +1,15 @@
+# stupid system files
+.DS_Store
+
+# emacs files
+*~
+.\#*
+\#*\#
+
+# python env
+.env
+env
+.venv
+
+# vmd preview file
+*.temp

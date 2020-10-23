@@ -3,7 +3,7 @@
 # https://docs.python.org/3/library/argparse.html
 import argparse
 # https://docs.python.org/3/library/pathlib.html
-from pathlib import Path, PurePath
+from pathlib import Path
 # https://docs.python.org/3/library/sqlite3.html
 import sqlite3
 
@@ -49,7 +49,7 @@ for language_layer in args.language_layers:
     ll_conn = sqlite3.connect(language_layer)
     ll_cur = ll_conn.cursor()
 
-    print ("Processing {}".format(PurePath(language_layer).name))
+    print ("Processing {}".format(Path(language_layer).name))
     for lemma, sense_id in ww_kll_cur.execute('''
     SELECT l.lemma, s.id FROM senses s JOIN lemmas l
     ON (s.term_lemma_id = l.id)

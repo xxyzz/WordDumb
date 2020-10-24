@@ -5,7 +5,7 @@ from calibre_plugins.worddumb.main import ParseBook
 
 class WordDumb(InterfaceAction):
     name = 'WordDumb'
-    action_spec = ('WordDumb', None, 'So dumb', None)
+    action_spec = ('WordDumb', None, 'Good morning Krusty Crew!', None)
 
     def genesis(self):
         icon = get_icons('starfish.svg')
@@ -14,4 +14,4 @@ class WordDumb(InterfaceAction):
 
     def run(self):
         p = ParseBook(self.gui)
-        p.parse()
+        p.run()

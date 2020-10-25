@@ -14,4 +14,4 @@ class WordDumb(InterfaceAction):
 
     def run(self):
         p = ParseBook(self.gui)
-        p.run()
+        p.parse()

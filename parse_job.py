@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from html.parser import HTMLParser
 from pathlib import Path
 import sqlite3
 import re
@@ -14,8 +15,9 @@ def do_parse(books):
         ll_conn, ll_cur = create_lang_layer(book_id, book_fmt, asin, book_path)
         if ll_conn is None:
             continue
-        for (location, word) in parse_book(book_path):
-            match_word(location, word, ll_cur, ww_cur)
+
+        for (start, lemma) in parse_book(book_path):
+            match_word(start, lemma, ll_cur, ww_cur)
 
         ll_conn.commit()
         ll_conn.close()
@@ -58,17 +60,12 @@ def create_lang_layer(book_id, book_fmt, asin, book_path):
             low_confidence INTEGER
         );
 
-        INSERT INTO metadata(
-            targetLanguages,
-            sidecarRevision,
-            sourceLanguage,
-            enDictionaryVersion,
-            enDictionaryRevision,
-            enDictionaryId,
-            sidecarFormat)
+        INSERT INTO metadata
         VALUES (
+            'CR!AX4P53SCH15WF68KNBX4NWWVZXKG',
             'en',
             9,
+            '8d271dc3',
             'en',
             '2016-09-14',
             57,
@@ -82,24 +79,32 @@ def create_lang_layer(book_id, book_fmt, asin, book_path):
 def parse_book(book_path):
     from calibre.ebooks.oeb.polish.container import get_container
     container = get_container(book_path)
-    last_word_byte_offset = 0
+    last_file_length = 0
     for file, _ in container.spine_names:
-        last_word_offset = 0
-        for text in container.parsed(file).itertext():
+        book_part = container.raw_data(file, decode=True)
+        p = BookParser()
+        p.feed(book_part)
+        for (loc, text) in p.texts:
             for match in re.finditer(r"[a-zA-Z]+", text):
-                word = text[match.start():match.end()]
-                offset = len(text[last_word_offset:match.start()].encode("utf-8"))
-                word_byte_offset = last_word_byte_offset + offset
-                last_word_byte_offset = word_byte_offset + len(word.encode("utf-8"))
-                last_word_offset = match.end()
-                yield (word_byte_offset, word)
+                lemma = text[match.start():match.end()]
+                start = last_file_length + loc + match.start()
+                print("{}, {}".format(start, lemma))
+                yield (start, lemma)
+        last_file_length = len(book_part)
 
-def match_word(location, word, ll_cur, ww_cur):
-    ww_cur.execute("SELECT * FROM words WHERE lemma = ?", (word.lower(), ))
+def match_word(start, lemma, ll_cur, ww_cur):
+    ww_cur.execute("SELECT * FROM words WHERE lemma = ?", (lemma.lower(), ))
     result = ww_cur.fetchone()
     if result is not None:
         (_, sense_id, difficulty) = result
         ll_cur.execute('''
             INSERT INTO glosses (start, difficulty, sense_id, low_confidence)
             VALUES (?, ?, ?, ?)
-        ''', (location, difficulty, sense_id, 0))
+        ''', (start, difficulty, sense_id, 0))
+
+class BookParser(HTMLParser):
+    texts = []
+
+    def handle_data(self, data):
+        if len(data.strip()) > 0:
+            self.texts.append((self.getpos()[1], data))

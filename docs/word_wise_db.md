@@ -168,6 +168,10 @@ Kindle device path: `/documents/book_name.sdr`
 |  2763 |     |          2 |     33584 |               0 |
 |  2812 |     |          2 |     10189 |               0 |
 
+difficulty = 1 -> Fewer Hints
+
+difficulty = 5 -> More Hints
+
 # wordwise.sql
 
 ## words

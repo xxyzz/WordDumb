@@ -26,8 +26,9 @@ def do_parse(books):
 
 def create_lang_layer(book_id, book_fmt, asin, book_path):
     # check LanguageLayer file
-    lang_layer_path = Path(book_path).parent
-    folder_name = lang_layer_path.stem + ".sdr"
+    book_path = Path(book_path)
+    lang_layer_path = book_path.parent
+    folder_name = book_path.stem + ".sdr"
     lang_layer_path = lang_layer_path.joinpath(folder_name)
     lang_layer_name = "LanguageLayer.en.{}.kll".format(asin)
     lang_layer_path = lang_layer_path.joinpath(lang_layer_name)
@@ -41,15 +42,8 @@ def create_lang_layer(book_id, book_fmt, asin, book_path):
     ll_cur = ll_conn.cursor()
     ll_cur.executescript('''
         CREATE TABLE metadata (
-            acr TEXT,
-            targetLanguages TEXT,
-            sidecarRevision INTEGER,
-            bookRevision TEXT,
-            sourceLanguage TEXT,
-            enDictionaryVersion TEXT,
-            enDictionaryRevision INTEGER,
-            enDictionaryId TEXT,
-            sidecarFormat REAL
+            key TEXT,
+            value TEXT
         );
 
         CREATE TABLE glosses (
@@ -59,20 +53,17 @@ def create_lang_layer(book_id, book_fmt, asin, book_path):
             sense_id INTEGER,
             low_confidence INTEGER
         );
-
-        INSERT INTO metadata
-        VALUES (
-            'CR!AX4P53SCH15WF68KNBX4NWWVZXKG',
-            'en',
-            9,
-            '8d271dc3',
-            'en',
-            '2016-09-14',
-            57,
-            'kll.en.en',
-            1.0
-        );
-    ''')
+    ''' )
+    metadata = [('acr', 'CR!AX4P53SCH15WF68KNBX4NWWVZXKG'), # Palm DB name
+                ('targetLanguages', 'en'),
+                ('sidecarRevision', '9'),
+                ('bookRevision', '8d271dc3'),
+                ('sourceLanguage', 'en'),
+                ('enDictionaryVersion', '2016-09-14'),
+                ('enDictionaryRevision', '57'),
+                ('enDictionaryId', 'kll.en.en'),
+                ('sidecarFormat', '1.0')]
+    ll_cur.executemany('INSERT INTO metadata VALUES (?, ?)', metadata)
 
     return ll_conn, ll_cur
 
@@ -88,7 +79,6 @@ def parse_book(book_path):
             for match in re.finditer(r"[a-zA-Z]+", text):
                 lemma = text[match.start():match.end()]
                 start = last_file_length + loc + match.start()
-                print("{}, {}".format(start, lemma))
                 yield (start, lemma)
         last_file_length = len(book_part)
 

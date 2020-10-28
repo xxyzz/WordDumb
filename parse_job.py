@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from html.parser import HTMLParser
 from pathlib import Path
 import sqlite3
 import re
@@ -70,17 +69,21 @@ def create_lang_layer(book_id, book_fmt, asin, book_path):
 def parse_book(book_path):
     from calibre.ebooks.oeb.polish.container import get_container
     container = get_container(book_path)
-    last_file_length = 0
+    previous_files_length = 0
     for file, _ in container.spine_names:
         book_part = container.raw_data(file, decode=True)
-        p = BookParser()
-        p.feed(book_part)
-        for (loc, text) in p.texts:
-            for match in re.finditer(r"[a-zA-Z]+", text):
-                lemma = text[match.start():match.end()]
-                start = last_file_length + loc + match.start()
+        # don't know how to match words of HTML text in a single regex
+        for match_text in re.finditer(r"(?<=>)([^<>]|\s)+?(?=<)", book_part):
+            text = book_part[match_text.start():match_text.end()]
+            if len(text.strip()) == 0:
+                continue
+            for match_word in re.finditer(r"[a-zA-Z]+", text):
+                lemma = text[match_word.start():match_word.end()]
+                start = previous_files_length
+                start += len(book_part[:match_text.start()].encode("utf-8"))
+                start += len(text[:match_word.start()].encode("utf-8"))
                 yield (start, lemma)
-        last_file_length = len(book_part)
+        previous_files_length += len(book_part.encode("utf-8"))
 
 def match_word(start, lemma, ll_cur, ww_cur):
     ww_cur.execute("SELECT * FROM words WHERE lemma = ?", (lemma.lower(), ))
@@ -91,10 +94,3 @@ def match_word(start, lemma, ll_cur, ww_cur):
             INSERT INTO glosses (start, difficulty, sense_id, low_confidence)
             VALUES (?, ?, ?, ?)
         ''', (start, difficulty, sense_id, 0))
-
-class BookParser(HTMLParser):
-    texts = []
-
-    def handle_data(self, data):
-        if len(data.strip()) > 0:
-            self.texts.append((self.getpos()[1], data))

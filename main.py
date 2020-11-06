@@ -20,17 +20,17 @@ class ParseBook():
         # check book language is English
         book_language = mi.format_field("languages")
         if book_language is None or book_language[1] != "eng":
-            return None, None
+            return None, None, None
 
         # check book format
         has_kindle_format = False
         for fmt in fmts:
-            if fmt.lower() in ['azw3']:
+            if fmt.lower() in ['mobi']:
                 has_kindle_format = True
                 book_fmt = fmt
                 break
         if not has_kindle_format:
-            return None, None
+            return None, None, None
 
         # check ASIN
         identifiers = mi.get_identifiers()
@@ -65,7 +65,7 @@ class ParseBook():
 
         self.gui.job_manager.run_job(
             Dispatcher(self.done), 'arbitrary',
-            args = ("calibre_plugins.worddumb.parse_job", "do_parse", (books, )),
+            args = ("calibre_plugins.worddumb.parse_job", "parse_job", (books, )),
             description = "Generating Word Wise")
 
     def done(self, job):

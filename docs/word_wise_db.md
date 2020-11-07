@@ -1,8 +1,8 @@
-# WordWise.kll.en.en.db
+# cn-kll.en.en.klld/WordWise.kll.en.en.db
 
-Install Kindle Android app.
+Find in Kindle device at path `/system/kll/`
 
-Extract Word Wise file at: `/data/data/com.amazon.kindle/databases/wordwise/WordWise.kll.en.en.db`
+or install Kindle Android app and extract Word Wise file at: `/data/data/com.amazon.kindle/databases/wordwise/WordWise.kll.en.en.db`
 
 Get the file in TWRP File Manager or ROOT your phone.
 
@@ -95,7 +95,7 @@ b'an honorary appellation'
 |  4 |                 |
 |  5 |                 |
 
-# WordWise.kll.en.zh.db
+# cn-kll.en.zh.klld/WordWise.kll.en.zh.db
 
 ## android_metadata
 

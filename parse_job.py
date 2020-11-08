@@ -7,17 +7,15 @@ from calibre.ebooks.mobi import MobiError
 from calibre.utils.logging import default_log
 from calibre_plugins.worddumb.database import connect_ww_database, \
     create_lang_layer, match_word
-from calibre_plugins.worddumb.send_file import send_to_device
 import re
 
 def do_job(gui, books, abort, log, notifications):
     ww_conn, ww_cur = connect_ww_database()
 
-    for (book_id, book_fmt, asin, book_path) in books:
+    for (book_id, book_fmt, asin, book_path, _) in books:
         ll_conn, ll_cur, ll_file = \
             create_lang_layer(book_id, book_fmt, asin, book_path)
         if ll_conn is None:
-            send_to_device(gui, book_id, ll_file)
             continue
 
         for (start, lemma) in parse_book(book_path):
@@ -25,7 +23,6 @@ def do_job(gui, books, abort, log, notifications):
 
         ll_conn.commit()
         ll_conn.close()
-        send_to_device(gui, book_id, ll_file)
 
     ww_conn.close()
 

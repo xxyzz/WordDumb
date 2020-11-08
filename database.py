@@ -10,12 +10,13 @@ def connect_ww_database():
         ww_cur.executescript(f.read())
     return ww_conn, ww_cur
 
+def get_ll_path(book_path, asin):
+    lang_layer_name = "LanguageLayer.en.{}.kll".format(asin)
+    return Path(book_path).parent.joinpath(lang_layer_name)
+
 def create_lang_layer(book_id, book_fmt, asin, book_path):
     # check LanguageLayer file
-    book_path = Path(book_path)
-    lang_layer_path = book_path.parent
-    lang_layer_name = "LanguageLayer.en.{}.kll".format(asin)
-    lang_layer_path = lang_layer_path.joinpath(lang_layer_name)
+    lang_layer_path = get_ll_path(book_path, asin)
     if lang_layer_path.is_file():
         return None, None, lang_layer_path
 

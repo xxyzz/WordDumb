@@ -3,6 +3,8 @@
 from calibre.gui2 import Dispatcher, warning_dialog, error_dialog
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre_plugins.worddumb.parse_job import do_job
+from calibre_plugins.worddumb.send_file import SendFile
+from calibre_plugins.worddumb.database import get_ll_path
 from pathlib import Path
 import sqlite3
 import uuid
@@ -12,6 +14,7 @@ class ParseBook():
     def __init__(self, gui):
         self.gui = gui
         self.db = self.gui.current_db.new_api
+        self.books = []
 
     def check_metadata(self, book_id):
         # Get the current metadata for this book from the db
@@ -23,7 +26,7 @@ class ParseBook():
         # check book language is English
         book_language = mi.format_field("languages")
         if book_language is None or book_language[1] != "eng":
-            return None, None, None
+            return None
 
         # check book format
         has_kindle_format = False
@@ -33,7 +36,7 @@ class ParseBook():
                 book_fmt = fmt
                 break
         if not has_kindle_format:
-            return None, None, None
+            return None
 
         # check ASIN
         identifiers = mi.get_identifiers()
@@ -47,7 +50,7 @@ class ParseBook():
 
         book_path = self.db.format_abspath(book_id, book_fmt)
 
-        return book_fmt, asin, book_path
+        return book_fmt, asin, book_path, mi
 
     def parse(self):
         # get currently selected books
@@ -55,19 +58,19 @@ class ParseBook():
         if not rows or len(rows) == 0:
             return
         ids = list(map(self.gui.library_view.model().id, rows))
-        books = []
+        self.books = []
 
         for book_id in ids:
-            book_fmt, asin, book_path = self.check_metadata(book_id)
-            if book_fmt is None:
+            data = self.check_metadata(book_id)
+            if data is None:
                 continue
-            books.append((book_id, book_fmt, asin, book_path))
+            self.books.append((book_id, ) + data)
 
-        if len(books) == 0:
+        if len(self.books) == 0:
             return
 
         job = ThreadedJob('Generating Word Wise', 'Generating Word Wise',
-                          do_job, (self.gui, books), {}, Dispatcher(self.done))
+                          do_job, (self.gui, self.books), {}, Dispatcher(self.done))
 
         self.gui.job_manager.run_threaded_job(job)
         self.gui.status_bar.show_message("Generating Word Wise")
@@ -87,4 +90,12 @@ class ParseBook():
                 return
         if job.failed:
             self.gui.job_exception(job)
+
+        # send file to device
+        for book in self.books:
+            book_id, _, asin, book_path, mi = book
+            ll_path = get_ll_path(book_path, asin)
+            sf = SendFile(self.gui, book_id, book_path, ll_path, mi)
+            sf.send_to_device()
+
         self.gui.status_bar.show_message("Word Wise generated.", 3000)

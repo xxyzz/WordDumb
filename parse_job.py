@@ -5,19 +5,19 @@ from calibre.ebooks.mobi.huffcdic import HuffReader
 from calibre.ebooks.compression.palmdoc import decompress_doc
 from calibre.ebooks.mobi import MobiError
 from calibre.utils.logging import default_log
-from pathlib import Path
-import sqlite3
+from calibre_plugins.worddumb.database import connect_ww_database, \
+    create_lang_layer, match_word
+from calibre_plugins.worddumb.send_file import send_to_device
 import re
 
-def parse_job(books):
-    ww_conn = sqlite3.connect(":memory:")
-    ww_cur = ww_conn.cursor()
-    with open(Path("data/wordwise.sql")) as f:
-        ww_cur.executescript(f.read())
+def do_job(gui, books, abort, log, notifications):
+    ww_conn, ww_cur = connect_ww_database()
 
     for (book_id, book_fmt, asin, book_path) in books:
-        ll_conn, ll_cur = create_lang_layer(book_id, book_fmt, asin, book_path)
+        ll_conn, ll_cur, ll_file = \
+            create_lang_layer(book_id, book_fmt, asin, book_path)
         if ll_conn is None:
+            send_to_device(gui, book_id, ll_file)
             continue
 
         for (start, lemma) in parse_book(book_path):
@@ -25,51 +25,9 @@ def parse_job(books):
 
         ll_conn.commit()
         ll_conn.close()
+        send_to_device(gui, book_id, ll_file)
 
     ww_conn.close()
-
-def create_lang_layer(book_id, book_fmt, asin, book_path):
-    # check LanguageLayer file
-    book_path = Path(book_path)
-    lang_layer_path = book_path.parent
-    folder_name = book_path.stem + ".sdr"
-    lang_layer_path = lang_layer_path.joinpath(folder_name)
-    lang_layer_name = "LanguageLayer.en.{}.kll".format(asin)
-    lang_layer_path = lang_layer_path.joinpath(lang_layer_name)
-    if lang_layer_path.is_file():
-        return None, None
-
-    # create LanguageLayer database file
-    lang_layer_path.parent.mkdir(exist_ok=True)
-    lang_layer_path.touch()
-    ll_conn = sqlite3.connect(lang_layer_path)
-    ll_cur = ll_conn.cursor()
-    ll_cur.executescript('''
-        CREATE TABLE metadata (
-            key TEXT,
-            value TEXT
-        );
-
-        CREATE TABLE glosses (
-            start INTEGER,
-            end INTEGER,
-            difficulty INTEGER,
-            sense_id INTEGER,
-            low_confidence INTEGER
-        );
-    ''' )
-    metadata = [('acr', 'CR!AX4P53SCH15WF68KNBX4NWWVZXKG'), # Palm DB name
-                ('targetLanguages', 'en'),
-                ('sidecarRevision', '9'),
-                ('bookRevision', '8d271dc3'),
-                ('sourceLanguage', 'en'),
-                ('enDictionaryVersion', '2016-09-14'),
-                ('enDictionaryRevision', '57'),
-                ('enDictionaryId', 'kll.en.en'),
-                ('sidecarFormat', '1.0')]
-    ll_cur.executemany('INSERT INTO metadata VALUES (?, ?)', metadata)
-
-    return ll_conn, ll_cur
 
 def parse_book(pathtoebook):
     mobiReader = WDMobiReader(pathtoebook, default_log)
@@ -83,17 +41,8 @@ def parse_book(pathtoebook):
             start = match_text.start() + match_word.start()
             yield (start, lemma.decode('utf-8'))
 
-def match_word(start, lemma, ll_cur, ww_cur):
-    ww_cur.execute("SELECT * FROM words WHERE lemma = ?", (lemma.lower(), ))
-    result = ww_cur.fetchone()
-    if result is not None:
-        (_, sense_id, difficulty) = result
-        ll_cur.execute('''
-            INSERT INTO glosses (start, difficulty, sense_id, low_confidence)
-            VALUES (?, ?, ?, ?)
-        ''', (start, difficulty, sense_id, 0))
-
 class WDMobiReader(MobiReader):
+    # copied from calibre
     def extract_text(self, offset=1):
         self.log.debug('Extracting text...')
         text_sections = [self.text_section(i) for i in range(offset,

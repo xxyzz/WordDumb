@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
-from calibre.gui2 import Dispatcher
+from calibre.gui2 import Dispatcher, warning_dialog, error_dialog
+from calibre.gui2.threaded_jobs import ThreadedJob
+from calibre_plugins.worddumb.parse_job import do_job
 from pathlib import Path
 import sqlite3
 import uuid
+import re
 
 class ParseBook():
     def __init__(self, gui):
@@ -63,10 +66,25 @@ class ParseBook():
         if len(books) == 0:
             return
 
-        self.gui.job_manager.run_job(
-            Dispatcher(self.done), 'arbitrary',
-            args = ("calibre_plugins.worddumb.parse_job", "parse_job", (books, )),
-            description = "Generating Word Wise")
+        job = ThreadedJob('Generating Word Wise', 'Generating Word Wise',
+                          do_job, (self.gui, books), {}, Dispatcher(self.done))
+
+        self.gui.job_manager.run_threaded_job(job)
+        self.gui.status_bar.show_message("Generating Word Wise")
 
     def done(self, job):
-        print("Job done.")
+        if job.result:
+            # Problems during word wise generation
+            # jobs.results is a list - the first entry is the intended title for the dialog
+            # Subsequent strings are error messages
+            dialog_title = job.result.pop(0)
+            if re.search('warning', job.result[0].lower()):
+                msg = "Word Wise generation complete, with warnings."
+                warning_dialog(self.gui, dialog_title, msg, det_msg='\n'.join(job.result), show=True)
+            else:
+                job.result.append("Word Wise generation terminated.")
+                error_dialog(self.gui, dialog_title,'\n'.join(job.result), show=True)
+                return
+        if job.failed:
+            self.gui.job_exception(job)
+        self.gui.status_bar.show_message("Word Wise generated.", 3000)

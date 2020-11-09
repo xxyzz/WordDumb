@@ -90,6 +90,7 @@ class ParseBook():
                 return
         if job.failed:
             self.gui.job_exception(job)
+            return
 
         # send file to device
         for book in self.books:

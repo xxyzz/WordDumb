@@ -38,8 +38,8 @@ def parse_book(pathtoebook):
             start = match_text.start() + match_word.start()
             yield (start, lemma.decode('utf-8'))
 
+# use code from calibre.calibre.ebooks.mobi.reader.mobi6:MobiReader
 class WDMobiReader(MobiReader):
-    # copied from calibre
     def extract_text(self, offset=1):
         self.log.debug('Extracting text...')
         text_sections = [self.text_section(i) for i in range(offset,

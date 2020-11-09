@@ -30,3 +30,11 @@ Get `cn-kll.en.en.klld` and `LanguageLayer.en.ASIN.kll` from your Kindle device,
 ```
 $ create_ww_sql.py ./path-of-klld ./path-of-kll
 ```
+
+## TODO
+
+- Add GitHub action to test the code
+
+- Convert word, for example: stars -> star
+
+- Supports azw3 and kfx

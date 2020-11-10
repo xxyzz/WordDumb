@@ -6,8 +6,7 @@ import sqlite3
 def connect_ww_database():
     ww_conn = sqlite3.connect(":memory:")
     ww_cur = ww_conn.cursor()
-    with open(Path("data/wordwise.sql")) as f:
-        ww_cur.executescript(f.read())
+    ww_cur.executescript(get_resources('data/wordwise.sql').decode('utf-8'))
     return ww_conn, ww_cur
 
 def get_ll_path(book_path, asin):

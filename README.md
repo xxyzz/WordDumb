@@ -2,6 +2,10 @@
 
 A calibre plugin for creating Kindle Word Wise file.
 
+## Contribute
+
+Please read [CONTRIBUTING](./docs/CONTRIBUTING.md)
+
 ## License
 
 This work is licensed under GPL version 3 or later.

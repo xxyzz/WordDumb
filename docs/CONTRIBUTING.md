@@ -20,7 +20,7 @@ $ calibre-debug -g
 ## Build
 
 ```
-$ zip -r worddumb-version *
+$ zip -r worddumb-vx.x.x.zip *
 ```
 
 ## Add more words

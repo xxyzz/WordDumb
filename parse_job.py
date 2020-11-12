@@ -4,6 +4,7 @@ from calibre.ebooks.mobi.reader.mobi6 import MobiReader
 from calibre.utils.logging import default_log
 from calibre_plugins.worddumb.database import connect_ww_database, \
     create_lang_layer, match_word
+from calibre_plugins.worddumb.config import prefs
 from pathlib import Path
 import re
 
@@ -41,5 +42,6 @@ def parse_book(pathtoebook, book_fmt):
             lemma = text[match_word.start():match_word.end()]
             start = match_text.start() + match_word.start()
             if book_fmt.lower() == 'azw3':
-                start -= 14 # I have no idea, may not work
+                start -= 14 # this value works for some books of mine
+                start += int(prefs['offset'])
             yield (start, lemma.decode('utf-8'))

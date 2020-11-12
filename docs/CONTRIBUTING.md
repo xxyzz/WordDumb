@@ -35,8 +35,8 @@ $ create_ww_sql.py ./path-of-klld ./path-of-kll
 
 - Add GitHub action to test the code
 
-- Supports azw3 and kfx
-
 - Improve performance, especially matching lemmas part
 
 - Lemmatize words
+
+- Supports kfx

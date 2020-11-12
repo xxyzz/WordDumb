@@ -61,4 +61,6 @@ class SendFile():
         if not device_ll_path.is_dir():
             device_ll_path.mkdir()
         device_ll_path = device_ll_path.joinpath(self.ll_path.name)
+        if device_ll_path.is_file():
+            device_ll_path.unlink()
         shutil.move(self.ll_path, device_ll_path)

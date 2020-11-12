@@ -95,7 +95,7 @@ class ParseBook():
         # send file to device
         for book in self.books:
             book_id, _, asin, book_path, mi = book
-            ll_path = get_ll_path(book_path, asin)
+            ll_path = get_ll_path(asin, book_path)
             sf = SendFile(self.gui, book_id, book_path, ll_path, mi)
             sf.send_to_device()
 

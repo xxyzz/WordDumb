@@ -10,9 +10,11 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md)
 
 Install calibre 5.
 
-Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus". Right click a MOBI format book then click the plugin menu, it will start generating Word Wise file.
+Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus". Right click a MOBI format book then click the plugin menu, it will start generating Word Wise file in a few minutes depends on the book size and your computer speed.
 
 If your Kindle device is connected, it will send the file to your device.
+
+You can try it on azw3 books but may not work. If you know how to deal with azw3 or kfx books please help.
 
 ## License
 

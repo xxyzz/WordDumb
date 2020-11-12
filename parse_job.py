@@ -42,4 +42,6 @@ def parse_book(pathtoebook, book_fmt):
         for match_word in re.finditer(b"[a-zA-Z]+", text):
             lemma = text[match_word.start():match_word.end()]
             start = match_text.start() + match_word.start()
+            if book_fmt.lower() == 'azw3':
+                start -= 14 # I have no idea, may not work
             yield (start, lemma.decode('utf-8'))

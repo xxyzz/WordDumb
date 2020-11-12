@@ -34,10 +34,8 @@ def parse_book(pathtoebook, book_fmt):
     html = mobiReader.mobi_html
 
     # match text between HTML tags
-    for match_text in re.finditer(b"(?<=>)[^<>]+(?=<)", html):
+    for match_text in re.finditer(b">[^<>]+<", html):
         text = html[match_text.start():match_text.end()]
-        if len(text.strip()) == 0:
-            continue
         # match each word inside text
         for match_word in re.finditer(b"[a-zA-Z]+", text):
             lemma = text[match_word.start():match_word.end()]

@@ -31,7 +31,7 @@ class ParseBook():
         # check book format
         has_kindle_format = False
         for fmt in fmts:
-            if fmt.lower() in ['mobi']:
+            if fmt.lower() in ['mobi', 'azw3']:
                 has_kindle_format = True
                 book_fmt = fmt
                 break

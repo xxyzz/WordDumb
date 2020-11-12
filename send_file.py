@@ -44,7 +44,7 @@ class SendFile():
             device_book_path = device_book_path.joinpath(next(iter(paths)))
             self.move_ll_to_device(device_book_path)
         elif not self.retry:
-            # upload book to device
+            # upload book and cover to device
             cover_path = Path(self.book_path).parent.joinpath('cover.jpg')
             self.mi.thumbnail = None, None, cover_path.read_bytes()
             book_name = Path(self.book_path).name

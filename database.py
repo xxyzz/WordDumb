@@ -9,15 +9,20 @@ def connect_ww_database():
     ww_cur.executescript(get_resources('data/wordwise.sql').decode('utf-8'))
     return ww_conn, ww_cur
 
-def get_ll_path(book_path, asin):
+def get_ll_path(asin, book_path):
     lang_layer_name = "LanguageLayer.en.{}.kll".format(asin)
     return Path(book_path).parent.joinpath(lang_layer_name)
 
-def create_lang_layer(book_id, book_fmt, asin, book_path):
+def create_lang_layer(asin, book_path):
     # check LanguageLayer file
-    lang_layer_path = get_ll_path(book_path, asin)
+    lang_layer_path = get_ll_path(asin, book_path)
+    ll_journal = lang_layer_path.parent.joinpath(lang_layer_path.name + '-journal')
     if lang_layer_path.is_file():
-        return None, None, lang_layer_path
+        if not ll_journal.is_file():
+            return None, None, lang_layer_path
+        else: # last time failed
+            lang_layer_path.unlink()
+            ll_journal.unlink()
 
     # create LanguageLayer database file
     lang_layer_path.parent.mkdir(exist_ok=True)

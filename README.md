@@ -14,8 +14,6 @@ Add the plugin to "The context menu for the books in the calibre library" in "Pr
 
 If your Kindle device is connected, it will send the file to your device.
 
-For AZW3 books you may have to adjust the offset manually. For example, if you find the word is 16 characters(include white space) behind where it should be, set -16 in the plugin settings.
-
 ## License
 
 This work is licensed under GPL version 3 or later.

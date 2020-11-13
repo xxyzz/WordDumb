@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 from calibre.ebooks.mobi.reader.mobi6 import MobiReader
+from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
 from calibre.utils.logging import default_log
 from calibre_plugins.worddumb.database import connect_ww_database, \
     create_lang_layer, match_word
-from calibre_plugins.worddumb.config import prefs
-from pathlib import Path
 import re
 
 def do_job(gui, books, abort, log, notifications):
@@ -33,6 +32,12 @@ def parse_book(pathtoebook, book_fmt):
         offset = mobiReader.kf8_boundary + 2
     mobiReader.extract_text(offset=offset)
     html = mobiReader.mobi_html
+    if book_fmt.lower() == 'azw3':
+        m8r = Mobi8Reader(mobiReader, default_log)
+        m8r.kf8_sections = mobiReader.sections[offset-1:]
+        m8r.read_indices()
+        m8r.build_parts()
+        html = b''.join(m8r.parts)
 
     # match text between HTML tags
     for match_text in re.finditer(b">[^<>]+<", html):
@@ -41,7 +46,4 @@ def parse_book(pathtoebook, book_fmt):
         for match_word in re.finditer(b"[a-zA-Z]+", text):
             lemma = text[match_word.start():match_word.end()]
             start = match_text.start() + match_word.start()
-            if book_fmt.lower() == 'azw3':
-                start -= 14 # this value works for some books of mine
-                start += int(prefs['offset'])
             yield (start, lemma.decode('utf-8'))

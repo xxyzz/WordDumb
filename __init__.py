@@ -7,7 +7,7 @@ class WordDumbDumb(InterfaceActionBase):
     description = 'Create Kindle Word Wise file.'
     supported_platforms = ['linux', 'osx', 'windows']
     author = 'xxyzz'
-    version = (1, 2, 0)
+    version = (1, 3, 0)
     minimum_calibre_version = (5, 0, 0) # Python3
     actual_plugin = 'calibre_plugins.worddumb.ui:WordDumb'
 
@@ -19,4 +19,4 @@ class WordDumbDumb(InterfaceActionBase):
         return ConfigWidget()
 
     def save_settings(self, config_widget):
-        config_widget.save_settings()
+        pass

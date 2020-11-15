@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
+import re
+import uuid
 
-from calibre.gui2 import Dispatcher, warning_dialog, error_dialog
+from calibre.gui2 import Dispatcher, error_dialog, warning_dialog
 from calibre.gui2.threaded_jobs import ThreadedJob
+from calibre_plugins.worddumb.database import get_ll_path
 from calibre_plugins.worddumb.parse_job import do_job
 from calibre_plugins.worddumb.send_file import SendFile
-from calibre_plugins.worddumb.database import get_ll_path
-from pathlib import Path
-import sqlite3
-import uuid
-import re
+
 
 class ParseBook():
     def __init__(self, gui):
@@ -70,7 +69,8 @@ class ParseBook():
             return
 
         job = ThreadedJob('Generating Word Wise', 'Generating Word Wise',
-                          do_job, (self.gui, self.books), {}, Dispatcher(self.done))
+                          do_job, (self.gui, self.books), {},
+                          Dispatcher(self.done))
 
         self.gui.job_manager.run_threaded_job(job)
         self.gui.status_bar.show_message("Generating Word Wise")
@@ -78,15 +78,18 @@ class ParseBook():
     def done(self, job):
         if job.result:
             # Problems during word wise generation
-            # jobs.results is a list - the first entry is the intended title for the dialog
+            # jobs.results is a list - the first entry is the intended
+            # title for the dialog
             # Subsequent strings are error messages
             dialog_title = job.result.pop(0)
             if re.search('warning', job.result[0].lower()):
                 msg = "Word Wise generation complete, with warnings."
-                warning_dialog(self.gui, dialog_title, msg, det_msg='\n'.join(job.result), show=True)
+                warning_dialog(self.gui, dialog_title, msg,
+                               det_msg='\n'.join(job.result), show=True)
             else:
                 job.result.append("Word Wise generation terminated.")
-                error_dialog(self.gui, dialog_title,'\n'.join(job.result), show=True)
+                error_dialog(self.gui, dialog_title,
+                             '\n'.join(job.result), show=True)
                 return
         if job.failed:
             self.gui.job_exception(job)

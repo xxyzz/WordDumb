@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-
-from pathlib import Path
 import sqlite3
+from pathlib import Path
+
 
 def connect_ww_database():
     ww_conn = sqlite3.connect(":memory:")
@@ -9,18 +9,21 @@ def connect_ww_database():
     ww_cur.executescript(get_resources('data/wordwise.sql').decode('utf-8'))
     return ww_conn, ww_cur
 
+
 def get_ll_path(asin, book_path):
     lang_layer_name = "LanguageLayer.en.{}.kll".format(asin)
     return Path(book_path).parent.joinpath(lang_layer_name)
 
+
 def create_lang_layer(asin, book_path):
     # check LanguageLayer file
     lang_layer_path = get_ll_path(asin, book_path)
-    ll_journal = lang_layer_path.parent.joinpath(lang_layer_path.name + '-journal')
+    ll_journal = lang_layer_path.parent.joinpath(
+        lang_layer_path.name + '-journal')
     if lang_layer_path.is_file():
         if not ll_journal.is_file():
             return None, None, lang_layer_path
-        else: # last time failed
+        else:  # last time failed
             lang_layer_path.unlink()
             ll_journal.unlink()
 
@@ -42,8 +45,8 @@ def create_lang_layer(asin, book_path):
             sense_id INTEGER,
             low_confidence INTEGER
         );
-    ''' )
-    metadata = [('acr', 'CR!AX4P53SCH15WF68KNBX4NWWVZXKG'), # Palm DB name
+    ''')
+    metadata = [('acr', 'CR!AX4P53SCH15WF68KNBX4NWWVZXKG'),  # Palm DB name
                 ('targetLanguages', 'en'),
                 ('sidecarRevision', '9'),
                 ('bookRevision', '8d271dc3'),
@@ -55,6 +58,7 @@ def create_lang_layer(asin, book_path):
     ll_cur.executemany('INSERT INTO metadata VALUES (?, ?)', metadata)
 
     return ll_conn, ll_cur, lang_layer_path
+
 
 def match_word(start, lemma, ll_cur, ww_cur):
     ww_cur.execute("SELECT * FROM words WHERE lemma = ?", (lemma.lower(), ))

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-
 from calibre.gui2.actions import InterfaceAction
 from calibre_plugins.worddumb.main import ParseBook
+
 
 class WordDumb(InterfaceAction):
     name = 'WordDumb'

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-
 from calibre.utils.config import JSONConfig
 from PyQt5.Qt import QWidget, QPushButton, QVBoxLayout
 import webbrowser
 
 prefs = JSONConfig('plugins/worddumb')
+
 
 class ConfigWidget(QWidget):
     def __init__(self):

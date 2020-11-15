@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
+import shutil
+from pathlib import Path
 
 from calibre.gui2 import FunctionDispatcher
-from pathlib import Path
-import shutil
+
 
 class SendFile():
     def __init__(self, gui, book_id, book_path, ll_path, mi):
         self.gui = gui
         self.device_manager = self.gui.device_manager
         self.book_id = book_id
-        self.book_path = book_path # string
-        self.ll_path = ll_path     # path object
+        self.book_path = book_path  # string
+        self.ll_path = ll_path      # path object
         self.mi = mi
         self.retry = False
 
@@ -18,7 +19,7 @@ class SendFile():
         if not self.device_manager.is_device_connected:
             return None
         device = self.device_manager.device
-        if device.VENDOR_ID != [0x1949]: # Kindle device
+        if device.VENDOR_ID != [0x1949]:  # Kindle device
             return None
         self.send_files(None)
 
@@ -38,7 +39,8 @@ class SendFile():
 
         [has_book, _, _, _, paths] = self.gui.book_on_device(self.book_id)
         device_info = self.device_manager.get_current_device_information()
-        device_path_prefix = device_info['info'][4]['main']['prefix'] # /Volumes/Kindle
+        # /Volumes/Kindle
+        device_path_prefix = device_info['info'][4]['main']['prefix']
         if has_book:
             device_book_path = Path(device_path_prefix)
             device_book_path = device_book_path.joinpath(next(iter(paths)))
@@ -51,7 +53,8 @@ class SendFile():
             titles = [i.title for i in [self.mi]]
             plugboards = self.gui.current_db.new_api.pref('plugboards', {})
             self.device_manager.upload_books(
-                FunctionDispatcher(self.send_files), [self.book_path], [book_name],
+                FunctionDispatcher(self.send_files), [
+                    self.book_path], [book_name],
                 on_card=None, metadata=[self.mi], titles=titles, plugboards=plugboards)
             self.retry = True
 

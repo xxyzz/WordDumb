@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
+import re
 
 from calibre.ebooks.mobi.reader.mobi6 import MobiReader
 from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
 from calibre.utils.logging import default_log
-from calibre_plugins.worddumb.database import connect_ww_database, \
-    create_lang_layer, match_word
-import re
+from calibre_plugins.worddumb.database import (connect_ww_database,
+                                               create_lang_layer, match_word)
+
 
 def do_job(gui, books, abort, log, notifications):
     ww_conn, ww_cur = connect_ww_database()
@@ -22,6 +23,7 @@ def do_job(gui, books, abort, log, notifications):
         ll_conn.close()
 
     ww_conn.close()
+
 
 def parse_book(pathtoebook, book_fmt):
     mobiReader = MobiReader(pathtoebook, default_log)
@@ -43,7 +45,7 @@ def parse_book(pathtoebook, book_fmt):
     for match_text in re.finditer(b">[^<>]+<", html):
         text = html[match_text.start():match_text.end()]
         # match each word inside text
-        for match_word in re.finditer(b"[a-zA-Z]+", text):
-            lemma = text[match_word.start():match_word.end()]
+        for match_lemma in re.finditer(b"[a-zA-Z]+", text):
+            lemma = text[match_lemma.start():match_lemma.end()]
             start = match_text.start() + match_word.start()
             yield (start, lemma.decode('utf-8'))

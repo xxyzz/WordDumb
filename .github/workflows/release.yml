@@ -12,8 +12,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Get tag name
+        run: echo "FILENAME=worddumb-${GITHUB_REF##*/}.zip" >> $GITHUB_ENV
       - name: Build plugin
-        run: zip -r worddumb.zip *
+        run: zip -r ${FILENAME} *
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -31,6 +33,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./worddumb.zip
-          asset_name: worddumb.zip
+          asset_path: ./${{ env.FILENAME }}
+          asset_name: ${{ env.FILENAME }}
           asset_content_type: application/zip

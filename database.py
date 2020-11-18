@@ -60,8 +60,8 @@ def create_lang_layer(asin, book_path):
     return ll_conn, ll_cur, lang_layer_path
 
 
-def match_word(start, lemma, ll_cur, ww_cur):
-    ww_cur.execute("SELECT * FROM words WHERE lemma = ?", (lemma.lower(), ))
+def match_lemma(start, word, ll_cur, ww_cur):
+    ww_cur.execute("SELECT * FROM words WHERE lemma = ?", (word.lower(), ))
     result = ww_cur.fetchone()
     if result is not None:
         (_, sense_id, difficulty) = result

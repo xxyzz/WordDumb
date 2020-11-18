@@ -53,9 +53,9 @@ class SendFile():
             titles = [i.title for i in [self.mi]]
             plugboards = self.gui.current_db.new_api.pref('plugboards', {})
             self.device_manager.upload_books(
-                FunctionDispatcher(self.send_files), [
-                    self.book_path], [book_name],
-                on_card=None, metadata=[self.mi], titles=titles, plugboards=plugboards)
+                FunctionDispatcher(self.send_files), [self.book_path],
+                [book_name], on_card=None, metadata=[self.mi],
+                titles=titles, plugboards=plugboards)
             self.retry = True
 
     def move_ll_to_device(self, book_path):

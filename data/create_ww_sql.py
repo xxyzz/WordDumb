@@ -41,8 +41,9 @@ if dump_filename.is_file():
     if total_words:
         total_words = total_words[0]
 else:
-    ww_cur.execute(
-        "CREATE TABLE words (lemma TEXT, sense_id INTEGER, difficulty INTEGER)")
+    ww_cur.execute('''
+    CREATE TABLE words (lemma TEXT, sense_id INTEGER, difficulty INTEGER)
+    ''')
 
 for language_layer in args.language_layers:
     if not Path(language_layer).is_file():

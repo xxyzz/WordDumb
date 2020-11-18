@@ -8,9 +8,9 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md)
 
 ## How to use
 
-Install calibre 5.
+Install calibre **5+** and jhowell's [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books. Then install WordDumb plugin from calibre "Preference" -> "Plugins" -> "Get new plugins". Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus".
 
-Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus". Right click a MOBI or AZW3 format book then click the plugin menu, it will start generating Word Wise file in a few minutes that depends on the book size and your computer speed.
+Right click a **MOBI**, **AZW3** or **KFX** format book then click the plugin menu, it will start generating Word Wise file in a few minutes that depends on the book size and your computer speed.
 
 If your Kindle device is connected, it will send the file to your device.
 

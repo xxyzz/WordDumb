@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
-# https://docs.python.org/3/library/argparse.html
 import argparse
-# https://docs.python.org/3/library/sqlite3.html
 import sqlite3
-# https://docs.python.org/3/library/pathlib.html
 from pathlib import Path
 
 '''
@@ -58,7 +55,7 @@ for language_layer in args.language_layers:
         ll_cur.execute(
             "SELECT difficulty FROM glosses WHERE sense_id = ?", (sense_id, ))
         difficulty = ll_cur.fetchone()
-        ww_cur.execute("SELECT * FROM words WHERE sense_id = ?", (sense_id, ))
+        ww_cur.execute("SELECT * FROM words WHERE lemma = ?", (lemma, ))
         find_in_ww = ww_cur.fetchone()
 
         if difficulty and not find_in_ww:
@@ -77,6 +74,6 @@ if added_lemmas > 0:
     ww_conn.commit()
     with dump_file.open('w') as f:
         for line in ww_conn.iterdump():
-            f.write("%s\n" % line)
+            f.write("{}\n".format(line))
 ww_conn.close()
 ww_klld_conn.close()

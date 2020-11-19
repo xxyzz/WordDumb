@@ -40,7 +40,8 @@ class ParseBook():
 
         # check ASIN
         identifiers = mi.get_identifiers()
-        if identifiers and 'mobi-asin' in identifiers:
+        if identifiers and 'mobi-asin' in identifiers and \
+           re.match('B[0-9A-Z]{9}', identifiers['mobi-asin']):
             asin = identifiers['mobi-asin']
         else:
             # create a not that stupid fake ASIN

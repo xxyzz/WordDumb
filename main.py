@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
+import random
 import re
-import uuid
+import string
 
 from calibre.gui2 import Dispatcher, error_dialog, warning_dialog
 from calibre.gui2.threaded_jobs import ThreadedJob
@@ -42,8 +43,10 @@ class ParseBook():
         if identifiers and 'mobi-asin' in identifiers:
             asin = identifiers['mobi-asin']
         else:
-            # create a stupid fake ASIN
-            asin = str(uuid.uuid4())
+            # create a not that stupid fake ASIN
+            asin = 'B'
+            asin += ''.join(random.choices(string.ascii_uppercase +
+                                           string.digits, k=9))
             mi.set_identifier('mobi-asin', asin)
             self.db.set_metadata(book_id, mi)
 

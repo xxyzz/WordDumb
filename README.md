@@ -12,7 +12,7 @@ Install calibre **5+** and jhowell's [KFX Input](https://www.mobileread.com/foru
 
 Right click a **MOBI**, **AZW3** or **KFX** format book then click the plugin menu, it will start generating Word Wise file in a few minutes that depends on the book size and your computer speed.
 
-If your Kindle device is connected, it will send the book(if your device doesn't have it) and the Word Wise file to your device. Make sure the book has only one supported format.
+If your Kindle device is connected, it will send the book(if your device doesn't have it) and the Word Wise file to your device. Make sure the book has **only one** supported format.
 
 ## License
 

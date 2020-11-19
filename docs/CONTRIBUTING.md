@@ -10,6 +10,8 @@
 
 - https://wiki.mobileread.com/wiki/E-book_formats
 
+- https://www.mobileread.com/forums/showthread.php?t=291290
+
 ## Debug
 
 ```

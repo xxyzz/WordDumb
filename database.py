@@ -21,7 +21,7 @@ def create_lang_layer(asin, book_path):
         lang_layer_path.name + '-journal')
     if lang_layer_path.is_file():
         if not ll_journal.is_file():
-            return None, None, lang_layer_path
+            return None
         else:  # last time failed
             lang_layer_path.unlink()
             ll_journal.unlink()

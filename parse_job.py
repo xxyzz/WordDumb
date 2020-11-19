@@ -10,15 +10,15 @@ from calibre_plugins.worddumb.database import (connect_ww_database,
 
 
 def do_job(gui, books, abort, log, notifications):
-    ww_conn, ww_cur = connect_ww_database()
+    ww_conn = connect_ww_database()
 
-    for (book_id, book_fmt, asin, book_path, _) in books:
-        ll_conn, ll_cur, ll_file = create_lang_layer(asin, book_path)
+    for (_, book_fmt, asin, book_path, _) in books:
+        ll_conn = create_lang_layer(asin, book_path)
         if ll_conn is None:
             continue
 
         for (start, word) in parse_book(book_path, book_fmt):
-            match_lemma(start, word, ll_cur, ww_cur)
+            match_lemma(start, word, ll_conn, ww_conn)
 
         ll_conn.commit()
         ll_conn.close()

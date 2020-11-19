@@ -5,9 +5,8 @@ from pathlib import Path
 
 def connect_ww_database():
     ww_conn = sqlite3.connect(":memory:")
-    ww_cur = ww_conn.cursor()
-    ww_cur.executescript(get_resources('data/wordwise.sql').decode('utf-8'))
-    return ww_conn, ww_cur
+    ww_conn.executescript(get_resources('data/wordwise.sql').decode('utf-8'))
+    return ww_conn
 
 
 def get_ll_path(asin, book_path):
@@ -31,8 +30,7 @@ def create_lang_layer(asin, book_path):
     lang_layer_path.parent.mkdir(exist_ok=True)
     lang_layer_path.touch()
     ll_conn = sqlite3.connect(lang_layer_path)
-    ll_cur = ll_conn.cursor()
-    ll_cur.executescript('''
+    ll_conn.executescript('''
         CREATE TABLE metadata (
             key TEXT,
             value TEXT
@@ -55,17 +53,16 @@ def create_lang_layer(asin, book_path):
                 ('enDictionaryRevision', '57'),
                 ('enDictionaryId', 'kll.en.en'),
                 ('sidecarFormat', '1.0')]
-    ll_cur.executemany('INSERT INTO metadata VALUES (?, ?)', metadata)
+    ll_conn.executemany('INSERT INTO metadata VALUES (?, ?)', metadata)
 
-    return ll_conn, ll_cur, lang_layer_path
+    return ll_conn
 
 
-def match_lemma(start, word, ll_cur, ww_cur):
-    ww_cur.execute("SELECT * FROM words WHERE lemma = ?", (word.lower(), ))
-    result = ww_cur.fetchone()
-    if result is not None:
+def match_lemma(start, word, ll_conn, ww_conn):
+    for result in ww_conn.execute("SELECT * FROM words WHERE lemma = ?",
+                                  (word.lower(), )):
         (_, sense_id, difficulty) = result
-        ll_cur.execute('''
-            INSERT INTO glosses (start, difficulty, sense_id, low_confidence)
-            VALUES (?, ?, ?, ?)
+        ll_conn.execute('''
+        INSERT INTO glosses (start, difficulty, sense_id, low_confidence)
+        VALUES (?, ?, ?, ?)
         ''', (start, difficulty, sense_id, 0))

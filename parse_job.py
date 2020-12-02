@@ -39,7 +39,7 @@ def parse_kfx(path_of_book):
     book = YJ_Book(path_of_book)
     data = book.convert_to_json_content()
     for entry in json.loads(data)['data']:
-        for match_word in re.finditer('[a-zA-Z]+', entry['content']):
+        for match_word in re.finditer('[a-zA-Z]{3,}', entry['content']):
             word = entry['content'][match_word.start():match_word.end()]
             yield (entry['position'] + match_word.start(), word)
 
@@ -64,7 +64,7 @@ def parse_mobi(pathtoebook, book_fmt):
     for match_text in re.finditer(b">[^<>]+<", html):
         text = html[match_text.start():match_text.end()]
         # match each word inside text
-        for match_word in re.finditer(b"[a-zA-Z]+", text):
+        for match_word in re.finditer(b"[a-zA-Z]{3,}", text):
             word = text[match_word.start():match_word.end()]
             start = match_text.start() + match_word.start()
             yield (start, word.decode('utf-8'))

@@ -49,6 +49,4 @@ $ create_ww_sql.py ./path-of-klld ./path-of-kll
 
 - Improve performance, especially matching lemmas part
 
-- Lemmatize words
-
 - Job progress

@@ -1,0 +1,5 @@
+.venv/lib/python*/site-packages/click/*
+.venv/lib/python*/site-packages/joblib/*
+.venv/lib/python*/site-packages/nltk/*
+.venv/lib/python*/site-packages/tqdm/*
+.venv/nltk_data/corpora/wordnet/*

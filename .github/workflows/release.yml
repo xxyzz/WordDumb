@@ -14,8 +14,12 @@ jobs:
         uses: actions/checkout@v2
       - name: Get tag name
         run: echo "FILENAME=worddumb-${GITHUB_REF##*/}.zip" >> $GITHUB_ENV
+      - name: Install dependencies
+        run: bash install_nltk.sh
       - name: Build plugin
-        run: zip -r ${FILENAME} *
+        run: |
+          zip -r ${FILENAME} *
+          zip -r ${FILENAME} . -i@include.lst
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

@@ -12,6 +12,14 @@
 
 - https://www.mobileread.com/forums/showthread.php?t=291290
 
+- https://www.nltk.org
+
+## Install dependencies
+
+```
+$ ./install_nltk.sh
+```
+
 ## Debug
 
 ```
@@ -23,6 +31,7 @@ $ calibre-debug -g
 
 ```
 $ zip -r worddumb-vx.x.x.zip *
+$ zip -r worddumb-vx.x.x.zip . -i@include.lst
 ```
 
 ## Add more words

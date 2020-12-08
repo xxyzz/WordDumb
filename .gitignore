@@ -13,3 +13,5 @@ env
 
 # vmd preview file
 *.temp
+
+*.zip

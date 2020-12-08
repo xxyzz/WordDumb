@@ -19,4 +19,4 @@ class WordDumbDumb(InterfaceActionBase):
         return ConfigWidget()
 
     def save_settings(self, config_widget):
-        pass
+        config_widget.save_settings()

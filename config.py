@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-from calibre.utils.config import JSONConfig
-from PyQt5.Qt import QWidget, QPushButton, QVBoxLayout
 import webbrowser
 
+from calibre.utils.config import JSONConfig
+from PyQt5.Qt import QPushButton, QRadioButton, QVBoxLayout, QWidget
+
 prefs = JSONConfig('plugins/worddumb')
+prefs.defaults['lemmatize'] = True
 
 
 class ConfigWidget(QWidget):
@@ -12,6 +14,10 @@ class ConfigWidget(QWidget):
 
         self.vl = QVBoxLayout()
         self.setLayout(self.vl)
+
+        self.lemmatize_button = QRadioButton('Lemmatize', self)
+        self.lemmatize_button.setChecked(prefs['lemmatize'])
+        self.vl.addWidget(self.lemmatize_button)
 
         self.donate_button = QPushButton('Donate', self)
         self.donate_button.clicked.connect(self.donate)
@@ -26,3 +32,6 @@ class ConfigWidget(QWidget):
 
     def github(self):
         webbrowser.open('https://github.com/xxyzz/WordDumb')
+
+    def save_settings(self):
+        prefs['lemmatize'] = self.lemmatize_button.isChecked()

@@ -24,12 +24,11 @@ class WordDumb(InterfaceAction):
 
     def install_libs(self):
         extarct_path = Path(config_dir).joinpath('plugins/worddumb')
-        if extarct_path.is_dir():
-            return
-        with ZipFile(self.plugin_path, 'r') as zf:
-            for f in zf.namelist():
-                if '.venv' in f:
-                    zf.extract(f, path=extarct_path)
+        if not extarct_path.is_dir():
+            with ZipFile(self.plugin_path, 'r') as zf:
+                for f in zf.namelist():
+                    if '.venv' in f:
+                        zf.extract(f, path=extarct_path)
         for dir in extarct_path.joinpath('.venv/lib').iterdir():
             sys.path.append(str(dir.joinpath('site-packages')))
         import nltk

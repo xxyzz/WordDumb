@@ -2,8 +2,6 @@
 import sqlite3
 from pathlib import Path
 
-from calibre_plugins.worddumb.config import prefs
-
 
 def connect_ww_database():
     ww_conn = sqlite3.connect(":memory:")
@@ -62,9 +60,8 @@ def create_lang_layer(asin, book_path):
 
 def match_lemma(start, word, ll_conn, ww_conn):
     word = word.lower()
-    if prefs['lemmatize']:
-        from nltk.corpus import wordnet as wn
-        word = wn.morphy(word)
+    from nltk.corpus import wordnet as wn
+    word = wn.morphy(word)
 
     for result in ww_conn.execute("SELECT * FROM words WHERE lemma = ?",
                                   (word, )):

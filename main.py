@@ -11,10 +11,11 @@ from calibre_plugins.worddumb.send_file import SendFile
 
 
 class ParseBook():
-    def __init__(self, gui):
+    def __init__(self, gui, plugin_path):
         self.gui = gui
         self.db = self.gui.current_db.new_api
         self.books = []
+        self.plugin_path = plugin_path
 
     def check_metadata(self, book_id):
         # Get the current metadata for this book from the db
@@ -73,7 +74,7 @@ class ParseBook():
             return
 
         job = ThreadedJob('Generating Word Wise', 'Generating Word Wise',
-                          do_job, (self.gui, self.books), {},
+                          do_job, (self.gui, self.books, self.plugin_path), {},
                           Dispatcher(self.done))
 
         self.gui.job_manager.run_threaded_job(job)

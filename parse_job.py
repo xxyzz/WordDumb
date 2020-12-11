@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 import json
 import re
+import sys
+from pathlib import Path
+from zipfile import ZipFile
 
 from calibre.ebooks.mobi.reader.mobi6 import MobiReader
 from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
+from calibre.utils.config import config_dir
 from calibre.utils.logging import default_log
 from calibre_plugins.worddumb.database import (connect_ww_database,
                                                create_lang_layer, match_lemma)
 
 
-def do_job(gui, books, abort, log, notifications):
+def do_job(gui, books, plugin_path, abort, log, notifications):
+    install_libs(plugin_path)
     ww_conn = connect_ww_database()
 
     for (_, book_fmt, asin, book_path, _) in books:
@@ -68,3 +73,16 @@ def parse_mobi(pathtoebook, book_fmt):
             word = text[match_word.start():match_word.end()]
             start = match_text.start() + match_word.start()
             yield (start, word.decode('utf-8'))
+
+
+def install_libs(plugin_path):
+    extract_path = Path(config_dir).joinpath('plugins/worddumb')
+    if not extract_path.is_dir():
+        with ZipFile(plugin_path, 'r') as zf:
+            for f in zf.namelist():
+                if '.venv' in f:
+                    zf.extract(f, path=extract_path)
+    for dir in extract_path.joinpath('.venv/lib').iterdir():
+        sys.path.append(str(dir.joinpath('site-packages')))
+    import nltk
+    nltk.data.path.append(str(extract_path.joinpath('.venv/nltk_data')))

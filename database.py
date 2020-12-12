@@ -15,7 +15,7 @@ def get_ll_path(asin, book_path):
 
 
 def create_lang_layer(asin, book_path):
-    # check LanguageLayer file
+    # check if LanguageLayer file already exist
     lang_layer_path = get_ll_path(asin, book_path)
     ll_journal = lang_layer_path.parent.joinpath(
         lang_layer_path.name + '-journal')

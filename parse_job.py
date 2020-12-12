@@ -12,15 +12,27 @@ from calibre.utils.config import config_dir
 from calibre.utils.logging import default_log
 from calibre_plugins.worddumb.database import (connect_ww_database,
                                                create_lang_layer, match_lemma)
+from calibre_plugins.worddumb.metadata import check_metadata
 
 NLTK_VERSION = '3.5'
 
 
-def do_job(gui, books, plugin_path, abort, log, notifications):
+def do_job(gui, ids, plugin_path, abort, log, notifications):
+    db = gui.current_db.new_api
+    books = []
+    for book_id in ids:
+        data = check_metadata(db, book_id)
+        if data is None:
+            continue
+        books.append((book_id, ) + data)
+    if len(books) == 0:
+        return
+
     install_libs(plugin_path)
     ww_conn = connect_ww_database()
 
-    for (_, book_fmt, asin, book_path, _) in books:
+    for data in books:
+        (_, book_fmt, asin, book_path, _) = data
         ll_conn = create_lang_layer(asin, book_path)
         if ll_conn is None:
             continue

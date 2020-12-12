@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 from calibre.gui2 import FunctionDispatcher
+from calibre_plugins.worddumb.database import get_ll_path
 
 
 class SendFile():
@@ -67,3 +68,10 @@ class SendFile():
         if device_ll_path.is_file():
             device_ll_path.unlink()
         shutil.move(self.ll_path, device_ll_path)
+
+
+def send(gui, data):
+    (book_id, _, asin, book_path, mi) = data
+    ll_path = get_ll_path(asin, book_path)
+    sf = SendFile(gui, book_id, book_path, ll_path, mi)
+    sf.send_to_device()

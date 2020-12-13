@@ -40,20 +40,27 @@ def check_metadata(db, book_id):
         asin = get_asin(mi.get('title'))
         mi.set_identifier('mobi-asin', asin)
         db.set_metadata(book_id, mi)
-        if fmt.lower() in ['mobi', 'azw3']:
-            with open(book_path, 'r+b') as stream:
-                mu = UpdateMobiASIN(stream)
-                mu.update(mi, asin)
+
+    if fmt.lower() in ['mobi', 'azw3']:
+        with open(book_path, 'r+b') as stream:
+            mu = UpdateMobiEXTH(stream)
+            mu.update(mi, asin)
 
     return book_fmt, asin, book_path, mi
 
 
-class UpdateMobiASIN(MetadataUpdater):
+class UpdateMobiEXTH(MetadataUpdater):
     def update(self, mi, asin):
         def update_exth_record(rec):
             recs.append(rec)
             if rec[0] in self.original_exth_records:
                 self.original_exth_records.pop(rec[0])
+
+        if self.type != b"BOOKMOBI":
+            raise MobiError("Setting metadata only supported for MOBI"
+                            "files of type 'BOOK'.\n"
+                            "\tThis is a %r file of type %r"
+                            % (self.type[0:4], self.type[4:8]))
 
         recs = []
         # force update asin

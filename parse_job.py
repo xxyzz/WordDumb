@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+import concurrent.futures
 import json
+import math
+import os
 import re
 import shutil
 import sys
@@ -11,7 +14,8 @@ from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
 from calibre.utils.config import config_dir
 from calibre.utils.logging import default_log
 from calibre_plugins.worddumb.database import (connect_ww_database,
-                                               create_lang_layer, match_lemma)
+                                               create_lang_layer, find_lemma,
+                                               insert_lemma)
 from calibre_plugins.worddumb.metadata import check_metadata
 
 NLTK_VERSION = '3.5'
@@ -29,7 +33,8 @@ def do_job(gui, ids, plugin_path, abort, log, notifications):
         return
 
     install_libs(plugin_path)
-    ww_conn = connect_ww_database()
+    from nltk.corpus import wordnet as wn
+    worker_count = os.cpu_count()
 
     for data in books:
         (_, book_fmt, asin, book_path, _) = data
@@ -37,13 +42,34 @@ def do_job(gui, ids, plugin_path, abort, log, notifications):
         if ll_conn is None:
             continue
 
+        data = []
         for (start, word) in parse_book(book_path, book_fmt):
-            match_lemma(start, word, ll_conn, ww_conn)
+            word = word.lower()
+            word = wn.morphy(word)
+            data.append((start, word))
 
-        ll_conn.commit()
-        ll_conn.close()
+        words_each_worker = math.floor(len(data) / worker_count)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = []
+            for i in range(worker_count):
+                worker_data = None
+                if i == worker_count - 1:
+                    worker_data = data[i * words_each_worker:]
+                else:
+                    worker_data = data[i * words_each_worker:
+                                       (i + 1) * words_each_worker]
+                futures.append(executor.submit(worker, worker_data))
+            for future in concurrent.futures.as_completed(futures):
+                insert_lemma(future.result(), ll_conn)
+            ll_conn.commit()
+            ll_conn.close()
 
+
+def worker(data):
+    ww_conn = connect_ww_database()
+    result = find_lemma(data, ww_conn)
     ww_conn.close()
+    return result
 
 
 def parse_book(path_of_book, book_fmt):

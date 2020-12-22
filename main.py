@@ -57,4 +57,4 @@ class ParseBook():
                 continue
             send(self.gui, (book_id, ) + data)
 
-        self.gui.status_bar.show_message("Word Wise generated.", 3000)
+        self.gui.status_bar.show_message("Word Wise generated.")

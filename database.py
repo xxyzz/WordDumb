@@ -58,15 +58,19 @@ def create_lang_layer(asin, book_path):
     return ll_conn
 
 
-def match_lemma(start, word, ll_conn, ww_conn):
-    word = word.lower()
-    from nltk.corpus import wordnet as wn
-    word = wn.morphy(word)
+def find_lemma(data_list, ww_conn):
+    results = []
+    for data in data_list:
+        for result in ww_conn.execute('''
+        SELECT ? as start, difficulty, sense_id
+        FROM words WHERE lemma = ?
+        ''', data):
+            results.append(result)
+    return results
 
-    for result in ww_conn.execute("SELECT * FROM words WHERE lemma = ?",
-                                  (word, )):
-        (_, sense_id, difficulty) = result
-        ll_conn.execute('''
+
+def insert_lemma(data, ll_conn):
+    ll_conn.executemany('''
         INSERT INTO glosses (start, difficulty, sense_id, low_confidence)
-        VALUES (?, ?, ?, ?)
-        ''', (start, difficulty, sense_id, 0))
+        VALUES (?, ?, ?, 0)
+        ''', data)

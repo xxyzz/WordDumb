@@ -8,7 +8,7 @@ from calibre.ebooks.metadata.mobi import MetadataUpdater, MobiError
 from calibre_plugins.worddumb.asin import get_asin
 
 
-def check_metadata(db, book_id):
+def check_metadata(db, book_id, update_exth=True):
     # Get the current metadata for this book from the db
     mi = db.get_metadata(book_id)
     fmts = db.formats(book_id)
@@ -41,7 +41,7 @@ def check_metadata(db, book_id):
         mi.set_identifier('mobi-asin', asin)
         db.set_metadata(book_id, mi)
 
-    if fmt.lower() in ['mobi', 'azw3']:
+    if fmt.lower() in ['mobi', 'azw3'] and update_exth:
         with open(book_path, 'r+b') as stream:
             mu = UpdateMobiEXTH(stream)
             mu.update(mi, asin)

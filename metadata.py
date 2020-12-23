@@ -44,13 +44,13 @@ def check_metadata(db, book_id, update_exth=True):
     if fmt.lower() in ['mobi', 'azw3'] and update_exth:
         with open(book_path, 'r+b') as stream:
             mu = UpdateMobiEXTH(stream)
-            mu.update(mi, asin)
+            mu.update(asin)
 
     return book_fmt, asin, book_path, mi
 
 
 class UpdateMobiEXTH(MetadataUpdater):
-    def update(self, mi, asin):
+    def update(self, asin):
         def update_exth_record(rec):
             recs.append(rec)
             if rec[0] in self.original_exth_records:

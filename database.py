@@ -54,7 +54,6 @@ def create_lang_layer(asin, book_path):
                 ('enDictionaryId', 'kll.en.en'),
                 ('sidecarFormat', '1.0')]
     ll_conn.executemany('INSERT INTO metadata VALUES (?, ?)', metadata)
-
     return ll_conn
 
 

@@ -36,18 +36,13 @@ def do_job(gui, ids, plugin_path, abort, log, notifications):
     from nltk.corpus import wordnet as wn
     worker_count = os.cpu_count()
 
-    for data in books:
-        (_, book_fmt, asin, book_path, _) = data
+    for (_, book_fmt, asin, book_path, _) in books:
         ll_conn = create_lang_layer(asin, book_path)
         if ll_conn is None:
             continue
 
-        data = []
-        for (start, word) in parse_book(book_path, book_fmt):
-            word = word.lower()
-            word = wn.morphy(word)
-            data.append((start, word))
-
+        data = [(start, wn.morphy(word.lower()))
+                for (start, word) in parse_book(book_path, book_fmt)]
         words_each_worker = math.floor(len(data) / worker_count)
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = []
@@ -74,9 +69,9 @@ def worker(data):
 
 def parse_book(path_of_book, book_fmt):
     if (book_fmt.lower() == 'kfx'):
-        return parse_kfx(path_of_book)
+        yield from parse_kfx(path_of_book)
     else:
-        return parse_mobi(path_of_book, book_fmt)
+        yield from parse_mobi(path_of_book, book_fmt)
 
 
 def parse_kfx(path_of_book):
@@ -85,9 +80,8 @@ def parse_kfx(path_of_book):
     book = YJ_Book(path_of_book)
     data = book.convert_to_json_content()
     for entry in json.loads(data)['data']:
-        for match_word in re.finditer('[a-zA-Z]{3,}', entry['content']):
-            word = entry['content'][match_word.start():match_word.end()]
-            yield (entry['position'] + match_word.start(), word)
+        yield from parse_text(entry['position'],
+                              entry['content'].encode('utf-8'))
 
 
 def parse_mobi(pathtoebook, book_fmt):
@@ -108,12 +102,12 @@ def parse_mobi(pathtoebook, book_fmt):
 
     # match text between HTML tags
     for match_text in re.finditer(b">[^<>]+<", html):
-        text = html[match_text.start():match_text.end()]
-        # match each word inside text
-        for match_word in re.finditer(b"[a-zA-Z]{3,}", text):
-            word = text[match_word.start():match_word.end()]
-            start = match_text.start() + match_word.start()
-            yield (start, word.decode('utf-8'))
+        yield from parse_text(match_text.start(), match_text.group(0))
+
+
+def parse_text(start, text):
+    for match_word in re.finditer(b'[a-zA-Z]{3,}', text):
+        yield (start + match_word.start(), match_word.group(0).decode('utf-8'))
 
 
 def install_libs(plugin_path):

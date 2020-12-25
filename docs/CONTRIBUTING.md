@@ -14,6 +14,12 @@
 
 - https://www.nltk.org
 
+- https://redis.io/documentation
+
+- https://redis-py.readthedocs.io/en/stable
+
+- https://flake8.pycqa.org/en/latest
+
 ## Install dependencies
 
 ```
@@ -40,13 +46,5 @@ Get `cn-kll.en.en.klld` and `LanguageLayer.en.ASIN.kll` from your Kindle device(
 
 ```
 $ cd data
-$ create_ww_sql.py ./path-of-klld ./path-of-kll
+$ create_ww_db.py ./path-of-klld ./path-of-kll
 ```
-
-## TODO
-
-- Add GitHub action to test the code
-
-- Improve performance, especially matching lemmas part
-
-- Job progress

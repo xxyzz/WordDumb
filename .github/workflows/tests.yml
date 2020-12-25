@@ -1,0 +1,36 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install calibre
+        run: sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
+
+      - name: Download 1984 ebook
+        run: wget https://www.planetebook.com/free-ebooks/1984.mobi
+
+      - name: Add 1984 to library
+        run: calibredb add 1984.mobi
+
+      - name: Install dependencies
+        run: bash install_nltk.sh
+
+      - name: Build plugin
+        run: |
+          zip -r worddumb.zip *
+          zip -r worddumb.zip . -i@include.lst
+
+      - name: Add plugin
+        run: calibre-customize -a worddumb.zip
+
+      - name: Run test
+        run: |
+          cd tests
+          calibre-debug test.py

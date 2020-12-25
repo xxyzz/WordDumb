@@ -1,24 +1,15 @@
 #!/usr/bin/env python3
-import concurrent.futures
 import json
-import math
-import os
 import re
-import shutil
-import sys
-from pathlib import Path
-from zipfile import ZipFile
+import time
 
 from calibre.ebooks.mobi.reader.mobi6 import MobiReader
 from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
-from calibre.utils.config import config_dir
 from calibre.utils.logging import default_log
-from calibre_plugins.worddumb.database import (connect_ww_database,
-                                               create_lang_layer, find_lemma,
-                                               insert_lemma)
+from calibre_plugins.worddumb.database import (create_lang_layer, insert_lemma,
+                                               start_redis_server)
 from calibre_plugins.worddumb.metadata import check_metadata
-
-NLTK_VERSION = '3.5'
+from calibre_plugins.worddumb.unzip import install_libs, unzip_db
 
 
 def do_job(db, ids, plugin_path, abort, log, notifications):
@@ -33,37 +24,32 @@ def do_job(db, ids, plugin_path, abort, log, notifications):
 
     install_libs(plugin_path)
     from nltk.corpus import wordnet as wn
-    worker_count = os.cpu_count()
+    start_redis_server(unzip_db(plugin_path))
+    import redis
+    while True:
+        try:
+            r = redis.Redis()
+            break
+        except ConnectionRefusedError:
+            pass
 
     for (_, book_fmt, asin, book_path, _) in books:
         ll_conn = create_lang_layer(asin, book_path)
         if ll_conn is None:
             continue
 
-        data = [(start, wn.morphy(word.lower()))
-                for (start, word) in parse_book(book_path, book_fmt)]
-        words_each_worker = math.floor(len(data) / worker_count)
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures = []
-            for i in range(worker_count):
-                worker_data = None
-                if i == worker_count - 1:
-                    worker_data = data[i * words_each_worker:]
-                else:
-                    worker_data = data[i * words_each_worker:
-                                       (i + 1) * words_each_worker]
-                futures.append(executor.submit(worker, worker_data))
-            for future in concurrent.futures.as_completed(futures):
-                insert_lemma(future.result(), ll_conn)
-            ll_conn.commit()
-            ll_conn.close()
-
-
-def worker(data):
-    ww_conn = connect_ww_database()
-    result = find_lemma(data, ww_conn)
-    ww_conn.close()
-    return result
+        for (start, word) in parse_book(book_path, book_fmt):
+            word = wn.morphy(word.lower())
+            if word is not None and len(word) >= 3:
+                result = r.hgetall('lemma:' + word)
+                if result:
+                    insert_lemma((start,
+                                  result[b'difficulty'].decode('utf-8'),
+                                  result[b'sense_id'].decode('utf-8')),
+                                 ll_conn)
+        ll_conn.commit()
+        ll_conn.close()
+        r.shutdown()
 
 
 def parse_book(path_of_book, book_fmt):
@@ -107,22 +93,3 @@ def parse_mobi(pathtoebook, book_fmt):
 def parse_text(start, text):
     for match_word in re.finditer(b'[a-zA-Z]{3,}', text):
         yield (start + match_word.start(), match_word.group(0).decode('utf-8'))
-
-
-def install_libs(plugin_path):
-    extract_path = Path(config_dir).joinpath('plugins/worddumb-nltk'
-                                             + NLTK_VERSION)
-    if not extract_path.is_dir():
-        for f in Path(config_dir).joinpath('plugins').iterdir():
-            if 'worddumb' in f.name and f.is_dir():
-                shutil.rmtree(f)  # delete old library folder
-
-        with ZipFile(plugin_path, 'r') as zf:
-            for f in zf.namelist():
-                if '.venv' in f:
-                    zf.extract(f, path=extract_path)
-
-    for dir in extract_path.joinpath('.venv/lib').iterdir():
-        sys.path.append(str(dir.joinpath('site-packages')))
-    import nltk
-    nltk.data.path.append(str(extract_path.joinpath('.venv/nltk_data')))

@@ -3,13 +3,6 @@ import sqlite3
 from pathlib import Path
 
 
-def connect_ww_database():
-    ww_conn = sqlite3.connect(":memory:")
-    ww_conn.executescript(
-        get_resources('data/wordwise.sql').decode('utf-8'))  # noqa: F821
-    return ww_conn
-
-
 def get_ll_path(asin, book_path):
     lang_layer_name = "LanguageLayer.en.{}.kll".format(asin)
     return Path(book_path).parent.joinpath(lang_layer_name)
@@ -58,19 +51,13 @@ def create_lang_layer(asin, book_path):
     return ll_conn
 
 
-def find_lemma(data_list, ww_conn):
-    results = []
-    for data in data_list:
-        for result in ww_conn.execute('''
-        SELECT ? as start, difficulty, sense_id
-        FROM words WHERE lemma = ?
-        ''', data):
-            results.append(result)
-    return results
-
-
 def insert_lemma(data, ll_conn):
-    ll_conn.executemany('''
+    ll_conn.execute('''
         INSERT INTO glosses (start, difficulty, sense_id, low_confidence)
         VALUES (?, ?, ?, 0)
         ''', data)
+
+
+def start_redis_server(db_path):
+    import subprocess
+    subprocess.Popen(['redis-server', '--dir', db_path])

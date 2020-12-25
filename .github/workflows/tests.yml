@@ -17,7 +17,9 @@ jobs:
         run: wget https://www.planetebook.com/free-ebooks/1984.mobi
 
       - name: Add 1984 to library
-        run: calibredb add 1984.mobi
+        run: |
+          mkdir ~/Calibre\ Library
+          calibredb add 1984.mobi --with-library ~/Calibre\ Library
 
       - name: Install dependencies
         run: bash install_nltk.sh

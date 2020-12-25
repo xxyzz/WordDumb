@@ -21,8 +21,7 @@ from calibre_plugins.worddumb.metadata import check_metadata
 NLTK_VERSION = '3.5'
 
 
-def do_job(gui, ids, plugin_path, abort, log, notifications):
-    db = gui.current_db.new_api
+def do_job(db, ids, plugin_path, abort, log, notifications):
     books = []
     for book_id in ids:
         data = check_metadata(db, book_id)

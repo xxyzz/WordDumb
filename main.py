@@ -24,7 +24,8 @@ class ParseBook():
             return
 
         job = ThreadedJob('Generating Word Wise', 'Generating Word Wise',
-                          do_job, (self.gui, self.ids, self.plugin_path), {},
+                          do_job, (self.gui.current_db.new_api,
+                                   self.ids, self.plugin_path), {},
                           Dispatcher(self.done))
 
         self.gui.job_manager.run_threaded_job(job)

@@ -5,7 +5,8 @@ from pathlib import Path
 
 def connect_ww_database():
     ww_conn = sqlite3.connect(":memory:")
-    ww_conn.executescript(get_resources('data/wordwise.sql').decode('utf-8'))
+    ww_conn.executescript(
+        get_resources('data/wordwise.sql').decode('utf-8'))  # noqa: F821
     return ww_conn
 
 

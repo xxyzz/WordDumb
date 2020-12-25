@@ -9,7 +9,7 @@ class WordDumb(InterfaceAction):
     action_spec = ('WordDumb', None, 'Good morning Krusty Crew!', None)
 
     def genesis(self):
-        icon = get_icons('starfish.svg')
+        icon = get_icons('starfish.svg')  # noqa: F821
         self.qaction.setIcon(icon)
         self.qaction.triggered.connect(self.run)
 

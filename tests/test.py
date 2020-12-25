@@ -10,7 +10,7 @@ from calibre_plugins.worddumb.database import get_ll_path
 
 db = db('~/Calibre Library').new_api
 book_ids = db.all_book_ids()
-plugin_path = Path(config_dir).joinpath('plugins/worddumb.zip')
+plugin_path = Path(config_dir).joinpath('plugins/WordDumb.zip')
 do_job(db, book_ids, plugin_path, None, None, None)
 (_, asin, book_path, _) = check_metadata(db, next(iter(book_ids)), False)
 

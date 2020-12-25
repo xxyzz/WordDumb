@@ -8,7 +8,7 @@ from calibre_plugins.worddumb.metadata import check_metadata
 from calibre_plugins.worddumb.parse_job import do_job
 from calibre_plugins.worddumb.database import get_ll_path
 
-db = db().new_api
+db = db('~/Calibre Library').new_api
 book_ids = db.all_book_ids()
 plugin_path = Path(config_dir).joinpath('plugins/worddumb.zip')
 do_job(db, book_ids, plugin_path, None, None, None)

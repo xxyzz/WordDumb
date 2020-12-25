@@ -21,8 +21,14 @@ jobs:
           mkdir ~/Calibre\ Library
           calibredb add 1984.mobi --with-library ~/Calibre\ Library
 
-      - name: Install dependencies
+      - name: Install python dependencies
         run: bash install_nltk.sh
+
+      - name: Install redis
+        run: |
+          sudo apt update
+          sudo apt install redis -y
+          sudo systemctl stop redis
 
       - name: Build plugin
         run: |

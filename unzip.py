@@ -38,4 +38,4 @@ def install_libs(plugin_path):
 
 def unzip_db(plugin_path):
     db_path = unzip(plugin_path, 'worddumb-db', DB_VERSION, 'dump.rdb')
-    return str(db_path.joinpath('data/dump.rdb'))
+    return str(db_path.joinpath('data'))

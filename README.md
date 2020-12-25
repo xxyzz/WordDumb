@@ -10,6 +10,12 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md)
 
 Install calibre **5+**, [redis](https://github.com/redis/redis) and jhowell's [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books. Then install WordDumb plugin from calibre "Preference" -> "Plugins" -> "Get new plugins". Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus".
 
+Ubuntu users should run this command to stop redis-server before using the plugin:
+
+```
+$ sudo systemctl stop redis
+```
+
 Right click a **MOBI**, **AZW3** or **KFX** format book then click the plugin menu, it will start generating Word Wise file in a few minutes that depends on the book size and your computer speed.
 
 If your Kindle device is connected, it will send the book(if your device doesn't have it) and the Word Wise file to your device. Make sure the book has **only one** supported format.

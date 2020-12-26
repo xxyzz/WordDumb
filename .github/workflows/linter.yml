@@ -1,6 +1,16 @@
 name: Lint Code Base
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '**'
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches:
+      - '**'
+    paths-ignore:
+      - '**.md'
 
 jobs:
   lint:

@@ -1,30 +1,52 @@
 # WordDumb
 
-A calibre plugin for creating Kindle Word Wise file.
+A calibre plugin for creating Kindle Word Wise file. Supports MOBI, AZW3 and KFX ebooks.
 
 ## Contribute
 
-Please read [CONTRIBUTING](./docs/CONTRIBUTING.md)
+Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
 ## How to use
 
-Install calibre **5+**, [redis](https://github.com/redis/redis) and jhowell's [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books. Then install WordDumb plugin from calibre "Preference" -> "Plugins" -> "Get new plugins". Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus".
-
-Ubuntu users should run this command to stop redis-server before using the plugin:
+- Install calibre 5+
 
 ```
+# macOS
+$ brew install calibre
+
+# Linux
+$ sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
+```
+
+- Install redis 5+
+
+```
+# macOS
+$ brew install redis
+
+# Ubuntu
+$ sudo apt install redis
 $ sudo systemctl stop redis
+$ sudo systemctl disable redis
 ```
 
-Right click a **MOBI**, **AZW3** or **KFX** format book then click the plugin menu, it will start generating Word Wise file in a few minutes that depends on the book size and your computer speed.
+- Install jhowell's [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books.
 
-If your Kindle device is connected, it will send the book(if your device doesn't have it) and the Word Wise file to your device. Make sure the book has **only one** supported format.
+- Install WordDumb plugin
+
+    From calibre's "Preference" -> "Plugins" -> "Get new plugins". Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus".
+
+- Right click a book then click the WordDumb plugin menu. If your Kindle device is connected, it will send the book(if your device doesn't have it) and the Word Wise file to your device. Make sure the book has **only one** supported format.
+
+## Donate
+
+<a href="https://liberapay.com/xxyzz/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
 
 ## License
 
 This work is licensed under GPL version 3 or later.
 
-Icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+Icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>.
 
 [NLTK](https://github.com/nltk/nltk) source code is distributed under the Apache 2.0 License.
 

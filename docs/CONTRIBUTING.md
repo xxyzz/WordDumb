@@ -20,6 +20,10 @@
 
 - https://flake8.pycqa.org/en/latest
 
+- https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
+
+- https://www.crummy.com/software/BeautifulSoup/bs4/doc
+
 ## Install dependencies
 
 ```

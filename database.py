@@ -51,6 +51,15 @@ def create_lang_layer(asin, book_path):
     return ll_conn
 
 
+def search_lemma(r, start, word, ll_conn):
+    result = r.hgetall('lemma:' + word)
+    if result:
+        insert_lemma((start,
+                      result[b'difficulty'].decode('utf-8'),
+                      result[b'sense_id'].decode('utf-8')),
+                     ll_conn)
+
+
 def insert_lemma(data, ll_conn):
     ll_conn.execute('''
         INSERT INTO glosses (start, difficulty, sense_id, low_confidence)
@@ -61,3 +70,11 @@ def insert_lemma(data, ll_conn):
 def start_redis_server(db_path):
     import subprocess
     subprocess.Popen(['redis-server', '--dir', db_path])
+
+    import redis
+    while True:
+        try:
+            r = redis.Redis()
+            return r
+        except ConnectionRefusedError:
+            pass

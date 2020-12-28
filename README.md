@@ -48,6 +48,8 @@ This work is licensed under GPL version 3 or later.
 
 Icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>.
 
-[NLTK](https://github.com/nltk/nltk) source code is distributed under the Apache 2.0 License.
+[NLTK license](https://github.com/nltk/nltk/blob/develop/LICENSE.txt).
 
-[WordNet License](https://wordnet.princeton.edu/license-and-commercial-use).
+[WordNet license](https://wordnet.princeton.edu/license-and-commercial-use).
+
+[redis-py license](https://github.com/andymccurdy/redis-py/blob/master/LICENSE).

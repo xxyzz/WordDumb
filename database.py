@@ -69,12 +69,11 @@ def insert_lemma(data, ll_conn):
 
 def start_redis_server(db_path):
     import subprocess
-    subprocess.Popen(['redis-server', '--dir', db_path])
+    import platform
+    if platform.system() == 'Darwin':
+        subprocess.Popen(['/usr/local/bin/redis-server', '--dir', db_path])
+    else:
+        subprocess.Popen(['redis-server', '--dir', db_path])
 
     import redis
-    while True:
-        try:
-            r = redis.Redis()
-            return r
-        except ConnectionRefusedError:
-            pass
+    return redis.Redis()

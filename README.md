@@ -25,10 +25,14 @@ $ sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh 
 $ brew install redis
 
 # Ubuntu
+# make sure you installed redis 5+, Ubuntu 18.04 still uses redis 4
+$ sudo apt update
 $ sudo apt install redis
 $ sudo systemctl stop redis
 $ sudo systemctl disable redis
 ```
+
+Windows users should use older version of WordDumb(prior to v2.0.0) unless you successfully compiled redis and added `redis-server` to your `PATH`.
 
 - Install jhowell's [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books.
 

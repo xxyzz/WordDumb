@@ -71,6 +71,8 @@ def start_redis_server(db_path):
     import subprocess
     import platform
     if platform.system() == 'Darwin':
+        # when launch calibre from desktop instead of terminal
+        # it needs the absolute path of redis-server
         subprocess.Popen(['/usr/local/bin/redis-server', '--dir', db_path])
     else:
         subprocess.Popen(['redis-server', '--dir', db_path])

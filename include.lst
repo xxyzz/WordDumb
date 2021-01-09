@@ -3,4 +3,3 @@
 .venv/lib/python*/site-packages/nltk/*
 .venv/lib/python*/site-packages/tqdm/*
 .venv/lib/python*/site-packages/redis/*
-.venv/nltk_data/corpora/wordnet/*

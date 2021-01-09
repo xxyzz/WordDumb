@@ -24,10 +24,10 @@
 
 - https://www.crummy.com/software/BeautifulSoup/bs4/doc
 
-## Install dependencies
+## Install python dependencies
 
 ```
-$ ./install_nltk.sh
+$ ./install_packages.sh
 ```
 
 ## Debug

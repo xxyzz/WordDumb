@@ -3,11 +3,10 @@
 import shutil
 import sys
 from pathlib import Path
-from zipfile import ZipFile
+import zipfile
 
 from calibre.utils.config import config_dir
 
-LIB_VERSION = '1'
 DB_VERSION = '1'
 WORDNET_VERSION = '3.0'
 
@@ -27,17 +26,14 @@ def check_folder(plugin_path, folder_name, version, file_name, extract):
 
 
 def unzip(plugin_path, file_name, extract_path):
-    with ZipFile(plugin_path, 'r') as zf:
+    with zipfile.ZipFile(plugin_path, 'r') as zf:
         for f in zf.namelist():
             if file_name in f:
                 zf.extract(f, path=extract_path)
 
 
 def install_libs(plugin_path):
-    extract_path = check_folder(
-        plugin_path, 'worddumb-libs', LIB_VERSION, '.venv', True)
-
-    for dir in extract_path.joinpath('.venv/lib').iterdir():
+    for dir in zipfile.Path(plugin_path).joinpath('.venv/lib').iterdir():
         sys.path.append(str(dir.joinpath('site-packages')))
 
     download_wordnet(plugin_path)

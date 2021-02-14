@@ -2,9 +2,10 @@
 import webbrowser
 
 from calibre.utils.config import JSONConfig
-from PyQt5.Qt import QPushButton, QVBoxLayout, QWidget
+from PyQt5.Qt import QPushButton, QRadioButton, QVBoxLayout, QWidget
 
 prefs = JSONConfig('plugins/worddumb')
+prefs.defaults['x-ray'] = True
 
 
 class ConfigWidget(QWidget):
@@ -13,6 +14,10 @@ class ConfigWidget(QWidget):
 
         self.vl = QVBoxLayout()
         self.setLayout(self.vl)
+
+        self.xray_button = QRadioButton('X-RAY', self)
+        self.xray_button.setChecked(prefs['x-ray'])
+        self.vl.addWidget(self.lemmatize_button)
 
         self.donate_button = QPushButton('Donate', self)
         self.donate_button.clicked.connect(self.donate)
@@ -27,3 +32,6 @@ class ConfigWidget(QWidget):
 
     def github(self):
         webbrowser.open('https://github.com/xxyzz/WordDumb')
+
+    def save_settings(self):
+        prefs['x-ray'] = self.xray_button.isChecked()

@@ -70,12 +70,15 @@ def insert_lemma(data, ll_conn):
 def start_redis_server(db_path):
     import subprocess
     import platform
+    args = ['--dir', db_path, '--save', '']
     if platform.system() == 'Darwin':
         # when launch calibre from desktop instead of terminal
         # it needs the absolute path of redis-server
-        subprocess.Popen(['/usr/local/bin/redis-server', '--dir', db_path])
+        args.insert(0, '/usr/local/bin/redis-server')
+        subprocess.Popen(args)
     else:
-        subprocess.Popen(['redis-server', '--dir', db_path])
+        args.insert(0, 'redis-server')
+        subprocess.Popen(args)
 
     import redis
     return redis.Redis()

@@ -158,6 +158,8 @@ Kindle device path: `/documents/book_name.sdr`
 | enDictionaryId       | kll.en.en                       |
 | sidecarFormat        | 1.0                             |
 
+acr: Palm DB name, first 32 bytes of MOBI file.
+
 ## glosses
 
 | start | end | difficulty | sense\_id | low\_confidence |
@@ -171,15 +173,3 @@ Kindle device path: `/documents/book_name.sdr`
 difficulty = 1 -> Fewer Hints
 
 difficulty = 5 -> More Hints
-
-# wordwise.sql
-
-## words
-
-| lemma       | sense\_id | difficulty |
-|-------------|-----------|------------|
-| abandonment |    104004 |          2 |
-| abandon     |       235 |          5 |
-| abandon     |     22667 |          5 |
-| abandon     |     30673 |          5 |
-| abandon     |     30676 |          5 |

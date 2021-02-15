@@ -15,7 +15,7 @@ class ConfigWidget(QWidget):
         self.vl = QVBoxLayout()
         self.setLayout(self.vl)
 
-        self.xray_button = QRadioButton('X-RAY', self)
+        self.xray_button = QRadioButton('X-Ray', self)
         self.xray_button.setChecked(prefs['x-ray'])
         self.vl.addWidget(self.lemmatize_button)
 

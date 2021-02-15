@@ -10,6 +10,8 @@
 
 - https://wiki.mobileread.com/wiki/E-book_formats
 
+- https://wiki.mobileread.com/wiki/PDB
+
 - https://www.mobileread.com/forums/showthread.php?t=291290
 
 - https://www.nltk.org
@@ -23,6 +25,10 @@
 - https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
 
 - https://www.crummy.com/software/BeautifulSoup/bs4/doc
+
+- https://openlibrary.org/developers/api
+
+- https://www.mediawiki.org/wiki/API:Tutorial
 
 ## Install python dependencies
 
@@ -53,6 +59,14 @@ $ cd data
 $ create_ww_db.py ./path-of-klld ./path-of-kll
 ```
 
-## Replace regex with XML library
+## TODO
 
-## Match phrases
+- replace regex with XML library or nltk
+
+Using BeautifulSoup or lxml to parse books in order to find image tags for X-Ray and skip script/style tags.
+
+- match phrases in database
+
+- deal with Wikipedia ambiguous result
+
+- use nltk to find person and place names

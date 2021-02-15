@@ -7,7 +7,7 @@ import zipfile
 
 from calibre.utils.config import config_dir
 
-DB_VERSION = '1'
+DB_VERSION = '1.1'
 WORDNET_VERSION = '3.0'
 
 

@@ -82,6 +82,8 @@ id 0: book
 
 id 1: Wikipedia
 
+other columns are ids of the string table
+
 ## string
 
 | id | language | text |

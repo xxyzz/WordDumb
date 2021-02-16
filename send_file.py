@@ -3,17 +3,17 @@ import shutil
 from pathlib import Path
 
 from calibre.gui2 import FunctionDispatcher
-from calibre_plugins.worddumb.database import get_ll_path
+from calibre_plugins.worddumb.config import prefs
+from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 
 
 class SendFile():
-    def __init__(self, gui, book_id, book_path, ll_path, mi):
+    def __init__(self, gui, data):
         self.gui = gui
         self.device_manager = self.gui.device_manager
-        self.book_id = book_id
-        self.book_path = book_path  # string
-        self.ll_path = ll_path      # path object
-        self.mi = mi
+        (self.book_id, _, self.asin, self.book_path, self.mi) = data
+        self.ll_path = get_ll_path(self.asin, self.book_path)
+        self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
         self.retry = False
 
     def send_to_device(self):
@@ -45,7 +45,9 @@ class SendFile():
         if has_book:
             device_book_path = Path(device_path_prefix)
             device_book_path = device_book_path.joinpath(next(iter(paths)))
-            self.move_ll_to_device(device_book_path)
+            self.move_file_to_device(self.ll_path, device_book_path)
+            if prefs['x-ray']:
+                self.move_file_to_device(self.x_ray_path, device_book_path)
         elif not self.retry:
             # upload book and cover to device
             cover_path = Path(self.book_path).parent.joinpath('cover.jpg')
@@ -59,19 +61,17 @@ class SendFile():
                 titles=titles, plugboards=plugboards)
             self.retry = True
 
-    def move_ll_to_device(self, book_path):
-        ll_folder = book_path.stem + '.sdr'
-        device_ll_path = book_path.parent.joinpath(ll_folder)
-        if not device_ll_path.is_dir():
-            device_ll_path.mkdir()
-        device_ll_path = device_ll_path.joinpath(self.ll_path.name)
-        if device_ll_path.is_file():
-            device_ll_path.unlink()
-        shutil.move(self.ll_path, device_ll_path)
+    def move_file_to_device(self, file_path, device_book_path):
+        file_folder = device_book_path.stem + '.sdr'
+        device_file_path = device_book_path.parent.joinpath(file_folder)
+        if not device_file_path.is_dir():
+            device_file_path.mkdir()
+        device_file_path = device_file_path.joinpath(file_path.name)
+        if device_file_path.is_file():
+            device_file_path.unlink()
+        shutil.move(file_path, device_file_path)
 
 
 def send(gui, data):
-    (book_id, _, asin, book_path, mi) = data
-    ll_path = get_ll_path(asin, book_path)
-    sf = SendFile(gui, book_id, book_path, ll_path, mi)
+    sf = SendFile(gui, data)
     sf.send_to_device()

@@ -6,6 +6,11 @@
 |-------|--------|-------------|---------------|-------------------------|-------------|------------|-------------|-----------------|
 | 15118 | 911699 |           0 |             1 |                       1 |          83 |        177 |           0 |                 |
 
+```
+sqlite> .schema book_metadata
+CREATE TABLE book_metadata(srl INTEGER, erl INTEGER, has_images TINYINT, has_excerpts TINYINT, show_spoilers_default TINYINT, num_people INTEGER, num_terms INTEGER, num_images INTEGER, preview_images TEXT);
+```
+
 ## bookmentions_entity
 
 | id | asin       | title                  | authors                | description    |          ratings | totalRatings | type        |

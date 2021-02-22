@@ -36,11 +36,11 @@ def create_lang_layer(asin, book_path):
         );
 
         CREATE TABLE glosses (
-            start INTEGER,
+            start INTEGER PRIMARY KEY,
             end INTEGER,
             difficulty INTEGER,
             sense_id INTEGER,
-            low_confidence INTEGER
+            low_confidence BOOLEAN
         );
     ''')
 
@@ -97,21 +97,21 @@ def create_x_ray_db(asin, book_path, r):
     CREATE TABLE book_metadata (
     srl INTEGER,
     erl INTEGER,
-    has_images INTEGER,
-    has_excerpts INTEGER,
-    show_spoilers_default INTEGER,
+    has_images TINYINT,
+    has_excerpts TINYINT,
+    show_spoilers_default TINYINT,
     num_people INTEGER,
     num_terms INTEGER,
     num_images INTEGER,
-    preview_images INTEGER);
+    preview_images TEXT);
 
     CREATE TABLE bookmentions_entity (
-    id INTEGER,
+    id INTEGER PRIMARY KEY,
     asin TEXT,
     title TEXT,
     authors TEXT,
     description TEXT,
-    ratings REAL,
+    ratings INTEGER,
     totalRatings INTEGER,
     type TEXT);
 
@@ -121,38 +121,41 @@ def create_x_ray_db(asin, book_path, r):
     length INTEGER);
 
     CREATE TABLE entity (
-    id INTEGER,
+    id INTEGER PRIMARY KEY,
     label TEXT,
     loc_label INTEGER,
     type INTEGER,
     count INTEGER,
-    has_info_card INTEGER);
+    has_info_card TINYINT);
+    CREATE INDEX idx_entity_type ON entity(type ASC);
 
     CREATE TABLE entity_description (
     text TEXT,
     source_wildcard TEXT,
     source INTEGER,
-    entity INTEGER);
+    entity INTEGER PRIMARY KEY);
 
     CREATE TABLE entity_excerpt (
     entity INTEGER,
     excerpt INTEGER);
+    CREATE INDEX idx_entity_excerpt ON entity_excerpt(entity ASC);
 
     CREATE TABLE excerpt (
-    id INTEGER,
+    id INTEGER PRIMARY KEY,
     start INTEGER,
     length INTEGER,
     image TEXT,
     related_entities TEXT,
-    goto TEXT);
+    goto INTEGER);
 
     CREATE TABLE occurrence (
     entity INTEGER,
     start INTEGER,
     length INTEGER);
+    CREATE INDEX idx_occurrence_start ON occurrence(start ASC);
 
     CREATE TABLE source (
-    id INTEGER,
+    id INTEGER PRIMARY KEY,
     label INTEGER,
     url INTEGER,
     license_label INTEGER,
@@ -164,7 +167,7 @@ def create_x_ray_db(asin, book_path, r):
     text TEXT);
 
     CREATE TABLE type (
-    id INTEGER,
+    id INTEGER PRIMARY KEY,
     label INTEGER,
     singular_label INTEGER,
     icon INTEGER,

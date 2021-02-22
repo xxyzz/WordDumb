@@ -94,6 +94,8 @@ def create_x_ray_db(asin, book_path, r):
     if (x_ray_conn := check_db_file(get_x_ray_path(asin, book_path))) is None:
         return None
     x_ray_conn.executescript('''
+    PRAGMA user_version = 1;
+
     CREATE TABLE book_metadata (
     srl INTEGER,
     erl INTEGER,

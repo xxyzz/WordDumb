@@ -175,7 +175,7 @@ def create_x_ray_db(asin, book_path, r):
     INSERT INTO source VALUES(1, 6, 21, 7, 8);
     ''')
 
-    for data in r.smembers('x_ray_string'):
+    for data in r.lrange('x_ray_string', 0, -1):
         x_ray_conn.execute('INSERT INTO string VALUES(?, ?, ?)',
                            tuple(data.decode('utf-8').split('|')))
 
@@ -186,7 +186,7 @@ def insert_x_book_metadata(conn, data):
     conn.execute('''
     INSERT INTO book_metadata (srl, erl, has_images, has_excerpts,
     show_spoilers_default, num_people, num_terms, num_images)
-    VALUES(?, ?, 0, 0, 1, ?, ?, 0)
+    VALUES(0, ?, 0, 0, 1, ?, ?, 0)
     ''', data)
 
 

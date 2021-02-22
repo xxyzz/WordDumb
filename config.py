@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
+import platform
 import webbrowser
 
 from calibre.utils.config import JSONConfig
 from PyQt5.Qt import QPushButton, QRadioButton, QVBoxLayout, QWidget
 
 prefs = JSONConfig('plugins/worddumb')
-prefs.defaults['x-ray'] = True
+prefs.defaults['x-ray'] = True if platform.system() != 'Darwin' else False
 
 
 class ConfigWidget(QWidget):

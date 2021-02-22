@@ -106,14 +106,15 @@ def create_x_ray_db(asin, book_path, r):
     preview_images TEXT);
 
     CREATE TABLE bookmentions_entity (
-    id INTEGER PRIMARY KEY,
+    id INTEGER,
     asin TEXT,
     title TEXT,
     authors TEXT,
     description TEXT,
     ratings INTEGER,
     totalRatings INTEGER,
-    type TEXT);
+    type TEXT,
+    PRIMARY KEY(id));
 
     CREATE TABLE bookmentions_occurrence (
     entity INTEGER,
@@ -121,19 +122,21 @@ def create_x_ray_db(asin, book_path, r):
     length INTEGER);
 
     CREATE TABLE entity (
-    id INTEGER PRIMARY KEY,
+    id INTEGER,
     label TEXT,
     loc_label INTEGER,
     type INTEGER,
     count INTEGER,
-    has_info_card TINYINT);
+    has_info_card TINYINT,
+    PRIMARY KEY(id));
     CREATE INDEX idx_entity_type ON entity(type ASC);
 
     CREATE TABLE entity_description (
     text TEXT,
     source_wildcard TEXT,
     source INTEGER,
-    entity INTEGER PRIMARY KEY);
+    entity INTEGER,
+    PRIMARY KEY(entity));
 
     CREATE TABLE entity_excerpt (
     entity INTEGER,
@@ -141,12 +144,13 @@ def create_x_ray_db(asin, book_path, r):
     CREATE INDEX idx_entity_excerpt ON entity_excerpt(entity ASC);
 
     CREATE TABLE excerpt (
-    id INTEGER PRIMARY KEY,
+    id INTEGER,
     start INTEGER,
     length INTEGER,
     image TEXT,
     related_entities TEXT,
-    goto INTEGER);
+    goto INTEGER,
+    PRIMARY KEY(id));
 
     CREATE TABLE occurrence (
     entity INTEGER,
@@ -155,11 +159,12 @@ def create_x_ray_db(asin, book_path, r):
     CREATE INDEX idx_occurrence_start ON occurrence(start ASC);
 
     CREATE TABLE source (
-    id INTEGER PRIMARY KEY,
+    id INTEGER,
     label INTEGER,
     url INTEGER,
     license_label INTEGER,
-    license_url INTEGER);
+    license_url INTEGER,
+    PRIMARY KEY(id));
 
     CREATE TABLE string (
     id INTEGER,
@@ -167,11 +172,12 @@ def create_x_ray_db(asin, book_path, r):
     text TEXT);
 
     CREATE TABLE type (
-    id INTEGER PRIMARY KEY,
+    id INTEGER,
     label INTEGER,
     singular_label INTEGER,
     icon INTEGER,
-    top_mentioned_entities TEXT);
+    top_mentioned_entities TEXT,
+    PRIMARY KEY(id));
 
     INSERT INTO entity (id, loc_label, has_info_card) VALUES(0, 1, 0);
     INSERT INTO source (id, label, url) VALUES(0, 5, 20);

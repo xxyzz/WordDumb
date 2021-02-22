@@ -17,7 +17,7 @@ class ConfigWidget(QWidget):
 
         self.xray_button = QRadioButton('X-Ray', self)
         self.xray_button.setChecked(prefs['x-ray'])
-        self.vl.addWidget(self.lemmatize_button)
+        self.vl.addWidget(self.xray_button)
 
         self.donate_button = QPushButton('Donate', self)
         self.donate_button.clicked.connect(self.donate)

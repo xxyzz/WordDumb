@@ -11,6 +11,9 @@
 env
 .venv
 
+# python
+__pycache__
+
 # vmd preview file
 *.temp
 

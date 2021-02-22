@@ -11,24 +11,24 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 - Install calibre 5+
 
 ```
-# macOS
+// macOS
 $ brew install calibre
 
-# Linux
+// Linux
 $ sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 ```
 
 - Install redis 5+
 
 ```
-# macOS
+// macOS
 $ brew install redis
 
-# Ubuntu
-# make sure you installed redis 5+, Ubuntu 18.04 still uses redis 4
+// Ubuntu
+// make sure you installed redis 5+, Ubuntu 18.04 still uses redis 4
 $ sudo apt update
 $ sudo apt install redis
-# check redis version
+// check redis version
 $ redis-server -v
 $ sudo systemctl stop redis
 $ sudo systemctl disable redis
@@ -36,11 +36,21 @@ $ sudo systemctl disable redis
 
 Windows: download redis installer from https://github.com/tporadowski/redis/releases, you need to select the 'add to PATH' option.
 
-- Install jhowell's [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books.
+- Install jhowell's [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books(optional).
 
 - Install WordDumb plugin
 
     From calibre's "Preference" -> "Plugins" -> "Get new plugins". Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus".
+
+- Install Python3(optional, for X-Ray). If you don't need X-Ray, you can disable it in the plugin's settings. It's enabled by default.
+
+```
+// macOS
+$ brew install python
+
+// Ubuntu
+$ sudo apt install python3
+```
 
 - Select one book or multiple books, right click then click the WordDumb plugin menu. If your Kindle device is connected, it will send the book(if your device doesn't have it) and the Word Wise file to your device. Make sure the book has **only one** supported format.
 
@@ -55,7 +65,5 @@ This work is licensed under GPL version 3 or later.
 Icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>.
 
 [NLTK license](https://github.com/nltk/nltk/blob/develop/LICENSE.txt).
-
-[WordNet license](https://wordnet.princeton.edu/license-and-commercial-use).
 
 [redis-py license](https://github.com/andymccurdy/redis-py/blob/master/LICENSE).

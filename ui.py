@@ -14,5 +14,5 @@ class WordDumb(InterfaceAction):
         self.qaction.triggered.connect(self.run)
 
     def run(self):
-        p = ParseBook(self.gui, self.plugin_path)
+        p = ParseBook(self.gui)
         p.parse()

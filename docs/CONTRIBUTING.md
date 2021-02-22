@@ -26,8 +26,6 @@
 
 - https://www.crummy.com/software/BeautifulSoup/bs4/doc
 
-- https://openlibrary.org/developers/api
-
 - https://www.mediawiki.org/wiki/API:Tutorial
 
 ## Install python dependencies
@@ -39,8 +37,7 @@ $ ./install_packages.sh
 ## Debug
 
 ```
-$ calibre-customize -b .
-$ calibre-debug -g
+$ calibre-customize -b . && calibre-debug -g
 ```
 
 ## Build
@@ -61,12 +58,4 @@ $ create_ww_db.py ./path-of-klld ./path-of-kll
 
 ## TODO
 
-- replace regex with XML library or nltk
-
-Using BeautifulSoup or lxml to parse books in order to find image tags for X-Ray and skip script/style tags.
-
-- match phrases in database
-
 - deal with Wikipedia ambiguous result
-
-- use nltk to find person and place names

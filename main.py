@@ -9,10 +9,9 @@ from calibre_plugins.worddumb.send_file import send
 
 
 class ParseBook():
-    def __init__(self, gui, plugin_path):
+    def __init__(self, gui):
         self.gui = gui
         self.books = []
-        self.plugin_path = plugin_path
 
     def parse(self):
         # get currently selected books
@@ -24,8 +23,7 @@ class ParseBook():
             return
 
         job = ThreadedJob('Generating Word Wise', 'Generating Word Wise',
-                          do_job, (self.gui.current_db.new_api,
-                                   self.ids, self.plugin_path), {},
+                          do_job, (self.gui.current_db.new_api, self.ids), {},
                           Dispatcher(self.done))
 
         self.gui.job_manager.run_threaded_job(job)

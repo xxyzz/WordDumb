@@ -173,6 +173,7 @@ def create_x_ray_db(asin, book_path, r):
     INSERT INTO entity (id, loc_label, has_info_card) VALUES(0, 1, 0);
     INSERT INTO source (id, label, url) VALUES(0, 5, 20);
     INSERT INTO source VALUES(1, 6, 21, 7, 8);
+    INSERT INTO source (id, label, url) VALUES(2, 4, 22);
     ''')
 
     for data in r.lrange('x_ray_string', 0, -1):

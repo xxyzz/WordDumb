@@ -1,6 +1,6 @@
 # WordDumb
 
-A calibre plugin for creating Kindle Word Wise file. Supports MOBI, AZW3 and KFX ebooks.
+A calibre plugin for creating Kindle Word Wise and X-Ray file. Supports MOBI, AZW3 and KFX ebooks.
 
 ## Contribute
 
@@ -42,7 +42,9 @@ Windows: download redis installer from https://github.com/tporadowski/redis/rele
 
     From calibre's "Preference" -> "Plugins" -> "Get new plugins". Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus".
 
-- Install Python3(optional, for X-Ray). If you don't need X-Ray, you can disable it in the plugin's settings. It's enabled by default.
+- Install Python3(optional, for X-Ray).
+
+    If you don't need X-Ray, you can disable it in the plugin's settings. It's enabled by default. X-Ray doesn't support macOS due to numpy failed library validation.
 
 ```
 // macOS

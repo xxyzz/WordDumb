@@ -44,7 +44,7 @@ class X_Ray():
     def add_description(self, entity, text):
         entity['description'] = text[:text.find(
             '.') + 1] if '.' in text else text
-        entity['source'] = 0
+        entity['source'] = None
 
     def insert_entity(self, data, data_type, start, text):
         if data_type == 'PERSON':

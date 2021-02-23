@@ -41,6 +41,8 @@ CREATE TABLE book_metadata(srl INTEGER, erl INTEGER, has_images TINYINT, has_exc
 |-------------------------|----------------------|--------|--------|
 | Henry Norris Russell... | Henry Norris Russell |      1 |      1 |
 
+If text is from the book the source is null.
+
 ## entity_excerpt
 
 | entity | excerpt |
@@ -83,7 +85,7 @@ all mentions
 |  1 |     6 |  21 |              7 |            8 |
 |  2 |     4 |  22 |                |              |
 
-id 0: book
+id 0: Kindle Store
 
 id 1: Wikipedia
 

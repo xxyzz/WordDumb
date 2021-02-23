@@ -44,18 +44,27 @@ def install_libs():
 
 
 def download_nltk_data():
-    nltk_path = check_folder('worddumb-nltk', '', None, False)
+    nltk_path = Path(config_dir).joinpath('plugins/worddumb-nltk')
+    nltk_path_str = str(nltk_path)
 
     import nltk
-    if not nltk_path.is_dir():
-        nltk_path = str(nltk_path)
-        nltk.download('wordnet', nltk_path)  # morphy
-        nltk.download('punkt', nltk_path)  # word_tokenize
-        nltk.download('averaged_perceptron_tagger', nltk_path)  # pos_tag
+    if not nltk_path.joinpath('corpora/wordnet').is_dir():
+        nltk.download('wordnet', nltk_path_str)  # morphy
+
+    if prefs['x-ray']:
+        if not nltk_path.joinpath('tokenizers/punkt').is_dir():
+            nltk.download('punkt', nltk_path_str)  # word_tokenize
+        # pos_tag
+        averaged = 'averaged_perceptron_tagger'
+        if not nltk_path.joinpath('taggers/' + averaged).is_dir():
+            nltk.download(averaged, nltk_path_str)
         # ne_chunk
-        nltk.download('maxent_ne_chunker', nltk_path)
-        nltk.download('words', nltk_path)
-    nltk.data.path.append(nltk_path)
+        if not nltk_path.joinpath('chunkers/maxent_ne_chunker').is_dir():
+            nltk.download('maxent_ne_chunker', nltk_path_str)
+        if not nltk_path.joinpath('corpora/words').is_dir():
+            nltk.download('words', nltk_path_str)
+
+    nltk.data.path.append(nltk_path_str)
 
 
 def unzip_db():

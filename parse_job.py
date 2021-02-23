@@ -25,12 +25,12 @@ def check_books(db, ids):
 
 def do_job(db, ids, abort, log, notifications):
     install_libs()
-    from nltk import ne_chunk, pos_tag, word_tokenize
-    from nltk.tree import Tree
+    from nltk.corpus import wordnet as wn
     r = start_redis_server(unzip_db())
 
     for (_, book_fmt, asin, book_path, _) in check_books(db, ids):
-        if (ll_conn := create_lang_layer(asin, book_path)) is None:
+        ll_conn = create_lang_layer(asin, book_path)
+        if ll_conn is None and not prefs['x-ray']:
             continue
         if prefs['x-ray']:
             if (x_ray_conn := create_x_ray_db(asin, book_path, r)) is None:
@@ -38,27 +38,18 @@ def do_job(db, ids, abort, log, notifications):
             x_ray = X_Ray(x_ray_conn)
 
         for (start, text) in parse_book(book_path, book_fmt):
-            records = set()
-            for node in ne_chunk(pos_tag(word_tokenize(text.decode('utf-8')))):
-                if type(node) is Tree:
-                    token = ' '.join([t for t, _ in node.leaves()])
-                    if len(token) < 3 or token in records:
-                        continue
-                    records.add(token)
-                    index = text.find(token.encode('utf-8'))
-                    token_start = start + index
-                    if node.label() != 'PERSON':
-                        check_word(r, token_start, token, ll_conn)
-                    if prefs['x-ray']:
-                        x_ray.search(token, node.label(), token_start,
-                                     text[index:].decode('utf-8'))
-                elif len(token := node[0]) >= 3 and token not in records:
-                    records.add(token)
-                    check_word(r, start + text.find(token.encode('utf-8')),
-                               token, ll_conn)
+            if ll_conn is not None:
+                for match in re.finditer(b'[a-zA-Z]{3,}', text):
+                    lemma = wn.morphy(match.group(0).decode('utf-8').lower())
+                    if lemma and len(lemma) >= 3:
+                        search_lemma(r, start + match.start(), lemma, ll_conn)
 
-        ll_conn.commit()
-        ll_conn.close()
+            if prefs['x-ray']:
+                find_named_entity(start, text.decode('utf-8'), x_ray)
+
+        if ll_conn is not None:
+            ll_conn.commit()
+            ll_conn.close()
         if prefs['x-ray']:
             x_ray.finish()
 
@@ -102,9 +93,19 @@ def parse_mobi(pathtoebook, book_fmt):
         yield (match_text.start() + 1, match_text.group(0)[1:-1])
 
 
-def check_word(r, start, word, ll_conn):
-    if re.fullmatch(r'[a-zA-Z]{3,}', word):
-        from nltk.corpus import wordnet as wn
-        lemma = wn.morphy(word.lower())
-        if lemma and len(lemma) >= 3:
-            search_lemma(r, start, lemma, ll_conn)
+def find_named_entity(start, text, x_ray):
+    from nltk import ne_chunk, pos_tag, word_tokenize
+    from nltk.tree import Tree
+
+    records = set()
+    nodes = ne_chunk(pos_tag(word_tokenize(text)))
+    for node in filter(lambda x: type(x) is Tree, nodes):
+        token = ' '.join([t for t, _ in node.leaves()])
+        if len(token) < 3 or token in records:
+            continue
+        records.add(token)
+        if (match := re.search(r'\b' + token + r'\b', text)) is None:
+            continue
+        index = match.start()
+        token_start = start + len(text[:index].encode('utf-8'))
+        x_ray.search(token, node.label(), token_start, text[index:])

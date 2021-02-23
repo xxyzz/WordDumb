@@ -34,7 +34,7 @@ def check_metadata(db, book_id, update_exth=True):
     book_path = db.format_abspath(book_id, book_fmt)
     identifiers = mi.get_identifiers()
     if 'mobi-asin' in identifiers and \
-       re.match('B[0-9A-Z]{9}', identifiers['mobi-asin']):
+       re.fullmatch('B[0-9A-Z]{9}', identifiers['mobi-asin']):
         asin = identifiers['mobi-asin']
     else:
         asin = get_asin(mi.get('title'))

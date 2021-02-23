@@ -18,17 +18,15 @@ class X_Ray():
         self.entity_id = 1
         self.num_people = 0
         self.num_terms = 0
+        self.people = {}
         self.names = {}
         self.terms = {}
-        self.entities = []
-        self.occurrences = []
         self.erl = 0
 
     def search_wikipedia(self, title, entity, text):
         url = 'https://en.wikipedia.org/w/api.php?format=json&action=query' \
             '&prop=extracts&exintro&explaintext&redirects&exsentences=7' \
-            '&titles=' + \
-            urllib.parse.quote(title)
+            '&titles=' + urllib.parse.quote(title)
         req = urllib.request.Request(url)
         try:
             with urllib.request.urlopen(req) as f:
@@ -48,67 +46,61 @@ class X_Ray():
             '.') + 1] if '.' in text else text
         entity['source'] = 0
 
-    def add_entity(self, data, data_type, start, text):
-        index = self.entity_id - 1
+    def insert_entity(self, data, data_type, start, text):
         if data_type == 'PERSON':
             if ' ' in data:  # full name
                 for name in data.split(' '):
-                    self.names[name] = index
-            self.names[data] = index
+                    self.names[name] = data
+            self.names[data] = data
             self.num_people += 1
         else:
-            self.terms[data] = index
             self.num_terms += 1
         entity = {}
         entity['type'] = 1 if data_type == 'PERSON' else 2
-        entity['has_info_card'] = 1
-        entity['count'] = 1
-        entity['source'] = 0
-        entity['title'] = data
+        entity['count'] = 0
+        entity['label'] = data
         entity['id'] = self.entity_id
         self.entity_id += 1
         if data_type != 'PERSON':
+            self.terms[data] = entity
             self.search_wikipedia(data, entity, text)
         else:
+            self.people[data] = entity
             self.add_description(entity, text)
 
-        self.entities.append(entity)
-        self.add_occurrence(entity, start, len(data))
         insert_x_entity_description(
-            self.conn, (entity['description'], entity['title'],
+            self.conn, (entity['description'], entity['label'],
                         entity['source'], entity['id']))
+        self.insert_occurrence(entity, start, len(data))
 
-    def add_occurrence(self, entity, start, length):
+    def insert_occurrence(self, entity, start, length):
         entity['count'] += 1
-        self.occurrences.append((entity['id'], start, length))
+        insert_x_occurrence(self.conn, (entity['id'], start, length))
         self.erl = start + length - 1
 
     def search(self, name, tag, start, text):
         if name == '':
             return None
         elif name in self.names:
-            self.add_occurrence(
-                self.entities[self.names[name]], start, len(name))
+            self.insert_occurrence(self.people[self.names[name]],
+                                   start, len(name))
         elif name in self.terms:
-            self.add_occurrence(
-                self.entities[self.terms[name]], start, len(name))
+            self.insert_occurrence(self.terms[name], start, len(name))
         else:
-            self.add_entity(name, tag, start, text)
+            self.insert_entity(name, tag, start, text)
 
     def finish(self):
         def top_mentioned(data_type):
-            entities = filter(lambda x: x['type'] == data_type, self.entities)
-            arr = [e['id'] for e in sorted(entities,
+            entities = self.people if data_type == 1 else self.terms
+            arr = [e['id'] for e in sorted(entities.values(),
                                            key=lambda x: x['count'],
                                            reverse=True)][:10]
             return ','.join(map(str, arr))
 
-        for entity in self.entities:
-            insert_x_entity(self.conn, (entity['id'], entity['title'],
-                                        entity['type'], entity['count']))
-
-        for data in sorted(self.occurrences, key=lambda item: item[0]):
-            insert_x_occurrence(self.conn, data)
+        for d in [self.people, self.terms]:
+            for v in d.values():
+                insert_x_entity(
+                    self.conn, (v['id'], v['label'], v['type'], v['count']))
 
         insert_x_book_metadata(
             self.conn, (self.erl, self.num_people, self.num_terms))

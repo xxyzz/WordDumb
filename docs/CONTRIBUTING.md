@@ -53,6 +53,7 @@ Get `cn-kll.en.en.klld` and `LanguageLayer.en.ASIN.kll` from your Kindle device(
 
 ```
 $ cd data
+$ redis-server --dir .
 $ create_ww_db.py ./path-of-klld ./path-of-kll
 ```
 

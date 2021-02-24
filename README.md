@@ -18,6 +18,8 @@ $ brew install calibre
 $ sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 ```
 
+Windows: https://calibre-ebook.com/download
+
 - Install redis 5+
 
 ```
@@ -38,13 +40,9 @@ Windows: download redis installer from https://github.com/tporadowski/redis/rele
 
 - Install jhowell's [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books(optional).
 
-- Install WordDumb plugin
+- Install Python3 for X-ray(optional).
 
-    From calibre's "Preference" -> "Plugins" -> "Get new plugins". Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus".
-
-- Install Python3(optional, for X-Ray).
-
-    If you don't need X-Ray, you can disable it in the plugin's settings. It's enabled by default. X-Ray doesn't support macOS due to numpy failed library validation.
+    If you don't need X-Ray, you can disable it in the plugin's settings. It's enabled by default except on macOS. X-Ray doesn't support macOS due to numpy failed library validation.
 
 ```
 // macOS
@@ -54,7 +52,13 @@ $ brew install python
 $ sudo apt install python3
 ```
 
-- Select one book or multiple books, right click then click the WordDumb plugin menu. If your Kindle device is connected, it will send the book(if your device doesn't have it) and the Word Wise file to your device. Make sure the book has **only one** supported format.
+Windows: https://www.python.org/downloads
+
+- Install WordDumb plugin
+
+    From calibre's "Preference" -> "Plugins" -> "Get new plugins". Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus".
+
+- Select one book or multiple books, right click then click the WordDumb plugin menu. If your Kindle device is connected, it will send the book(if your device doesn't have it) and created files to your device. Make sure the book has **only one** supported format.
 
 ## Donate
 

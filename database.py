@@ -72,7 +72,11 @@ def start_redis_server(db_path):
     import platform
     import subprocess
     args = ['--dir', db_path, '--save', '']
-    if platform.system() == 'Darwin':
+    system = platform.system()
+    socket_path = '/var/run/redis.sock'
+    if system != 'Windows':
+        args += ['--unixsocket', socket_path, '--unixsocketperm', '700']
+    if system == 'Darwin':
         # when launch calibre from desktop instead of terminal
         # it needs the absolute path of redis-server
         args.insert(0, '/usr/local/bin/redis-server')
@@ -82,7 +86,10 @@ def start_redis_server(db_path):
         subprocess.Popen(args)
 
     import redis
-    return redis.Redis()
+    if system == 'Windows':
+        return redis.Redis()
+    else:
+        return redis.Redis(unix_socket_path=socket_path)
 
 
 def get_x_ray_path(asin, book_path):

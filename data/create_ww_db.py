@@ -48,10 +48,8 @@ for language_layer in args.language_layers:
         difficulty = ll_cur.fetchone()
         if difficulty:
             key = 'lemma:' + lemma
-            pipe = r.pipeline()
-            pipe.hsetnx(key, 'sense_id', sense_id)
-            pipe.hsetnx(key, 'difficulty', difficulty[0])
-            pipe.execute()
+            r.hsetnx(key, 'sense_id', sense_id)
+            r.hsetnx(key, 'difficulty', difficulty[0])
             if args.verbose:
                 print("Insert {} {} {}".format(lemma, sense_id, difficulty[0]))
     ll_conn.close()

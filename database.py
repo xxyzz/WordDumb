@@ -73,7 +73,7 @@ def start_redis_server(db_path):
     import subprocess
     args = ['--dir', db_path, '--save', '']
     system = platform.system()
-    socket_path = '/var/run/redis.sock'
+    socket_path = '/tmp/redis.sock'
     if system != 'Windows':
         args += ['--unixsocket', socket_path, '--unixsocketperm', '700']
     if system == 'Darwin':

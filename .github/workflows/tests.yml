@@ -34,11 +34,6 @@ jobs:
       - name: Install python dependencies
         run: bash install_packages.sh
 
-      - name: Install redis
-        run: |
-          sudo apt install redis -y
-          sudo systemctl stop redis
-
       - name: Build plugin
         run: |
           zip -r worddumb.zip *

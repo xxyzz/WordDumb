@@ -16,10 +16,6 @@
 
 - https://www.nltk.org
 
-- https://redis.io/documentation
-
-- https://redis-py.readthedocs.io/en/stable
-
 - https://flake8.pycqa.org/en/latest
 
 - https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
@@ -53,7 +49,6 @@ Get `cn-kll.en.en.klld` and `LanguageLayer.en.ASIN.kll` from your Kindle device(
 
 ```
 $ cd data
-$ redis-server --dir .
 $ create_ww_db.py ./path-of-klld ./path-of-kll
 ```
 

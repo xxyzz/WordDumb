@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import json
-import math
 import urllib.parse
 import urllib.request
 from urllib.error import HTTPError
@@ -15,13 +14,15 @@ from calibre_plugins.worddumb.database import (insert_x_book_metadata,
 
 
 class X_Ray():
-    def __init__(self, conn, r):
+    def __init__(self, conn):
         self.conn = conn
-        self.r = r
         self.entity_id = 1
         self.num_people = 0
         self.num_terms = 0
         self.erl = 0
+        self.names = {}
+        self.people = {}
+        self.terms = {}
 
     def search_wikipedia(self, title, text):
         url = 'https://en.wikipedia.org/w/api.php?format=json&action=query' \
@@ -44,15 +45,21 @@ class X_Ray():
         return (None, text[:text.find('.') + 1] if '.' in text else text)
 
     def insert_entity(self, data, data_type, start, text):
+        entity = {}
+        entity['count'] = 0
+        entity['id'] = self.entity_id
+        self.insert_occurrence(entity, start, len(data))
         if data_type == 'PERSON':
             if ' ' in data:  # full name
                 for name in data.split(' '):
-                    self.r.setnx(f'name:{name}', self.entity_id)
-            self.r.set(f'name:{data}', self.entity_id)
+                    if name not in self.names:
+                        self.names[name] = data
+            self.names[data] = data
+            self.people[data] = entity
             (source, description) = self.description_from_book(text)
             self.num_people += 1
         else:
-            self.r.set(f'term:{data}', self.entity_id)
+            self.terms[data] = entity
             (source, description) = self.search_wikipedia(data, text)
             self.num_terms += 1
 
@@ -60,35 +67,35 @@ class X_Ray():
         insert_x_entity(self.conn, (self.entity_id, data, entity_type))
         insert_x_entity_description(
             self.conn, (description, data, source, self.entity_id))
-        self.insert_occurrence(self.entity_id, entity_type, start, len(data))
         self.entity_id += 1
 
-    def insert_occurrence(self, entity_id, entity_type, start, length):
-        rank_name = 'person_rank' if entity_type == 1 else 'terms_rank'
-        self.r.zincrby(rank_name, 1, entity_id)
-        insert_x_occurrence(self.conn, (entity_id, start, length))
+    def insert_occurrence(self, entity, start, length):
+        entity['count'] += 1
+        insert_x_occurrence(self.conn, (entity['id'], start, length))
         self.erl = start + length - 1
 
     def search(self, name, tag, start, text):
         if name == '':
             return None
-        elif (entity_id := self.r.get(f'name:{name}')):
-            self.insert_occurrence(int(entity_id), 1, start, len(name))
-        elif (entity_id := self.r.get(f'term:{name}')):
-            self.insert_occurrence(int(entity_id), 2, start, len(name))
+        elif name in self.names:
+            self.insert_occurrence(self.people[self.names[name]],
+                                   start, len(name))
+        elif name in self.terms:
+            self.insert_occurrence(self.terms[name], start, len(name))
         else:
             self.insert_entity(name, tag, start, text)
 
     def finish(self):
         def top_mentioned(data_type):
-            rank_name = 'person_rank' if data_type == 1 else 'terms_rank'
-            return ','.join(map(lambda x: x.decode('utf-8'),
-                                self.r.zrange(rank_name, 0, 9, desc=True)))
+            entities = self.people if data_type == 1 else self.terms
+            arr = [e['id'] for e in sorted(entities.values(),
+                                           key=lambda x: x['count'],
+                                           reverse=True)][:10]
+            return ','.join(map(str, arr))
 
-        for rank_name in ['person_rank', 'terms_rank']:
-            for (entity_id, count) in self.r.zrangebyscore(
-                    rank_name, 2, math.inf, withscores=True):
-                update_x_entity_count(self.conn, int(count), int(entity_id))
+        for d in [self.people, self.terms]:
+            for v in filter(lambda x: x['count'] > 1, d.values()):
+                update_x_entity_count(self.conn, v['count'], v['id'])
 
         insert_x_book_metadata(
             self.conn, (self.erl, self.num_people, self.num_terms))

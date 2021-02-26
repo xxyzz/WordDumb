@@ -35,7 +35,7 @@ def do_job(db, ids, abort, log, notifications):
         if prefs['x-ray']:
             if (x_ray_conn := create_x_ray_db(asin, book_path, r)) is None:
                 continue
-            x_ray = X_Ray(x_ray_conn, r)
+            x_ray = X_Ray(x_ray_conn)
 
         for (start, text) in parse_book(book_path, book_fmt):
             if ll_conn is not None:

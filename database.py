@@ -2,6 +2,8 @@
 import sqlite3
 from pathlib import Path
 
+from calibre_plugins.worddumb.unzip import load_json
+
 
 def get_ll_path(asin, book_path):
     lang_layer_name = "LanguageLayer.en.{}.kll".format(asin)
@@ -57,39 +59,11 @@ def create_lang_layer(asin, book_path):
     return ll_conn
 
 
-def search_lemma(r, start, word, ll_conn):
-    result = r.hgetall('lemma:' + word)
-    if result:
-        ll_conn.execute('''
-        INSERT INTO glosses (start, difficulty, sense_id, low_confidence)
-        VALUES (?, ?, ?, 0)
-        ''', (start,
-              result[b'difficulty'].decode('utf-8'),
-              result[b'sense_id'].decode('utf-8')))
-
-
-def start_redis_server(db_path):
-    import platform
-    import subprocess
-    args = ['--dir', db_path, '--save', '']
-    system = platform.system()
-    socket_path = '/tmp/redis.sock'
-    if system != 'Windows':
-        args += ['--unixsocket', socket_path, '--unixsocketperm', '700']
-    if system == 'Darwin':
-        # when launch calibre from desktop instead of terminal
-        # it needs the absolute path of redis-server
-        args.insert(0, '/usr/local/bin/redis-server')
-        subprocess.Popen(args)
-    else:
-        args.insert(0, 'redis-server')
-        subprocess.Popen(args)
-
-    import redis
-    if system == 'Windows':
-        return redis.Redis()
-    else:
-        return redis.Redis(unix_socket_path=socket_path)
+def insert_lemma(ll_conn, data):
+    ll_conn.execute('''
+    INSERT INTO glosses (start, difficulty, sense_id, low_confidence)
+    VALUES (?, ?, ?, 0)
+    ''', data)
 
 
 def get_x_ray_path(asin, book_path):
@@ -97,7 +71,7 @@ def get_x_ray_path(asin, book_path):
     return Path(book_path).parent.joinpath(x_ray_name)
 
 
-def create_x_ray_db(asin, book_path, r):
+def create_x_ray_db(asin, book_path):
     if (x_ray_conn := check_db_file(get_x_ray_path(asin, book_path))) is None:
         return None
     x_ray_conn.executescript('''
@@ -194,9 +168,8 @@ def create_x_ray_db(asin, book_path, r):
     INSERT INTO source (id, label, url) VALUES(2, 4, 22);
     ''')
 
-    for data in r.lrange('x_ray_string', 0, -1):
-        x_ray_conn.execute('INSERT INTO string VALUES(?, ?, ?)',
-                           tuple(data.decode('utf-8').split('|')))
+    for data in load_json('x_ray_strings.json'):
+        x_ray_conn.execute('INSERT INTO string VALUES(?, ?, ?)', data)
 
     return x_ray_conn
 

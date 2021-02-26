@@ -7,7 +7,7 @@ class WordDumbDumb(InterfaceActionBase):
     description = 'Create Kindle Word Wise and X-Ray file then send to device.'
     supported_platforms = ['linux', 'osx', 'windows']
     author = 'xxyzz'
-    version = (3, 2, 0)
+    version = (3, 3, 0)
     minimum_calibre_version = (5, 0, 0)  # Python3
     actual_plugin = 'calibre_plugins.worddumb.ui:WordDumb'
 

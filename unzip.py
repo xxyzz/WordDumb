@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import shutil
 import sys
 import zipfile
@@ -8,7 +9,6 @@ from pathlib import Path
 from calibre.utils.config import config_dir
 from calibre_plugins.worddumb.config import prefs
 
-DB_VERSION = '1.2'
 NUMPY_VERSION = '1.20.1'
 PLUGIN_PATH = Path(config_dir).joinpath('plugins/WordDumb.zip')
 
@@ -27,11 +27,19 @@ def check_folder(folder_name, version, file_name, extract):
     return extract_path
 
 
-def unzip(file_name, extract_path, zip_file_path):
+def unzip(file_name, extract_path, zip_file_path, load_json=False):
     with zipfile.ZipFile(zip_file_path, 'r') as zf:
         for f in zf.namelist():
             if not file_name or file_name in f:
-                zf.extract(f, extract_path)
+                if load_json:
+                    with zf.open(f) as jf:
+                        return json.load(jf)
+                else:
+                    zf.extract(f, extract_path)
+
+
+def load_json(filename):
+    return unzip(filename, None, PLUGIN_PATH, True)
 
 
 def install_libs():
@@ -65,11 +73,6 @@ def download_nltk_data():
             nltk.download('words', nltk_path_str)
 
     nltk.data.path.append(nltk_path_str)
-
-
-def unzip_db():
-    db_path = check_folder('worddumb-db', DB_VERSION, 'dump.rdb', True)
-    return str(db_path.joinpath('data'))
 
 
 def download_numpy():

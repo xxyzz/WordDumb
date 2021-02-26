@@ -7,10 +7,9 @@ from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
 from calibre.utils.logging import default_log
 from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import (create_lang_layer,
-                                               create_x_ray_db, search_lemma,
-                                               start_redis_server)
+                                               create_x_ray_db, insert_lemma)
 from calibre_plugins.worddumb.metadata import check_metadata
-from calibre_plugins.worddumb.unzip import install_libs, unzip_db
+from calibre_plugins.worddumb.unzip import install_libs, load_json
 from calibre_plugins.worddumb.x_ray import X_Ray
 
 
@@ -26,14 +25,14 @@ def check_books(db, ids):
 def do_job(db, ids, abort, log, notifications):
     install_libs()
     from nltk.corpus import wordnet as wn
-    r = start_redis_server(unzip_db())
+    lemmas = load_json('lemmas.json')
 
     for (_, book_fmt, asin, book_path, _) in check_books(db, ids):
         ll_conn = create_lang_layer(asin, book_path)
         if ll_conn is None and not prefs['x-ray']:
             continue
         if prefs['x-ray']:
-            if (x_ray_conn := create_x_ray_db(asin, book_path, r)) is None:
+            if (x_ray_conn := create_x_ray_db(asin, book_path)) is None:
                 continue
             x_ray = X_Ray(x_ray_conn)
 
@@ -41,8 +40,9 @@ def do_job(db, ids, abort, log, notifications):
             if ll_conn is not None:
                 for match in re.finditer(b'[a-zA-Z]{3,}', text):
                     lemma = wn.morphy(match.group(0).decode('utf-8').lower())
-                    if lemma and len(lemma) >= 3:
-                        search_lemma(r, start + match.start(), lemma, ll_conn)
+                    if lemma and len(lemma) >= 3 and lemma in lemmas:
+                        insert_lemma(ll_conn, (start + match.start(),) +
+                                     tuple(lemmas[lemma]))
 
             if prefs['x-ray']:
                 find_named_entity(start, text.decode('utf-8'), x_ray)
@@ -52,8 +52,6 @@ def do_job(db, ids, abort, log, notifications):
             ll_conn.close()
         if prefs['x-ray']:
             x_ray.finish()
-
-    r.shutdown()
 
 
 def parse_book(path_of_book, book_fmt):

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
 import sqlite3
 from pathlib import Path
-
-import redis
 
 '''
 Build a word wise sql file from LanguageLayer.en.ASIN.kll files
@@ -24,13 +23,14 @@ args = parser.parse_args()
 if not Path(args.word_wise).is_file():
     raise Exception(args.word_wise)
 ww_klld_conn = sqlite3.connect(args.word_wise)
-total_lemmas = 0
 ww_klld_lemmas = 0
 for count, in ww_klld_conn.execute("SELECT COUNT(*) FROM lemmas"):
     ww_klld_lemmas = count
 
-r = redis.Redis()
-origin_lemmas = r.dbsize()
+lemmas = {}
+with open('lemmas.json') as f:
+    lemmas = json.load(f)
+origin_lemmas = len(lemmas)
 
 for language_layer in args.language_layers:
     if not Path(language_layer).is_file():
@@ -38,25 +38,26 @@ for language_layer in args.language_layers:
     ll_conn = sqlite3.connect(language_layer)
     ll_cur = ll_conn.cursor()
 
-    print("Processing {}".format(Path(language_layer).name))
+    print(f'Processing {Path(language_layer).name}')
     for lemma, sense_id in ww_klld_conn.execute('''
     SELECT l.lemma, s.id FROM senses s JOIN lemmas l
     ON (s.term_lemma_id = l.id)
     '''):
+        if lemma in lemmas:
+            continue
         ll_cur.execute(
             "SELECT difficulty FROM glosses WHERE sense_id = ?", (sense_id, ))
-        difficulty = ll_cur.fetchone()
-        if difficulty:
-            key = 'lemma:' + lemma
-            r.hsetnx(key, 'sense_id', sense_id)
-            r.hsetnx(key, 'difficulty', difficulty[0])
+        if (difficulty := ll_cur.fetchone()):
+            lemmas[lemma] = [difficulty[0], sense_id]
             if args.verbose:
-                print("Insert {} {} {}".format(lemma, sense_id, difficulty[0]))
+                print(f'Insert {lemma} {difficulty[0]} {sense_id}')
     ll_conn.close()
 
-print("cn-kll.en.en.klld has {} lemmas".format(ww_klld_lemmas))
-current_lemmas = r.dbsize()
-print("added {} lemmas".format(current_lemmas - origin_lemmas))
-print("dump.rdb has {} lemmas".format(current_lemmas))
+current_lemmas = len(lemmas)
+print(f"cn-kll.en.en.klld has {ww_klld_lemmas} lemmas")
+print(f"added {current_lemmas - origin_lemmas} lemmas")
+print(f"lemmas.json has {current_lemmas} lemmas")
 ww_klld_conn.close()
-r.shutdown(save=True)
+Path('lemmas.json').unlink()
+with open('lemmas.json', 'r') as f:
+    json.dump(lemmas, f, indent=2)

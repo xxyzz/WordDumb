@@ -24,7 +24,6 @@ def check_books(db, ids):
 
 def do_job(db, ids, abort, log, notifications):
     install_libs()
-    from nltk.corpus import wordnet as wn
     lemmas = load_json('lemmas.json')
 
     for (_, book_fmt, asin, book_path, _) in check_books(db, ids):
@@ -38,14 +37,10 @@ def do_job(db, ids, abort, log, notifications):
 
         for (start, text) in parse_book(book_path, book_fmt):
             if ll_conn is not None:
-                for match in re.finditer(b'[a-zA-Z]{3,}', text):
-                    lemma = wn.morphy(match.group(0).decode('utf-8').lower())
-                    if lemma and len(lemma) >= 3 and lemma in lemmas:
-                        insert_lemma(ll_conn, (start + match.start(),) +
-                                     tuple(lemmas[lemma]))
+                find_lemma(start, text, lemmas, ll_conn)
 
             if prefs['x-ray']:
-                find_named_entity(start, text.decode('utf-8'), x_ray)
+                find_named_entity(start, text, x_ray)
 
         if ll_conn is not None:
             ll_conn.commit()
@@ -56,9 +51,9 @@ def do_job(db, ids, abort, log, notifications):
 
 def parse_book(path_of_book, book_fmt):
     if (book_fmt.lower() == 'kfx'):
-        yield from parse_kfx(path_of_book)
+        yield from parse_kfx(path_of_book)  # str
     else:
-        yield from parse_mobi(path_of_book, book_fmt)
+        yield from parse_mobi(path_of_book, book_fmt)  # bytes str
 
 
 def parse_kfx(path_of_book):
@@ -67,7 +62,7 @@ def parse_kfx(path_of_book):
     book = YJ_Book(path_of_book)
     data = book.convert_to_json_content()
     for entry in json.loads(data)['data']:
-        yield (entry['position'], entry['content'].encode('utf-8'))
+        yield (entry['position'], entry['content'])
 
 
 def parse_mobi(pathtoebook, book_fmt):
@@ -87,8 +82,21 @@ def parse_mobi(pathtoebook, book_fmt):
         html = b''.join(m8r.parts)
 
     # match text between HTML tags
-    for match_text in re.finditer(b">[^<>]+<", html):
+    for match_text in re.finditer(b'>[^<>]+<', html):
         yield (match_text.start() + 1, match_text.group(0)[1:-1])
+
+
+def find_lemma(start, text, lemmas, ll_conn):
+    from nltk.corpus import wordnet as wn
+
+    bytes_str = True if isinstance(text, bytes) else False
+    pattern = b'[a-zA-Z]{3,}' if bytes_str else r'[a-zA-Z]{3,}'
+    for match in re.finditer(pattern, text):
+        word = match.group(0).decode('utf-8') if bytes_str else match.group(0)
+        lemma = wn.morphy(word.lower())
+        if lemma and len(lemma) >= 3 and lemma in lemmas:
+            insert_lemma(ll_conn, (start + match.start(),) +
+                         tuple(lemmas[lemma]))
 
 
 def find_named_entity(start, text, x_ray):
@@ -96,6 +104,9 @@ def find_named_entity(start, text, x_ray):
     from nltk.tree import Tree
 
     records = set()
+    bytes_str = True if isinstance(text, bytes) else False
+    if bytes_str:
+        text = text.decode('utf-8')
     nodes = ne_chunk(pos_tag(word_tokenize(text)))
     for node in filter(lambda x: type(x) is Tree, nodes):
         token = ' '.join([t for t, _ in node.leaves()])
@@ -105,5 +116,9 @@ def find_named_entity(start, text, x_ray):
         if (match := re.search(r'\b' + token + r'\b', text)) is None:
             continue
         index = match.start()
-        token_start = start + len(text[:index].encode('utf-8'))
+        token_start = start
+        if bytes_str:
+            token_start += len(text[:index].encode('utf-8'))
+        else:
+            token_start += len(text[:index])
         x_ray.search(token, node.label(), token_start, text[index:])

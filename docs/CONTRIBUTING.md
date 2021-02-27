@@ -49,7 +49,7 @@ Get `cn-kll.en.en.klld` and `LanguageLayer.en.ASIN.kll` from your Kindle device(
 
 ```
 $ cd data
-$ create_ww_db.py ./path-of-klld ./path-of-kll
+$ add_lemmas.py ./path-of-klld ./path-of-kll
 ```
 
 ## TODO

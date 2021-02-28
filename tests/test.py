@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import sqlite3
 
 from calibre.library import db
@@ -22,15 +23,19 @@ if asin != 'B003JTHWKU':
     print('Wrong ASIN: {}, should be B003JTHWKU.'.format(asin))
 
 ll_path = get_ll_path(asin, book_path)
-test_db = sqlite3.connect('LanguageLayer.en.B003JTHWKU.kll')
+test_glosses_file = open('LanguageLayer.en.B003JTHWKU.json')
 created_db = sqlite3.connect(ll_path)
 
 # compare word wise
-for a, b in zip(test_db.execute('SELECT * FROM glosses'),
-                created_db.execute('SELECT * FROM glosses')):
-    if a != b:
+for a, b in zip(json.load(test_glosses_file),
+                created_db.execute(
+                    'SELECT start, difficulty, sense_id FROM glosses')):
+    if tuple(a) != b:
         raise Exception(f'''
-        glosses row  (start, difficulty, sense_id, low_confidence)
+        glosses row  (start, difficulty, sense_id)
         test    file:{a}
         created file:{b}
         ''')
+
+test_glosses_file.close()
+created_db.close()

@@ -11,7 +11,7 @@ Convert sqlite file to json file for testing
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-l', help='path of LanguageLayer.en.ASIN.kll file.')
-parser.add_argument('-x', help='path of XRAY.entities.ASIN.json')
+parser.add_argument('-x', help='path of XRAY.entities.ASIN.asc file')
 args = parser.parse_args()
 
 

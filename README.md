@@ -20,11 +20,15 @@ $ sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh 
 
 Windows: https://calibre-ebook.com/download_windows64
 
+- Install WordDumb plugin
+
+From calibre's "Preference" -> "Plugins" -> "Get new plugins". Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus".
+
 - Install jhowell's [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books(optional).
 
-- Install Python3 for X-ray(optional).
+- Install Python3 for X-Ray(optional).
 
-    If you don't need X-Ray, you can disable it in the plugin's settings. It's enabled by default except on macOS. X-Ray doesn't work on macOS with library validation enabled.
+If you don't need X-Ray, you can disable it at calibre preference -> plugins -> search WordDumb -> click "customize plugin". It's enabled by default except on macOS. X-Ray doesn't work on macOS with library validation enabled.
 
 ```
 // macOS
@@ -34,11 +38,7 @@ $ brew install python
 $ sudo apt install python3
 ```
 
-Windows: https://www.python.org/downloads If you've installed 64-bit calibre, you should install 64-bit Python. If you have 32-bit calibre then download 32-bit Python.
-
-- Install WordDumb plugin
-
-    From calibre's "Preference" -> "Plugins" -> "Get new plugins". Add the plugin to "The context menu for the books in the calibre library" in "Preferences" -> "Toolbars & menus".
+Windows: https://www.python.org/downloads If you've installed 64-bit calibre, you should install 64-bit Python. If you have 32-bit calibre then download 32-bit Python. 'Add Python to PATH' option must be selected.
 
 - Select one book or multiple books, right click then click the WordDumb plugin menu. If your Kindle device is connected, it will send the book(if your device doesn't have it) and created files to your device. Make sure the book has **only one** supported format.
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import gzip
 import random
 import string
 import urllib.parse
@@ -20,13 +21,14 @@ def get_asin(title):
 def get_asin_from_amazon(title):
     title = urllib.parse.quote(title)
     url = 'https://www.amazon.com/s?k={}&i=digital-text'.format(title)
-    req = urllib.request.Request(url)
-    req.add_header(
-        'User-Agent',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) '
-        'Gecko/20100101 Firefox/78.0')
+    req = urllib.request.Request(url, headers={
+        'Accept-Encoding': 'gzip',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15;'
+        ' rv:78.0) Gecko/20100101 Firefox/78.0'
+    })
     with urllib.request.urlopen(req) as f:
-        soup = BeautifulSoup(f.read().decode('utf-8'), features="lxml")
+        gz = gzip.GzipFile(fileobj=f)
+        soup = BeautifulSoup(gz.read().decode('utf-8'), features="lxml")
         tag = soup.div.find(filter)
         if tag is None:
             return None

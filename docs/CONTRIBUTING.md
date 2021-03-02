@@ -22,7 +22,9 @@
 
 - https://www.crummy.com/software/BeautifulSoup/bs4/doc
 
-- https://www.mediawiki.org/wiki/API:Tutorial
+- https://www.mediawiki.org/wiki/Extension:TextExtracts
+
+- https://www.mediawiki.org/wiki/API:Etiquette
 
 ## Install python dependencies
 

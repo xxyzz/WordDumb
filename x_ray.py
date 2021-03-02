@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import gzip
 import json
 import urllib.parse
 import urllib.request
@@ -28,10 +29,14 @@ class X_Ray():
         url = 'https://en.wikipedia.org/w/api.php?format=json&action=query' \
             '&prop=extracts&exintro&explaintext&redirects&exsentences=7' \
             '&titles=' + urllib.parse.quote(title)
-        req = urllib.request.Request(url)
+        req = urllib.request.Request(url, headers={
+            'Accept-Encoding': 'gzip',
+            'User-Agent': 'WordDumb (https://github.com/xxyzz/WordDumb)'
+        })
         try:
             with urllib.request.urlopen(req) as f:
-                data = json.loads(f.read())
+                gz = gzip.GzipFile(fileobj=f)
+                data = json.loads(gz.read())
                 data = data['query']
                 for v in data['pages'].values():
                     if 'missing' in v:

@@ -185,7 +185,7 @@ def insert_x_book_metadata(conn, data):
 def insert_x_entity(conn, data):
     conn.execute('''
     INSERT INTO entity (id, label, type, count, has_info_card)
-    VALUES(?, ?, ?, 1, 1)
+    VALUES(?, ?, ?, ?, 1)
     ''', data)
 
 
@@ -199,8 +199,3 @@ def insert_x_occurrence(conn, data):
 
 def insert_x_type(conn, data):
     conn.execute('INSERT INTO type VALUES(?, ?, ?, ?, ?)', data)
-
-
-def update_x_entity_count(conn, count, entity_id):
-    conn.execute('UPDATE entity SET count = ? WHERE id = ?',
-                 (count, entity_id))

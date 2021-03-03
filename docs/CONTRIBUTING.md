@@ -22,7 +22,7 @@
 
 - https://www.crummy.com/software/BeautifulSoup/bs4/doc
 
-- https://www.mediawiki.org/wiki/Extension:TextExtracts
+- https://www.mediawiki.org/wiki/API:Query
 
 - https://www.mediawiki.org/wiki/API:Etiquette
 

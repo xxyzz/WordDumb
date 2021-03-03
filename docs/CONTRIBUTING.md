@@ -41,7 +41,7 @@ $ calibre-customize -b . && calibre-debug -g
 ## Build
 
 ```
-$ zip -r worddumb-vx.x.x.zip *
+$ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
 $ zip -r worddumb-vx.x.x.zip . -i@include.lst
 ```
 

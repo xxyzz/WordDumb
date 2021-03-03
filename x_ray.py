@@ -46,6 +46,7 @@ class X_Ray():
                 for v in data['query']['pages']:
                     if 'missing' in v:
                         continue
+                    # they are ordered by pageid, ehh
                     if v['title'] in self.pending_terms:
                         insert_wiki_intro(self.pending_terms[v['title']],
                                           v['extract'], v['title'])

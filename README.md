@@ -42,7 +42,7 @@ Windows: https://www.python.org/downloads If you've installed 64-bit calibre, yo
 
 - Select one book or multiple books, right click then click the WordDumb plugin menu. If your Kindle device is connected, it will send the book(if your device doesn't have it) and created files to your device. Make sure the book has **only one** supported format.
 
-## Donate
+## I need about tree-fiddy
 
 <a href="https://liberapay.com/xxyzz/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
 

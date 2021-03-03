@@ -21,7 +21,7 @@ jobs:
 
       - name: Build plugin
         run: |
-          zip -r ${FILENAME} *
+          zip -r ${FILENAME} * -x@exclude.lst
           zip -r ${FILENAME} . -i@include.lst
 
       - name: Create Release

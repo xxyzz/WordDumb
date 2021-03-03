@@ -27,9 +27,10 @@ class X_Ray():
 
     def search_wikipedia(self):
         def insert_wiki_intro(entity, intro, title):
-            entity['source'] = 1
-            insert_x_entity_description(
-                self.conn, (intro, title, 1, entity['id']))
+            if 'source' not in entity:
+                entity['source'] = 1
+                insert_x_entity_description(
+                    self.conn, (intro, title, 1, entity['id']))
 
         titles = '|'.join(self.pending_terms.keys())
         url = 'https://en.wikipedia.org/w/api.php?format=json&action=query' \
@@ -52,8 +53,7 @@ class X_Ray():
                                           v['extract'], v['title'])
                     elif ' ' in v['title']:
                         for term in v['title'].split(' '):
-                            if term in self.pending_terms and \
-                               'source' not in self.pending_terms[term]:
+                            if term in self.pending_terms:
                                 insert_wiki_intro(self.pending_terms[term],
                                                   v['extract'], v['title'])
                                 break

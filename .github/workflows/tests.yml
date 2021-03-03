@@ -36,7 +36,7 @@ jobs:
 
       - name: Build plugin
         run: |
-          zip -r worddumb.zip *
+          zip -r worddumb.zip * -x@exclude.lst
           zip -r worddumb.zip . -i@include.lst
 
       - name: Add plugin

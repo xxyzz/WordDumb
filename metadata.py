@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
+import random
 import re
+import string
 from io import BytesIO
 from struct import pack
 
 from calibre.ebooks.metadata.mobi import MetadataUpdater, MobiError
-from calibre_plugins.worddumb.asin import get_asin
 
 
 def check_metadata(db, book_id, update_exth=True):
@@ -37,7 +38,7 @@ def check_metadata(db, book_id, update_exth=True):
        re.fullmatch('B[0-9A-Z]{9}', identifiers['mobi-asin']):
         asin = identifiers['mobi-asin']
     else:
-        asin = get_asin(mi.get('title'))
+        asin = random_asin()
         mi.set_identifier('mobi-asin', asin)
         db.set_metadata(book_id, mi)
 
@@ -87,3 +88,11 @@ class UpdateMobiEXTH(MetadataUpdater):
             raise MobiError('No existing EXTH record. Cannot update metadata.')
 
         self.create_exth(exth=exth)
+
+
+def random_asin():
+    'return an invalid ASIN'
+    asin = 'BB'
+    asin += ''.join(random.choices(string.ascii_uppercase +
+                                   string.digits, k=8))
+    return asin

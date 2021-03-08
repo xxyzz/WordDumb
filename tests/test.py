@@ -19,9 +19,6 @@ for book_id in db.all_book_ids():
 do_job(db, [book_1984_id], None, None, None)
 (_, asin, book_path, _) = check_metadata(db, book_1984_id, False)
 
-if asin != 'B003JTHWKU':
-    print('Wrong ASIN: {}, should be B003JTHWKU.'.format(asin))
-
 
 def test(test_path, created_path, sql):
     test_file = open(test_path)

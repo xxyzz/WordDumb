@@ -4,7 +4,7 @@ import random
 import re
 import string
 from io import BytesIO
-from struct import pack, unpack
+from struct import pack
 
 from calibre.ebooks.metadata.mobi import MetadataUpdater, MobiError
 
@@ -111,16 +111,11 @@ def get_acr(book_path):
 
 
 def get_book_revision(book_path):
-    # use code from calibre.ebooks.mobi.reader.headers:MetadataHeader
-    def section_offset(f, number):
-        f.seek(78 + number * 8)
-        return unpack('>LBBBB', f.read(8))[0]
-
     if book_path[-3:] == 'kfx':
         return None
 
+    # modified from calibre.ebooks.mobi.reader.headers:MetadataHeader.header
     with open(book_path, 'rb') as f:
-        off = section_offset(f, 0)
-        end_off = section_offset(f, 1)
-        f.seek(off)
-        return f.read(end_off - off)[32:36].hex()  # Unique-ID MOBI header
+        f.seek(78)
+        f.seek(int.from_bytes(f.read(4), 'big') + 32)
+        return f.read(4).hex()  # Unique-ID MOBI header

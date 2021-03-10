@@ -158,7 +158,9 @@ Kindle device path: `/documents/book_name.sdr`
 | enDictionaryId       | kll.en.en                       |
 | sidecarFormat        | 1.0                             |
 
-acr: Palm DB name, first 32 bytes of MOBI file.
+acr: Palm DB name, first 32 bytes of MOBI file. `asset_id` in KFX metadata.
+
+bookRevision: Unique-ID of MOBI header.
 
 ## glosses
 

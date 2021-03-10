@@ -3,6 +3,7 @@ import sqlite3
 from pathlib import Path
 
 from calibre_plugins.worddumb.unzip import load_json
+from calibre_plugins.worddumb.metadata import get_acr, get_book_revision
 
 
 def get_ll_path(asin, book_path):
@@ -46,10 +47,10 @@ def create_lang_layer(asin, book_path):
         );
     ''')
 
-    metadata = [('acr', 'CR!AX4P53SCH15WF68KNBX4NWWVZXKG'),
+    metadata = [('acr', get_acr(book_path)),
                 ('targetLanguages', 'en'),
                 ('sidecarRevision', '9'),
-                ('bookRevision', '8d271dc3'),
+                ('bookRevision', get_book_revision(book_path)),
                 ('sourceLanguage', 'en'),
                 ('enDictionaryVersion', '2016-09-14'),
                 ('enDictionaryRevision', '57'),

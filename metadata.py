@@ -4,7 +4,7 @@ import random
 import re
 import string
 from io import BytesIO
-from struct import pack
+from struct import pack, unpack
 
 from calibre.ebooks.metadata.mobi import MetadataUpdater, MobiError
 
@@ -96,3 +96,31 @@ def random_asin():
     asin += ''.join(random.choices(string.ascii_uppercase +
                                    string.digits, k=8))
     return asin
+
+
+def get_acr(book_path):
+    if book_path[-3:] == 'kfx':
+        from calibre_plugins.kfx_input.kfxlib import YJ_Book
+
+        book = YJ_Book(book_path)
+        book.get_metadata()
+        return book.get_asset_id()
+    else:
+        with open(book_path, 'rb') as f:
+            return f.read(32).rstrip(b'\x00').decode('utf-8')  # Palm db name
+
+
+def get_book_revision(book_path):
+    # use code from calibre.ebooks.mobi.reader.headers:MetadataHeader
+    def section_offset(f, number):
+        f.seek(78 + number * 8)
+        return unpack('>LBBBB', f.read(8))[0]
+
+    if book_path[-3:] == 'kfx':
+        return None
+
+    with open(book_path, 'rb') as f:
+        off = section_offset(f, 0)
+        end_off = section_offset(f, 1)
+        f.seek(off)
+        return f.read(end_off - off)[32:36].hex()  # Unique-ID MOBI header

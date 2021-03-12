@@ -51,8 +51,7 @@ class ParseBook():
 
         # send files to device
         for book_id in self.ids:
-            data = check_metadata(self.gui.current_db.new_api,
-                                  book_id, False)
+            data = check_metadata(self.gui.current_db.new_api, book_id)
             if data is None:
                 continue
             send(self.gui, (book_id, ) + data)

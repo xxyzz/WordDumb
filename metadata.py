@@ -9,7 +9,7 @@ from struct import pack
 from calibre.ebooks.metadata.mobi import MetadataUpdater, MobiError
 
 
-def check_metadata(db, book_id, update_metadata=True):
+def check_metadata(db, book_id):
     # Get the current metadata for this book from the db
     mi = db.get_metadata(book_id)
     fmts = db.formats(book_id)
@@ -31,7 +31,7 @@ def check_metadata(db, book_id, update_metadata=True):
     if not has_kindle_format:
         return None
 
-    # check ASIN
+    # check ASIN, create a random one if doesn't exist
     book_path = db.format_abspath(book_id, book_fmt)
     identifiers = mi.get_identifiers()
     if 'mobi-asin' in identifiers and \
@@ -41,13 +41,12 @@ def check_metadata(db, book_id, update_metadata=True):
         asin = random_asin()
         mi.set_identifier('mobi-asin', asin)
         db.set_metadata(book_id, mi)
-
-    if fmt.lower() in ['mobi', 'azw3'] and update_metadata:
-        with open(book_path, 'r+b') as stream:
-            mu = UpdateMobiEXTH(stream)
-            mu.update(asin)
-    elif fmt.lower() == 'kfx' and update_metadata:
-        set_kfx_asin(book_path, asin)
+        if fmt.lower() == 'kfx':
+            set_kfx_asin(book_path, asin)
+        else:
+            with open(book_path, 'r+b') as stream:
+                mu = UpdateMobiEXTH(stream)
+                mu.update(asin)
 
     return book_fmt, asin, book_path, mi
 

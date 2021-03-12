@@ -17,7 +17,7 @@ for book_id in db.all_book_ids():
         break
 
 do_job(db, [book_1984_id], None, None, None)
-(_, asin, book_path, _) = check_metadata(db, book_1984_id, False)
+(_, asin, book_path, _) = check_metadata(db, book_1984_id)
 
 
 def test(test_path, created_path, sql):

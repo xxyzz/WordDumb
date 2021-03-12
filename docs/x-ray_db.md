@@ -11,6 +11,10 @@ sqlite> .schema book_metadata
 CREATE TABLE book_metadata(srl INTEGER, erl INTEGER, has_images TINYINT, has_excerpts TINYINT, show_spoilers_default TINYINT, num_people INTEGER, num_terms INTEGER, num_images INTEGER, preview_images TEXT);
 ```
 
+srl: start reading location, where a new book should open for the first time
+
+erl: end reading location, where 'before you go' page shows
+
 ## bookmentions_entity
 
 | id | asin       | title                  | authors                | description    |          ratings | totalRatings | type        |

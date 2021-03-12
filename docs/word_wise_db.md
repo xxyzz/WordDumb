@@ -175,3 +175,5 @@ bookRevision: Unique-ID of MOBI header.
 difficulty = 1 -> Fewer Hints
 
 difficulty = 5 -> More Hints
+
+start: bytes offsets for MOBI and AZW3, Unicode character offsets for KFX.

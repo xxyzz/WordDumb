@@ -9,7 +9,7 @@ from struct import pack
 from calibre.ebooks.metadata.mobi import MetadataUpdater, MobiError
 
 
-def check_metadata(db, book_id, update_exth=True):
+def check_metadata(db, book_id, update_metadata=True):
     # Get the current metadata for this book from the db
     mi = db.get_metadata(book_id)
     fmts = db.formats(book_id)
@@ -42,10 +42,12 @@ def check_metadata(db, book_id, update_exth=True):
         mi.set_identifier('mobi-asin', asin)
         db.set_metadata(book_id, mi)
 
-    if fmt.lower() in ['mobi', 'azw3'] and update_exth:
+    if fmt.lower() in ['mobi', 'azw3'] and update_metadata:
         with open(book_path, 'r+b') as stream:
             mu = UpdateMobiEXTH(stream)
             mu.update(asin)
+    elif fmt.lower() == 'kfx' and update_metadata:
+        set_kfx_asin(book_path, asin)
 
     return book_fmt, asin, book_path, mi
 
@@ -119,3 +121,17 @@ def get_book_revision(book_path):
         f.seek(78)
         f.seek(int.from_bytes(f.read(4), 'big') + 32)
         return f.read(4).hex()  # Unique-ID MOBI header
+
+
+def set_kfx_asin(book_path, asin):
+    from calibre_plugins.kfx_input.kfxlib import YJ_Book, YJ_Metadata
+
+    book = YJ_Book(book_path)
+    md = YJ_Metadata()
+    md.asin = asin
+    md.cde_content_type = "EBOK"
+    book.decode_book(set_metadata=md)
+    updated_book = book.convert_to_single_kfx()
+
+    with open(book_path, 'wb') as f:
+        f.write(updated_book)

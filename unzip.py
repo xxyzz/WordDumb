@@ -27,19 +27,17 @@ def check_folder(folder_name, version, file_name, extract):
     return extract_path
 
 
-def unzip(file_name, extract_path, zip_file_path, load_json=False):
-    with zipfile.ZipFile(zip_file_path, 'r') as zf:
+def unzip(file_name, extract_path, zip_file_path):
+    with zipfile.ZipFile(zip_file_path) as zf:
         for f in zf.namelist():
             if not file_name or file_name in f:
-                if load_json:
-                    with zf.open(f) as jf:
-                        return json.load(jf)
-                else:
-                    zf.extract(f, extract_path)
+                zf.extract(f, extract_path)
 
 
-def load_json(filename):
-    return unzip(filename, None, PLUGIN_PATH, True)
+def load_json(filepath):
+    with zipfile.ZipFile(PLUGIN_PATH) as zf:
+        with zf.open(filepath) as f:
+            return json.load(f)
 
 
 def install_libs():

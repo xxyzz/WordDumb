@@ -169,7 +169,7 @@ def create_x_ray_db(asin, book_path):
     INSERT INTO source (id, label, url) VALUES(2, 4, 22);
     ''')
 
-    for data in load_json('x_ray_strings.json'):
+    for data in load_json('data/x_ray_strings.json'):
         x_ray_conn.execute('INSERT INTO string VALUES(?, ?, ?)', data)
 
     return x_ray_conn

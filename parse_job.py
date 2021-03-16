@@ -24,7 +24,7 @@ def check_books(db, ids):
 
 def do_job(db, ids, abort, log, notifications):
     install_libs()
-    lemmas = load_json('lemmas.json')
+    lemmas = load_json('data/lemmas.json')
 
     for (_, book_fmt, asin, book_path, _) in check_books(db, ids):
         ll_conn = create_lang_layer(asin, book_path)

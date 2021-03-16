@@ -13,7 +13,7 @@ NUMPY_VERSION = '1.20.1'
 PLUGIN_PATH = Path(config_dir).joinpath('plugins/WordDumb.zip')
 
 
-def check_folder(folder_name, version, file_name, extract):
+def check_folder(folder_name, version, file_name):
     extract_path = Path(config_dir).joinpath('plugins/'
                                              + folder_name + version)
     if not extract_path.is_dir():
@@ -21,17 +21,7 @@ def check_folder(folder_name, version, file_name, extract):
             if folder_name in f.name and f.is_dir():
                 shutil.rmtree(f)  # delete old folder
 
-        if extract:
-            unzip(file_name, extract_path, PLUGIN_PATH)
-
     return extract_path
-
-
-def unzip(file_name, extract_path, zip_file_path):
-    with zipfile.ZipFile(zip_file_path) as zf:
-        for f in zf.namelist():
-            if not file_name or file_name in f:
-                zf.extract(f, extract_path)
 
 
 def load_json(filepath):
@@ -42,7 +32,8 @@ def load_json(filepath):
 
 def install_libs():
     for d in zipfile.Path(PLUGIN_PATH).joinpath('.venv/lib').iterdir():
-        sys.path.append(str(d.joinpath('site-packages')))
+        if (p := str(d.joinpath('site-packages'))) not in sys.path:
+            sys.path.append(p)
 
     download_nltk_data()
     if prefs['x-ray']:
@@ -70,7 +61,8 @@ def download_nltk_data():
         if not nltk_path.joinpath('corpora/words').is_dir():
             nltk.download('words', nltk_path_str)
 
-    nltk.data.path.append(nltk_path_str)
+    if nltk_path_str not in nltk.data.path:
+        nltk.data.path.append(nltk_path_str)
 
 
 def download_numpy():
@@ -89,6 +81,9 @@ def download_numpy():
             [pip, 'download', '-d', numpy_path, '--python-version',
              py_version, '--no-deps', 'numpy==' + NUMPY_VERSION])
         for wheel in numpy_path.iterdir():
-            unzip(None, numpy_path, wheel)
+            with zipfile.ZipFile(wheel) as zf:
+                zf.extractall(numpy_path)
             wheel.unlink()
-    sys.path.append(str(numpy_path))
+
+    if (p := str(numpy_path)) not in sys.path:
+        sys.path.append(p)

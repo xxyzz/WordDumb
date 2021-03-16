@@ -5,7 +5,7 @@ from calibre.gui2 import Dispatcher, error_dialog, warning_dialog
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre_plugins.worddumb.metadata import check_metadata
 from calibre_plugins.worddumb.parse_job import do_job
-from calibre_plugins.worddumb.send_file import send
+from calibre_plugins.worddumb.send_file import kindle_connected, send
 
 
 class ParseBook():
@@ -18,13 +18,18 @@ class ParseBook():
         rows = self.gui.library_view.selectionModel().selectedRows()
         if not rows or len(rows) == 0:
             return
-        self.ids = list(map(self.gui.library_view.model().id, rows))
-        if len(self.ids) == 0:
+        ids = list(map(self.gui.library_view.model().id, rows))
+        if len(ids) == 0:
             return
 
+        for book_id in ids:
+            if (data := check_metadata(self.gui.current_db.new_api,
+                                       book_id)) is None:
+                continue
+            self.books.append(data)
+
         job = ThreadedJob('Generating Word Wise', 'Generating Word Wise',
-                          do_job, (self.gui.current_db.new_api, self.ids), {},
-                          Dispatcher(self.done))
+                          do_job, self.books, {}, Dispatcher(self.done))
 
         self.gui.job_manager.run_threaded_job(job)
         self.gui.status_bar.show_message("Generating Word Wise")
@@ -50,10 +55,8 @@ class ParseBook():
             return
 
         # send files to device
-        for book_id in self.ids:
-            data = check_metadata(self.gui.current_db.new_api, book_id)
-            if data is None:
-                continue
-            send(self.gui, (book_id, ) + data)
+        if kindle_connected(self.gui):
+            for book_data in self.books:
+                send(self.gui, book_data)
 
         self.gui.status_bar.show_message("Word Wise generated.")

@@ -48,7 +48,7 @@ def check_metadata(db, book_id):
                 mu = UpdateMobiEXTH(stream)
                 mu.update(asin)
 
-    return book_fmt, asin, book_path, mi
+    return book_id, book_fmt, asin, book_path, mi
 
 
 class UpdateMobiEXTH(MetadataUpdater):

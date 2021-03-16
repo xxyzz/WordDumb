@@ -8,25 +8,15 @@ from calibre.utils.logging import default_log
 from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import (create_lang_layer,
                                                create_x_ray_db, insert_lemma)
-from calibre_plugins.worddumb.metadata import check_metadata
 from calibre_plugins.worddumb.unzip import install_libs, load_json
 from calibre_plugins.worddumb.x_ray import X_Ray
 
 
-def check_books(db, ids):
-    books = []
-    for book_id in ids:
-        if (data := check_metadata(db, book_id)) is None:
-            continue
-        books.append((book_id, ) + data)
-    return books
-
-
-def do_job(db, ids, abort, log, notifications):
+def do_job(books, abort, log, notifications):
     install_libs()
     lemmas = load_json('data/lemmas.json')
 
-    for (_, book_fmt, asin, book_path, _) in check_books(db, ids):
+    for (_, book_fmt, asin, book_path, _) in books:
         ll_conn = create_lang_layer(asin, book_path)
         if ll_conn is None and not prefs['x-ray']:
             continue

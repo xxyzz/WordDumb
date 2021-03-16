@@ -16,14 +16,6 @@ class SendFile():
         self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
         self.retry = False
 
-    def send_to_device(self):
-        if not self.device_manager.is_device_connected:
-            return None
-        device = self.device_manager.device
-        if device.VENDOR_ID != [0x1949]:  # Kindle device
-            return None
-        self.send_files(None)
-
     # use some code from calibre.gui2.device:DeviceMixin.upload_books
     def send_files(self, job):
         if job is not None:
@@ -74,4 +66,13 @@ class SendFile():
 
 def send(gui, data):
     sf = SendFile(gui, data)
-    sf.send_to_device()
+    sf.send_files(None)
+
+
+def kindle_connected(gui):
+    if not gui.device_manager.is_device_connected:
+        return False
+    device = gui.device_manager.device
+    if device.VENDOR_ID != [0x1949]:  # Kindle device
+        return False
+    return True

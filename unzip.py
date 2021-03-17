@@ -13,7 +13,7 @@ NUMPY_VERSION = '1.20.1'
 PLUGIN_PATH = Path(config_dir).joinpath('plugins/WordDumb.zip')
 
 
-def check_folder(folder_name, version, file_name):
+def check_folder(folder_name, version):
     extract_path = Path(config_dir).joinpath('plugins/'
                                              + folder_name + version)
     if not extract_path.is_dir():
@@ -66,7 +66,7 @@ def download_nltk_data():
 
 
 def download_numpy():
-    numpy_path = check_folder('worddumb-numpy', NUMPY_VERSION, None, False)
+    numpy_path = check_folder('worddumb-numpy', NUMPY_VERSION)
     if not numpy_path.joinpath('numpy').is_dir():
         import platform
         import subprocess

@@ -4,6 +4,7 @@ import gzip
 import json
 import urllib.parse
 import urllib.request
+from collections import Counter
 from urllib.error import HTTPError
 
 from calibre_plugins.worddumb.database import (insert_x_book_metadata,
@@ -22,15 +23,20 @@ class X_Ray():
         self.erl = 0
         self.names = {}
         self.people = {}
+        self.people_counter = Counter()
         self.terms = {}
+        self.terms_counter = Counter()
         self.pending_terms = {}
 
     def search_wikipedia(self):
-        def insert_wiki_intro(entity, intro, title):
-            if 'source' not in entity:
-                entity['source'] = 1
-                insert_x_entity_description(
-                    self.conn, (intro, title, 1, entity['id']))
+        def insert_wiki_intro(title, intro):
+            entity = self.pending_terms[title]
+            entity_id = entity['id']
+            self.terms_counter[entity_id] += 1
+            self.terms[title] = entity
+            del self.pending_terms[title]
+            insert_x_entity_description(
+                self.conn, (intro, title, 1, entity_id))
 
         titles = '|'.join(self.pending_terms.keys())
         url = 'https://en.wikipedia.org/w/api.php?format=json&action=query' \
@@ -49,13 +55,11 @@ class X_Ray():
                         continue
                     # they are ordered by pageid, ehh
                     if v['title'] in self.pending_terms:
-                        insert_wiki_intro(self.pending_terms[v['title']],
-                                          v['extract'], v['title'])
+                        insert_wiki_intro(v['title'], v['extract'])
                     elif ' ' in v['title']:
                         for term in v['title'].split(' '):
                             if term in self.pending_terms:
-                                insert_wiki_intro(self.pending_terms[term],
-                                                  v['extract'], v['title'])
+                                insert_wiki_intro(term, v['extract'])
                                 break
         except HTTPError:
             pass
@@ -63,8 +67,7 @@ class X_Ray():
         self.insert_rest_pending_terms()
 
     def insert_rest_pending_terms(self):
-        for label, term in filter(lambda x: 'source' not in x[1],
-                                  self.pending_terms.items()):
+        for label, term in self.pending_terms.items():
             insert_x_entity_description(
                 self.conn, (term['text'], label, None, term['id']))
 
@@ -72,20 +75,19 @@ class X_Ray():
         self.pending_terms.clear()
 
     def insert_entity(self, data, data_type, start, text):
-        entity = {'count': 0, 'id': self.entity_id}
-        self.insert_occurrence(entity, start, len(data))
+        self.insert_occurrence(self.entity_id, data_type, start, len(data))
         if data_type == 'PERSON':
             if ' ' in data:  # full name
                 for name in data.split(' '):
                     if name not in self.names:
-                        self.names[name] = data
-            self.names[data] = data
-            self.people[data] = entity
+                        self.names[name] = self.entity_id
+            self.names[data] = self.entity_id
+            self.people[data] = self.entity_id
             insert_x_entity_description(
                 self.conn, (text, data, None, self.entity_id))
             self.num_people += 1
         else:
-            entity['text'] = text
+            entity = {'text': text, 'id': self.entity_id}
             self.pending_terms[data] = entity
             if len(self.pending_terms) == 20:  # max exlimit
                 self.search_wikipedia()
@@ -93,45 +95,51 @@ class X_Ray():
 
         self.entity_id += 1
 
-    def insert_occurrence(self, entity, start, length):
-        entity['count'] += 1
-        insert_x_occurrence(self.conn, (entity['id'], start, length))
+    def insert_occurrence(self, entity_id, entity_type, start, length):
+        if entity_type == 'PERSON':
+            self.people_counter[entity_id] += 1
+        else:
+            self.terms_counter[entity_id] += 1
+        insert_x_occurrence(self.conn, (entity_id, start, length))
         self.erl = start + length - 1
 
     def search(self, name, tag, start, text):
         if name == '':
             return None
         elif name in self.names:
-            self.insert_occurrence(self.people[self.names[name]],
-                                   start, len(name))
+            self.insert_occurrence(
+                self.names[name], 'PERSON', start, len(name))
         elif name in self.terms:
-            self.insert_occurrence(self.terms[name], start, len(name))
+            self.insert_occurrence(
+                self.terms[name]['id'], 'TERMS', start, len(name))
         elif name in self.pending_terms:
-            self.insert_occurrence(self.pending_terms[name], start, len(name))
+            self.insert_occurrence(
+                self.pending_terms[name]['id'], 'TERMS', start, len(name))
         else:
             entity_text = text[:text.find('.') + 1] if '.' in text else text
             self.insert_entity(name, tag, start, entity_text)
 
     def finish(self):
-        def insert_entities(dictionary, data_type):
-            for label, value in dictionary.items():
-                insert_x_entity(
-                    self.conn, (value['id'], label, data_type, value['count']))
-
-        def top_mentioned(data_type):
-            entities = self.people if data_type == 1 else self.terms
-            arr = [e['id'] for e in sorted(entities.values(),
-                                           key=lambda x: x['count'],
-                                           reverse=True)][:10]
-            return ','.join(map(str, arr))
+        def top_mentioned(counter):
+            return ','.join(map(str, [e[0] for e in counter.most_common(10)]))
 
         self.insert_rest_pending_terms()
-        insert_entities(self.people, 1)
-        insert_entities(self.terms, 2)
+
+        for name, entity_id in self.people.items():
+            insert_x_entity(
+                self.conn,
+                (entity_id, name, 1, self.people_counter[entity_id]))
+        for label, value in self.terms.items():
+            insert_x_entity(
+                self.conn,
+                (value['id'], label, 2, self.terms_counter[value['id']]))
+
         insert_x_book_metadata(
             self.conn, (self.erl, self.num_people, self.num_terms))
-        insert_x_type(self.conn, (1, 14, 15, 1, top_mentioned(1)))
-        insert_x_type(self.conn, (2, 16, 17, 2, top_mentioned(2)))
+        insert_x_type(
+            self.conn, (1, 14, 15, 1, top_mentioned(self.people_counter)))
+        insert_x_type(
+            self.conn, (2, 16, 17, 2, top_mentioned(self.terms_counter)))
 
         self.conn.commit()
         self.conn.close()

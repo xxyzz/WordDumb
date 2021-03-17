@@ -29,7 +29,7 @@ class ParseBook():
             self.books.append(data)
 
         job = ThreadedJob('Generating Word Wise', 'Generating Word Wise',
-                          do_job, self.books, {}, Dispatcher(self.done))
+                          do_job, (self.books,), {}, Dispatcher(self.done))
 
         self.gui.job_manager.run_threaded_job(job)
         self.gui.status_bar.show_message("Generating Word Wise")

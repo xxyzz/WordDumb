@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
-import re
 
+import regex
 from calibre.ebooks.mobi.reader.mobi6 import MobiReader
 from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
 from calibre.utils.logging import default_log
@@ -72,7 +72,7 @@ def parse_mobi(pathtoebook, book_fmt):
         html = b''.join(m8r.parts)
 
     # match text between HTML tags
-    for match_text in re.finditer(b'>[^<>]+<', html):
+    for match_text in regex.finditer(b'>[^<>]+<', html):
         yield (match_text.start() + 1, match_text.group(0)[1:-1])
 
 
@@ -81,7 +81,7 @@ def find_lemma(start, text, lemmas, ll_conn):
 
     bytes_str = True if isinstance(text, bytes) else False
     pattern = b'[a-zA-Z]{3,}' if bytes_str else r'[a-zA-Z]{3,}'
-    for match in re.finditer(pattern, text):
+    for match in regex.finditer(pattern, text):
         word = match.group(0).decode('utf-8') if bytes_str else match.group(0)
         lemma = wn.morphy(word.lower())
         if lemma and len(lemma) >= 3 and lemma in lemmas:
@@ -103,7 +103,7 @@ def find_named_entity(start, text, x_ray):
         if len(token) < 3 or token in records:
             continue
         records.add(token)
-        if (match := re.search(r'\b' + token + r'\b', text)) is None:
+        if (match := regex.search(r'\b' + token + r'\b', text)) is None:
             continue
         index = match.start()
         token_start = start

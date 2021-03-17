@@ -7,6 +7,7 @@ import urllib.request
 from collections import Counter
 from urllib.error import HTTPError
 
+from calibre_plugins.worddumb import VERSION
 from calibre_plugins.worddumb.database import (insert_x_book_metadata,
                                                insert_x_entity,
                                                insert_x_entity_description,
@@ -42,9 +43,11 @@ class X_Ray():
         url = 'https://en.wikipedia.org/w/api.php?format=json&action=query' \
             '&prop=extracts&exintro&explaintext&redirects&exsentences=7' \
             '&formatversion=2&titles=' + urllib.parse.quote(titles)
+        version = '.'.join(map(str, VERSION))
         req = urllib.request.Request(url, headers={
             'Accept-Encoding': 'gzip',
-            'User-Agent': 'WordDumb (https://github.com/xxyzz/WordDumb)'
+            'User-Agent': f'WordDumb/{version} '
+            '(https://github.com/xxyzz/WordDumb)'
         })
         try:
             with urllib.request.urlopen(req) as f:

@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 from calibre.customize import InterfaceActionBase
 
+VERSION = (3, 5, 5)
+
 
 class WordDumbDumb(InterfaceActionBase):
     name = 'WordDumb'
     description = 'Create Kindle Word Wise and X-Ray file then send to device.'
     supported_platforms = ['linux', 'osx', 'windows']
     author = 'xxyzz'
-    version = (3, 5, 4)
+    version = VERSION
     minimum_calibre_version = (5, 0, 0)  # Python3
     actual_plugin = 'calibre_plugins.worddumb.ui:WordDumb'
 

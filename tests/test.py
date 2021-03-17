@@ -7,7 +7,7 @@ import timeit
 from calibre.library import db
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 from calibre_plugins.worddumb.metadata import check_metadata
-from calibre_plugins.worddumb.parse_job import do_job
+from calibre_plugins.worddumb.parse_job import do_job  # noqa: F401
 
 db = db('~/Calibre Library').new_api
 book_1984_id = 0

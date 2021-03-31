@@ -30,7 +30,7 @@ for count, in ww_klld_conn.execute("SELECT COUNT(*) FROM lemmas"):
 lemmas = {}
 with open('lemmas.json') as f:
     lemmas = json.load(f)
-origin_lemmas = len(lemmas)
+origin_count = len(lemmas)
 
 for language_layer in args.language_layers:
     if not Path(language_layer).is_file():
@@ -53,11 +53,10 @@ for language_layer in args.language_layers:
                 print(f'Insert {lemma} {difficulty[0]} {sense_id}')
     ll_conn.close()
 
-current_lemmas = len(lemmas)
+current_count = len(lemmas)
 print(f"cn-kll.en.en.klld has {ww_klld_lemmas} lemmas")
-print(f"added {current_lemmas - origin_lemmas} lemmas")
-print(f"lemmas.json has {current_lemmas} lemmas")
+print(f"added {current_count - origin_count} lemmas")
+print(f"lemmas.json has {current_count} lemmas")
 ww_klld_conn.close()
-Path('lemmas.json').unlink()
-with open('lemmas.json', 'r') as f:
+with open('lemmas.json', 'w') as f:
     json.dump(lemmas, f, indent=2)

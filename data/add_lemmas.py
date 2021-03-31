@@ -36,21 +36,17 @@ for language_layer in args.language_layers:
     if not Path(language_layer).is_file():
         continue
     ll_conn = sqlite3.connect(language_layer)
-    ll_cur = ll_conn.cursor()
 
     print(f'Processing {Path(language_layer).name}')
-    for lemma, sense_id in ww_klld_conn.execute('''
-    SELECT l.lemma, s.id FROM senses s JOIN lemmas l
-    ON (s.term_lemma_id = l.id)
-    '''):
-        if lemma in lemmas:
-            continue
-        ll_cur.execute(
-            "SELECT difficulty FROM glosses WHERE sense_id = ?", (sense_id, ))
-        if (difficulty := ll_cur.fetchone()):
-            lemmas[lemma] = [difficulty[0], sense_id]
-            if args.verbose:
-                print(f'Insert {lemma} {difficulty[0]} {sense_id}')
+    for difficulty, sense_id in ll_conn.execute('''
+    SELECT difficulty, sense_id FROM glosses GROUP by sense_id'''):
+        for lemma, in ww_klld_conn.execute('''
+        SELECT l.lemma FROM senses s JOIN lemmas l ON s.term_lemma_id = l.id
+        WHERE s.id = ?''',  (sense_id, )):
+            if lemma not in lemmas:
+                lemmas[lemma] = [difficulty, sense_id]
+                if args.verbose:
+                    print(f'Insert {lemma=} {difficulty=} {sense_id=}')
     ll_conn.close()
 
 current_count = len(lemmas)
@@ -59,4 +55,4 @@ print(f"added {current_count - origin_count} lemmas")
 print(f"lemmas.json has {current_count} lemmas")
 ww_klld_conn.close()
 with open('lemmas.json', 'w') as f:
-    json.dump(lemmas, f, indent=2)
+    json.dump(lemmas, f, indent=2, sort_keys=True)

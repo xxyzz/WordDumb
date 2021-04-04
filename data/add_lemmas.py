@@ -7,13 +7,13 @@ from pathlib import Path
 
 '''
 Build a word wise sql file from LanguageLayer.en.ASIN.kll files
-and cn-kll.en.en.klld file. Get 'difficulty' from
+and kll.en.en.klld file. Get 'difficulty' from
 LanguageLayer.en.ASIN.kll, get 'lemma' and 'sense_id' from
-cn-kll.en.en.klld.
+kll.en.en.klld.
 '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("word_wise", help="path of cn-kll.en.en.klld file.")
+parser.add_argument("word_wise", help="path of kll.en.en.klld file.")
 parser.add_argument("language_layers", nargs='+',
                     help="path of LanguageLayer.en.ASIN.kll files.")
 parser.add_argument("-v", "--verbose",
@@ -50,7 +50,7 @@ for language_layer in args.language_layers:
     ll_conn.close()
 
 current_count = len(lemmas)
-print(f"cn-kll.en.en.klld has {ww_klld_lemmas} lemmas")
+print(f"kll.en.en.klld has {ww_klld_lemmas} lemmas")
 print(f"added {current_count - origin_count} lemmas")
 print(f"lemmas.json has {current_count} lemmas")
 ww_klld_conn.close()

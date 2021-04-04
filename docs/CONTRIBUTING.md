@@ -47,7 +47,7 @@ $ zip -r worddumb-vx.x.x.zip . -i@include.lst
 
 ## Add more words
 
-Get `cn-kll.en.en.klld` and `LanguageLayer.en.ASIN.kll` from your Kindle device(please read [word\_wise\_db](./word_wise_db.md)), then:
+Get `kll.en.en.klld` and `LanguageLayer.en.ASIN.kll` from your Kindle device(please read [word\_wise\_db](./word_wise_db.md)), then:
 
 ```
 $ cd data

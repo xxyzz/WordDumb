@@ -4,27 +4,27 @@ on:
   push:
     branches:
       - '**'
-    paths-ignore:
-      - '**.md'
+    paths:
+      - '**.py'
   pull_request:
     branches:
       - '**'
-    paths-ignore:
-      - '**.md'
+    paths:
+      - '**.py'
 
 jobs:
   lint:
     name: Lint Code Base
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+
+      - name: Update pip
+        run: pip3 install -U pip setuptools wheel
+
+      - name: Install flake8
+        run: pip3 install flake8
 
       - name: Lint Code Base
-        uses: github/super-linter@v3
-        env:
-          VALIDATE_ALL_CODEBASE: false
-          VALIDATE_PYTHON_FLAKE8: true
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: flake8 .

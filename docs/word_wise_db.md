@@ -1,4 +1,4 @@
-# cn-kll.en.en.klld/WordWise.kll.en.en.db
+# kll.en.en.klld/WordWise.kll.en.en.db
 
 Find in Kindle device at path `/system/kll/`
 

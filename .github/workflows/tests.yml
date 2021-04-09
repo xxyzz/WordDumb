@@ -31,13 +31,8 @@ jobs:
           mkdir ~/Calibre\ Library
           calibredb add 1984.mobi --with-library ~/Calibre\ Library
 
-      - name: Install python dependencies
-        run: bash install_packages.sh
-
       - name: Build plugin
-        run: |
-          zip -r worddumb.zip * -x@exclude.lst
-          zip -r worddumb.zip . -i@include.lst
+        run: zip -r worddumb.zip * -x@exclude.lst
 
       - name: Add plugin
         run: calibre-customize -a worddumb.zip

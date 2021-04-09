@@ -16,13 +16,8 @@ jobs:
       - name: Get tag name
         run: echo "FILENAME=worddumb-${GITHUB_REF##*/}.zip" >> $GITHUB_ENV
 
-      - name: Install python dependencies
-        run: bash install_packages.sh
-
       - name: Build plugin
-        run: |
-          zip -r ${FILENAME} * -x@exclude.lst
-          zip -r ${FILENAME} . -i@include.lst
+        run: zip -r ${FILENAME} * -x@exclude.lst
 
       - name: Create Release
         id: create_release

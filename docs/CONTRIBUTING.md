@@ -26,12 +26,6 @@
 
 - https://www.mediawiki.org/wiki/API:Etiquette
 
-## Install python dependencies
-
-```
-$ ./install_packages.sh
-```
-
 ## Debug
 
 ```
@@ -42,7 +36,6 @@ $ calibre-customize -b . && calibre-debug -g
 
 ```
 $ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
-$ zip -r worddumb-vx.x.x.zip . -i@include.lst
 ```
 
 ## Add more words

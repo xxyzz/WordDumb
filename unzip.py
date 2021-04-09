@@ -9,7 +9,7 @@ from pathlib import Path
 from calibre.utils.config import config_dir
 from calibre_plugins.worddumb.config import prefs
 
-NUMPY_VERSION = '1.20.1'
+NUMPY_VERSION = '1.20.2'
 PLUGIN_PATH = Path(config_dir).joinpath('plugins/WordDumb.zip')
 
 

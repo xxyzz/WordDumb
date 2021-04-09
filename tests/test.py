@@ -21,7 +21,7 @@ book = check_metadata(db, book_1984_id)
 (_, _, asin, book_path, _) = book
 time = timeit.timeit('do_job([book], None, None, None)',
                      number=1, globals=globals())
-print(f'time: {time} seconds')
+print(f'{time=} seconds')
 
 
 def test(test_path, created_path, sql):

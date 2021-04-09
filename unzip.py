@@ -31,11 +31,11 @@ def load_json(filepath):
 
 
 def install_libs():
-    pip_download('nltk', NLTK_VERSION, update_pip=True)
+    pip_install('nltk', NLTK_VERSION, update_pip=True)
     download_nltk_data()
     if prefs['x-ray']:
-        pip_download('numpy', NUMPY_VERSION,
-                     f'{sys.version_info.major}{sys.version_info.minor}')
+        pip_install('numpy', NUMPY_VERSION,
+                    f'{sys.version_info.major}{sys.version_info.minor}')
 
 
 def download_nltk_data():
@@ -63,32 +63,33 @@ def download_nltk_data():
         nltk.data.path.append(nltk_path_str)
 
 
-def pip_download(package, version, py_version=None, update_pip=False):
+def pip_install(package, version, py_version=None, update_pip=False):
     folder = check_folder(f'worddumb-libs/{package}', version)
     if not folder.joinpath(package).is_dir():
         import platform
         import subprocess
 
         pip = 'pip3'
+        # stupid macOS loses PATH when calibre is not started from terminal
         if platform.system() == 'Darwin':
-            pip = '/usr/local/bin/pip3'
+            pip = '/usr/local/bin/pip3'  # Homebrew
+            if not Path(pip).is_file():
+                pip = '/usr/bin/pip3'  # built-in
         if update_pip:
             subprocess.check_call(
                 [pip, 'install', '-U', 'pip', 'setuptools', 'wheel'])
         if py_version is not None:
             subprocess.check_call(
-                [pip, 'download', '-d', folder, '--python-version',
+                [pip, 'install', '-t', folder, '--python-version',
                  py_version, '--no-deps', f'{package}=={version}'])
         else:
             subprocess.check_call(
-                [pip, 'download', '-d', folder, f'{package}=={version}'])
-
-        for f in folder.iterdir():
-            if f.suffix == '.whl':
-                if 'regex' not in f.name:
-                    with zipfile.ZipFile(f) as zf:
-                        zf.extractall(folder)
-                f.unlink()
+                [pip, 'install', '-t', folder, f'{package}=={version}'])
+            # calibre has regex and it has .so file like numpy
+            if package == 'nltk':
+                for f in folder.iterdir():
+                    if 'regex' in f.name:
+                        shutil.rmtree(f)
 
     if (p := str(folder)) not in sys.path:
         sys.path.append(p)

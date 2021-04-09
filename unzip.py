@@ -9,13 +9,13 @@ from pathlib import Path
 from calibre.utils.config import config_dir
 from calibre_plugins.worddumb.config import prefs
 
+NLTK_VERSION = '3.6.1'
 NUMPY_VERSION = '1.20.2'
 PLUGIN_PATH = Path(config_dir).joinpath('plugins/WordDumb.zip')
 
 
 def check_folder(folder_name, version):
-    extract_path = Path(config_dir).joinpath('plugins/'
-                                             + folder_name + version)
+    extract_path = Path(config_dir).joinpath(f'plugins/{folder_name}{version}')
     if not extract_path.is_dir():
         for f in Path(config_dir).joinpath('plugins').iterdir():
             if folder_name in f.name and f.is_dir():
@@ -31,13 +31,11 @@ def load_json(filepath):
 
 
 def install_libs():
-    for d in zipfile.Path(PLUGIN_PATH).joinpath('.venv/lib').iterdir():
-        if (p := str(d.joinpath('site-packages'))) not in sys.path:
-            sys.path.append(p)
-
+    pip_download('nltk', NLTK_VERSION, update_pip=True)
     download_nltk_data()
     if prefs['x-ray']:
-        download_numpy()
+        pip_download('numpy', NUMPY_VERSION,
+                     f'{sys.version_info.major}{sys.version_info.minor}')
 
 
 def download_nltk_data():
@@ -65,25 +63,32 @@ def download_nltk_data():
         nltk.data.path.append(nltk_path_str)
 
 
-def download_numpy():
-    numpy_path = check_folder('worddumb-numpy', NUMPY_VERSION)
-    if not numpy_path.joinpath('numpy').is_dir():
+def pip_download(package, version, py_version=None, update_pip=False):
+    folder = check_folder(f'worddumb-libs/{package}', version)
+    if not folder.joinpath(package).is_dir():
         import platform
         import subprocess
-        py_version = '{}{}'.format(
-            sys.version_info.major, sys.version_info.minor)
+
         pip = 'pip3'
         if platform.system() == 'Darwin':
             pip = '/usr/local/bin/pip3'
-        subprocess.check_call(
-            [pip, 'install', '-U', 'pip', 'setuptools', 'wheel'])
-        subprocess.check_call(
-            [pip, 'download', '-d', numpy_path, '--python-version',
-             py_version, '--no-deps', 'numpy==' + NUMPY_VERSION])
-        for wheel in numpy_path.iterdir():
-            with zipfile.ZipFile(wheel) as zf:
-                zf.extractall(numpy_path)
-            wheel.unlink()
+        if update_pip:
+            subprocess.check_call(
+                [pip, 'install', '-U', 'pip', 'setuptools', 'wheel'])
+        if py_version is not None:
+            subprocess.check_call(
+                [pip, 'download', '-d', folder, '--python-version',
+                 py_version, '--no-deps', f'{package}=={version}'])
+        else:
+            subprocess.check_call(
+                [pip, 'download', '-d', folder, f'{package}=={version}'])
 
-    if (p := str(numpy_path)) not in sys.path:
+        for f in folder.iterdir():
+            if f.suffix == '.whl':
+                if 'regex' not in f.name:
+                    with zipfile.ZipFile(f) as zf:
+                        zf.extractall(folder)
+                f.unlink()
+
+    if (p := str(folder)) not in sys.path:
         sys.path.append(p)

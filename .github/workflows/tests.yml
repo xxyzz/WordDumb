@@ -30,6 +30,7 @@ jobs:
         run: |
           mkdir ~/Calibre\ Library
           calibredb add 1984.mobi --with-library ~/Calibre\ Library
+          rm 1984.mobi
 
       - name: Build plugin
         run: zip -r worddumb.zip * -x@exclude.lst

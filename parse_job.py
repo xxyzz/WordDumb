@@ -12,31 +12,29 @@ from calibre_plugins.worddumb.unzip import install_libs, load_json
 from calibre_plugins.worddumb.x_ray import X_Ray
 
 
-def do_job(books, abort, log, notifications):
+def do_job(data, abort=None, log=None, notifications=None):
     install_libs()
     lemmas = load_json('data/lemmas.json')
+    (_, book_fmt, asin, book_path, _) = data
+    ll_conn = create_lang_layer(asin, book_path)
+    if ll_conn is None and not prefs['x-ray']:
+        return
+    if prefs['x-ray']:
+        if (x_ray_conn := create_x_ray_db(asin, book_path)) is None:
+            return
+        x_ray = X_Ray(x_ray_conn)
 
-    for (_, book_fmt, asin, book_path, _) in books:
-        ll_conn = create_lang_layer(asin, book_path)
-        if ll_conn is None and not prefs['x-ray']:
-            continue
-        if prefs['x-ray']:
-            if (x_ray_conn := create_x_ray_db(asin, book_path)) is None:
-                continue
-            x_ray = X_Ray(x_ray_conn)
-
-        for (start, text) in parse_book(book_path, book_fmt):
-            if ll_conn is not None:
-                find_lemma(start, text, lemmas, ll_conn)
-
-            if prefs['x-ray']:
-                find_named_entity(start, text, x_ray)
-
+    for (start, text) in parse_book(book_path, book_fmt):
         if ll_conn is not None:
-            ll_conn.commit()
-            ll_conn.close()
+            find_lemma(start, text, lemmas, ll_conn)
         if prefs['x-ray']:
-            x_ray.finish()
+            find_named_entity(start, text, x_ray)
+
+    if ll_conn is not None:
+        ll_conn.commit()
+        ll_conn.close()
+    if prefs['x-ray']:
+        x_ray.finish()
 
 
 def parse_book(path_of_book, book_fmt):

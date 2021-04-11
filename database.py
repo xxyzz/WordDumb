@@ -7,8 +7,7 @@ from calibre_plugins.worddumb.metadata import get_acr, get_book_revision
 
 
 def get_ll_path(asin, book_path):
-    lang_layer_name = "LanguageLayer.en.{}.kll".format(asin)
-    return Path(book_path).parent.joinpath(lang_layer_name)
+    return Path(book_path).parent.joinpath(f'LanguageLayer.en.{asin}.kll')
 
 
 def check_db_file(path):
@@ -68,8 +67,7 @@ def insert_lemma(ll_conn, data):
 
 
 def get_x_ray_path(asin, book_path):
-    x_ray_name = 'XRAY.entities.{}.asc'.format(asin)
-    return Path(book_path).parent.joinpath(x_ray_name)
+    return Path(book_path).parent.joinpath(f'XRAY.entities.{asin}.asc')
 
 
 def create_x_ray_db(asin, book_path):
@@ -169,8 +167,8 @@ def create_x_ray_db(asin, book_path):
     INSERT INTO source (id, label, url) VALUES(2, 4, 22);
     ''')
 
-    for data in load_json('data/x_ray_strings.json'):
-        x_ray_conn.execute('INSERT INTO string VALUES(?, ?, ?)', data)
+    x_ray_conn.executemany('INSERT INTO string VALUES(?, ?, ?)',
+                           load_json('data/x_ray_strings.json'))
 
     return x_ray_conn
 

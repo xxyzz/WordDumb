@@ -24,11 +24,11 @@ class TestDumbCode(unittest.TestCase):
                 book_1984_id = book_id
                 break
 
-        book = check_metadata(lib_db, book_1984_id)
-        (_, _, cls.asin, cls.book_path, _) = book
+        data = check_metadata(lib_db, book_1984_id)
+        (_, _, cls.asin, cls.book_path, _) = data
         install_libs()
         start_time = time.time()
-        do_job([book], None, None, None)
+        do_job(data)
         print(f'{time.time() - start_time} seconds')
 
     def check_db(self, test_json_path, created_db_path, sql):

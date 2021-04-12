@@ -30,7 +30,7 @@ def load_json(filepath):
             return json.load(f)
 
 
-def install_libs():
+def install_libs(abort=None, log=None, notifications=None):
     pip_install('nltk', NLTK_VERSION, update_pip=True)
     download_nltk_data()
     if prefs['x-ray']:

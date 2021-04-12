@@ -7,11 +7,14 @@ from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre_plugins.worddumb.metadata import check_metadata
 from calibre_plugins.worddumb.parse_job import do_job
 from calibre_plugins.worddumb.send_file import kindle_connected, send
+from calibre_plugins.worddumb.unzip import install_libs, load_json
 
 
 class ParseBook():
     def __init__(self, gui):
         self.gui = gui
+        self.lemmas = None
+        self.metadata_list = []
 
     def parse(self):
         # get currently selected books
@@ -22,23 +25,40 @@ class ParseBook():
         if len(ids) == 0:
             return
 
-        books = 0
         for book_id in ids:
             if (data := check_metadata(self.gui.current_db.new_api,
                                        book_id)) is None:
                 continue
-            title = data[-1].get('title')
-            books += 1
-            desc = f'Generating Word Wise for {title}'
+            self.metadata_list.append(data)
+
+        if (books := len(self.metadata_list)) == 0:
+            return
+
+        self.lemmas = load_json('data/lemmas.json')
+        if books == 1:
+            self.create_jobs(install=True)
+        else:
             job = ThreadedJob(
-                "WordDumb's dumb job", desc, do_job, (data, ), {},
-                Dispatcher(partial(self.done, data=data, title=title)))
+                "WordDumb's dumb job", 'Install dependencies',
+                install_libs, (), {}, Dispatcher(self.create_jobs))
             self.gui.job_manager.run_threaded_job(job)
 
-        if books > 0:
-            self.gui.jobs_pointer.start()
-            self.gui.status_bar.show_message(
-                f'Generating Word Wise for {books} books')
+        self.gui.jobs_pointer.start()
+        self.gui.status_bar.show_message(
+            f'Generating Word Wise for {books} books')
+
+    def create_jobs(self, job=None, install=False):
+        if job and job.failed:
+            self.gui.job_exception(job)
+            return
+
+        for data in self.metadata_list:
+            title = data[-1].get('title')
+            job = ThreadedJob(
+                "WordDumb's dumb job", f'Generating Word Wise for {title}',
+                do_job, (data, self.lemmas, install), {},
+                Dispatcher(partial(self.done, data=data, title=title)))
+            self.gui.job_manager.run_threaded_job(job)
 
     def done(self, job, data=None, title=None):
         if job.failed:

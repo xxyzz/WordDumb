@@ -5,6 +5,7 @@ import platform
 import sqlite3
 import time
 import unittest
+from itertools import zip_longest
 
 from calibre.library import db
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
@@ -34,7 +35,8 @@ class TestDumbCode(unittest.TestCase):
     def check_db(self, test_json_path, created_db_path, sql):
         with open(test_json_path) as test_json, \
                 sqlite3.connect(created_db_path) as created_db:
-            for a, b in zip(json.load(test_json), created_db.execute(sql)):
+            for a, b in zip_longest(
+                    json.load(test_json), created_db.execute(sql)):
                 self.assertEqual(tuple(a), b)
 
     def test_word_wise(self):

@@ -45,7 +45,8 @@ class ParseBook():
 
         self.gui.jobs_pointer.start()
         self.gui.status_bar.show_message(
-            f'Generating Word Wise for {books} books')
+            f'Generating Word Wise for {books} '
+            f'{"books" if books > 1 else "book"}')
 
     def create_jobs(self, job=None, install=False):
         if job and job.failed:

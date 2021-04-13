@@ -15,22 +15,31 @@ parser.add_argument('-x', help='path of XRAY.entities.ASIN.asc file')
 args = parser.parse_args()
 
 
-def convert(path, sql):
+def convert(path, table, sql):
     db_file = Path(path)
     if not db_file.is_file():
         raise Exception(f'{path} is not a file')
 
     test_db = sqlite3.connect(db_file)
-    data = []
+    dic = {table: []}
     for d in test_db.execute(sql):
-        data.append(d)
+        dic[table].append(d)
     test_db.close()
 
-    with open(db_file.stem + '.json', 'w') as f:
-        json.dump(data, f, indent=2)
+    with open(f'{".".join(db_file.stem.split(".")[:2])}.json', 'r+') as f:
+        new_dic = json.load(f)
+        new_dic.update(dic)
+        f.seek(0)
+        f.truncate()
+        json.dump(new_dic, f, indent=2, sort_keys=True)
 
 
 if args.l:
-    convert(args.l, 'SELECT start, difficulty, sense_id FROM glosses')
+    convert(args.l, 'glosses',
+            'SELECT start, difficulty, sense_id FROM glosses')
+    convert(args.l, 'metadata', 'SELECT * FROM metadata')
 if args.x:
-    convert(args.x, 'SELECT * FROM occurrence')
+    convert(args.x, 'occurrence', 'SELECT * FROM occurrence')
+    convert(args.x, 'book_metadata',
+            'SELECT srl, erl, num_people, num_terms FROM book_metadata')
+    convert(args.x, 'type', 'SELECT top_mentioned_entities FROM type')

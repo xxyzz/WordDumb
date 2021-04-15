@@ -103,9 +103,7 @@ def get_acr(book_path):
     if book_path[-3:] == 'kfx':
         from calibre_plugins.kfx_input.kfxlib import YJ_Book
 
-        book = YJ_Book(book_path)
-        book.get_metadata()
-        return book.get_asset_id()
+        return getattr(YJ_Book(book_path).get_metadata(), 'asset_id', None)
     else:
         with open(book_path, 'rb') as f:
             return f.read(32).rstrip(b'\x00').decode('utf-8')  # Palm db name

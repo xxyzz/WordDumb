@@ -16,9 +16,9 @@ PLUGIN_PATH = Path(config_dir).joinpath('plugins/WordDumb.zip')
 
 def check_folder(folder_name, version):
     extract_path = Path(config_dir).joinpath(f'plugins/{folder_name}{version}')
-    if not extract_path.is_dir():
-        for f in Path(config_dir).joinpath('plugins').iterdir():
-            if folder_name in f.name and f.is_dir():
+    if not extract_path.is_dir() and extract_path.parent.is_dir():
+        for f in extract_path.parent.iterdir():
+            if Path(folder_name).name in f.name and f.is_dir():
                 shutil.rmtree(f)  # delete old folder
 
     return extract_path

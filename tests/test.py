@@ -3,6 +3,7 @@
 import json
 import platform
 import sqlite3
+import sys
 import time
 import unittest
 from itertools import zip_longest
@@ -83,5 +84,6 @@ class TestDumbCode(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.TextTestRunner(verbosity=2).run(
+    r = unittest.TextTestRunner(verbosity=2).run(
         unittest.defaultTestLoader.loadTestsFromTestCase(TestDumbCode))
+    sys.exit(0 if r.wasSuccessful() else 1)

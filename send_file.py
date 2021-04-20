@@ -31,12 +31,10 @@ class SendFile():
             view.model().research()
 
         [has_book, _, _, _, paths] = self.gui.book_on_device(self.book_id)
-        device_info = self.device_manager.get_current_device_information()
         # /Volumes/Kindle
-        device_path_prefix = device_info['info'][4]['main']['prefix']
+        device_prefix = self.device_manager.device._main_prefix
         if has_book:
-            device_book_path = Path(device_path_prefix)
-            device_book_path = device_book_path.joinpath(next(iter(paths)))
+            device_book_path = Path(device_prefix).joinpath(next(iter(paths)))
             self.move_file_to_device(self.ll_path, device_book_path)
             if prefs['x-ray']:
                 self.move_file_to_device(self.x_ray_path, device_book_path)

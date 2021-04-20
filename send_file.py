@@ -64,15 +64,9 @@ class SendFile():
         shutil.move(file_path, device_file_path)
 
 
-def send(gui, data):
-    sf = SendFile(gui, data)
-    sf.send_files(None)
-
-
 def kindle_connected(gui):
-    if not gui.device_manager.is_device_connected:
+    if not gui.device_manager.is_device_present:
         return False
-    device = gui.device_manager.device
-    if device.VENDOR_ID != [0x1949]:  # Kindle device
+    if gui.device_manager.device.VENDOR_NAME != 'KINDLE':
         return False
     return True

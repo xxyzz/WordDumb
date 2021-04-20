@@ -6,7 +6,7 @@ from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre_plugins.worddumb.metadata import check_metadata
 from calibre_plugins.worddumb.parse_job import do_job
-from calibre_plugins.worddumb.send_file import kindle_connected, send
+from calibre_plugins.worddumb.send_file import kindle_connected, SendFile
 from calibre_plugins.worddumb.unzip import install_libs, load_json
 
 
@@ -68,6 +68,7 @@ class ParseBook():
 
         # send files to device
         if kindle_connected(self.gui):
-            send(self.gui, data)
+            sf = SendFile(self.gui, data)
+            sf.send_files(None)
 
         self.gui.status_bar.show_message(f'Word Wise generated for {title}')

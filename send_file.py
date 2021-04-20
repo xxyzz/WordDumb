@@ -52,14 +52,15 @@ class SendFile():
             self.retry = True
 
     def move_file_to_device(self, file_path, device_book_path):
-        file_folder = device_book_path.stem + '.sdr'
-        device_file_path = device_book_path.parent.joinpath(file_folder)
-        if not device_file_path.is_dir():
-            device_file_path.mkdir()
-        device_file_path = device_file_path.joinpath(file_path.name)
-        if device_file_path.is_file():
-            device_file_path.unlink()
-        shutil.move(file_path, device_file_path)
+        sidecar_folder = device_book_path.parent.joinpath(
+            f'{device_book_path.stem}.sdr')
+        if not sidecar_folder.is_dir():
+            sidecar_folder.mkdir()
+        dst_path = sidecar_folder.joinpath(file_path.name)
+        if dst_path.is_file():
+            dst_path.unlink()
+        # Python 3.9 accepts path-like object, calibre uses 3.8
+        shutil.move(str(file_path), str(dst_path))
 
 
 def kindle_connected(gui):

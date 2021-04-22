@@ -36,7 +36,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   - Ubuntu
 
   ```
-  $ sudo apt install python3
+  $ sudo apt install python3-pip
   ```
 
   - Windows: https://www.python.org/downloads

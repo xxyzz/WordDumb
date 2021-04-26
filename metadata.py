@@ -11,7 +11,7 @@ from calibre.ebooks.metadata.mobi import MetadataUpdater, MobiError
 
 def check_metadata(db, book_id):
     # Get the current metadata for this book from the db
-    mi = db.get_metadata(book_id)
+    mi = db.get_metadata(book_id, get_cover=True)
     fmts = db.formats(book_id)
     book_fmt = None
     asin = None

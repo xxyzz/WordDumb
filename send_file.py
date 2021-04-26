@@ -19,16 +19,7 @@ class SendFile():
     # use some code from calibre.gui2.device:DeviceMixin.upload_books
     def send_files(self, job):
         if job is not None:
-            self.device_manager.add_books_to_metadata(
-                job.result, [self.mi], self.gui.booklists())
-            if not self.gui.set_books_in_library(
-                    self.gui.booklists(), reset=True,
-                    add_as_step_to_job=job, do_device_sync=False):
-                self.gui.upload_booklists(job)
-            self.gui.refresh_ondevice()
-            view = self.gui.memory_view
-            view.model().resort(reset=False)
-            view.model().research()
+            self.gui.books_uploaded(job)
 
         [has_book, _, _, _, paths] = self.gui.book_on_device(self.book_id)
         # /Volumes/Kindle
@@ -40,15 +31,14 @@ class SendFile():
                 self.move_file_to_device(self.x_ray_path, device_book_path)
         elif not self.retry:
             # upload book and cover to device
-            cover_path = Path(self.book_path).parent.joinpath('cover.jpg')
-            self.mi.thumbnail = None, None, cover_path.read_bytes()
-            book_name = Path(self.book_path).name
-            titles = [i.title for i in [self.mi]]
-            plugboards = self.gui.current_db.new_api.pref('plugboards', {})
-            self.device_manager.upload_books(
+            self.gui.update_thumbnail(self.mi)
+            job = self.device_manager.upload_books(
                 FunctionDispatcher(self.send_files), [self.book_path],
-                [book_name], on_card=None, metadata=[self.mi],
-                titles=titles, plugboards=plugboards)
+                [Path(self.book_path).name], on_card=None, metadata=[self.mi],
+                titles=[i.title for i in [self.mi]],
+                plugboards=self.gui.current_db.new_api.pref('plugboards', {}))
+            self.gui.upload_memory[job] = (
+                [self.mi], None, None, [self.book_path])
             self.retry = True
 
     def move_file_to_device(self, file_path, device_book_path):

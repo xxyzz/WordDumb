@@ -3,10 +3,11 @@
 from functools import partial
 
 from calibre.gui2 import Dispatcher
+from calibre.gui2.dialogs.message_box import JobError
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre_plugins.worddumb.metadata import check_metadata
 from calibre_plugins.worddumb.parse_job import do_job
-from calibre_plugins.worddumb.send_file import kindle_connected, SendFile
+from calibre_plugins.worddumb.send_file import SendFile, kindle_connected
 from calibre_plugins.worddumb.unzip import install_libs, load_json
 
 
@@ -49,8 +50,7 @@ class ParseBook():
             f'{"books" if books > 1 else "book"}')
 
     def create_jobs(self, job=None, install=False):
-        if job and job.failed:
-            self.gui.job_exception(job)
+        if self.job_failed(job):
             return
 
         for data in self.metadata_list:
@@ -62,8 +62,7 @@ class ParseBook():
             self.gui.job_manager.run_threaded_job(job)
 
     def done(self, job, data=None, title=None):
-        if job.failed:
-            self.gui.job_exception(job)
+        if self.job_failed(job):
             return
 
         # send files to device
@@ -72,3 +71,20 @@ class ParseBook():
             sf.send_files(None)
 
         self.gui.status_bar.show_message(f'Word Wise generated for {title}')
+
+    def job_failed(self, job):
+        if job and job.failed:
+            if 'FileNotFoundError' in job.details and 'pip3' in job.details:
+                dialog = JobError(self.gui)
+                dialog.msg_label.setOpenExternalLinks(True)
+                dialog.show_error(
+                    "Can't find pip3",
+                    '''
+                    Please read the <a
+                    href='https://github.com/xxyzz/WordDumb#how-to-use'>document</a>
+                    of how to install pip3(Python3).
+                    ''', det_msg=job.details)
+            else:
+                self.gui.job_exception(job, dialog_title='Dumb error')
+            return True
+        return False

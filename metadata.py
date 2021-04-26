@@ -18,7 +18,7 @@ def check_metadata(db, book_id):
 
     # check book language is English
     book_language = mi.format_field("languages")
-    if book_language is None or book_language[1] != "eng":
+    if book_language is None or 'eng' not in book_language:
         return None
 
     # check book format

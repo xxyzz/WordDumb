@@ -24,7 +24,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
   - Windows: https://calibre-ebook.com/download_windows64
 
-- Install Python3
+- Install pip3(Python3)
 
   - macOS includes Python3 since Catalina 10.15
 

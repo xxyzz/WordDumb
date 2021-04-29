@@ -33,11 +33,8 @@ def check_metadata(db, book_id):
 
     # check ASIN, create a random one if doesn't exist
     book_path = db.format_abspath(book_id, book_fmt)
-    identifiers = mi.get_identifiers()
-    if 'mobi-asin' in identifiers and \
-       re.fullmatch('B[0-9A-Z]{9}', identifiers['mobi-asin']):
-        asin = identifiers['mobi-asin']
-    else:
+    asin = get_asin(book_path, book_fmt)
+    if asin is None or re.fullmatch('B[0-9A-Z]{9}', asin) is None:
         asin = random_asin()
         mi.set_identifier('mobi-asin', asin)
         db.set_metadata(book_id, mi)
@@ -97,6 +94,30 @@ def random_asin():
     asin += ''.join(random.choices(string.ascii_uppercase +
                                    string.digits, k=8))
     return asin
+
+
+def get_asin(book_path, book_fmt):
+    if book_fmt == 'KFX':
+        from calibre_plugins.kfx_input.kfxlib import YJ_Book
+        return getattr(YJ_Book(book_path).get_metadata(), 'asin', None)
+    else:
+        with open(book_path, 'rb') as f:
+            f.seek(78)
+            record_offset = int.from_bytes(f.read(4), 'big')
+            f.seek(record_offset + 128)  # EXTH flag
+            if int.from_bytes(f.read(4), 'big') & 0x40:  # has EXTH header
+                f.seek(record_offset + 20)  # HOMI header length
+                # +8: skip EXTH identifier and header length
+                f.seek(record_offset +
+                       int.from_bytes(f.read(4), 'big') + 16 + 8)
+                record_count = int.from_bytes(f.read(4), 'big')
+                for _ in range(record_count):
+                    record_type = int.from_bytes(f.read(4), 'big')
+                    record_length = int.from_bytes(f.read(4), 'big')
+                    record_data = f.read(record_length - 8)
+                    if record_type == 113 or record_type == 504:
+                        return record_data.decode('utf-8')
+    return None
 
 
 def get_acr(book_path, book_fmt):

@@ -28,7 +28,7 @@ def check_db_file(path):
     return sqlite3.connect(path)
 
 
-def create_lang_layer(asin, book_path):
+def create_lang_layer(asin, book_path, book_fmt):
     if (ll_conn := check_db_file(get_ll_path(asin, book_path))) is None:
         return None
     ll_conn.executescript('''
@@ -46,10 +46,10 @@ def create_lang_layer(asin, book_path):
         );
     ''')
 
-    metadata = [('acr', get_acr(book_path)),
+    metadata = [('acr', get_acr(book_path, book_fmt)),
                 ('targetLanguages', 'en'),
                 ('sidecarRevision', '9'),
-                ('bookRevision', get_book_revision(book_path)),
+                ('bookRevision', get_book_revision(book_path, book_fmt)),
                 ('sourceLanguage', 'en'),
                 ('enDictionaryVersion', '2016-09-14'),
                 ('enDictionaryRevision', '57'),

@@ -17,7 +17,7 @@ def do_job(data, lemmas, install=False, abort=None, log=None,
     if install:
         install_libs()
     (_, book_fmt, asin, book_path, _) = data
-    ll_conn = create_lang_layer(asin, book_path)
+    ll_conn = create_lang_layer(asin, book_path, book_fmt)
     if ll_conn is None and not prefs['x-ray']:
         return
     if prefs['x-ray']:
@@ -39,7 +39,7 @@ def do_job(data, lemmas, install=False, abort=None, log=None,
 
 
 def parse_book(path_of_book, book_fmt):
-    if (book_fmt.lower() == 'kfx'):
+    if (book_fmt == 'KFX'):
         yield from parse_kfx(path_of_book)  # str
     else:
         yield from parse_mobi(path_of_book, book_fmt)  # bytes str
@@ -59,11 +59,11 @@ def parse_mobi(pathtoebook, book_fmt):
     html = b''
     offset = 1
     # use code from calibre.ebooks.mobi.reader.mobi8:Mobi8Reader.__call__
-    if book_fmt.lower() == 'azw3' and mobiReader.kf8_type == 'joint':
+    if book_fmt == 'AZW3' and mobiReader.kf8_type == 'joint':
         offset = mobiReader.kf8_boundary + 2
     mobiReader.extract_text(offset=offset)
     html = mobiReader.mobi_html
-    if book_fmt.lower() == 'azw3':
+    if book_fmt == 'AZW3':
         m8r = Mobi8Reader(mobiReader, default_log)
         m8r.kf8_sections = mobiReader.sections[offset-1:]
         m8r.read_indices()

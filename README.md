@@ -53,7 +53,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
     If you don't need X-Ray, you can disable it at calibre preference -> plugins -> search WordDumb -> click "customize plugin". It's enabled by default except on macOS. X-Ray doesn't work on macOS with library validation enabled.
 
-- Select one book or multiple books, right click then click the WordDumb plugin menu. If your Kindle device is connected, it will send the book(if your device doesn't have it) and created files to your device. Make sure the book has **only one** supported format. [Video tutorial](https://upload.wikimedia.org/wikipedia/commons/transcoded/a/ae/Usage_tutorial_of_WordDumb.webm/Usage_tutorial_of_WordDumb.webm.1440p.vp9.webm)
+- Select one book or multiple books, right click then click the WordDumb plugin menu. If your Kindle device is connected, it will send the book(if your device doesn't have it) and created files to your device. [Video tutorial](https://upload.wikimedia.org/wikipedia/commons/transcoded/a/ae/Usage_tutorial_of_WordDumb.webm/Usage_tutorial_of_WordDumb.webm.1440p.vp9.webm)
 
 ## I need about tree-fiddy
 

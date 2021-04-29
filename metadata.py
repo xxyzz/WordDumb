@@ -22,13 +22,13 @@ def check_metadata(db, book_id):
         return None
 
     # check book format
-    has_kindle_format = False
-    for fmt in fmts:
-        if fmt.lower() in ['mobi', 'azw3', 'kfx']:
-            has_kindle_format = True
-            book_fmt = fmt
-            break
-    if not has_kindle_format:
+    if 'KFX' in fmts:
+        book_fmt = 'KFX'
+    elif 'AZW3' in fmts:
+        book_fmt = 'AZW3'
+    elif 'MOBI' in fmts:
+        book_fmt = 'MOBI'
+    else:
         return None
 
     # check ASIN, create a random one if doesn't exist
@@ -41,7 +41,7 @@ def check_metadata(db, book_id):
         asin = random_asin()
         mi.set_identifier('mobi-asin', asin)
         db.set_metadata(book_id, mi)
-        if fmt.lower() == 'kfx':
+        if book_fmt == 'KFX':
             set_kfx_asin(book_path, asin)
         else:
             with open(book_path, 'r+b') as stream:
@@ -99,8 +99,8 @@ def random_asin():
     return asin
 
 
-def get_acr(book_path):
-    if book_path[-3:] == 'kfx':
+def get_acr(book_path, book_fmt):
+    if book_fmt == 'KFX':
         from calibre_plugins.kfx_input.kfxlib import YJ_Book
 
         return getattr(YJ_Book(book_path).get_metadata(), 'asset_id', None)
@@ -109,8 +109,8 @@ def get_acr(book_path):
             return f.read(32).rstrip(b'\x00').decode('utf-8')  # Palm db name
 
 
-def get_book_revision(book_path):
-    if book_path[-3:] == 'kfx':
+def get_book_revision(book_path, book_fmt):
+    if book_fmt == 'KFX':
         return None
 
     # modified from calibre.ebooks.mobi.reader.headers:MetadataHeader.header

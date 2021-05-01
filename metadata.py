@@ -3,10 +3,8 @@
 import random
 import re
 import string
-from io import BytesIO
-from struct import pack
 
-from calibre.ebooks.metadata.mobi import MetadataUpdater, MobiError
+from calibre.ebooks.metadata.mobi import MetadataUpdater
 
 
 def check_metadata(db, book_id):
@@ -41,51 +39,11 @@ def check_metadata(db, book_id):
         if book_fmt == 'KFX':
             set_kfx_asin(book_path, asin)
         else:
-            with open(book_path, 'r+b') as stream:
-                mu = UpdateMobiEXTH(stream)
-                mu.update(asin)
+            with open(book_path, 'r+b') as f:
+                mu = MetadataUpdater(f)
+                mu.update(mi, asin)
 
     return book_id, book_fmt, asin, book_path, mi
-
-
-class UpdateMobiEXTH(MetadataUpdater):
-    def update(self, asin):
-        def update_exth_record(rec):
-            recs.append(rec)
-            if rec[0] in self.original_exth_records:
-                self.original_exth_records.pop(rec[0])
-
-        if self.type != b"BOOKMOBI":
-            raise MobiError("Setting metadata only supported for MOBI"
-                            "files of type 'BOOK'.\n"
-                            "\tThis is a %r file of type %r"
-                            % (self.type[0:4], self.type[4:8]))
-
-        recs = []
-        # force update asin
-        # https://wiki.mobileread.com/wiki/MOBI#EXTH_Header
-        update_exth_record((113, asin.encode(self.codec)))
-        update_exth_record((504, asin.encode(self.codec)))
-
-        # Include remaining original EXTH fields
-        for id in sorted(self.original_exth_records):
-            recs.append((id, self.original_exth_records[id]))
-        recs = sorted(recs, key=lambda x: (x[0], x[0]))
-
-        exth = BytesIO()
-        for code, data in recs:
-            exth.write(pack('>II', code, len(data) + 8))
-            exth.write(data)
-        exth = exth.getvalue()
-        trail = len(exth) % 4
-        pad = b'\0' * (4 - trail)  # Always pad w/ at least 1 byte
-        exth = [b'EXTH', pack('>II', len(exth) + 12, len(recs)), exth, pad]
-        exth = b''.join(exth)
-
-        if getattr(self, 'exth', None) is None:
-            raise MobiError('No existing EXTH record. Cannot update metadata.')
-
-        self.create_exth(exth=exth)
 
 
 def random_asin():
@@ -99,24 +57,14 @@ def random_asin():
 def get_asin(book_path, book_fmt):
     if book_fmt == 'KFX':
         from calibre_plugins.kfx_input.kfxlib import YJ_Book
+
         return getattr(YJ_Book(book_path).get_metadata(), 'asin', None)
     else:
         with open(book_path, 'rb') as f:
-            f.seek(78)
-            record_offset = int.from_bytes(f.read(4), 'big')
-            f.seek(record_offset + 128)  # EXTH flag
-            if int.from_bytes(f.read(4), 'big') & 0x40:  # has EXTH header
-                f.seek(record_offset + 20)  # HOMI header length
-                # +8: skip EXTH identifier and header length
-                f.seek(record_offset +
-                       int.from_bytes(f.read(4), 'big') + 16 + 8)
-                record_count = int.from_bytes(f.read(4), 'big')
-                for _ in range(record_count):
-                    record_type = int.from_bytes(f.read(4), 'big')
-                    record_length = int.from_bytes(f.read(4), 'big')
-                    record_data = f.read(record_length - 8)
-                    if record_type == 113 or record_type == 504:
-                        return record_data.decode('utf-8')
+            mu = MetadataUpdater(f)
+            if (asin := mu.original_exth_records.get(113, None)) is None:
+                asin = mu.original_exth_records.get(504, None)
+            return asin.decode('utf-8')
     return None
 
 

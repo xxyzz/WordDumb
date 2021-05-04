@@ -32,12 +32,10 @@ class X_Ray():
     def search_wikipedia(self):
         def insert_wiki_intro(title, intro):
             entity = self.pending_terms[title]
-            entity_id = entity['id']
-            self.terms_counter[entity_id] += 1
             self.terms[title] = entity
             del self.pending_terms[title]
             insert_x_entity_description(
-                self.conn, (intro, title, 1, entity_id))
+                self.conn, (intro, title, 1, entity['id']))
 
         titles = '|'.join(self.pending_terms.keys())
         url = 'https://en.wikipedia.org/w/api.php?format=json&action=query' \

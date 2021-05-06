@@ -8,7 +8,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
 ## How to use
 
-- Install calibre 5+
+- Install calibre
 
   - macOS: use [Homebrew](https://brew.sh) or download from https://calibre-ebook.com/download_osx
 
@@ -16,7 +16,13 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   $ brew install calibre
   ```
 
-  - Linux
+  - Arch Linux
+
+  ```
+  $ sudo pacman -S calibre
+  ```
+
+  - Other Linux
 
   ```
   $ sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
@@ -31,6 +37,12 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   ```
   // optional, run this if you use older macOS
   $ brew install python
+  ```
+
+  - Arch Linux
+
+  ```
+  $ sudo pacman -S python-pip
   ```
 
   - Ubuntu

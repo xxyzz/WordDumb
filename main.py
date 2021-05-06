@@ -74,7 +74,8 @@ class ParseBook():
 
     def job_failed(self, job):
         if job and job.failed:
-            if 'FileNotFoundError' in job.details and 'pip3' in job.details:
+            if 'FileNotFoundError' in job.details and \
+               'subprocess.py' in job.details:
                 dialog = JobError(self.gui)
                 dialog.msg_label.setOpenExternalLinks(True)
                 dialog.show_error(

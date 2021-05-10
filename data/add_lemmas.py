@@ -29,6 +29,7 @@ lemmas = {}
 with open('lemmas.json') as f:
     lemmas = json.load(f)
 origin_count = len(lemmas)
+updated_count = 0
 
 for language_layer in args.language_layers:
     if not Path(language_layer).is_file():
@@ -45,11 +46,14 @@ for language_layer in args.language_layers:
                 lemmas[lemma] = [difficulty, sense_id]
             elif lemmas[lemma][0] < difficulty:
                 lemmas[lemma] = [difficulty, sense_id]
+                updated_count += 1
     ll_conn.close()
 
 current_count = len(lemmas)
 print(f"kll.en.en.klld has {ww_klld_lemmas} lemmas")
 print(f"added {current_count - origin_count} lemmas")
+if updated_count > 0:
+    print(f'updated {updated_count} lemmas')
 print(f"lemmas.json has {current_count} lemmas")
 ww_klld_conn.close()
 with open('lemmas.json', 'w') as f:

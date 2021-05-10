@@ -16,8 +16,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument("word_wise", help="path of kll.en.en.klld file.")
 parser.add_argument("language_layers", nargs='+',
                     help="path of LanguageLayer.en.ASIN.kll files.")
-parser.add_argument("-v", "--verbose",
-                    help="verbose output", action="store_true")
 args = parser.parse_args()
 
 if not Path(args.word_wise).is_file():
@@ -45,8 +43,8 @@ for language_layer in args.language_layers:
         WHERE s.id = ?''',  (sense_id, )):
             if lemma not in lemmas:
                 lemmas[lemma] = [difficulty, sense_id]
-                if args.verbose:
-                    print(f'Insert {lemma=} {difficulty=} {sense_id=}')
+            elif lemmas[lemma][0] < difficulty:
+                lemmas[lemma] = [difficulty, sense_id]
     ll_conn.close()
 
 current_count = len(lemmas)

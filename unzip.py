@@ -31,7 +31,7 @@ def load_json(filepath):
 
 
 def install_libs(abort=None, log=None, notifications=None):
-    pip_install('nltk', NLTK_VERSION, update_pip=True)
+    pip_install('nltk', NLTK_VERSION)
     download_nltk_data()
     if prefs['x-ray']:
         pip_install('numpy', NUMPY_VERSION,
@@ -63,7 +63,7 @@ def download_nltk_data():
         nltk.data.path.append(nltk_path_str)
 
 
-def pip_install(package, version, py_version=None, update_pip=False):
+def pip_install(package, version, py_version=None):
     folder = check_folder(f'worddumb-libs/{package}', version)
     if not folder.joinpath(package).is_dir():
         import platform
@@ -75,9 +75,6 @@ def pip_install(package, version, py_version=None, update_pip=False):
             pip = '/usr/local/bin/pip3'  # Homebrew
             if not Path(pip).is_file():
                 pip = '/usr/bin/pip3'  # built-in
-        if update_pip:
-            subprocess.check_call(
-                [pip, 'install', '-U', 'pip', 'setuptools', 'wheel'])
         if py_version is not None:
             subprocess.check_call(
                 [pip, 'install', '-t', folder, '--python-version',

@@ -8,13 +8,12 @@ from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre_plugins.worddumb.metadata import check_metadata
 from calibre_plugins.worddumb.parse_job import do_job
 from calibre_plugins.worddumb.send_file import SendFile, kindle_connected
-from calibre_plugins.worddumb.unzip import install_libs, load_json
+from calibre_plugins.worddumb.unzip import install_libs
 
 
 class ParseBook():
     def __init__(self, gui):
         self.gui = gui
-        self.lemmas = None
         self.metadata_list = []
 
     def parse(self):
@@ -35,7 +34,6 @@ class ParseBook():
         if (books := len(self.metadata_list)) == 0:
             return
 
-        self.lemmas = load_json('data/lemmas.json')
         if books == 1:
             self.create_jobs(install=True)
         else:
@@ -57,7 +55,7 @@ class ParseBook():
             title = data[-1].get('title')
             job = ThreadedJob(
                 "WordDumb's dumb job", f'Generating Word Wise for {title}',
-                do_job, (data, self.lemmas, install), {},
+                do_job, (data, install), {},
                 Dispatcher(partial(self.done, data=data, title=title)))
             self.gui.job_manager.run_threaded_job(job)
 

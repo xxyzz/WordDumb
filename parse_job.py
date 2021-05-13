@@ -8,12 +8,11 @@ from calibre.utils.logging import default_log
 from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import (create_lang_layer,
                                                create_x_ray_db, insert_lemma)
-from calibre_plugins.worddumb.unzip import install_libs
+from calibre_plugins.worddumb.unzip import install_libs, load_json
 from calibre_plugins.worddumb.x_ray import X_Ray
 
 
-def do_job(data, lemmas, install=False, abort=None, log=None,
-           notifications=None):
+def do_job(data, install=False, abort=None, log=None, notifications=None):
     if install:
         install_libs()
     (_, book_fmt, asin, book_path, _) = data
@@ -24,6 +23,7 @@ def do_job(data, lemmas, install=False, abort=None, log=None,
         if (x_ray_conn := create_x_ray_db(asin, book_path)) is None:
             return
         x_ray = X_Ray(x_ray_conn)
+    lemmas = load_json('data/lemmas.json')
 
     for (start, text) in parse_book(book_path, book_fmt):
         if ll_conn is not None:

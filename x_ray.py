@@ -55,12 +55,18 @@ class X_Ray():
             with urllib.request.urlopen(req) as f:
                 gz = gzip.GzipFile(fileobj=f)
                 data = json.loads(gz.read())
+                converts = {}
+                for t in ['redirects', 'normalized']:
+                    for d in data['query'].get(t, []):
+                        converts[d['to']] = d['from']
                 for v in data['query']['pages']:
                     if 'missing' in v:
                         continue
                     # they are ordered by pageid, ehh
                     if v['title'] in self.pending_terms:
                         insert_wiki_intro(v['title'], v['extract'])
+                    elif converts.get(v['title']) in self.pending_terms:
+                        insert_wiki_intro(converts[v['title']], v['extract'])
                     elif ' ' in v['title']:
                         for term in v['title'].split(' '):
                             if term in self.pending_terms:

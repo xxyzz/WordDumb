@@ -117,8 +117,11 @@ class X_Ray():
             self.insert_occurrence(
                 self.pending_terms[name]['id'], 'TERMS', start, len(name))
         else:
-            entity_text = text[:text.find('.') + 1] if '.' in text else text
-            self.insert_entity(name, tag, start, entity_text)
+            for punc in '.?!':
+                if punc in text:
+                    text = text[:text.find(punc) + 1]
+                    break
+            self.insert_entity(name, tag, start, text)
 
     def finish(self):
         def top_mentioned(counter):

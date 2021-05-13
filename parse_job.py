@@ -48,8 +48,7 @@ def parse_book(path_of_book, book_fmt):
 def parse_kfx(path_of_book):
     from calibre_plugins.kfx_input.kfxlib import YJ_Book
 
-    book = YJ_Book(path_of_book)
-    data = book.convert_to_json_content()
+    data = YJ_Book(path_of_book).convert_to_json_content()
     for entry in json.loads(data)['data']:
         yield (entry['position'], entry['content'])
 
@@ -78,12 +77,12 @@ def parse_mobi(pathtoebook, book_fmt):
 def find_lemma(start, text, lemmas, ll_conn):
     from nltk.corpus import wordnet as wn
 
-    bytes_str = True if isinstance(text, bytes) else False
+    bytes_str = isinstance(text, bytes)
     pattern = b'[a-zA-Z]{3,}' if bytes_str else r'[a-zA-Z]{3,}'
     for match in re.finditer(pattern, text):
         word = match.group(0).decode('utf-8') if bytes_str else match.group(0)
         lemma = wn.morphy(word.lower())
-        if lemma and len(lemma) >= 3 and lemma in lemmas:
+        if lemma in lemmas:
             insert_lemma(ll_conn, (start + match.start(),) +
                          tuple(lemmas[lemma]))
 
@@ -93,7 +92,7 @@ def find_named_entity(start, text, x_ray):
     from nltk.tree import Tree
 
     records = set()
-    bytes_str = True if isinstance(text, bytes) else False
+    bytes_str = isinstance(text, bytes)
     if bytes_str:
         text = text.decode('utf-8')
     nodes = ne_chunk(pos_tag(word_tokenize(text)))

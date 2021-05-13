@@ -34,8 +34,12 @@ class X_Ray():
             entity = self.pending_terms[title]
             self.terms[title] = entity
             del self.pending_terms[title]
-            insert_x_entity_description(
-                self.conn, (intro, title, 1, entity['id']))
+            if 'refer to:' in intro or 'refers to:' in intro:
+                insert_x_entity_description(
+                    self.conn, (entity['text'], title, None, entity['id']))
+            else:
+                insert_x_entity_description(
+                    self.conn, (intro, title, 1, entity['id']))
 
         titles = '|'.join(self.pending_terms.keys())
         url = 'https://en.wikipedia.org/w/api.php?format=json&action=query' \

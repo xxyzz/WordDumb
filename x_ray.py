@@ -34,7 +34,7 @@ class X_Ray():
             entity = self.pending_terms[title]
             self.terms[title] = entity
             del self.pending_terms[title]
-            if 'refer to:' in intro or 'refers to:' in intro:
+            if '.' not in intro:  # disambiguation page
                 insert_x_entity_description(
                     self.conn, (entity['text'], title, None, entity['id']))
             else:

@@ -60,7 +60,11 @@ def pip_install(package, version, py_version=None):
         f'plugins/worddumb-libs/{package}{version}')
     if py_version:
         folder = folder.joinpath(py_version)
+
     if not folder.is_dir():
+        for d in folder.parent.glob(f'{package}*'):
+            shutil.rmtree(d)  # delete old package
+
         pip = 'pip3'
         # stupid macOS loses PATH when calibre is not started from terminal
         if platform.system() == 'Darwin':
@@ -69,11 +73,11 @@ def pip_install(package, version, py_version=None):
                 pip = '/usr/bin/pip3'  # built-in
         if py_version:
             subprocess.check_call(
-                [pip, 'install', '-U', '-t', folder, '--python-version',
+                [pip, 'install', '-t', folder, '--python-version',
                  py_version, '--no-deps', f'{package}=={version}'])
         else:
             subprocess.check_call(
-                [pip, 'install', '-U', '-t', folder, f'{package}=={version}'])
+                [pip, 'install', '-t', folder, f'{package}=={version}'])
             # calibre has regex and it has .so file like numpy
             if package == 'nltk':
                 for f in folder.glob('regex*'):

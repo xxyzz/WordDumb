@@ -31,28 +31,32 @@ def install_libs(abort=None, log=None, notifications=None):
 
 
 def download_nltk_data():
-    nltk_path = Path(config_dir).joinpath('plugins/worddumb-nltk')
-    nltk_path_str = str(nltk_path)
-
     import nltk
-    if not nltk_path.joinpath('corpora/wordnet').is_dir():
-        nltk.download('wordnet', nltk_path_str)  # morphy
 
+    nltk_data_path = Path(config_dir).joinpath('plugins/worddumb-nltk')
+    nltk_data_path_str = str(nltk_data_path)
+    download_nltk_model(nltk_data_path, 'corpora', 'wordnet')  # morphy
     if prefs['x-ray']:
-        if not nltk_path.joinpath('tokenizers/punkt').is_dir():
-            nltk.download('punkt', nltk_path_str)  # word_tokenize
-        # pos_tag
-        averaged = 'averaged_perceptron_tagger'
-        if not nltk_path.joinpath('taggers/' + averaged).is_dir():
-            nltk.download(averaged, nltk_path_str)
-        # ne_chunk
-        if not nltk_path.joinpath('chunkers/maxent_ne_chunker').is_dir():
-            nltk.download('maxent_ne_chunker', nltk_path_str)
-        if not nltk_path.joinpath('corpora/words').is_dir():
-            nltk.download('words', nltk_path_str)
+        models = [
+            ('tokenizers', 'punkt'),  # word_tokenize
+            ('taggers', 'averaged_perceptron_tagger'),  # pos_tag
+            ('chunkers', 'maxent_ne_chunker'),  # ne_chunk
+            ('corpora', 'words')
+        ]
+        for parent, model in models:
+            download_nltk_model(nltk_data_path, parent, model)
 
-    if nltk_path_str not in nltk.data.path:
-        nltk.data.path.append(nltk_path_str)
+    if nltk_data_path_str not in nltk.data.path:
+        nltk.data.path.append(nltk_data_path_str)
+
+
+def download_nltk_model(data_folder, parent, model):
+    import nltk
+
+    path = data_folder.joinpath(f'{parent}/{model}')
+    if not path.is_dir():
+        nltk.download(model, str(data_folder))
+        path.with_suffix('.zip').unlink()
 
 
 def pip_install(package, version, py_version=None):

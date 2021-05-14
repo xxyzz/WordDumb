@@ -63,7 +63,7 @@ def pip_install(package, version, py_version=None):
     folder = Path(config_dir).joinpath(
         f'plugins/worddumb-libs/{package}{version}')
     if py_version:
-        folder = folder.joinpath(py_version)
+        folder = folder.with_name(f'{package}{version}_{py_version}')
 
     if not folder.is_dir():
         for d in folder.parent.glob(f'{package}*'):

@@ -72,7 +72,11 @@ def pip_install(package, version, py_version=None):
         python3 = 'python3'
         # stupid macOS loses PATH when calibre is not started from terminal
         if platform.system() == 'Darwin':
-            python3 = '/usr/local/bin/python3'  # Homebrew
+            # Homebrew
+            if platform.machine() == 'arm64':
+                python3 = '/opt/homebrew/bin/python3'
+            else:
+                python3 = '/usr/local/bin/python3'
             if not Path(python3).is_file():
                 python3 = '/usr/bin/python3'  # built-in
         if py_version:

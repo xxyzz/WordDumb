@@ -46,7 +46,3 @@ Get `kll.en.en.klld` and `LanguageLayer.en.ASIN.kll` from your Kindle device(ple
 $ cd data
 $ add_lemmas.py ./path-of-klld ./path-of-kll
 ```
-
-## TODO
-
-- deal with Wikipedia ambiguous result

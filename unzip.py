@@ -69,19 +69,21 @@ def pip_install(package, version, py_version=None):
         for d in folder.parent.glob(f'{package}*'):
             shutil.rmtree(d)  # delete old package
 
-        pip = 'pip3'
+        python3 = 'python3'
         # stupid macOS loses PATH when calibre is not started from terminal
         if platform.system() == 'Darwin':
-            pip = '/usr/local/bin/pip3'  # Homebrew
-            if not Path(pip).is_file():
-                pip = '/usr/bin/pip3'  # built-in
+            python3 = '/usr/local/bin/python3'  # Homebrew
+            if not Path(python3).is_file():
+                python3 = '/usr/bin/python3'  # built-in
         if py_version:
             subprocess.check_call(
-                [pip, 'install', '-t', folder, '--python-version',
-                 py_version, '--no-deps', f'{package}=={version}'])
+                [python3, '-m', 'pip', 'install', '-t', folder,
+                 '--python-version', py_version, '--no-deps',
+                 f'{package}=={version}'])
         else:
             subprocess.check_call(
-                [pip, 'install', '-t', folder, f'{package}=={version}'])
+                [python3, '-m', 'pip', 'install', '-t', folder,
+                 f'{package}=={version}'])
             # calibre has regex and it has .so file like numpy
             if package == 'nltk':
                 for f in folder.glob('regex*'):

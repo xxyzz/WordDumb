@@ -1,6 +1,6 @@
 # WordDumb
 
-A calibre plugin for creating Kindle Word Wise and X-Ray file. Supports MOBI, AZW3 and KFX ebooks.
+A calibre plugin that generates Word Wise and X-Ray files then sends them to Kindle. Supports KFX, AZW3 and MOBI eBooks.
 
 ## Contribute
 
@@ -19,7 +19,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   - Arch Linux
 
   ```
-  $ sudo pacman -S calibre
+  # pacman -S calibre
   ```
 
   - Other Linux
@@ -32,23 +32,31 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
 - Install pip3(Python3)
 
-  - macOS includes Python3 since Catalina 10.15
+  - macOS
 
-  ```
-  // optional, run this if you use older macOS
-  $ brew install python
-  ```
+    - install Python via Homebrew
+
+    ```
+    $ brew install python
+    ```
+
+    - or update the built-in pip
+
+    ```
+    $ xcode-select --install
+    $ sudo -H python3 -m pip install -U pip
+    ```
 
   - Arch Linux
 
   ```
-  $ sudo pacman -S python-pip
+  # pacman -S python-pip
   ```
 
   - Ubuntu
 
   ```
-  $ sudo apt install python3-pip
+  # apt install python3-pip
   ```
 
   - Windows: https://www.python.org/downloads
@@ -66,6 +74,19 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
     If you don't need X-Ray, you can disable it at calibre preference -> plugins -> search WordDumb -> click "customize plugin". It's enabled by default except on macOS. X-Ray doesn't work on macOS with library validation enabled.
 
 - Select one book or multiple books, right click then click the WordDumb plugin menu. If your Kindle device is connected, it will send the book(if your device doesn't have it) and created files to your device. [Video tutorial](https://upload.wikimedia.org/wikipedia/commons/transcoded/a/ae/Usage_tutorial_of_WordDumb.webm/Usage_tutorial_of_WordDumb.webm.1440p.vp9.webm)
+
+## How to report bugs
+
+Run calibre in debug mode:
+
+```
+$ calibre-debug -g
+
+// for macOS users don't have calibre-debug in their PATH:
+$ /Applications/calibre.app/Contents/MacOS/calibre-debug -g
+```
+
+then use the plugin as usual and copy the output.
 
 ## I need about tree-fiddy
 

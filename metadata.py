@@ -41,7 +41,7 @@ def check_metadata(db, book_id):
         else:
             with open(book_path, 'r+b') as f:
                 mu = MetadataUpdater(f)
-                mu.update(mi, asin)
+                mu.update(mi, asin=asin)
 
     return book_id, book_fmt, asin, book_path, mi
 

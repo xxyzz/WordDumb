@@ -34,7 +34,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
   - macOS
 
-    - install Python via Homebrew
+    - install Python via Homebrew(recommended)
 
     ```
     $ brew install python

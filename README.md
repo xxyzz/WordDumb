@@ -32,20 +32,12 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
 - Install pip3(Python3)
 
-  - macOS
+  - macOS includes Python3 since Catalina 10.15
 
-    - install Python via Homebrew(recommended)
-
-    ```
-    $ brew install python
-    ```
-
-    - or update the built-in pip
-
-    ```
-    $ xcode-select --install
-    $ sudo -H python3 -m pip install -U pip
-    ```
+  ```
+  // optional, install Python3 if you use older macOS
+  $ brew install python
+  ```
 
   - Arch Linux
 

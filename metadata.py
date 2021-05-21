@@ -62,9 +62,9 @@ def get_asin(book_path, book_fmt):
     else:
         with open(book_path, 'rb') as f:
             mu = MetadataUpdater(f)
-            if (asin := mu.original_exth_records.get(113, None)) is None:
-                asin = mu.original_exth_records.get(504, None)
-            return asin.decode('utf-8')
+            if (asin := mu.original_exth_records.get(113)) is None:
+                asin = mu.original_exth_records.get(504)
+            return asin.decode('utf-8') if asin else None
     return None
 
 

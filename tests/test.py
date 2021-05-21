@@ -10,7 +10,7 @@ from itertools import zip_longest
 
 from calibre.library import db
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
-from calibre_plugins.worddumb.metadata import check_metadata
+from calibre_plugins.worddumb.metadata import check_metadata, get_asin
 from calibre_plugins.worddumb.parse_job import do_job
 from calibre_plugins.worddumb.unzip import install_libs, load_json
 
@@ -27,7 +27,7 @@ class TestDumbCode(unittest.TestCase):
                 break
 
         data = check_metadata(lib_db, book_1984_id)
-        (_, _, cls.asin, cls.book_path, _) = data
+        (_, cls.fmt, cls.asin, cls.book_path, _) = data
         install_libs()
         start_time = time.time()
         do_job(data, load_json('data/lemmas.json'))
@@ -39,6 +39,9 @@ class TestDumbCode(unittest.TestCase):
             for a, b in zip_longest(
                     json.load(test_json)[table], created_db.execute(sql)):
                 self.assertEqual(tuple(a), b)
+
+    def test_asin(self):
+        self.assertEqual(self.asin, get_asin(self.book_path, self.fmt))
 
     def test_word_wise_glosses(self):
         self.check_db(

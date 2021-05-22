@@ -32,11 +32,14 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
 - Install Python3(pip3)
 
-  - macOS includes Python3 since Catalina 10.15
+  - macOS
 
   ```
-  // optional, install Python if you use older macOS
+  // recommended
   $ brew install python
+
+  // or install outdated pip3 from Apple's developer tools
+  $ xcode-select --install
   ```
 
   - Arch Linux

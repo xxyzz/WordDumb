@@ -30,30 +30,31 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
   - Windows: https://calibre-ebook.com/download_windows64
 
-- Install pip3(Python3)
+- Install Python3(pip3)
 
   - macOS includes Python3 since Catalina 10.15
 
   ```
-  // optional, install Python3 if you use older macOS
+  // optional, install Python if you use older macOS
   $ brew install python
   ```
 
   - Arch Linux
 
   ```
-  # pacman -S python-pip
+  # pacman -S python
   ```
 
   - Ubuntu
 
   ```
-  # apt install python3-pip
+  $ sudo apt update
+  $ sudo apt install python3-pip
   ```
 
   - Windows: https://www.python.org/downloads
 
-    If you've installed 64-bit calibre, you should install 64-bit Python. If you have 32-bit calibre then download 32-bit Python. 'Add Python to PATH' option must be selected.
+    If you've installed 64-bit calibre, you should install 64-bit Python. If you have 32-bit calibre then download 32-bit Python. Select "Install Now".
 
 - Install WordDumb plugin: [Video tutorial](https://upload.wikimedia.org/wikipedia/commons/transcoded/7/7f/Install_calibre_plugin.webm/Install_calibre_plugin.webm.1440p.vp9.webm)
 

@@ -77,11 +77,11 @@ class ParseBook():
                 dialog = JobError(self.gui)
                 dialog.msg_label.setOpenExternalLinks(True)
                 dialog.show_error(
-                    "Can't find pip3",
+                    "Can't find python",
                     '''
                     Please read the <a
                     href='https://github.com/xxyzz/WordDumb#how-to-use'>document</a>
-                    of how to install pip3(Python3).
+                    of how to install Python.
                     ''', det_msg=job.details)
             else:
                 self.gui.job_exception(job, dialog_title='Dumb error')

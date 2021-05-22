@@ -64,7 +64,7 @@ def pip_install(package, py_version=None):
         folder = folder.with_name(f'{package}_{py_version}')
 
     if not folder.is_dir():
-        python3 = 'python3'
+        python3 = 'py' if platform.system() == 'Windows' else 'python3'
         # stupid macOS loses PATH when calibre is not started from terminal
         if platform.system() == 'Darwin':
             # Homebrew

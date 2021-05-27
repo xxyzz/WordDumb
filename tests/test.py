@@ -12,7 +12,7 @@ from calibre.library import db
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 from calibre_plugins.worddumb.metadata import check_metadata, get_asin
 from calibre_plugins.worddumb.parse_job import do_job
-from calibre_plugins.worddumb.unzip import install_libs, load_json
+from calibre_plugins.worddumb.unzip import install_libs
 
 
 class TestDumbCode(unittest.TestCase):
@@ -30,7 +30,7 @@ class TestDumbCode(unittest.TestCase):
         (_, cls.fmt, cls.asin, cls.book_path, _) = data
         install_libs()
         start_time = time.time()
-        do_job(data, load_json('data/lemmas.json'))
+        do_job(data)
         print(f'{time.time() - start_time} seconds')
 
     def check_db(self, test_json_path, created_db_path, table, sql):

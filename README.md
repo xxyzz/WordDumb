@@ -59,19 +59,23 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
     If you've installed 64-bit calibre, you should install 64-bit Python. If you have 32-bit calibre then download 32-bit Python. Select "Install Now".
 
-- Install WordDumb plugin: [Video tutorial](https://upload.wikimedia.org/wikipedia/commons/transcoded/7/7f/Install_calibre_plugin.webm/Install_calibre_plugin.webm.1440p.vp9.webm)
+- Install WordDumb plugin:
 
-    calibre preference -> plugins -> get new plugins. Add the plugin to "The context menu for the books in the calibre library" in preferences -> "Toolbars & menus".
+https://user-images.githubusercontent.com/21101839/120099000-b1962280-c16b-11eb-87e7-b2e1d6e02f9f.mov
 
-- Install jhowell's [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books(optional).
+- Install jhowell's [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books(optional), the installtion method is the same as the above video.
 
-- Disable X-Ray(optional): [Video tutorial](https://upload.wikimedia.org/wikipedia/commons/transcoded/7/79/Configure_calibre_plugin.webm/Configure_calibre_plugin.webm.1440p.vp9.webm)
+- Select one book or multiple books, right click then click the WordDumb plugin menu. If your Kindle is connected, WordDumb will send the book and created files to your device.
 
-    If you don't need X-Ray, you can disable it at calibre preference -> plugins -> search WordDumb -> click "customize plugin". It's enabled by default except on macOS. X-Ray doesn't work on macOS with library validation enabled.
+https://user-images.githubusercontent.com/21101839/120099125-629cbd00-c16c-11eb-8c18-b0059ec64c6a.mov
 
-- Select one book or multiple books, right click then click the WordDumb plugin menu. If your Kindle device is connected, it will send the book(if your device doesn't have it) and created files to your device. [Video tutorial](https://upload.wikimedia.org/wikipedia/commons/transcoded/a/ae/Usage_tutorial_of_WordDumb.webm/Usage_tutorial_of_WordDumb.webm.1440p.vp9.webm)
+- Disable X-Ray(optional)
 
-## How to report bugs
+    The X-Ray feature doesn't support macOS, because macOS prohibits calibre from loading unsigned numpy library.
+
+https://user-images.githubusercontent.com/21101839/120099114-4ef15680-c16c-11eb-9192-1e443e01c5e6.mov
+
+## How to report bug
 
 Run calibre in debug mode:
 

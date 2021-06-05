@@ -46,3 +46,15 @@ Get `kll.en.en.klld` and `LanguageLayer.en.ASIN.kll` from your Kindle device(ple
 $ cd data
 $ add_lemmas.py ./path-of-klld ./path-of-kll
 ```
+
+## Kindle firmware
+
+- https://www.amazon.com/gp/help/customer/display.html?nodeId=GKMQC26VQQMM8XSW
+
+- https://github.com/NiLuJe/KindleTool
+
+- https://github.com/AdoptOpenJDK/homebrew-openjdk
+
+- https://github.com/java-decompiler/jd-gui
+
+- https://wiki.mobileread.com/wiki/Kindle_Touch_Hacking#Architecture

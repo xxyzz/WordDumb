@@ -113,3 +113,7 @@ other columns are ids of the string table
 |  2 |    16 |              17 |    2 | 164,66,153,46,37,43,5,111,54,9  |
 
 type 1: people, type 2: terms
+
+## RAGMA user_version
+
+Checked at `com.amazon.ebook.booklet.reader.plugin.xray.db.SidecarDatabaseAdapter`(/opt/amazon/ebook/lib/Xray.jar).

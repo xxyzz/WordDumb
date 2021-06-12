@@ -77,12 +77,31 @@ class ParseBook():
                 dialog = JobError(self.gui)
                 dialog.msg_label.setOpenExternalLinks(True)
                 dialog.show_error(
-                    "Can't find python",
+                    "Can't find Python",
                     '''
                     Please read the <a
                     href='https://github.com/xxyzz/WordDumb#how-to-use'>document</a>
                     of how to install Python.
                     ''', det_msg=job.details)
+            elif 'FileNotFoundError' in job.details and \
+                 '.zip' in job.details:
+                blocked_url = 'https://raw.githubusercontent.com'
+                dialog = JobError(self.gui)
+                dialog.msg_label.setOpenExternalLinks(True)
+                dialog.show_error(
+                    'nltk.download() failed',
+                    f'''
+                    Is <a href='{blocked_url}'>{blocked_url}</a> blocked in
+                    your country?
+                    You might need tools to bypass internet censorship.
+                    ''',
+                    det_msg=job.details)
+            elif 'CalledProcessError' in job.details:
+                dialog = JobError(self.gui)
+                dialog.show_error(
+                    'subprocess.run failed',
+                    job.exception.stderr.decode('utf-8'),
+                    det_msg=job.details)
             else:
                 self.gui.job_exception(job, dialog_title='Dumb error')
             return True

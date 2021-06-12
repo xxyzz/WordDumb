@@ -75,6 +75,10 @@ https://user-images.githubusercontent.com/21101839/120099125-629cbd00-c16c-11eb-
 
 https://user-images.githubusercontent.com/21101839/120099114-4ef15680-c16c-11eb-9192-1e443e01c5e6.mov
 
+- Never add ASIN to your book, that will cause Kindle to replace Word Wise and X-Ray files.
+
+- This plugin requires access to https://files.pythonhosted.org (download dependencies) and https://raw.githubusercontent.com (download NLTK data) at first run, and https://en.wikipedia.org every time if X-Ray is enabled. These domains might be blocked in some countries.
+
 ## How to report bug
 
 Run calibre in debug mode:

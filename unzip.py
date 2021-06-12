@@ -73,15 +73,16 @@ def pip_install(package, py_version=None):
             else:
                 python3 = '/usr/local/bin/python3'
             if not Path(python3).is_file():
-                python3 = '/usr/bin/python3'  # built-in
+                python3 = '/usr/bin/python3'  # developer tools
         if py_version:
-            subprocess.check_call(
+            subprocess.run(
                 [python3, '-m', 'pip', 'install', '-t', folder,
-                 '--python-version', py_version, '--no-deps', package])
+                 '--python-version', py_version, '--no-deps', package],
+                check=True, capture_output=True)
         else:
-            subprocess.check_call(
+            subprocess.run(
                 [python3, '-m', 'pip', 'install', '-t', folder,
-                 '--no-deps', package])
+                 '--no-deps', package], check=True, capture_output=True)
 
     if (p := str(folder)) not in sys.path:
         sys.path.append(p)

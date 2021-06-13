@@ -83,19 +83,14 @@ class ParseBook():
                     href='https://github.com/xxyzz/WordDumb#how-to-use'>document</a>
                     of how to install Python.
                     ''', det_msg=job.details)
-            elif 'FileNotFoundError' in job.details and \
-                 '.zip' in job.details:
-                blocked_url = 'https://raw.githubusercontent.com'
-                dialog = JobError(self.gui)
-                dialog.msg_label.setOpenExternalLinks(True)
-                dialog.show_error(
-                    'nltk.download() failed',
-                    f'''
-                    Is <a href='{blocked_url}'>{blocked_url}</a> blocked in
-                    your country?
-                    You might need tools to bypass internet censorship.
-                    ''',
-                    det_msg=job.details)
+            elif 'FileNotFoundError' in job.details and '.zip' in job.details:
+                self.censorship_error(
+                    'https://raw.githubusercontent.com',
+                    'nltk.download() failed', job.details)
+            elif 'URLError' in job.details and 'wikipedia' in job.details:
+                self.censorship_error(
+                    'https://en.wikipedia.org',
+                    'It was a pleasure to burn', job.details)
             elif 'CalledProcessError' in job.details:
                 dialog = JobError(self.gui)
                 dialog.show_error(
@@ -106,3 +101,13 @@ class ParseBook():
                 self.gui.job_exception(job, dialog_title='Dumb error')
             return True
         return False
+
+    def censorship_error(self, url, title, error):
+        dialog = JobError(self.gui)
+        dialog.msg_label.setOpenExternalLinks(True)
+        dialog.show_error(
+            title,
+            f'''
+            Is <a href='{url}'>{url}</a> blocked in your country?
+            You might need tools to bypass internet censorship.
+            ''', det_msg=error)

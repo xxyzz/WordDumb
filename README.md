@@ -19,10 +19,10 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   - Arch Linux
 
   ```
-  # pacman -S calibre
+  # pacman -Syu --needed calibre
   ```
 
-  - Other Linux
+  - Other Linux distros
 
   ```
   $ sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
@@ -44,9 +44,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
   - Arch Linux
 
-  ```
-  # pacman -S python
-  ```
+    pip module is installed in the last step.
 
   - Ubuntu
 

@@ -77,14 +77,16 @@ def parse_mobi(pathtoebook, book_fmt):
 def find_lemma(start, text, lemmas, ll_conn):
     from nltk.corpus import wordnet as wn
 
-    bytes_str = isinstance(text, bytes)
-    pattern = b'[a-zA-Z\xc2\xad]{3,}' if bytes_str else r'[a-zA-Z\u00AD]{3,}'
-    for match in re.finditer(pattern, text):
-        word = match.group(0).decode('utf-8') if bytes_str else match.group(0)
-        lemma = wn.morphy(word.replace('\u00AD', '').lower())
+    if (bytes_str := isinstance(text, bytes)):
+        text = text.decode('utf-8')
+    for match in re.finditer(r'[a-zA-Z\u00AD]{3,}', text):
+        lemma = wn.morphy(match.group(0).replace('\u00AD', '').lower())
         if lemma in lemmas:
-            insert_lemma(ll_conn, (start + match.start(),) +
-                         tuple(lemmas[lemma]))
+            if bytes_str:
+                index = start + len(text[:match.start()].encode('utf-8'))
+            else:
+                index = start + match.start()
+            insert_lemma(ll_conn, (index,) + tuple(lemmas[lemma]))
 
 
 def find_named_entity(start, text, x_ray):

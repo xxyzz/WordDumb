@@ -78,10 +78,10 @@ def find_lemma(start, text, lemmas, ll_conn):
     from nltk.corpus import wordnet as wn
 
     bytes_str = isinstance(text, bytes)
-    pattern = b'[a-zA-Z]{3,}' if bytes_str else r'[a-zA-Z]{3,}'
+    pattern = b'[a-zA-Z\xc2\xad]{3,}' if bytes_str else r'[a-zA-Z\u00AD]{3,}'
     for match in re.finditer(pattern, text):
         word = match.group(0).decode('utf-8') if bytes_str else match.group(0)
-        lemma = wn.morphy(word.lower())
+        lemma = wn.morphy(word.replace('\u00AD', '').lower())
         if lemma in lemmas:
             insert_lemma(ll_conn, (start + match.start(),) +
                          tuple(lemmas[lemma]))

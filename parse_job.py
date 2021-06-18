@@ -38,11 +38,11 @@ def do_job(data, install=False, abort=None, log=None, notifications=None):
         x_ray.finish()
 
 
-def parse_book(path_of_book, book_fmt):
-    if (book_fmt == 'KFX'):
-        yield from parse_kfx(path_of_book)  # str
+def parse_book(book_path, book_fmt):
+    if book_fmt == 'KFX':
+        yield from parse_kfx(book_path)  # str
     else:
-        yield from parse_mobi(path_of_book, book_fmt)  # bytes str
+        yield from parse_mobi(book_path)  # bytes str
 
 
 def parse_kfx(path_of_book):
@@ -53,18 +53,21 @@ def parse_kfx(path_of_book):
         yield (entry['position'], entry['content'])
 
 
-def parse_mobi(pathtoebook, book_fmt):
-    mobiReader = MobiReader(pathtoebook, default_log)
-    html = b''
-    offset = 1
+def parse_mobi(book_path):
     # use code from calibre.ebooks.mobi.reader.mobi8:Mobi8Reader.__call__
-    if book_fmt == 'AZW3' and mobiReader.kf8_type == 'joint':
-        offset = mobiReader.kf8_boundary + 2
-    mobiReader.extract_text(offset=offset)
-    html = mobiReader.mobi_html
-    if book_fmt == 'AZW3':
-        m8r = Mobi8Reader(mobiReader, default_log)
-        m8r.kf8_sections = mobiReader.sections[offset-1:]
+    # and calibre.ebook.conversion.plugins.mobi_input:MOBIInput.convert
+    try:
+        mr = MobiReader(book_path, default_log)
+    except Exception:
+        mr = MobiReader(book_path, default_log, try_extra_data_fix=True)
+    if mr.kf8_type == 'joint':
+        raise Exception('JointMOBI')
+    mr.check_for_drm()
+    mr.extract_text()
+    html = mr.mobi_html
+    if mr.kf8_type == 'standalone':
+        m8r = Mobi8Reader(mr, default_log)
+        m8r.kf8_sections = mr.sections
         m8r.read_indices()
         m8r.build_parts()
         html = b''.join(m8r.parts)

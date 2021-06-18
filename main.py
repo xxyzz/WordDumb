@@ -74,15 +74,13 @@ class ParseBook():
         if job and job.failed:
             if 'FileNotFoundError' in job.details and \
                'subprocess.py' in job.details:
-                dialog = JobError(self.gui)
-                dialog.msg_label.setOpenExternalLinks(True)
-                dialog.show_error(
+                self.error_dialog(
                     "Can't find Python",
                     '''
                     Please read the <a
                     href='https://github.com/xxyzz/WordDumb#how-to-use'>document</a>
                     of how to install Python.
-                    ''', det_msg=job.details)
+                    ''', job.details)
             elif 'FileNotFoundError' in job.details and '.zip' in job.details:
                 self.censorship_error(
                     'https://raw.githubusercontent.com',
@@ -97,17 +95,28 @@ class ParseBook():
                     'subprocess.run failed',
                     job.exception.stderr.decode('utf-8'),
                     det_msg=job.details)
+            elif 'JointMOBI' in job.details:
+                url = 'https://github.com/kevinhendricks/KindleUnpack'
+                self.error_dialog(
+                    'Joint MOBI',
+                    f'''
+                    Please use <a href='{url}'>KindleUnpack</a>
+                    to split the book.
+                    ''', job.details)
             else:
                 self.gui.job_exception(job, dialog_title='Dumb error')
             return True
         return False
 
-    def censorship_error(self, url, title, error):
+    def error_dialog(self, title, message, error):
         dialog = JobError(self.gui)
         dialog.msg_label.setOpenExternalLinks(True)
-        dialog.show_error(
+        dialog.show_error(title, message, det_msg=error)
+
+    def censorship_error(self, url, title, error):
+        self.error_dialog(
             title,
             f'''
             Is <a href='{url}'>{url}</a> blocked in your country?
             You might need tools to bypass internet censorship.
-            ''', det_msg=error)
+            ''', error)

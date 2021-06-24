@@ -97,8 +97,7 @@ def find_named_entity(start, text, x_ray):
     from nltk.tree import Tree
 
     records = set()
-    bytes_str = isinstance(text, bytes)
-    if bytes_str:
+    if (bytes_str := isinstance(text, bytes)):
         text = text.decode('utf-8')
     nodes = ne_chunk(pos_tag(word_tokenize(text)))
     for node in filter(lambda x: type(x) is Tree, nodes):

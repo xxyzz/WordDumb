@@ -60,7 +60,7 @@ class X_Ray():
                     for d in data['query'].get(t, []):
                         converts[d['to']] = d['from']
                 for v in data['query']['pages']:
-                    if 'missing' in v:
+                    if 'extract' not in v:  # missing or invalid
                         continue
                     # they are ordered by pageid, ehh
                     if v['title'] in self.pending_terms:

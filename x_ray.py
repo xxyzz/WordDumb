@@ -88,7 +88,7 @@ class X_Ray():
         if is_people:
             self.insert_rest_pending_entities(self.people, self.pending_people)
         else:
-            self.insert_rest_pending_entities(self.terms, self.pending_terms) 
+            self.insert_rest_pending_entities(self.terms, self.pending_terms)
 
     def insert_rest_pending_entities(self, dic, pending_dic):
         for label, entity in self.pending_dic.items():
@@ -159,9 +159,10 @@ class X_Ray():
         def top_mentioned(counter):
             return ','.join(map(str, [e[0] for e in counter.most_common(10)]))
 
-        self.insert_rest_pending_entities(self.terms, self.pending_terms)
-        if prefs['search_people']:
-            self.insert_rest_pending_entities(self.people, self.pending_people)
+        if len(self.pending_terms) > 0:
+            self.search_wikipedia(False, self.pending_terms)
+        if len(self.pending_people) > 0:
+            self.search_wikipedia(True, self.pending_people)
 
         for name, value in self.people.items():
             if prefs['search_people']:

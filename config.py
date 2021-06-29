@@ -3,7 +3,7 @@ import platform
 import webbrowser
 
 from calibre.utils.config import JSONConfig
-from PyQt5.Qt import QPushButton, QRadioButton, QVBoxLayout, QWidget
+from PyQt5.Qt import QPushButton, QCheckBox, QVBoxLayout, QWidget
 
 prefs = JSONConfig('plugins/worddumb')
 prefs.defaults['x-ray'] = True if platform.system() != 'Darwin' else False
@@ -17,19 +17,19 @@ class ConfigWidget(QWidget):
         self.vl = QVBoxLayout()
         self.setLayout(self.vl)
 
-        self.xray_button = QRadioButton('X-Ray', self)
-        self.xray_button.setChecked(prefs['x-ray'])
-        self.vl.addWidget(self.xray_button)
+        self.xray_box = QCheckBox('X-Ray')
+        self.xray_box.setChecked(prefs['x-ray'])
+        self.vl.addWidget(self.xray_box)
 
-        self.search_people_button = QRadioButton('Search people', self)
-        self.search_people_button.setChecked(prefs['search_people'])
-        self.vl.addWidget(self.search_people_button)
+        self.search_people_box = QCheckBox('Search people')
+        self.search_people_box.setChecked(prefs['search_people'])
+        self.vl.addWidget(self.search_people_box)
 
-        self.donate_button = QPushButton('Donate', self)
+        self.donate_button = QPushButton('Donate')
         self.donate_button.clicked.connect(self.donate)
         self.vl.addWidget(self.donate_button)
 
-        self.github_button = QPushButton('Source code', self)
+        self.github_button = QPushButton('Source code')
         self.github_button.clicked.connect(self.github)
         self.vl.addWidget(self.github_button)
 
@@ -40,5 +40,5 @@ class ConfigWidget(QWidget):
         webbrowser.open('https://github.com/xxyzz/WordDumb')
 
     def save_settings(self):
-        prefs['x-ray'] = self.xray_button.isChecked()
-        prefs['search_people'] = self.search_people_button.isChecked()
+        prefs['x-ray'] = self.xray_box.isChecked()
+        prefs['search_people'] = self.search_people_box.isChecked()

@@ -8,6 +8,7 @@ from collections import Counter
 from urllib.error import HTTPError
 
 from calibre_plugins.worddumb import VERSION
+from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import (insert_x_book_metadata,
                                                insert_x_entity,
                                                insert_x_entity_description,
@@ -28,20 +29,26 @@ class X_Ray():
         self.terms = {}
         self.terms_counter = Counter()
         self.pending_terms = {}
+        self.pending_people = {}
 
-    def search_wikipedia(self):
-        def insert_wiki_intro(title, intro):
+    def insert_wiki_intro(self, is_people, title, intro):
+        if is_people:
+            entity = self.pending_people[title]
+            self.people[title] = entity
+            del self.pending_people[title]
+        else:
             entity = self.pending_terms[title]
             self.terms[title] = entity
             del self.pending_terms[title]
-            if '.' not in intro:  # disambiguation page
-                insert_x_entity_description(
-                    self.conn, (entity['text'], title, None, entity['id']))
-            else:
-                insert_x_entity_description(
-                    self.conn, (intro, title, 1, entity['id']))
+        if '.' not in intro:  # disambiguation page
+            insert_x_entity_description(
+                self.conn, (entity['text'], title, None, entity['id']))
+        else:
+            insert_x_entity_description(
+                self.conn, (intro, title, 1, entity['id']))
 
-        titles = '|'.join(self.pending_terms.keys())
+    def search_wikipedia(self, is_people, dic):
+        titles = '|'.join(dic.keys())
         url = 'https://en.wikipedia.org/w/api.php?format=json&action=query' \
             '&prop=extracts&exintro&explaintext&redirects&exsentences=7' \
             '&formatversion=2&titles=' + urllib.parse.quote(titles)
@@ -63,27 +70,33 @@ class X_Ray():
                     if 'extract' not in v:  # missing or invalid
                         continue
                     # they are ordered by pageid, ehh
-                    if v['title'] in self.pending_terms:
-                        insert_wiki_intro(v['title'], v['extract'])
-                    elif converts.get(v['title']) in self.pending_terms:
-                        insert_wiki_intro(converts[v['title']], v['extract'])
+                    if v['title'] in dic:
+                        self.insert_wiki_intro(
+                            is_people, v['title'], v['extract'])
+                    elif converts.get(v['title']) in dic:
+                        self.insert_wiki_intro(
+                            is_people, converts[v['title']], v['extract'])
                     elif ' ' in v['title']:
-                        for term in v['title'].split(' '):
-                            if term in self.pending_terms:
-                                insert_wiki_intro(term, v['extract'])
+                        for token in v['title'].split(' '):
+                            if token in dic:
+                                self.insert_wiki_intro(
+                                    is_people, token, v['extract'])
                                 break
         except HTTPError:
             pass
 
-        self.insert_rest_pending_terms()
+        if is_people:
+            self.insert_rest_pending_entities(self.people, self.pending_people)
+        else:
+            self.insert_rest_pending_entities(self.terms, self.pending_terms) 
 
-    def insert_rest_pending_terms(self):
-        for label, term in self.pending_terms.items():
+    def insert_rest_pending_entities(self, dic, pending_dic):
+        for label, entity in self.pending_dic.items():
             insert_x_entity_description(
-                self.conn, (term['text'], label, None, term['id']))
+                self.conn, (entity['text'], label, None, entity['id']))
 
-        self.terms.update(self.pending_terms)
-        self.pending_terms.clear()
+        dic.update(pending_dic)
+        pending_dic.clear()
 
     def insert_entity(self, data, data_type, start, text):
         self.insert_occurrence(self.entity_id, data_type, start, len(data))
@@ -93,15 +106,21 @@ class X_Ray():
                     if name not in self.names:
                         self.names[name] = self.entity_id
             self.names[data] = self.entity_id
-            self.people[data] = self.entity_id
-            insert_x_entity_description(
-                self.conn, (text, data, None, self.entity_id))
             self.num_people += 1
+            if prefs['search_people']:
+                entity = {'text': text, 'id': self.entity_id}
+                self.pending_people[data] = entity
+                if len(self.pending_people) == 20:  # max exlimit
+                    self.search_wikipedia(True, self.pending_people)
+            else:
+                self.people[data] = self.entity_id
+                insert_x_entity_description(
+                    self.conn, (text, data, None, self.entity_id))
         else:
             entity = {'text': text, 'id': self.entity_id}
             self.pending_terms[data] = entity
             if len(self.pending_terms) == 20:  # max exlimit
-                self.search_wikipedia()
+                self.search_wikipedia(False, self.pending_terms)
             self.num_terms += 1
 
         self.entity_id += 1
@@ -123,6 +142,9 @@ class X_Ray():
         elif name in self.terms:
             self.insert_occurrence(
                 self.terms[name]['id'], 'TERMS', start, len(name))
+        elif prefs['search_people'] and name in self.pending_people:
+            self.insert_occurrence(
+                self.pending_people[name]['id'], 'PERSON', start, len(name))
         elif name in self.pending_terms:
             self.insert_occurrence(
                 self.pending_terms[name]['id'], 'TERMS', start, len(name))
@@ -137,12 +159,18 @@ class X_Ray():
         def top_mentioned(counter):
             return ','.join(map(str, [e[0] for e in counter.most_common(10)]))
 
-        self.insert_rest_pending_terms()
+        self.insert_rest_pending_entities(self.terms, self.pending_terms)
+        if prefs['search_people']:
+            self.insert_rest_pending_entities(self.people, self.pending_people)
 
-        for name, entity_id in self.people.items():
-            insert_x_entity(
-                self.conn,
-                (entity_id, name, 1, self.people_counter[entity_id]))
+        for name, value in self.people.items():
+            if prefs['search_people']:
+                insert_x_entity(
+                    self.conn,
+                    (value['id'], name, 1, self.people_counter[value['id']]))
+            else:
+                insert_x_entity(
+                    self.conn, (value, name, 1, self.people_counter[value]))
         for label, value in self.terms.items():
             insert_x_entity(
                 self.conn,

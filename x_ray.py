@@ -22,7 +22,6 @@ class X_Ray():
         self.entity_id = 1
         self.num_people = 0
         self.num_terms = 0
-        self.erl = 0
         self.names = {}
         self.people = {}
         self.people_counter = Counter()
@@ -75,12 +74,12 @@ class X_Ray():
                             is_people, v['title'], v['extract'])
                     elif converts.get(v['title']) in dic:
                         self.insert_wiki_intro(
-                            is_people, converts[v['title']], v['extract'])
+                            is_people, v['title'], v['extract'])
                     elif ' ' in v['title']:
                         for token in v['title'].split(' '):
                             if token in dic:
                                 self.insert_wiki_intro(
-                                    is_people, token, v['extract'])
+                                    is_people, v['title'], v['extract'])
                                 break
         except HTTPError:
             pass
@@ -91,7 +90,7 @@ class X_Ray():
             self.insert_rest_pending_entities(self.terms, self.pending_terms)
 
     def insert_rest_pending_entities(self, dic, pending_dic):
-        for label, entity in self.pending_dic.items():
+        for label, entity in pending_dic.items():
             insert_x_entity_description(
                 self.conn, (entity['text'], label, None, entity['id']))
 
@@ -131,23 +130,22 @@ class X_Ray():
         else:
             self.terms_counter[entity_id] += 1
         insert_x_occurrence(self.conn, (entity_id, start, length))
-        self.erl = start + length - 1
 
     def search(self, name, tag, start, text):
         if name == '':
             return None
-        elif name in self.names:
-            self.insert_occurrence(
-                self.names[name], 'PERSON', start, len(name))
         elif name in self.terms:
             self.insert_occurrence(
                 self.terms[name]['id'], 'TERMS', start, len(name))
-        elif prefs['search_people'] and name in self.pending_people:
-            self.insert_occurrence(
-                self.pending_people[name]['id'], 'PERSON', start, len(name))
         elif name in self.pending_terms:
             self.insert_occurrence(
                 self.pending_terms[name]['id'], 'TERMS', start, len(name))
+        elif name in self.names:
+            self.insert_occurrence(
+                self.names[name], 'PERSON', start, len(name))
+        elif prefs['search_people'] and name in self.pending_people:
+            self.insert_occurrence(
+                self.pending_people[name]['id'], 'PERSON', start, len(name))
         else:
             for punc in '.?!':
                 if punc in text:
@@ -178,7 +176,7 @@ class X_Ray():
                 (value['id'], label, 2, self.terms_counter[value['id']]))
 
         insert_x_book_metadata(
-            self.conn, (self.erl, self.num_people, self.num_terms))
+            self.conn, (self.num_people, self.num_terms))
         insert_x_type(
             self.conn, (1, 14, 15, 1, top_mentioned(self.people_counter)))
         insert_x_type(

@@ -1,0 +1,106 @@
+{
+  "Jinja2": {
+    "compiled": false,
+    "version": "3.0.1"
+  },
+  "MarkupSafe": {
+    "compiled": true,
+    "version": "2.0.1"
+  },
+  "blis": {
+    "compiled": true,
+    "version": "0.7.4"
+  },
+  "catalogue": {
+    "compiled": false,
+    "version": "2.0.4"
+  },
+  "certifi": {
+    "compiled": false,
+    "version": "2021.5.30"
+  },
+  "chardet": {
+    "compiled": false,
+    "version": "4.0.0"
+  },
+  "click": {
+    "compiled": false,
+    "version": "7.1.2"
+  },
+  "cymem": {
+    "compiled": true,
+    "version": "2.0.5"
+  },
+  "idna": {
+    "compiled": false,
+    "version": "2.10"
+  },
+  "murmurhash": {
+    "compiled": true,
+    "version": "1.0.5"
+  },
+  "numpy": {
+    "compiled": true,
+    "version": "1.21.0"
+  },
+  "packaging": {
+    "compiled": false,
+    "version": "20.9"
+  },
+  "pathy": {
+    "compiled": false,
+    "version": "0.6.0"
+  },
+  "preshed": {
+    "compiled": true,
+    "version": "3.0.5"
+  },
+  "pydantic": {
+    "compiled": true,
+    "version": "1.7.4"
+  },
+  "pyparsing": {
+    "compiled": false,
+    "version": "2.4.7"
+  },
+  "requests": {
+    "compiled": false,
+    "version": "2.25.1"
+  },
+  "smart-open": {
+    "compiled": false,
+    "version": "5.1.0"
+  },
+  "spacy": {
+    "compiled": true,
+    "version": "3.0.6"
+  },
+  "spacy-legacy": {
+    "compiled": false,
+    "version": "3.0.6"
+  },
+  "srsly": {
+    "compiled": true,
+    "version": "2.4.1"
+  },
+  "thinc": {
+    "compiled": true,
+    "version": "8.0.6"
+  },
+  "tqdm": {
+    "compiled": false,
+    "version": "4.61.1"
+  },
+  "typer": {
+    "compiled": false,
+    "version": "0.3.2"
+  },
+  "urllib3": {
+    "compiled": false,
+    "version": "1.26.6"
+  },
+  "wasabi": {
+    "compiled": false,
+    "version": "0.8.2"
+  }
+}

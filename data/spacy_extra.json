@@ -1,0 +1,34 @@
+{
+  "ja": {
+    "Cython": {
+      "compiled": true,
+      "version": null
+    },
+    "dartsclone": {
+      "compiled": false,
+      "version": "0.9.0"
+    },
+    "sortedcontainers": {
+      "compiled": false,
+      "version": "2.1.0"
+    },
+    "sudachidict_core": {
+      "compiled": false,
+      "version": "20210608"
+    },
+    "sudachipy": {
+      "compiled": true,
+      "version": "0.5.2"
+    }
+  },
+  "zh": {
+    "Cython": {
+      "compiled": true,
+      "version": null
+    },
+    "spacy-pkuseg": {
+      "compiled": true,
+      "version": "0.0.28"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "dan": {
+    "spacy": "da_core_news_sm",
+    "wiki": "da"
+  },
+  "deu": {
+    "spacy": "de_core_news_sm",
+    "wiki": "de"
+  },
+  "ell": {
+    "spacy": "el_core_news_sm",
+    "wiki": "el"
+  },
+  "eng": {
+    "spacy": "en_core_web_sm",
+    "wiki": "en"
+  },
+  "fra": {
+    "spacy": "fr_core_news_sm",
+    "wiki": "fr"
+  },
+  "ita": {
+    "spacy": "it_core_news_sm",
+    "wiki": "it"
+  },
+  "jpn": {
+    "spacy": "ja_core_news_sm",
+    "wiki": "ja"
+  },
+  "lit": {
+    "spacy": "lt_core_news_sm",
+    "wiki": "lt"
+  },
+  "nld": {
+    "spacy": "nl_core_news_sm",
+    "wiki": "nl"
+  },
+  "nob": {
+    "spacy": "nb_core_news_sm",
+    "wiki": "no"
+  },
+  "pol": {
+    "spacy": "pl_core_news_sm",
+    "wiki": "pl"
+  },
+  "por": {
+    "spacy": "pt_core_news_sm",
+    "wiki": "pt"
+  },
+  "ron": {
+    "spacy": "ro_core_news_sm",
+    "wiki": "ro"
+  },
+  "rus": {
+    "spacy": "ru_core_news_sm",
+    "wiki": "ru"
+  },
+  "spa": {
+    "spacy": "es_core_news_sm",
+    "wiki": "es"
+  },
+  "zho": {
+    "spacy": "zh_core_web_sm",
+    "wiki": "zh"
+  }
+}

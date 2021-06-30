@@ -4,7 +4,7 @@
 
 - https://manual.calibre-ebook.com
 
-- https://docs.python.org/3
+- https://docs.python.org
 
 - https://github.com/kovidgoyal/calibre
 
@@ -25,6 +25,10 @@
 - https://www.mediawiki.org/wiki/API:Query
 
 - https://www.mediawiki.org/wiki/API:Etiquette
+
+- https://spacy.io
+
+- https://docs.python-requests.org
 
 ## Debug
 

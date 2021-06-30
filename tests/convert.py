@@ -41,5 +41,5 @@ if args.l:
 if args.x:
     convert(args.x, 'occurrence', 'SELECT * FROM occurrence')
     convert(args.x, 'book_metadata',
-            'SELECT srl, erl, num_people, num_terms FROM book_metadata')
+            'SELECT num_people, num_terms FROM book_metadata')
     convert(args.x, 'type', 'SELECT top_mentioned_entities FROM type')

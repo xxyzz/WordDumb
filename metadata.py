@@ -5,6 +5,7 @@ import re
 import string
 
 from calibre.ebooks.metadata.mobi import MetadataUpdater
+from calibre_plugins.worddumb.unzip import load_json
 
 
 def check_metadata(db, book_id):
@@ -16,7 +17,11 @@ def check_metadata(db, book_id):
 
     # check book language is English
     book_language = mi.format_field("languages")
-    if book_language is None or 'eng' not in book_language:
+    if book_language is None or len(book_language) < 2:
+        return None
+    languages = load_json('data/languages.json')
+    book_language = book_language[1]
+    if book_language not in languages:
         return None
 
     # check book format
@@ -43,7 +48,7 @@ def check_metadata(db, book_id):
                 mu = MetadataUpdater(f)
                 mu.update(mi, asin=asin)
 
-    return book_id, book_fmt, asin, book_path, mi
+    return book_id, book_fmt, asin, book_path, mi, languages[book_language]
 
 
 def random_asin():

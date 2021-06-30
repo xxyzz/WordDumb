@@ -71,7 +71,13 @@ https://user-images.githubusercontent.com/21101839/120099125-629cbd00-c16c-11eb-
 
     The X-Ray feature doesn't support macOS, because macOS prohibits calibre from loading unsigned numpy library.
 
+    Supported languages: Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Norsk bokmål, Polski, Português, Română, Ελληνικά, Русский, 中文, 日本語.
+
 https://user-images.githubusercontent.com/21101839/120099114-4ef15680-c16c-11eb-9192-1e443e01c5e6.mov
+
+- Enable search people(optional)
+
+    Search X-Ray people entities on Wikipedia, disabled by default.
 
 - Never add ASIN to your book, that will cause Kindle to replace Word Wise and X-Ray files.
 

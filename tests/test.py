@@ -27,8 +27,8 @@ class TestDumbCode(unittest.TestCase):
                 break
 
         data = check_metadata(lib_db, book_1984_id)
-        (_, cls.fmt, cls.asin, cls.book_path, _) = data
-        install_libs()
+        (_, cls.fmt, cls.asin, cls.book_path, _, _) = data
+        install_libs('en_core_web_sm')
         start_time = time.time()
         do_job(data)
         print(f'{time.time() - start_time} seconds')

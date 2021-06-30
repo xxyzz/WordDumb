@@ -11,10 +11,11 @@ class SendFile():
     def __init__(self, gui, data):
         self.gui = gui
         self.device_manager = self.gui.device_manager
-        (self.book_id, _, self.asin, self.book_path, self.mi) = data
+        (self.book_id, _, self.asin, self.book_path, self.mi, lang) = data
         self.ll_path = get_ll_path(self.asin, self.book_path)
         self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
         self.retry = False
+        self.has_ww = lang['wiki'] == 'en'
 
     # use some code from calibre.gui2.device:DeviceMixin.upload_books
     def send_files(self, job):
@@ -26,7 +27,8 @@ class SendFile():
         device_prefix = self.device_manager.device._main_prefix
         if has_book:
             device_book_path = Path(device_prefix).joinpath(next(iter(paths)))
-            self.move_file_to_device(self.ll_path, device_book_path)
+            if self.has_ww:
+                self.move_file_to_device(self.ll_path, device_book_path)
             if prefs['x-ray']:
                 self.move_file_to_device(self.x_ray_path, device_book_path)
         elif not self.retry:

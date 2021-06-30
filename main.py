@@ -8,7 +8,6 @@ from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre_plugins.worddumb.metadata import check_metadata
 from calibre_plugins.worddumb.parse_job import do_job
 from calibre_plugins.worddumb.send_file import SendFile, kindle_connected
-from calibre_plugins.worddumb.unzip import install_libs
 
 
 class ParseBook():
@@ -34,30 +33,18 @@ class ParseBook():
         if (books := len(self.metadata_list)) == 0:
             return
 
-        if books == 1:
-            self.create_jobs(install=True)
-        else:
+        for data in self.metadata_list:
+            title = data[-2].get('title')
             job = ThreadedJob(
-                "WordDumb's dumb job", 'Install dependencies',
-                install_libs, (), {}, Dispatcher(self.create_jobs))
+                "WordDumb's dumb job", f'Generating Word Wise for {title}',
+                do_job, (data,), {},
+                Dispatcher(partial(self.done, data=data, title=title)))
             self.gui.job_manager.run_threaded_job(job)
 
         self.gui.jobs_pointer.start()
         self.gui.status_bar.show_message(
             f'Generating Word Wise for {books} '
             f'{"books" if books > 1 else "book"}')
-
-    def create_jobs(self, job=None, install=False):
-        if self.job_failed(job):
-            return
-
-        for data in self.metadata_list:
-            title = data[-1].get('title')
-            job = ThreadedJob(
-                "WordDumb's dumb job", f'Generating Word Wise for {title}',
-                do_job, (data, install), {},
-                Dispatcher(partial(self.done, data=data, title=title)))
-            self.gui.job_manager.run_threaded_job(job)
 
     def done(self, job, data=None, title=None):
         if self.job_failed(job):

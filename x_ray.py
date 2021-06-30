@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 
-import gzip
-import json
-import urllib.parse
-import urllib.request
 from collections import Counter
-from urllib.error import HTTPError
 
 from calibre_plugins.worddumb import VERSION
 from calibre_plugins.worddumb.config import prefs
@@ -17,7 +12,7 @@ from calibre_plugins.worddumb.database import (insert_x_book_metadata,
 
 
 class X_Ray():
-    def __init__(self, conn):
+    def __init__(self, conn, lang):
         self.conn = conn
         self.entity_id = 1
         self.num_people = 0
@@ -29,6 +24,7 @@ class X_Ray():
         self.terms_counter = Counter()
         self.pending_terms = {}
         self.pending_people = {}
+        self.lang = lang
 
     def insert_wiki_intro(self, is_people, title, intro):
         if is_people:
@@ -39,7 +35,9 @@ class X_Ray():
             entity = self.pending_terms[title]
             self.terms[title] = entity
             del self.pending_terms[title]
-        if '.' not in intro:  # disambiguation page
+
+        if not any(period in intro for period in ['.', '。']):
+            # disambiguation page
             insert_x_entity_description(
                 self.conn, (entity['text'], title, None, entity['id']))
         else:
@@ -47,42 +45,50 @@ class X_Ray():
                 self.conn, (intro, title, 1, entity['id']))
 
     def search_wikipedia(self, is_people, dic):
-        titles = '|'.join(dic.keys())
-        url = 'https://en.wikipedia.org/w/api.php?format=json&action=query' \
-            '&prop=extracts&exintro&explaintext&redirects&exsentences=7' \
-            '&formatversion=2&titles=' + urllib.parse.quote(titles)
+        import requests
+
+        url = f'https://{self.lang}.wikipedia.org/w/api.php'
+        params = {
+            'format': 'json',
+            'action': 'query',
+            'prop': 'extracts',
+            'exintro': 1,
+            'explaintext': 1,
+            'redirects': 1,
+            'exsentences': 7,
+            'formatversion': 2,
+            'titles': '|'.join(dic.keys())
+        }
         version = '.'.join(map(str, VERSION))
-        req = urllib.request.Request(url, headers={
-            'Accept-Encoding': 'gzip',
-            'User-Agent': f'WordDumb/{version} '
+        headers = {
+            'user-agent': f'WordDumb/{version} '
             '(https://github.com/xxyzz/WordDumb)'
-        })
-        try:
-            with urllib.request.urlopen(req) as f:
-                gz = gzip.GzipFile(fileobj=f)
-                data = json.loads(gz.read())
-                converts = {}
-                for t in ['redirects', 'normalized']:
-                    for d in data['query'].get(t, []):
-                        converts[d['to']] = d['from']
-                for v in data['query']['pages']:
-                    if 'extract' not in v:  # missing or invalid
-                        continue
-                    # they are ordered by pageid, ehh
-                    if v['title'] in dic:
-                        self.insert_wiki_intro(
-                            is_people, v['title'], v['extract'])
-                    elif converts.get(v['title']) in dic:
-                        self.insert_wiki_intro(
-                            is_people, v['title'], v['extract'])
-                    elif ' ' in v['title']:
-                        for token in v['title'].split(' '):
-                            if token in dic:
-                                self.insert_wiki_intro(
-                                    is_people, v['title'], v['extract'])
-                                break
-        except HTTPError:
-            pass
+        }
+        r = requests.get(url, params=params, headers=headers)
+        data = r.json()
+        converts = {}
+        for t in ['normalized', 'redirects']:
+            for d in data['query'].get(t, []):
+                converts[d['to']] = d['from']
+        for v in data['query']['pages']:
+            if 'extract' not in v:  # missing or invalid
+                continue
+            # they are ordered by pageid, ehh
+            key = None
+            if v['title'] in dic:
+                key = v['title']
+            elif converts.get(v['title']) in dic:
+                key = converts.get(v['title'])
+            elif converts.get(converts.get(v['title'])) in dic:
+                # normalize then redirect
+                key = converts.get(converts.get(v['title']))
+            elif ' ' in v['title']:
+                for token in v['title'].split(' '):
+                    if token in dic:
+                        key = token
+                        break
+            if key is not None:
+                self.insert_wiki_intro(is_people, key, v['extract'])
 
         if is_people:
             self.insert_rest_pending_entities(self.people, self.pending_people)
@@ -97,8 +103,8 @@ class X_Ray():
         dic.update(pending_dic)
         pending_dic.clear()
 
-    def insert_entity(self, data, data_type, start, text):
-        self.insert_occurrence(self.entity_id, data_type, start, len(data))
+    def insert_entity(self, data, data_type, start, text, length):
+        self.insert_occurrence(self.entity_id, data_type, start, length)
         if data_type == 'PERSON':
             if ' ' in data:  # full name
                 for name in data.split(' '):
@@ -131,27 +137,27 @@ class X_Ray():
             self.terms_counter[entity_id] += 1
         insert_x_occurrence(self.conn, (entity_id, start, length))
 
-    def search(self, name, tag, start, text):
+    def search(self, name, tag, start, text, length):
         if name == '':
             return None
         elif name in self.terms:
             self.insert_occurrence(
-                self.terms[name]['id'], 'TERMS', start, len(name))
+                self.terms[name]['id'], 'TERMS', start, length)
         elif name in self.pending_terms:
             self.insert_occurrence(
-                self.pending_terms[name]['id'], 'TERMS', start, len(name))
+                self.pending_terms[name]['id'], 'TERMS', start, length)
         elif name in self.names:
             self.insert_occurrence(
-                self.names[name], 'PERSON', start, len(name))
+                self.names[name], 'PERSON', start, length)
         elif prefs['search_people'] and name in self.pending_people:
             self.insert_occurrence(
-                self.pending_people[name]['id'], 'PERSON', start, len(name))
+                self.pending_people[name]['id'], 'PERSON', start, length)
         else:
             for punc in '.?!':
                 if punc in text:
                     text = text[:text.find(punc) + 1]
                     break
-            self.insert_entity(name, tag, start, text)
+            self.insert_entity(name, tag, start, text, length)
 
     def finish(self):
         def top_mentioned(counter):

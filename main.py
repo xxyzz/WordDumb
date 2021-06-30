@@ -72,9 +72,10 @@ class ParseBook():
                 self.censorship_error(
                     'https://raw.githubusercontent.com',
                     'nltk.download() failed', job.details)
-            elif 'URLError' in job.details and 'wikipedia' in job.details:
+            elif 'ConnectionError' in job.details \
+                 and 'wikipedia.org' in job.details:
                 self.censorship_error(
-                    'https://en.wikipedia.org',
+                    'https://wikipedia.org',
                     'It was a pleasure to burn', job.details)
             elif 'CalledProcessError' in job.details:
                 dialog = JobError(self.gui)
@@ -87,7 +88,7 @@ class ParseBook():
                 self.error_dialog(
                     'Joint MOBI',
                     f'''
-                    Please use <a href='{url}'>KindleUnpack</a>
+                    Please use <a href='{url}'>KindleUnpack</a>'s '-s' option
                     to split the book.
                     ''', job.details)
             else:

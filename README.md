@@ -81,7 +81,7 @@ https://user-images.githubusercontent.com/21101839/120099114-4ef15680-c16c-11eb-
 
 - Never add ASIN to your book, that will cause Kindle to replace Word Wise and X-Ray files.
 
-- This plugin requires access to https://files.pythonhosted.org (download dependencies) and https://raw.githubusercontent.com (download NLTK data) at first run, and https://en.wikipedia.org every time if X-Ray is enabled. These domains might be blocked in some countries.
+- This plugin requires access to https://files.pythonhosted.org (download dependencies) and https://raw.githubusercontent.com (download NLTK and spaCy model) at first run, and https://wikipedia.org every time if X-Ray is enabled. These domains might be blocked in some countries.
 
 ## I need about tree-fiddy
 

@@ -25,7 +25,8 @@ def do_job(data, abort=None, log=None, notifications=None):
             return
 
     if prefs['x-ray']:
-        if (x_ray_conn := create_x_ray_db(asin, book_path)) is None:
+        x_ray_conn = create_x_ray_db(asin, book_path, lang['wiki'])
+        if x_ray_conn is None:
             return
         x_ray = X_Ray(x_ray_conn, lang['wiki'])
         import spacy

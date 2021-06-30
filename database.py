@@ -70,7 +70,7 @@ def get_x_ray_path(asin, book_path):
     return Path(book_path).parent.joinpath(f'XRAY.entities.{asin}.asc')
 
 
-def create_x_ray_db(asin, book_path):
+def create_x_ray_db(asin, book_path, lang):
     if (x_ray_conn := check_db_file(get_x_ray_path(asin, book_path))) is None:
         return None
     x_ray_conn.executescript('''
@@ -167,8 +167,10 @@ def create_x_ray_db(asin, book_path):
     INSERT INTO source (id, label, url) VALUES(2, 4, 22);
     ''')
 
-    x_ray_conn.executemany('INSERT INTO string VALUES(?, ?, ?)',
-                           load_json('data/x_ray_strings.json'))
+    str_list = load_json('data/x_ray_strings.json')
+    if lang != 'en':
+        str_list[-2][-1] = f'https://{lang}.wikipedia.org/wiki/%s'
+    x_ray_conn.executemany('INSERT INTO string VALUES(?, ?, ?)', str_list)
 
     return x_ray_conn
 

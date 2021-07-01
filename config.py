@@ -3,35 +3,59 @@ import platform
 import webbrowser
 
 from calibre.utils.config import JSONConfig
-from PyQt5.Qt import QPushButton, QCheckBox, QVBoxLayout, QWidget
+from PyQt5.Qt import (QCheckBox, QComboBox, QHBoxLayout, QLabel, QPushButton,
+                      QVBoxLayout, QWidget)
 
 prefs = JSONConfig('plugins/worddumb')
-prefs.defaults['x-ray'] = True if platform.system() != 'Darwin' else False
+prefs.defaults['x-ray'] = False if platform.system() == 'Darwin' else True
 prefs.defaults['search_people'] = False
+prefs.defaults['zh_wiki_variant'] = 'cn'
 
 
 class ConfigWidget(QWidget):
     def __init__(self):
-        QWidget.__init__(self)
+        super().__init__()
 
-        self.vl = QVBoxLayout()
-        self.setLayout(self.vl)
+        vl = QVBoxLayout()
+        self.setLayout(vl)
 
         self.xray_box = QCheckBox('X-Ray')
         self.xray_box.setChecked(prefs['x-ray'])
-        self.vl.addWidget(self.xray_box)
+        vl.addWidget(self.xray_box)
 
         self.search_people_box = QCheckBox('Search people')
         self.search_people_box.setChecked(prefs['search_people'])
-        self.vl.addWidget(self.search_people_box)
+        vl.addWidget(self.search_people_box)
 
-        self.donate_button = QPushButton('Donate')
-        self.donate_button.clicked.connect(self.donate)
-        self.vl.addWidget(self.donate_button)
+        zh_wiki_hl = QHBoxLayout()
+        zh_label = QLabel('Chinese Wikipedia variant')
+        self.zh_wiki_box = QComboBox()
+        zh_variants = {
+            'cn': '大陆简体',
+            'hk': '香港繁體',
+            'mo': '澳門繁體',
+            'my': '大马简体',
+            'sg': '新加坡简体',
+            'tw': '臺灣正體'
+        }
+        self.zh_wiki_box.addItem(zh_variants['cn'], 'cn')
+        self.zh_wiki_box.addItem(zh_variants['hk'], 'hk')
+        self.zh_wiki_box.addItem(zh_variants['mo'], 'mo')
+        self.zh_wiki_box.addItem(zh_variants['my'], 'my')
+        self.zh_wiki_box.addItem(zh_variants['sg'], 'sg')
+        self.zh_wiki_box.addItem(zh_variants['tw'], 'tw')
+        self.zh_wiki_box.setCurrentText(zh_variants[prefs['zh_wiki_variant']])
+        zh_wiki_hl.addWidget(zh_label)
+        zh_wiki_hl.addWidget(self.zh_wiki_box)
+        vl.addLayout(zh_wiki_hl)
 
-        self.github_button = QPushButton('Source code')
-        self.github_button.clicked.connect(self.github)
-        self.vl.addWidget(self.github_button)
+        donate_button = QPushButton('Donate')
+        donate_button.clicked.connect(self.donate)
+        vl.addWidget(donate_button)
+
+        github_button = QPushButton('Source code')
+        github_button.clicked.connect(self.github)
+        vl.addWidget(github_button)
 
     def donate(self):
         webbrowser.open('https://liberapay.com/xxyzz/donate')
@@ -42,3 +66,4 @@ class ConfigWidget(QWidget):
     def save_settings(self):
         prefs['x-ray'] = self.xray_box.isChecked()
         prefs['search_people'] = self.search_people_box.isChecked()
+        prefs['zh_wiki_variant'] = self.zh_wiki_box.currentData()

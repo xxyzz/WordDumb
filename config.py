@@ -38,12 +38,8 @@ class ConfigWidget(QWidget):
             'sg': '新加坡简体',
             'tw': '臺灣正體'
         }
-        self.zh_wiki_box.addItem(zh_variants['cn'], 'cn')
-        self.zh_wiki_box.addItem(zh_variants['hk'], 'hk')
-        self.zh_wiki_box.addItem(zh_variants['mo'], 'mo')
-        self.zh_wiki_box.addItem(zh_variants['my'], 'my')
-        self.zh_wiki_box.addItem(zh_variants['sg'], 'sg')
-        self.zh_wiki_box.addItem(zh_variants['tw'], 'tw')
+        for variant, text in zh_variants.items():
+            self.zh_wiki_box.addItem(text, variant)
         self.zh_wiki_box.setCurrentText(zh_variants[prefs['zh_wiki_variant']])
         zh_wiki_hl.addWidget(zh_label)
         zh_wiki_hl.addWidget(self.zh_wiki_box)

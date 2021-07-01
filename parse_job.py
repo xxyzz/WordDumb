@@ -34,26 +34,30 @@ def do_job(data, abort=None, log=None, notifications=None):
                          exclude=['tok2vec', 'tagger', 'parser',
                                   'attribute_ruler', 'lemmatizer'])
 
+    is_kfx = book_fmt == 'KFX'
     if create_ww:
         lemmas = load_json('data/lemmas.json')
-    for (start, text) in parse_book(book_path, book_fmt):
-        if create_ww:
-            find_lemma(start, text, lemmas, ll_conn)
-        if prefs['x-ray']:
-            find_named_entity(start, text, x_ray, nlp)
+        for (text, start) in parse_book(book_path, is_kfx):
+            find_lemma(start, text, lemmas, ll_conn, is_kfx)
+            if prefs['x-ray']:
+                find_named_entity(start, x_ray, nlp(text), is_kfx)
 
-    if create_ww:
         ll_conn.commit()
         ll_conn.close()
+    else:
+        for doc, start in nlp.pipe(parse_book(book_path, is_kfx),
+                                   as_tuples=True):
+            find_named_entity(start, x_ray, doc, is_kfx)
+
     if prefs['x-ray']:
         x_ray.finish()
 
 
-def parse_book(book_path, book_fmt):
-    if book_fmt == 'KFX':
-        yield from parse_kfx(book_path)  # str
+def parse_book(book_path, is_kfx):
+    if is_kfx:
+        yield from parse_kfx(book_path)
     else:
-        yield from parse_mobi(book_path)  # bytes str
+        yield from parse_mobi(book_path)
 
 
 def parse_kfx(path_of_book):
@@ -61,7 +65,7 @@ def parse_kfx(path_of_book):
 
     data = YJ_Book(path_of_book).convert_to_json_content()
     for entry in json.loads(data)['data']:
-        yield (entry['position'], entry['content'])
+        yield (entry['content'], entry['position'])
 
 
 def parse_mobi(book_path):
@@ -85,42 +89,39 @@ def parse_mobi(book_path):
 
     # match text between HTML tags
     for match_text in re.finditer(b'>[^<>]+<', html):
-        yield (match_text.start() + 1, match_text.group(0)[1:-1])
+        yield (match_text.group(0)[1:-1].decode('utf-8'),
+               match_text.start() + 1)
 
 
-def find_lemma(start, text, lemmas, ll_conn):
+def find_lemma(start, text, lemmas, ll_conn, is_kfx):
     from nltk.corpus import wordnet as wn
 
-    if (bytes_str := isinstance(text, bytes)):
-        text = text.decode('utf-8')
     for match in re.finditer(r'[a-zA-Z\u00AD]{3,}', text):
         lemma = wn.morphy(match.group(0).replace('\u00AD', '').lower())
         if lemma in lemmas:
-            if bytes_str:
-                index = start + len(text[:match.start()].encode('utf-8'))
-            else:
+            if is_kfx:
                 index = start + match.start()
+            else:
+                index = start + len(text[:match.start()].encode('utf-8'))
             insert_lemma(ll_conn, (index,) + tuple(lemmas[lemma]))
 
 
-def find_named_entity(start, text, x_ray, nlp):
-    if (bytes_str := isinstance(text, bytes)):
-        text = text.decode('utf-8')
-
+def find_named_entity(start, x_ray, doc, is_kfx):
     # https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L318
     labels = {'EVENT', 'FAC', 'GPE', 'LANGUAGE', 'LAW', 'LOC', 'NORP', 'ORG',
               'PERSON', 'PRODUCT', 'WORK_OF_ART', 'MISC', 'PER', 'FACILITY',
               'ORGANIZATION', 'NAT_REL_POL',  # Romanian
               'geogName', 'orgName', 'persName', 'placeName'}  # Polish
-    for ent in nlp(text).ents:
+    for ent in doc.ents:
         if ent.label_ not in labels:
             continue
         index = ent.start_char
         ent_start = start
-        if bytes_str:
-            ent_start += len(text[:index].encode('utf-8'))
-            ent_len = len(ent.text.encode('utf-8'))
-        else:
-            ent_start += len(text[:index])
+        if is_kfx:
+            ent_start += len(doc.text[:index])
             ent_len = len(ent.text)
-        x_ray.search(ent.text, ent.label_, ent_start, text[index:], ent_len)
+        else:
+            ent_start += len(doc.text[:index].encode('utf-8'))
+            ent_len = len(ent.text.encode('utf-8'))
+        x_ray.search(ent.text, ent.label_, ent_start,
+                     doc.text[index:], ent_len)

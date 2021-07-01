@@ -64,6 +64,8 @@ class X_Ray():
             'user-agent': f'WordDumb/{version} '
             '(https://github.com/xxyzz/WordDumb)'
         }
+        if self.lang == 'zh':
+            headers['accept-language'] = f"zh-{prefs['zh_wiki_variant']}"
         r = requests.get(url, params=params, headers=headers)
         data = r.json()
         converts = {}

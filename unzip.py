@@ -94,7 +94,11 @@ def pip_install(pkg, pkg_version=None, compiled=False, url=None):
             args.append(f'{pkg}=={pkg_version}')
         else:
             args.append(pkg)
-        subprocess.run(args, check=True, capture_output=True)
+        if system == 'Windows':
+            subprocess.run(args, check=True, capture_output=True,
+                           creationflags=subprocess.CREATE_NO_WINDOW)
+        else:
+            subprocess.run(args, check=True, capture_output=True)
 
     if (p := str(folder)) not in sys.path:
         sys.path.append(p)

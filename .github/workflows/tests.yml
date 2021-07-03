@@ -38,13 +38,16 @@ jobs:
       - name: Add plugin
         run: calibre-customize -a worddumb.zip
 
+      - name: Get calibre python version
+        run: echo "CALIBRE_PY=$(calibre-debug -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
+
       - name: Restore dependencies and nltk model
         uses: actions/cache@v2
         with:
           path: |
             ~/.config/calibre/plugins/worddumb-libs
             ~/.config/calibre/plugins/worddumb-nltk
-          key: deps-${{ hashFiles('data/spacy.json') }}
+          key: deps-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Run test
         run: |

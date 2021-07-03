@@ -26,6 +26,23 @@ class X_Ray():
         self.pending_people = {}
         self.lang = lang
 
+        import requests
+        self.s = requests.Session()
+        self.s.params = {
+            'format': 'json',
+            'action': 'query',
+            'prop': 'extracts',
+            'exintro': 1,
+            'explaintext': 1,
+            'redirects': 1,
+            'exsentences': 7,
+            'formatversion': 2
+        }
+        self.s.headers.update({
+            'user-agent': f"WordDumb/{'.'.join(map(str, VERSION))} "
+            '(https://github.com/xxyzz/WordDumb)'
+        })
+
     def insert_wiki_intro(self, is_people, title, intro):
         if is_people:
             entity = self.pending_people[title]
@@ -45,28 +62,14 @@ class X_Ray():
                 self.conn, (intro, title, 1, entity['id']))
 
     def search_wikipedia(self, is_people, dic):
-        import requests
-
         url = f'https://{self.lang}.wikipedia.org/w/api.php'
-        params = {
-            'format': 'json',
-            'action': 'query',
-            'prop': 'extracts',
-            'exintro': 1,
-            'explaintext': 1,
-            'redirects': 1,
-            'exsentences': 7,
-            'formatversion': 2,
-            'titles': '|'.join(dic.keys())
-        }
-        version = '.'.join(map(str, VERSION))
-        headers = {
-            'user-agent': f'WordDumb/{version} '
-            '(https://github.com/xxyzz/WordDumb)'
-        }
+        params = {'titles': '|'.join(dic.keys())}
         if self.lang == 'zh':
-            headers['accept-language'] = f"zh-{prefs['zh_wiki_variant']}"
-        r = requests.get(url, params=params, headers=headers)
+            r = self.s.get(
+                url, params=params,
+                headers={'accept-language': f"zh-{prefs['zh_wiki_variant']}"})
+        else:
+            r = self.s.get(url, params=params)
         data = r.json()
         converts = {}
         for t in ['normalized', 'redirects']:
@@ -190,5 +193,6 @@ class X_Ray():
         insert_x_type(
             self.conn, (2, 16, 17, 2, top_mentioned(self.terms_counter)))
 
+        self.s.close()
         self.conn.commit()
         self.conn.close()

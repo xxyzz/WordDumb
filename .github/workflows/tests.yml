@@ -38,6 +38,14 @@ jobs:
       - name: Add plugin
         run: calibre-customize -a worddumb.zip
 
+      - name: Restore dependencies and nltk model
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.config/calibre/plugins/worddumb-libs
+            ~/.config/calibre/plugins/worddumb-nltk
+          key: deps-${{ hashFiles('data/spacy.json') }}
+
       - name: Run test
         run: |
           cd tests

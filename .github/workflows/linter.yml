@@ -20,11 +20,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Update pip
-        run: pip3 install -U pip setuptools wheel
-
       - name: Install flake8
-        run: pip3 install flake8
+        run: python3 -m pip install flake8
 
       - name: Lint Code Base
         run: flake8 .

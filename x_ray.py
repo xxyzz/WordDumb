@@ -142,7 +142,7 @@ class X_Ray():
             self.terms_counter[entity_id] += 1
         insert_x_occurrence(self.conn, (entity_id, start, length))
 
-    def search(self, name, tag, start, text, length):
+    def search(self, name, tag, start, sent, length):
         if name == '':
             return None
         elif name in self.terms:
@@ -158,11 +158,7 @@ class X_Ray():
             self.insert_occurrence(
                 self.pending_people[name]['id'], 'PERSON', start, length)
         else:
-            for punc in '.?!':
-                if punc in text:
-                    text = text[:text.find(punc) + 1]
-                    break
-            self.insert_entity(name, tag, start, text, length)
+            self.insert_entity(name, tag, start, sent, length)
 
     def finish(self):
         def top_mentioned(counter):

@@ -31,8 +31,9 @@ def do_job(data, abort=None, log=None, notifications=None):
         x_ray = X_Ray(x_ray_conn, lang['wiki'])
         import spacy
         nlp = spacy.load(lang['spacy'],
-                         exclude=['tok2vec', 'tagger', 'parser',
-                                  'attribute_ruler', 'lemmatizer'])
+                         exclude=['tok2vec', 'morphologizer', 'tagger',
+                                  'parser', 'attribute_ruler', 'lemmatizer'])
+        nlp.enable_pipe("senter")
 
     is_kfx = book_fmt == 'KFX'
     if create_ww:
@@ -112,16 +113,16 @@ def find_named_entity(start, x_ray, doc, is_kfx):
               'PERSON', 'PRODUCT', 'WORK_OF_ART', 'MISC', 'PER', 'FACILITY',
               'ORGANIZATION', 'NAT_REL_POL',  # Romanian
               'geogName', 'orgName', 'persName', 'placeName'}  # Polish
+
     for ent in doc.ents:
         if ent.label_ not in labels:
             continue
-        index = ent.start_char
-        ent_start = start
+
         if is_kfx:
-            ent_start += len(doc.text[:index])
+            ent_start = start + len(doc.text[:ent.start_char])
             ent_len = len(ent.text)
         else:
-            ent_start += len(doc.text[:index].encode('utf-8'))
+            ent_start = start + len(doc.text[:ent.start_char].encode('utf-8'))
             ent_len = len(ent.text.encode('utf-8'))
-        x_ray.search(ent.text, ent.label_, ent_start,
-                     doc.text[index:], ent_len)
+
+        x_ray.search(ent.text, ent.label_, ent_start, ent.sent.text, ent_len)

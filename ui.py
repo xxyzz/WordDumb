@@ -1,18 +1,51 @@
 #!/usr/bin/env python3
 
+import platform
+from functools import partial
+
 from calibre.gui2.actions import InterfaceAction
+from calibre_plugins.worddumb.config import ConfigWidget
 from calibre_plugins.worddumb.main import ParseBook
 
 
 class WordDumb(InterfaceAction):
     name = 'WordDumb'
     action_spec = ('WordDumb', None, 'Good morning Krusty Crew!', None)
+    action_type = 'current'
+    action_add_menu = True
+    if platform.system() == 'Darwin':
+        action_menu_clone_qaction = 'Create Word Wise'
+    else:
+        action_menu_clone_qaction = 'Create Word Wise and X-Ray'
 
     def genesis(self):
         icon = get_icons('starfish.svg')  # noqa: F821
         self.qaction.setIcon(icon)
-        self.qaction.triggered.connect(self.run)
+        self.menu = self.qaction.menu()
 
-    def run(self):
-        p = ParseBook(self.gui)
-        p.parse()
+        if platform.system() == 'Darwin':
+            self.qaction.triggered.connect(partial(run, self.gui, True, False))
+        else:
+            self.qaction.triggered.connect(partial(run, self.gui, True, True))
+            self.create_menu_action(
+                self.menu, 'Word Wise', 'Create Word Wise',
+                triggered=partial(run, self.gui, True, False))
+            self.create_menu_action(
+                self.menu, 'X-Ray', 'Create X-Ray',
+                triggered=partial(run, self.gui, False, True))
+
+        self.menu.addSeparator()
+        self.create_menu_action(self.menu, 'Preferences', 'Preferences',
+                                triggered=self.config)
+        self.menu.addSeparator()
+        self.create_menu_action(self.menu, 'Donate', 'Donate',
+                                description='I need about tree-fiddy.',
+                                triggered=ConfigWidget.donate)
+        self.qaction.setMenu(self.menu)
+
+    def config(self):
+        self.interface_action_base_plugin.do_user_config(self.gui)
+
+
+def run(gui, create_ww, create_x):
+    ParseBook(gui).parse(create_ww, create_x)

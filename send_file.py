@@ -3,7 +3,6 @@ import shutil
 from pathlib import Path
 
 from calibre.gui2 import FunctionDispatcher
-from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 
 
@@ -11,11 +10,10 @@ class SendFile():
     def __init__(self, gui, data):
         self.gui = gui
         self.device_manager = self.gui.device_manager
-        (self.book_id, _, self.asin, self.book_path, self.mi, lang) = data
+        (self.book_id, _, self.asin, self.book_path, self.mi, _) = data
         self.ll_path = get_ll_path(self.asin, self.book_path)
         self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
         self.retry = False
-        self.has_ww = lang['wiki'] == 'en'
 
     # use some code from calibre.gui2.device:DeviceMixin.upload_books
     def send_files(self, job):
@@ -27,10 +25,8 @@ class SendFile():
         device_prefix = self.device_manager.device._main_prefix
         if has_book:
             device_book_path = Path(device_prefix).joinpath(next(iter(paths)))
-            if self.has_ww:
-                self.move_file_to_device(self.ll_path, device_book_path)
-            if prefs['x-ray']:
-                self.move_file_to_device(self.x_ray_path, device_book_path)
+            self.move_file_to_device(self.ll_path, device_book_path)
+            self.move_file_to_device(self.x_ray_path, device_book_path)
         elif not self.retry:
             # upload book and cover to device
             self.gui.update_thumbnail(self.mi)
@@ -44,6 +40,8 @@ class SendFile():
             self.retry = True
 
     def move_file_to_device(self, file_path, device_book_path):
+        if not file_path.is_file():
+            return
         sidecar_folder = device_book_path.parent.joinpath(
             f'{device_book_path.stem}.sdr')
         if not sidecar_folder.is_dir():

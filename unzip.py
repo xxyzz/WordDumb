@@ -9,7 +9,6 @@ import zipfile
 from pathlib import Path
 
 from calibre.utils.config import config_dir
-from calibre_plugins.worddumb.config import prefs
 
 PLUGIN_PATH = Path(config_dir).joinpath('plugins/WordDumb.zip')
 
@@ -20,8 +19,9 @@ def load_json(filepath):
             return json.load(f)
 
 
-def install_libs(model, abort=None, log=None, notifications=None):
-    if prefs['x-ray']:
+def install_libs(model, create_ww=True, create_x=True,
+                 abort=None, log=None, notifications=None):
+    if create_x:
         pkgs = load_json('data/spacy.json')
         for pkg, value in pkgs.items():
             pip_install(pkg, value['version'], value['compiled'])
@@ -32,13 +32,14 @@ def install_libs(model, abort=None, log=None, notifications=None):
         install_extra_deps(model)
 
     # NLTK doesn't require certain version of click and tqdm package
-    if prefs['x-ray']:
-        nltk_deps = ['nltk', 'joblib']
-    else:
-        nltk_deps = ['nltk', 'joblib', 'click', 'tqdm']  # exclude regex
-    for pkg in nltk_deps:
-        pip_install(pkg)
-    download_nltk_data()
+    if create_ww: 
+        if create_x:
+            nltk_deps = ['nltk', 'joblib']
+        else:
+            nltk_deps = ['nltk', 'joblib', 'click', 'tqdm']  # exclude regex
+        for pkg in nltk_deps:
+            pip_install(pkg)
+        download_nltk_data()
 
 
 def download_nltk_data():

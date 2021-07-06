@@ -5,26 +5,25 @@ import re
 from calibre.ebooks.mobi.reader.mobi6 import MobiReader
 from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
 from calibre.utils.logging import default_log
-from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import (create_lang_layer,
                                                create_x_ray_db, insert_lemma)
 from calibre_plugins.worddumb.unzip import install_libs, load_json
 from calibre_plugins.worddumb.x_ray import X_Ray
 
 
-def do_job(data, abort=None, log=None, notifications=None):
+def do_job(data, create_ww=True, create_x=True,
+           abort=None, log=None, notifications=None):
     (_, book_fmt, asin, book_path, _, lang) = data
-    install_libs(lang['spacy'])
+    install_libs(lang['spacy'], create_ww, create_x)
 
-    create_ww = False
-    if lang['wiki'] == 'en':
+    if create_ww:
         ll_conn = create_lang_layer(asin, book_path, book_fmt)
-        if ll_conn is not None:
-            create_ww = True
-        elif not prefs['x-ray']:
-            return
+        if ll_conn is None:
+            create_ww = False
+            if not create_x:
+                return
 
-    if prefs['x-ray']:
+    if create_x:
         x_ray_conn = create_x_ray_db(asin, book_path, lang['wiki'])
         if x_ray_conn is None:
             return
@@ -40,7 +39,7 @@ def do_job(data, abort=None, log=None, notifications=None):
         lemmas = load_json('data/lemmas.json')
         for (text, start) in parse_book(book_path, is_kfx):
             find_lemma(start, text, lemmas, ll_conn, is_kfx)
-            if prefs['x-ray']:
+            if create_x:
                 find_named_entity(start, x_ray, nlp(text), is_kfx)
 
         ll_conn.commit()
@@ -50,7 +49,7 @@ def do_job(data, abort=None, log=None, notifications=None):
                                    as_tuples=True):
             find_named_entity(start, x_ray, doc, is_kfx)
 
-    if prefs['x-ray']:
+    if create_x:
         x_ray.finish()
 
 

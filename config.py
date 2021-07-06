@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import platform
+
 import webbrowser
 
 from calibre.utils.config import JSONConfig
@@ -7,7 +7,6 @@ from PyQt5.Qt import (QCheckBox, QComboBox, QHBoxLayout, QLabel, QPushButton,
                       QVBoxLayout, QWidget)
 
 prefs = JSONConfig('plugins/worddumb')
-prefs.defaults['x-ray'] = False if platform.system() == 'Darwin' else True
 prefs.defaults['search_people'] = False
 prefs.defaults['zh_wiki_variant'] = 'cn'
 
@@ -18,10 +17,6 @@ class ConfigWidget(QWidget):
 
         vl = QVBoxLayout()
         self.setLayout(vl)
-
-        self.xray_box = QCheckBox('X-Ray')
-        self.xray_box.setChecked(prefs['x-ray'])
-        vl.addWidget(self.xray_box)
 
         self.search_people_box = QCheckBox('Search people')
         self.search_people_box.setChecked(prefs['search_people'])
@@ -53,13 +48,13 @@ class ConfigWidget(QWidget):
         github_button.clicked.connect(self.github)
         vl.addWidget(github_button)
 
-    def donate(self):
+    @staticmethod
+    def donate():
         webbrowser.open('https://liberapay.com/xxyzz/donate')
 
     def github(self):
         webbrowser.open('https://github.com/xxyzz/WordDumb')
 
     def save_settings(self):
-        prefs['x-ray'] = self.xray_box.isChecked()
         prefs['search_people'] = self.search_people_box.isChecked()
         prefs['zh_wiki_variant'] = self.zh_wiki_box.currentData()

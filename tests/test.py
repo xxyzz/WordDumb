@@ -28,9 +28,10 @@ class TestDumbCode(unittest.TestCase):
 
         data = check_metadata(lib_db, book_1984_id)
         (_, cls.fmt, cls.asin, cls.book_path, _, _) = data
-        install_libs('en_core_web_sm')
+        create_x = False if platform.system() == 'Darwin' else True
+        install_libs('en_core_web_sm', create_x=create_x)
         start_time = time.time()
-        do_job(data)
+        do_job(data, create_x=create_x)
         print(f'{time.time() - start_time} seconds')
 
     def check_db(self, test_json_path, created_db_path, table, sql):

@@ -15,12 +15,11 @@ def check_metadata(db, book_id):
     book_fmt = None
     asin = None
 
-    # check book language is English
-    book_language = mi.format_field("languages")
-    if book_language is None or len(book_language) < 2:
+    book_language = mi.get("languages")
+    if book_language is None or len(book_language) == 0:
         return None
     languages = load_json('data/languages.json')
-    book_language = book_language[1]
+    book_language = book_language[0]
     if book_language not in languages:
         return None
 

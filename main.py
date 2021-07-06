@@ -15,7 +15,7 @@ class ParseBook():
         self.gui = gui
         self.metadata_list = []
 
-    def parse(self):
+    def parse(self, create_ww=True, create_x=True):
         # get currently selected books
         rows = self.gui.library_view.selectionModel().selectedRows()
         if not rows or len(rows) == 0:
@@ -30,23 +30,30 @@ class ParseBook():
                 continue
             self.metadata_list.append(data)
 
-        if (books := len(self.metadata_list)) == 0:
+        if len(self.metadata_list) == 0:
             return
 
         for data in self.metadata_list:
+            if data[-1]['wiki'] != 'en':
+                create_ww = False
             title = data[-2].get('title')
+            notif = []
+            if create_ww:
+                notif.append('Word Wise')
+            if create_x:
+                notif.append('X-Ray')
+            notif = ' and '.join(notif)
+
             job = ThreadedJob(
-                "WordDumb's dumb job", f'Generating Word Wise for {title}',
-                do_job, (data,), {},
-                Dispatcher(partial(self.done, data=data, title=title)))
+                "WordDumb's dumb job", f'Generating {notif} for {title}',
+                do_job, (data, create_ww, create_x), {},
+                Dispatcher(partial(self.done, data=data,
+                                   notif=f'{notif} generated for {title}')))
             self.gui.job_manager.run_threaded_job(job)
 
         self.gui.jobs_pointer.start()
-        self.gui.status_bar.show_message(
-            f'Generating Word Wise for {books} '
-            f'{"books" if books > 1 else "book"}')
 
-    def done(self, job, data=None, title=None):
+    def done(self, job, data=None, notif=None):
         if self.job_failed(job):
             return
 
@@ -55,7 +62,7 @@ class ParseBook():
             sf = SendFile(self.gui, data)
             sf.send_files(None)
 
-        self.gui.status_bar.show_message(f'Word Wise generated for {title}')
+        self.gui.status_bar.show_message(notif)
 
     def job_failed(self, job):
         if job and job.failed:

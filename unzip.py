@@ -107,7 +107,7 @@ def pip_install(pkg, pkg_version=None, compiled=False, url=None):
             subprocess.run(args, check=True, capture_output=True)
 
     if (p := str(folder)) not in sys.path:
-        sys.path.append(p)
+        sys.path.insert(0, p)
 
 
 def install_extra_deps(model):

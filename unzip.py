@@ -32,7 +32,7 @@ def install_libs(model, create_ww=True, create_x=True,
         install_extra_deps(model)
 
     # NLTK doesn't require certain version of click and tqdm package
-    if create_ww: 
+    if create_ww:
         if create_x:
             nltk_deps = ['nltk', 'joblib']
         else:
@@ -40,6 +40,11 @@ def install_libs(model, create_ww=True, create_x=True,
         for pkg in nltk_deps:
             pip_install(pkg)
         download_nltk_data()
+
+    if create_x:
+        for pkg in ['click', 'tqdm']:
+            if (p := pkg_path(pkg)) in sys.path:
+                sys.path.remove(p)
 
 
 def download_nltk_data():
@@ -63,7 +68,7 @@ def download_nltk_model(data_folder, parent, model):
 
 
 def pip_install(pkg, pkg_version=None, compiled=False, url=None):
-    folder = Path(config_dir).joinpath(f'plugins/worddumb-libs/{pkg}')
+    folder = pkg_path(pkg)
     py_version = '.'.join(platform.python_version_tuple()[:2])
     if pkg_version:
         folder = folder.with_name(f'{folder.name}_{pkg_version}')
@@ -112,3 +117,7 @@ def install_extra_deps(model):
         if model.startswith(lang):
             for pkg, value in pkgs.items():
                 pip_install(pkg, value['version'], value['compiled'])
+
+
+def pkg_path(pkg):
+    return Path(config_dir).joinpath(f'plugins/worddumb-libs/{pkg}')

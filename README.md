@@ -2,6 +2,10 @@
 
 A calibre plugin that generates Word Wise and X-Ray files then sends them to Kindle. Supports KFX, AZW3 and MOBI eBooks.
 
+Languages X-Ray supports: Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Norsk bokmål, Polski, Português, Română, Ελληνικά, Русский, 中文, 日本語.
+
+X-Ray doesn't support macOS, because macOS prohibits calibre from loading unsigned library.
+
 ## Contribute
 
 Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
@@ -30,7 +34,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
   - Windows: https://calibre-ebook.com/download_windows64
 
-- Install Python3(pip3)
+- Install Python 3(pip3)
 
   - macOS
 
@@ -57,27 +61,21 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
     If you've installed 64-bit calibre, you should install 64-bit Python. If you have 32-bit calibre then download 32-bit Python. Select "Install Now".
 
-- Install WordDumb plugin:
+- Install WordDumb:
 
-https://user-images.githubusercontent.com/21101839/120099000-b1962280-c16b-11eb-87e7-b2e1d6e02f9f.mov
+https://user-images.githubusercontent.com/21101839/124686751-39f3aa00-df06-11eb-9b07-8c8f98544683.mov
 
-- Install jhowell's [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books(optional), the installtion method is the same as the above video.
+- Install [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books(optional).
 
-- Select one book or multiple books, right click then click the WordDumb plugin menu. If your Kindle is connected, WordDumb will send the book and created files to your device.
+- Set preferences
 
-https://user-images.githubusercontent.com/21101839/120099125-629cbd00-c16c-11eb-8c18-b0059ec64c6a.mov
+    Enable "search people" option for nonfiction books and novels that have character pages on Wikipedia to add people descriptions in X-Ray.
 
-- Disable X-Ray(optional)
+https://user-images.githubusercontent.com/21101839/124685798-90f87f80-df04-11eb-8eb6-dee012de6cab.mov
 
-    The X-Ray feature doesn't support macOS, because macOS prohibits calibre from loading unsigned numpy library.
+- Connect Kindle to calibre, select one book or multiple books then click the plugin icon or menu.
 
-    Supported languages: Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Norsk bokmål, Polski, Português, Română, Ελληνικά, Русский, 中文, 日本語.
-
-https://user-images.githubusercontent.com/21101839/120099114-4ef15680-c16c-11eb-9192-1e443e01c5e6.mov
-
-- Enable search people(optional)
-
-    Search X-Ray people entities on Wikipedia, disabled by default.
+https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-93c6-0dea4ee60e04.mov
 
 - Never add ASIN to your book, that will cause Kindle to replace Word Wise and X-Ray files.
 

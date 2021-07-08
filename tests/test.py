@@ -13,6 +13,7 @@ from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 from calibre_plugins.worddumb.metadata import check_metadata, get_asin
 from calibre_plugins.worddumb.parse_job import do_job
 from calibre_plugins.worddumb.unzip import install_libs
+from convert import LIMIT
 
 
 class TestDumbCode(unittest.TestCase):
@@ -49,7 +50,8 @@ class TestDumbCode(unittest.TestCase):
             'LanguageLayer.en.json',
             get_ll_path(self.asin, self.book_path),
             'glosses',
-            'SELECT start, difficulty, sense_id FROM glosses')
+            'SELECT start, difficulty, sense_id FROM glosses '
+            f'ORDER BY start LIMIT {LIMIT}')
 
     def test_word_wise_metadata(self):
         self.check_db(
@@ -65,7 +67,7 @@ class TestDumbCode(unittest.TestCase):
             'XRAY.entities.json',
             get_x_ray_path(self.asin, self.book_path),
             'occurrence',
-            'SELECT * FROM occurrence')
+            f'SELECT * FROM occurrence ORDER BY start LIMIT {LIMIT}')
 
     @unittest.skipIf(
         platform.system() == 'Darwin',
@@ -79,7 +81,7 @@ class TestDumbCode(unittest.TestCase):
 
     @unittest.skipIf(
         platform.system() == 'Darwin', "Yes but, can it read?")
-    def test_x_ray_type(self):
+    def test_x_ray_top_mentioned(self):
         self.check_db(
             'XRAY.entities.json',
             get_x_ray_path(self.asin, self.book_path),

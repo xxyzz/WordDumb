@@ -34,12 +34,15 @@ def convert(path, table, sql):
         json.dump(new_dic, f, indent=2, sort_keys=True)
 
 
+LIMIT = 42
 if args.l:
     convert(args.l, 'glosses',
-            'SELECT start, difficulty, sense_id FROM glosses')
+            'SELECT start, difficulty, sense_id FROM glosses '
+            f'ORDER BY start LIMIT {LIMIT}')
     convert(args.l, 'metadata', 'SELECT * FROM metadata')
 if args.x:
-    convert(args.x, 'occurrence', 'SELECT * FROM occurrence')
+    convert(args.x, 'occurrence',
+            f'SELECT * FROM occurrence ORDER BY start LIMIT {LIMIT}')
     convert(args.x, 'book_metadata',
             'SELECT num_people, num_terms FROM book_metadata')
     convert(args.x, 'type', 'SELECT top_mentioned_entities FROM type')

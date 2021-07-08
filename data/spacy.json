@@ -45,7 +45,7 @@
   },
   "packaging": {
     "compiled": false,
-    "version": "20.9"
+    "version": "21.0"
   },
   "pathy": {
     "compiled": false,
@@ -57,7 +57,7 @@
   },
   "pydantic": {
     "compiled": true,
-    "version": "1.7.4"
+    "version": "1.8.2"
   },
   "pyparsing": {
     "compiled": false,
@@ -73,11 +73,11 @@
   },
   "spacy": {
     "compiled": true,
-    "version": "3.0.6"
+    "version": "3.1.0"
   },
   "spacy-legacy": {
     "compiled": false,
-    "version": "3.0.6"
+    "version": "3.0.8"
   },
   "srsly": {
     "compiled": true,
@@ -85,15 +85,19 @@
   },
   "thinc": {
     "compiled": true,
-    "version": "8.0.6"
+    "version": "8.0.7"
   },
   "tqdm": {
     "compiled": false,
-    "version": "4.61.1"
+    "version": "4.61.2"
   },
   "typer": {
     "compiled": false,
     "version": "0.3.2"
+  },
+  "typing-extensions": {
+    "compiled": false,
+    "version": "3.10.0.0"
   },
   "urllib3": {
     "compiled": false,

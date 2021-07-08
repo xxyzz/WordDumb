@@ -25,10 +25,10 @@ def install_libs(model, create_ww=True, create_x=True,
         pkgs = load_json('data/spacy.json')
         for pkg, value in pkgs.items():
             pip_install(pkg, value['version'], value['compiled'])
-        version = '3.0.0'
+        model_v = '3.1.0'
         url = 'https://github.com/explosion/spacy-models/releases/download/'
-        url += f'{model}-{version}/{model}-{version}-py3-none-any.whl'
-        pip_install(model, version, url=url)
+        url += f'{model}-{model_v}/{model}-{model_v}-py3-none-any.whl'
+        pip_install(model, model_v, url=url)
         install_extra_deps(model)
 
     # NLTK doesn't require certain version of click and tqdm package

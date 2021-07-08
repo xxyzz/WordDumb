@@ -2,7 +2,7 @@
 
 A calibre plugin that generates Word Wise and X-Ray files then sends them to Kindle. Supports KFX, AZW3 and MOBI eBooks.
 
-Languages X-Ray supports: Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Norsk bokmål, Polski, Português, Română, Ελληνικά, Русский, 中文, 日本語.
+Languages X-Ray supports: Català, Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Norsk bokmål, Polski, Português, Română, Ελληνικά, Русский, 中文, 日本語.
 
 X-Ray doesn't support macOS, because macOS prohibits calibre from loading unsigned library.
 

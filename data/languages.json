@@ -1,4 +1,8 @@
 {
+  "cat": {
+    "spacy": "ca_core_news_sm",
+    "wiki": "ca"
+  },
   "dan": {
     "spacy": "da_core_news_sm",
     "wiki": "da"

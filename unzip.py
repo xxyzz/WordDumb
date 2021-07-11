@@ -113,10 +113,9 @@ def pip_install(pkg, pkg_version=None, compiled=False, url=None):
 def install_extra_deps(model):
     # https://spacy.io/usage/models#languages
     data = load_json('data/spacy_extra.json')
-    for lang, pkgs in data.items():
-        if model.startswith(lang):
-            for pkg, value in pkgs.items():
-                pip_install(pkg, value['version'], value['compiled'])
+    if (lang := model[:2]) in data:
+        for pkg, value in data[lang].items():
+            pip_install(pkg, value['version'], value['compiled'])
 
 
 def pkg_path(pkg):

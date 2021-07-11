@@ -42,6 +42,9 @@ class X_Ray():
             'user-agent': f"WordDumb/{'.'.join(map(str, VERSION))} "
             '(https://github.com/xxyzz/WordDumb)'
         })
+        if lang == 'zh':
+            self.s.headers.update(
+                {'accept-language': f"zh-{prefs['zh_wiki_variant']}"})
 
     def insert_wiki_intro(self, is_people, title, intro):
         if is_people:
@@ -62,14 +65,8 @@ class X_Ray():
                 self.conn, (intro, title, 1, entity['id']))
 
     def search_wikipedia(self, is_people, dic):
-        url = f'https://{self.lang}.wikipedia.org/w/api.php'
-        params = {'titles': '|'.join(dic.keys())}
-        if self.lang == 'zh':
-            r = self.s.get(
-                url, params=params,
-                headers={'accept-language': f"zh-{prefs['zh_wiki_variant']}"})
-        else:
-            r = self.s.get(url, params=params)
+        r = self.s.get(f'https://{self.lang}.wikipedia.org/w/api.php',
+                       params={'titles': '|'.join(dic.keys())})
         data = r.json()
         converts = {}
         for t in ['normalized', 'redirects']:
@@ -143,9 +140,7 @@ class X_Ray():
         insert_x_occurrence(self.conn, (entity_id, start, length))
 
     def search(self, name, tag, start, sent, length):
-        if name == '':
-            return None
-        elif name in self.terms:
+        if name in self.terms:
             self.insert_occurrence(
                 self.terms[name]['id'], 'TERMS', start, length)
         elif name in self.pending_terms:

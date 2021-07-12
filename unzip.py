@@ -19,8 +19,7 @@ def load_json(filepath):
             return json.load(f)
 
 
-def install_libs(model, create_ww=True, create_x=True,
-                 abort=None, log=None, notifications=None):
+def install_libs(model, create_ww=True, create_x=True):
     if create_x:
         pkgs = load_json('data/spacy.json')
         for pkg, value in pkgs.items():

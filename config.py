@@ -8,6 +8,7 @@ from PyQt5.Qt import (QCheckBox, QComboBox, QHBoxLayout, QLabel, QPushButton,
 
 prefs = JSONConfig('plugins/worddumb')
 prefs.defaults['search_people'] = False
+prefs.defaults['model_size'] = 'sm'
 prefs.defaults['zh_wiki_variant'] = 'cn'
 
 
@@ -21,6 +22,16 @@ class ConfigWidget(QWidget):
         self.search_people_box = QCheckBox('Search people')
         self.search_people_box.setChecked(prefs['search_people'])
         vl.addWidget(self.search_people_box)
+
+        model_size_hl = QHBoxLayout()
+        model_size_label = QLabel('spaCy model size')
+        self.model_size_box = QComboBox()
+        for size in ['sm', 'md', 'lg']:
+            self.model_size_box.addItem(size)
+        self.model_size_box.setCurrentText(prefs['model_size'])
+        model_size_hl.addWidget(model_size_label)
+        model_size_hl.addWidget(self.model_size_box)
+        vl.addLayout(model_size_hl)
 
         zh_wiki_hl = QHBoxLayout()
         zh_label = QLabel('Chinese Wikipedia variant')
@@ -57,4 +68,5 @@ class ConfigWidget(QWidget):
 
     def save_settings(self):
         prefs['search_people'] = self.search_people_box.isChecked()
+        prefs['model_size'] = self.model_size_box.currentText()
         prefs['zh_wiki_variant'] = self.zh_wiki_box.currentData()

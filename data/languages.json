@@ -1,70 +1,70 @@
 {
   "cat": {
-    "spacy": "ca_core_news_sm",
+    "spacy": "ca_core_news_",
     "wiki": "ca"
   },
   "dan": {
-    "spacy": "da_core_news_sm",
+    "spacy": "da_core_news_",
     "wiki": "da"
   },
   "deu": {
-    "spacy": "de_core_news_sm",
+    "spacy": "de_core_news_",
     "wiki": "de"
   },
   "ell": {
-    "spacy": "el_core_news_sm",
+    "spacy": "el_core_news_",
     "wiki": "el"
   },
   "eng": {
-    "spacy": "en_core_web_sm",
+    "spacy": "en_core_web_",
     "wiki": "en"
   },
   "fra": {
-    "spacy": "fr_core_news_sm",
+    "spacy": "fr_core_news_",
     "wiki": "fr"
   },
   "ita": {
-    "spacy": "it_core_news_sm",
+    "spacy": "it_core_news_",
     "wiki": "it"
   },
   "jpn": {
-    "spacy": "ja_core_news_sm",
+    "spacy": "ja_core_news_",
     "wiki": "ja"
   },
   "lit": {
-    "spacy": "lt_core_news_sm",
+    "spacy": "lt_core_news_",
     "wiki": "lt"
   },
   "nld": {
-    "spacy": "nl_core_news_sm",
+    "spacy": "nl_core_news_",
     "wiki": "nl"
   },
   "nob": {
-    "spacy": "nb_core_news_sm",
+    "spacy": "nb_core_news_",
     "wiki": "no"
   },
   "pol": {
-    "spacy": "pl_core_news_sm",
+    "spacy": "pl_core_news_",
     "wiki": "pl"
   },
   "por": {
-    "spacy": "pt_core_news_sm",
+    "spacy": "pt_core_news_",
     "wiki": "pt"
   },
   "ron": {
-    "spacy": "ro_core_news_sm",
+    "spacy": "ro_core_news_",
     "wiki": "ro"
   },
   "rus": {
-    "spacy": "ru_core_news_sm",
+    "spacy": "ru_core_news_",
     "wiki": "ru"
   },
   "spa": {
-    "spacy": "es_core_news_sm",
+    "spacy": "es_core_news_",
     "wiki": "es"
   },
   "zho": {
-    "spacy": "zh_core_web_sm",
+    "spacy": "zh_core_web_",
     "wiki": "zh"
   }
 }

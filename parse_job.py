@@ -5,6 +5,7 @@ import re
 from calibre.ebooks.mobi.reader.mobi6 import MobiReader
 from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
 from calibre.utils.logging import default_log
+from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import (create_lang_layer,
                                                create_x_ray_db, insert_lemma)
 from calibre_plugins.worddumb.unzip import install_libs, load_json
@@ -14,7 +15,8 @@ from calibre_plugins.worddumb.x_ray import X_Ray
 def do_job(data, create_ww=True, create_x=True,
            abort=None, log=None, notifications=None):
     (_, book_fmt, asin, book_path, _, lang) = data
-    install_libs(lang['spacy'], create_ww, create_x)
+    model = lang['spacy'] + prefs['model_size']
+    install_libs(model, create_ww, create_x)
 
     if create_ww:
         ll_conn = create_lang_layer(asin, book_path, book_fmt)
@@ -29,7 +31,7 @@ def do_job(data, create_ww=True, create_x=True,
             return
         x_ray = X_Ray(x_ray_conn, lang['wiki'])
         import spacy
-        nlp = spacy.load(lang['spacy'],
+        nlp = spacy.load(model,
                          exclude=['tok2vec', 'morphologizer', 'tagger',
                                   'parser', 'attribute_ruler', 'lemmatizer'])
         nlp.enable_pipe("senter")

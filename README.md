@@ -69,7 +69,9 @@ https://user-images.githubusercontent.com/21101839/124686751-39f3aa00-df06-11eb-
 
 - Set preferences
 
-    Enable "search people" option for nonfiction books and novels that have character pages on Wikipedia to add people descriptions in X-Ray.
+    - Enable "search people" option for nonfiction books and novels that have character pages on Wikipedia to add people descriptions in X-Ray.
+    
+    - Larger spaCy model has higher [NER](https://en.wikipedia.org/wiki/Named-entity_recognition) precision, more details at https://spacy.io/models/en
 
 https://user-images.githubusercontent.com/21101839/124685798-90f87f80-df04-11eb-8eb6-dee012de6cab.mov
 

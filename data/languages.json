@@ -35,6 +35,10 @@
     "spacy": "lt_core_news_",
     "wiki": "lt"
   },
+  "mkd": {
+    "spacy": "mk_core_news_",
+    "wiki": "mk"
+  },
   "nld": {
     "spacy": "nl_core_news_",
     "wiki": "nl"

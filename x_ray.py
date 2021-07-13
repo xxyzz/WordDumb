@@ -24,7 +24,7 @@ class X_Ray():
         self.terms_counter = Counter()
         self.pending_terms = {}
         self.pending_people = {}
-        self.lang = lang
+        self.wikipedia_api = f'https://{lang}.wikipedia.org/w/api.php'
 
         import requests
         self.s = requests.Session()
@@ -65,7 +65,7 @@ class X_Ray():
                 self.conn, (intro, title, 1, entity['id']))
 
     def search_wikipedia(self, is_people, dic):
-        r = self.s.get(f'https://{self.lang}.wikipedia.org/w/api.php',
+        r = self.s.get(self.wikipedia_api,
                        params={'titles': '|'.join(dic.keys())})
         data = r.json()
         converts = {}

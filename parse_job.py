@@ -118,6 +118,8 @@ def find_named_entity(start, x_ray, doc, is_kfx):
     for ent in doc.ents:
         if ent.label_ not in labels:
             continue
+        if ent.label_ in ['PER', 'persName']:
+            ent.label_ = 'PERSON'
 
         if is_kfx:
             ent_start = start + len(doc.text[:ent.start_char])

@@ -13,11 +13,13 @@ class SendFile():
         (self.book_id, _, self.asin, self.book_path, self.mi, _) = data
         self.ll_path = get_ll_path(self.asin, self.book_path)
         self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
-        self.retry = False
 
     # use some code from calibre.gui2.device:DeviceMixin.upload_books
     def send_files(self, job):
         if job is not None:
+            if job.failed:
+                self.gui.job_exception(job, dialog_title='Upload book failed')
+                return
             self.gui.books_uploaded(job)
 
         [has_book, _, _, _, paths] = self.gui.book_on_device(self.book_id)
@@ -27,7 +29,7 @@ class SendFile():
             device_book_path = Path(device_prefix).joinpath(next(iter(paths)))
             self.move_file_to_device(self.ll_path, device_book_path)
             self.move_file_to_device(self.x_ray_path, device_book_path)
-        elif not self.retry:
+        elif job is None:
             # upload book and cover to device
             self.gui.update_thumbnail(self.mi)
             job = self.device_manager.upload_books(
@@ -37,7 +39,6 @@ class SendFile():
                 plugboards=self.gui.current_db.new_api.pref('plugboards', {}))
             self.gui.upload_memory[job] = (
                 [self.mi], None, None, [self.book_path])
-            self.retry = True
 
     def move_file_to_device(self, file_path, device_book_path):
         if not file_path.is_file():

@@ -59,8 +59,7 @@ class ParseBook():
 
         # send files to device
         if kindle_connected(self.gui):
-            sf = SendFile(self.gui, data)
-            sf.send_files(None)
+            SendFile(self.gui, data).send_files(None)
 
         self.gui.status_bar.show_message(notif)
 

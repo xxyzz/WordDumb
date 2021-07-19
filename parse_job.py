@@ -7,7 +7,8 @@ from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
 from calibre.utils.logging import default_log
 from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import (create_lang_layer,
-                                               create_x_ray_db, insert_lemma)
+                                               create_x_ray_db, insert_lemma,
+                                               save_db)
 from calibre_plugins.worddumb.unzip import install_libs, load_json
 from calibre_plugins.worddumb.x_ray import X_Ray
 
@@ -19,14 +20,14 @@ def do_job(data, create_ww=True, create_x=True,
     install_libs(model, create_ww, create_x)
 
     if create_ww:
-        ll_conn = create_lang_layer(asin, book_path, book_fmt)
+        ll_conn, ll_path = create_lang_layer(asin, book_path, book_fmt)
         if ll_conn is None:
             create_ww = False
             if not create_x:
                 return
 
     if create_x:
-        x_ray_conn = create_x_ray_db(asin, book_path, lang['wiki'])
+        x_ray_conn, x_ray_path = create_x_ray_db(asin, book_path, lang['wiki'])
         if x_ray_conn is None:
             return
         x_ray = X_Ray(x_ray_conn, lang['wiki'])
@@ -44,15 +45,14 @@ def do_job(data, create_ww=True, create_x=True,
             if create_x:
                 find_named_entity(start, x_ray, nlp(text), is_kfx)
 
-        ll_conn.commit()
-        ll_conn.close()
+        save_db(ll_conn, ll_path)
     else:
         for doc, start in nlp.pipe(parse_book(book_path, is_kfx),
                                    as_tuples=True):
             find_named_entity(start, x_ray, doc, is_kfx)
 
     if create_x:
-        x_ray.finish()
+        x_ray.finish(x_ray_path)
 
 
 def parse_book(book_path, is_kfx):

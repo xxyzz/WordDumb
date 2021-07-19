@@ -8,7 +8,7 @@ from calibre_plugins.worddumb.database import (insert_x_book_metadata,
                                                insert_x_entity,
                                                insert_x_entity_description,
                                                insert_x_occurrence,
-                                               insert_x_type)
+                                               insert_x_type, save_db)
 
 
 class X_Ray():
@@ -155,7 +155,7 @@ class X_Ray():
         else:
             self.insert_entity(name, tag, start, sent, length)
 
-    def finish(self):
+    def finish(self, db_path):
         def top_mentioned(counter):
             return ','.join(map(str, [e[0] for e in counter.most_common(10)]))
 
@@ -185,5 +185,4 @@ class X_Ray():
             self.conn, (2, 16, 17, 2, top_mentioned(self.terms_counter)))
 
         self.s.close()
-        self.conn.commit()
-        self.conn.close()
+        save_db(self.conn, db_path)

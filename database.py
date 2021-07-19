@@ -2,8 +2,8 @@
 import sqlite3
 from pathlib import Path
 
-from calibre_plugins.worddumb.unzip import load_json
 from calibre_plugins.worddumb.metadata import get_acr, get_book_revision
+from calibre_plugins.worddumb.unzip import load_json
 
 
 def get_ll_path(asin, book_path):
@@ -23,14 +23,13 @@ def check_db_file(path):
             path.unlink()
             journal.unlink()
 
-    path.parent.mkdir(exist_ok=True)
-    path.touch()
-    return sqlite3.connect(path)
+    return sqlite3.connect(':memory:')
 
 
 def create_lang_layer(asin, book_path, book_fmt):
-    if (ll_conn := check_db_file(get_ll_path(asin, book_path))) is None:
-        return None
+    db_path = get_ll_path(asin, book_path)
+    if (ll_conn := check_db_file(db_path)) is None:
+        return None, None
     ll_conn.executescript('''
         CREATE TABLE metadata (
             key TEXT,
@@ -56,7 +55,7 @@ def create_lang_layer(asin, book_path, book_fmt):
                 ('enDictionaryId', 'kll.en.en'),
                 ('sidecarFormat', '1.0')]
     ll_conn.executemany('INSERT INTO metadata VALUES (?, ?)', metadata)
-    return ll_conn
+    return ll_conn, db_path
 
 
 def insert_lemma(ll_conn, data):
@@ -71,8 +70,9 @@ def get_x_ray_path(asin, book_path):
 
 
 def create_x_ray_db(asin, book_path, lang):
-    if (x_ray_conn := check_db_file(get_x_ray_path(asin, book_path))) is None:
-        return None
+    db_path = get_x_ray_path(asin, book_path)
+    if (x_ray_conn := check_db_file(db_path)) is None:
+        return None, None
     x_ray_conn.executescript('''
     PRAGMA user_version = 1;
 
@@ -172,7 +172,7 @@ def create_x_ray_db(asin, book_path, lang):
         str_list[-2][-1] = f'https://{lang}.wikipedia.org/wiki/%s'
     x_ray_conn.executemany('INSERT INTO string VALUES(?, ?, ?)', str_list)
 
-    return x_ray_conn
+    return x_ray_conn, db_path
 
 
 def insert_x_book_metadata(conn, data):
@@ -200,3 +200,14 @@ def insert_x_occurrence(conn, data):
 
 def insert_x_type(conn, data):
     conn.execute('INSERT INTO type VALUES(?, ?, ?, ?, ?)', data)
+
+
+def save_db(source, dest_path):
+    source.commit()
+    dest_path.parent.mkdir(exist_ok=True)
+    dest_path.touch()
+    dest = sqlite3.connect(dest_path)
+    with dest:
+        source.backup(dest)
+    source.close()
+    dest.close()

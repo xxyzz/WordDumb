@@ -18,6 +18,7 @@ def do_job(data, create_ww=True, create_x=True,
     (_, book_fmt, asin, book_path, _, lang) = data
     model = lang['spacy'] + prefs['model_size']
     install_libs(model, create_ww, create_x)
+    is_kfx = book_fmt == 'KFX'
 
     if create_ww:
         ll_conn, ll_path = create_lang_layer(asin, book_path, book_fmt)
@@ -25,6 +26,8 @@ def do_job(data, create_ww=True, create_x=True,
             create_ww = False
             if not create_x:
                 return
+        else:
+            lemmas = load_json('data/lemmas.json')
 
     if create_x:
         x_ray_conn, x_ray_path = create_x_ray_db(asin, book_path, lang['wiki'])
@@ -37,22 +40,19 @@ def do_job(data, create_ww=True, create_x=True,
                                   'parser', 'attribute_ruler', 'lemmatizer'])
         nlp.enable_pipe("senter")
 
-    is_kfx = book_fmt == 'KFX'
-    if create_ww:
-        lemmas = load_json('data/lemmas.json')
-        for (text, start) in parse_book(book_path, is_kfx):
-            find_lemma(start, text, lemmas, ll_conn, is_kfx)
-            if create_x:
-                find_named_entity(start, x_ray, nlp(text), is_kfx)
-
-        save_db(ll_conn, ll_path)
-    else:
         for doc, start in nlp.pipe(parse_book(book_path, is_kfx),
                                    as_tuples=True):
             find_named_entity(start, x_ray, doc, is_kfx)
+            if create_ww:
+                find_lemma(start, doc.text, lemmas, ll_conn, is_kfx)
 
-    if create_x:
         x_ray.finish(x_ray_path)
+    elif create_ww:
+        for text, start in parse_book(book_path, is_kfx):
+            find_lemma(start, text, lemmas, ll_conn, is_kfx)
+
+    if create_ww:
+        save_db(ll_conn, ll_path)
 
 
 def parse_book(book_path, is_kfx):

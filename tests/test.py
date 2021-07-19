@@ -4,7 +4,6 @@ import json
 import platform
 import sqlite3
 import sys
-import time
 import unittest
 from itertools import zip_longest
 
@@ -12,7 +11,6 @@ from calibre.library import db
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 from calibre_plugins.worddumb.metadata import check_metadata, get_asin
 from calibre_plugins.worddumb.parse_job import do_job
-from calibre_plugins.worddumb.unzip import install_libs
 from convert import LIMIT
 
 
@@ -30,10 +28,7 @@ class TestDumbCode(unittest.TestCase):
         data = check_metadata(lib_db, book_1984_id)
         (_, cls.fmt, cls.asin, cls.book_path, _, _) = data
         create_x = False if platform.system() == 'Darwin' else True
-        install_libs('en_core_web_sm', create_x=create_x)
-        start_time = time.time()
         do_job(data, create_x=create_x)
-        print(f'{time.time() - start_time} seconds')
 
     def check_db(self, test_json_path, created_db_path, table, sql):
         with open(test_json_path) as test_json, \

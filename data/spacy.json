@@ -19,9 +19,9 @@
     "compiled": false,
     "version": "2021.5.30"
   },
-  "chardet": {
+  "charset-normalizer": {
     "compiled": false,
-    "version": "4.0.0"
+    "version": "2.0.3"
   },
   "click": {
     "compiled": false,
@@ -33,7 +33,7 @@
   },
   "idna": {
     "compiled": false,
-    "version": "2.10"
+    "version": "3.2"
   },
   "murmurhash": {
     "compiled": true,
@@ -41,7 +41,7 @@
   },
   "numpy": {
     "compiled": true,
-    "version": "1.21.0"
+    "version": "1.21.1"
   },
   "packaging": {
     "compiled": false,
@@ -65,7 +65,7 @@
   },
   "requests": {
     "compiled": false,
-    "version": "2.25.1"
+    "version": "2.26.0"
   },
   "smart-open": {
     "compiled": false,

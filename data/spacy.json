@@ -73,7 +73,7 @@
   },
   "spacy": {
     "compiled": true,
-    "version": "3.1.0"
+    "version": "3.1.1"
   },
   "spacy-legacy": {
     "compiled": false,
@@ -85,7 +85,7 @@
   },
   "thinc": {
     "compiled": true,
-    "version": "8.0.7"
+    "version": "8.0.8"
   },
   "tqdm": {
     "compiled": false,

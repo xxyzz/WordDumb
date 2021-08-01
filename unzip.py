@@ -79,26 +79,8 @@ def pip_install(pkg, pkg_version=None, compiled=False, url=None):
             shutil.rmtree(d)  # delete old package
 
         system = platform.system()
-        python3 = 'python3'
-        if system == 'Windows':
-            python3 = 'py'
-        elif system == 'Darwin':
-            # stupid macOS loses PATH when calibre is not launched in terminal
-            if platform.machine() == 'arm64':
-                python3 = '/opt/homebrew/bin/python3'
-            else:
-                python3 = '/usr/local/bin/python3'
-            if not Path(python3).is_file():
-                python3 = '/usr/bin/python3'  # developer tools
-        args = [python3, '-m', 'pip', 'install', '-t', folder, '--no-deps']
-        if compiled:
-            args.extend(['--python-version', py_version])
-        if url:
-            args.append(url)
-        elif pkg_version:
-            args.append(f'{pkg}=={pkg_version}')
-        else:
-            args.append(pkg)
+        args = pip_args(folder, pkg, py_version, system,
+                        pkg_version, compiled, url)
         if system == 'Windows':
             subprocess.run(args, check=True, capture_output=True,
                            creationflags=subprocess.CREATE_NO_WINDOW)
@@ -107,6 +89,37 @@ def pip_install(pkg, pkg_version=None, compiled=False, url=None):
 
     if (p := str(folder)) not in sys.path:
         sys.path.insert(0, p)
+
+
+def pip_args(folder, pkg, py_version, system,
+             pkg_version=None, compiled=False, url=None):
+    python3 = 'python3'
+    if system == 'Windows':
+        python3 = 'py'
+    elif system == 'Darwin':
+        # stupid macOS loses PATH when calibre is not launched in terminal
+        if platform.machine() == 'arm64':
+            python3 = '/opt/homebrew/bin/python3'
+        else:
+            python3 = '/usr/local/bin/python3'
+        if not Path(python3).is_file():
+            python3 = '/usr/bin/python3'  # command line tools
+    args = [python3, '-m', 'pip', 'install', '-t', folder, '--no-deps']
+    if compiled:
+        args.extend(['--python-version', py_version])
+        if system == 'Windows':
+            args.append('--platform')
+            if platform.architecture()[0] == '64bit':
+                args.append('win_amd64')
+            else:
+                args.append('win32')
+    if url:
+        args.append(url)
+    elif pkg_version:
+        args.append(f'{pkg}=={pkg_version}')
+    else:
+        args.append(pkg)
+    return args
 
 
 def install_extra_deps(model):

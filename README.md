@@ -14,12 +14,6 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
 - Install calibre
 
-  - macOS: use [Homebrew](https://brew.sh) or download from https://calibre-ebook.com/download_osx
-
-  ```
-  $ brew install calibre
-  ```
-
   - Arch Linux
 
   ```
@@ -32,19 +26,15 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   $ sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
   ```
 
+  - macOS: use [Homebrew](https://brew.sh) or download from https://calibre-ebook.com/download_osx
+
+  ```
+  $ brew install calibre
+  ```
+
   - Windows: https://calibre-ebook.com/download_windows64
 
 - Install Python 3(pip3)
-
-  - macOS
-
-  ```
-  // recommended
-  $ brew install python
-
-  // or install outdated pip3 from Apple's developer tools
-  $ xcode-select --install
-  ```
 
   - Arch Linux
 
@@ -57,9 +47,17 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   $ sudo apt install python3-pip
   ```
 
-  - Windows: https://www.python.org/downloads
+  - macOS
 
-    If you've installed 64-bit calibre, you should install 64-bit Python. If you have 32-bit calibre then download 32-bit Python. Select "Install Now".
+  ```
+  // recommended
+  $ brew install python
+
+  // or install outdated pip3 from Apple Command Line Tools
+  $ xcode-select --install
+  ```
+
+  - Windows: https://www.python.org/downloads
 
 - Install WordDumb:
 
@@ -83,7 +81,7 @@ https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-
 
 - Don't add soft hyphens, it will cause the plugin to produce a mediocre X-Ray file.
 
-- This plugin requires access to https://files.pythonhosted.org (download dependencies) and https://raw.githubusercontent.com (download NLTK and spaCy model) at first run, and https://wikipedia.org every time if X-Ray is enabled. These domains might be blocked in some countries.
+- This plugin requires access to https://files.pythonhosted.org (download dependencies) and https://raw.githubusercontent.com (download NLTK and spaCy model) at first run, and https://wikipedia.org every time if X-Ray is enabled. These domains might be blocked in some countries([Censorship of Wikipedia](https://en.wikipedia.org/wiki/Censorship_of_Wikipedia), [Censorship of GitHub](https://en.wikipedia.org/wiki/Censorship_of_GitHub)).
 
 ## I need about tree-fiddy
 

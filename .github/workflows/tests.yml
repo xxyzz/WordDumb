@@ -13,8 +13,8 @@ on:
       - '**.md'
 
 jobs:
-  tests:
-    name: tests
+  test-ubuntu:
+    name: test-ubuntu
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -47,7 +47,89 @@ jobs:
           path: |
             ~/.config/calibre/plugins/worddumb-libs
             ~/.config/calibre/plugins/worddumb-nltk
-          key: deps-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
+          key: ${{ runner.os }}--${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
+
+      - name: Run test
+        run: |
+          cd tests
+          calibre-debug test.py
+
+  test-macos:
+    name: test-macos
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install calibre
+        run: brew install calibre
+
+      - name: Download 1984 ebook
+        run: wget https://www.planetebook.com/free-ebooks/1984.mobi
+
+      - name: Add 1984 to library
+        run: |
+          mkdir ~/Calibre\ Library
+          calibredb add 1984.mobi --with-library ~/Calibre\ Library
+          rm 1984.mobi
+
+      - name: Build plugin
+        run: zip -r worddumb.zip * -x@exclude.lst
+
+      - name: Add plugin
+        run: calibre-customize -a worddumb.zip
+
+      - name: Get calibre python version
+        run: echo "CALIBRE_PY=$(calibre-debug -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
+
+      - name: Restore dependencies and nltk model
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/Library/Preferences/calibre/plugins/worddumb-libs
+            ~/Library/Preferences/calibre/plugins/worddumb-nltk
+          key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
+
+      - name: Run test
+        run: |
+          cd tests
+          calibre-debug test.py
+
+  test-windows:
+    name: test-windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install calibre and wget
+        run: choco install calibre wget
+
+      - name: Download 1984 ebook
+        run: wget https://www.planetebook.com/free-ebooks/1984.mobi
+
+      - name: Add 1984 to library
+        run: |
+          mkdir "~/Calibre Library"
+          calibredb add 1984.mobi --with-library "~/Calibre Library"
+          rm 1984.mobi
+
+      - name: Build plugin
+        run: 7z a -x@exclude.lst -x!.* -tzip worddumb.zip
+
+      - name: Add plugin
+        run: calibre-customize -a worddumb.zip
+
+      - name: Get calibre python version
+        run: echo "CALIBRE_PY=$(calibre-debug -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
+
+      - name: Restore dependencies and nltk model
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/AppData/Roaming/calibre/plugins/worddumb-libs
+            ~/AppData/Roaming/calibre/plugins/worddumb-nltk
+          key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Run test
         run: |

@@ -20,6 +20,8 @@
 
 - https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
 
+- https://github.com/actions/virtual-environments
+
 - https://www.crummy.com/software/BeautifulSoup/bs4/doc
 
 - https://www.mediawiki.org/wiki/API:Query

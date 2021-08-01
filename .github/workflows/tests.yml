@@ -98,20 +98,25 @@ jobs:
   test-windows:
     name: test-windows
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Install calibre and wget
-        run: choco install calibre wget
+        run: |
+          choco install calibre wget
+          echo "/C/Program Files/Calibre2" >> $GITHUB_PATH
 
       - name: Download 1984 ebook
         run: wget https://www.planetebook.com/free-ebooks/1984.mobi
 
       - name: Add 1984 to library
         run: |
-          mkdir "~/Calibre Library"
-          calibredb add 1984.mobi --with-library "~/Calibre Library"
+          mkdir ~/Calibre\ Library
+          calibredb add 1984.mobi --with-library ~/Calibre\ Library
           rm 1984.mobi
 
       - name: Build plugin

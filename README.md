@@ -32,18 +32,21 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   $ brew install calibre
   ```
 
-  - Windows: https://calibre-ebook.com/download_windows64
+  - Windows: use [Chocolatey](https://chocolatey.org) or download from  https://calibre-ebook.com/download_windows64
 
-- Install Python 3(pip3)
+  ```
+  $ choco install calibre
+  ```
+
+- Install Python(pip)
 
   - Arch Linux
 
-    pip module is installed in the last step.
+    pip module is included in python.
 
   - Ubuntu
 
   ```
-  $ sudo apt update
   $ sudo apt install python3-pip
   ```
 
@@ -53,11 +56,15 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   // recommended
   $ brew install python
 
-  // or install outdated pip3 from Apple Command Line Tools
+  // or install outdated pip from Apple Command Line Tools
   $ xcode-select --install
   ```
 
-  - Windows: https://www.python.org/downloads
+  - Windows: use Chocolatey or download from https://www.python.org/downloads
+
+  ```
+  $ choco install python
+  ```
 
 - Install WordDumb:
 

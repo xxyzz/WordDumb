@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 
 from calibre_plugins.worddumb import VERSION
 from calibre_plugins.worddumb.config import prefs
@@ -88,35 +88,32 @@ class X_Ray():
             insert_x_entity_description(
                 self.conn, (intro, title, 1, entity['id']))
 
-    def match_wiki_result(self, title, converts, dic):
-        if title in dic:
-            return title
-        elif converts.get(title) in dic:
-            return converts.get(title)
-        elif converts.get(converts.get(title)) in dic:
-            # normalize then redirect
-            return converts.get(converts.get(title))
-        else:
-            for name in self.split_name(title):
-                if name in dic:
-                    return name
-        return None
-
     def search_wikipedia(self, is_people, dic):
         r = self.s.get(self.wikipedia_api,
                        params={'titles': '|'.join(dic.keys())})
         data = r.json()
-        converts = {}
+        converts = defaultdict(list)
         for t in ['normalized', 'redirects']:
             for d in data['query'].get(t, []):
-                converts[d['to']] = d['from']
+                # different titles can be redirected to the same page
+                converts[d['to']].append(d['from'])
+
         for v in data['query']['pages']:
             if 'extract' not in v:  # missing or invalid
                 continue
             # they are ordered by pageid, ehh
-            key = self.match_wiki_result(v['title'], converts, dic)
-            if key is not None:
-                self.insert_wiki_intro(is_people, key, v['extract'])
+            title = v['title']
+            summary = v['extract']
+            if title in dic:
+                self.insert_wiki_intro(is_people, title, summary)
+            else:
+                for key in converts.get(title, []):
+                    if key in dic:
+                        self.insert_wiki_intro(is_people, key, summary)
+                    else:
+                        for k in converts.get(key, []):
+                            if k in dic:  # normalize then redirect
+                                self.insert_wiki_intro(is_people, k, summary)
 
         if is_people:
             self.insert_rest_pending_entities(self.people, self.pending_people)

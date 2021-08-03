@@ -126,6 +126,8 @@ def find_named_entity(start, x_ray, doc, is_kfx):
 
         if ent.label_ in ['PER', 'persName']:
             ent.label_ = 'PERSON'
+        ent.text = re.sub(r'^\W+', '', ent.text)
+        ent.text = re.sub(r'\W+$', '', ent.text)
         if is_kfx:
             ent_start = start + len(doc.text[:ent.start_char])
             ent_len = len(ent.text)

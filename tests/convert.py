@@ -44,5 +44,5 @@ if args.x:
     convert(args.x, 'occurrence',
             f'SELECT * FROM occurrence ORDER BY start LIMIT {LIMIT}')
     convert(args.x, 'book_metadata',
-            'SELECT num_people, num_terms FROM book_metadata')
+            'SELECT erl, num_people, num_terms FROM book_metadata')
     convert(args.x, 'type', 'SELECT top_mentioned_entities FROM type')

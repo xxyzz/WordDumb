@@ -39,6 +39,7 @@ class X_Ray():
         self.entity_id = 1
         self.num_people = 0
         self.num_terms = 0
+        self.erl = 0
         self.names = {}
         self.people = {}
         self.people_counter = Counter()
@@ -160,6 +161,7 @@ class X_Ray():
         else:
             self.terms_counter[entity_id] += 1
         insert_x_occurrence(self.conn, (entity_id, start, length))
+        self.erl = start + length - 1
 
     def search(self, name, is_person, start, sent, length):
         if self.lang == 'en':
@@ -208,7 +210,7 @@ class X_Ray():
                 (value['id'], label, 2, self.terms_counter[value['id']]))
 
         insert_x_book_metadata(
-            self.conn, (self.num_people, self.num_terms))
+            self.conn, (self.erl, self.num_people, self.num_terms))
         insert_x_type(
             self.conn, (1, 14, 15, 1, top_mentioned(self.people_counter)))
         insert_x_type(

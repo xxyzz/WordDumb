@@ -72,7 +72,7 @@ class TestDumbCode(unittest.TestCase):
             'XRAY.entities.json',
             get_x_ray_path(self.asin, self.book_path),
             'book_metadata',
-            'SELECT num_people, num_terms FROM book_metadata')
+            'SELECT erl, num_people, num_terms FROM book_metadata')
 
     @unittest.skipIf(
         platform.system() == 'Darwin', "Yes but, can it read?")

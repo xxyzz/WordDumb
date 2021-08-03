@@ -108,19 +108,24 @@ def find_lemma(start, text, lemmas, ll_conn, is_kfx):
             insert_lemma(ll_conn, (index,) + tuple(lemmas[lemma]))
 
 
-def find_named_entity(start, x_ray, doc, is_kfx):
-    # https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L318
-    labels = {'EVENT', 'FAC', 'GPE', 'LANGUAGE', 'LAW', 'LOC', 'NORP', 'ORG',
-              'PERSON', 'PRODUCT', 'WORK_OF_ART', 'MISC', 'PER', 'FACILITY',
-              'ORGANIZATION', 'NAT_REL_POL',  # Romanian
-              'geogName', 'orgName', 'persName', 'placeName'}  # Polish
+# https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L318
+NER_LABELS = {
+    'EVENT', 'FAC', 'GPE', 'LANGUAGE', 'LAW', 'LOC', 'NORP', 'ORG',
+    'PERSON', 'PRODUCT', 'WORK_OF_ART', 'MISC', 'PER', 'FACILITY',
+    'ORGANIZATION', 'NAT_REL_POL',  # Romanian
+    'geogName', 'orgName', 'persName', 'placeName'  # Polish
+}
 
+
+def find_named_entity(start, x_ray, doc, is_kfx):
     for ent in doc.ents:
-        if ent.label_ not in labels:
+        if ent.label_ not in NER_LABELS:
             continue
+        if len(ent.text) <= 1 or re.fullmatch(r'[\W\d]+', ent.text):
+            continue
+
         if ent.label_ in ['PER', 'persName']:
             ent.label_ = 'PERSON'
-
         if is_kfx:
             ent_start = start + len(doc.text[:ent.start_char])
             ent_len = len(ent.text)

@@ -28,11 +28,14 @@ def do_job(data, create_ww=True, create_x=True,
                 return
         else:
             lemmas = load_json('data/lemmas.json')
-
     if create_x:
         x_ray_conn, x_ray_path = create_x_ray_db(asin, book_path, lang['wiki'])
         if x_ray_conn is None:
-            return
+            create_x = False
+            if not create_ww:
+                return
+
+    if create_x:
         x_ray = X_Ray(x_ray_conn, lang['wiki'])
         import spacy
         nlp = spacy.load(model,

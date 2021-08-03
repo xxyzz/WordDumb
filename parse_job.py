@@ -124,8 +124,6 @@ def find_named_entity(start, x_ray, doc, is_kfx):
         if len(ent.text) <= 1 or re.fullmatch(r'[\W\d]+', ent.text):
             continue
 
-        if ent.label_ in ['PER', 'persName']:
-            ent.label_ = 'PERSON'
         ent.text = re.sub(r'^\W+', '', ent.text)
         ent.text = re.sub(r'\W+$', '', ent.text)
         if is_kfx:
@@ -135,4 +133,5 @@ def find_named_entity(start, x_ray, doc, is_kfx):
             ent_start = start + len(doc.text[:ent.start_char].encode('utf-8'))
             ent_len = len(ent.text.encode('utf-8'))
 
-        x_ray.search(ent.text, ent.label_, ent_start, ent.sent.text, ent_len)
+        x_ray.search(ent.text, ent.label_ in ['PERSON', 'PER', 'persName'],
+                     ent_start, ent.sent.text, ent_len)

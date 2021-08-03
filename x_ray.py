@@ -140,6 +140,12 @@ class X_Ray():
         insert_x_occurrence(self.conn, (entity_id, start, length))
 
     def search(self, name, tag, start, sent, length):
+        if self.lang == 'en':
+            if re.match(r'chapter', name, re.IGNORECASE):
+                return
+            name = re.sub(r'(?:\'s|’s)$', '', name)
+            name = re.sub(r'^(?:the |an |a )', '', name, flags=re.IGNORECASE)
+
         if name in self.terms:
             self.insert_occurrence(
                 self.terms[name]['id'], 'TERMS', start, length)

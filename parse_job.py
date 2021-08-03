@@ -127,12 +127,19 @@ def find_named_entity(start, x_ray, doc, is_kfx):
 
         text = re.sub(r'^\W+', '', ent.text)
         text = re.sub(r'\W+$', '', text)
+        if x_ray.lang == 'en':
+            if re.match(r'chapter', text, re.IGNORECASE):
+                return
+            text = re.sub(r'(?:\'s|’s)$', '', text)
+            text = re.sub(r'^(?:the |an |a )', '', text, flags=re.IGNORECASE)
+
+        new_start_char = ent.start_char + ent.text.index(text)
         if is_kfx:
-            ent_start = start + len(doc.text[:ent.start_char])
-            ent_len = len(ent.text)
+            ent_start = start + len(doc.text[:new_start_char])
+            ent_len = len(text)
         else:
-            ent_start = start + len(doc.text[:ent.start_char].encode('utf-8'))
-            ent_len = len(ent.text.encode('utf-8'))
+            ent_start = start + len(doc.text[:new_start_char].encode('utf-8'))
+            ent_len = len(text.encode('utf-8'))
 
         x_ray.search(text, ent.label_ in ['PERSON', 'PER', 'persName'],
                      ent_start, ent.sent.text, ent_len)

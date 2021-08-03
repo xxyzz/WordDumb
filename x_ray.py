@@ -19,7 +19,7 @@ TITLES = {
     'Eur', 'Ing', 'Chancellor', 'Vice', 'Principal', 'President', 'Warden',
     'Dean', 'Regent', 'Rector', 'Provost', 'Director', 'Chief', 'Executive',
     'Fr', 'Father', 'Pr', 'Pastor', 'Br', 'Brother', 'Si',  # Religious titles
-    'Sister', 'Elder', 'Pope', 'Rabbi', 'Bishop', 'St', 'Saint'
+    'Sister', 'Elder', 'Pope', 'Rabbi', 'Bishop', 'St', 'Saint',
     'Maid', 'Aunt', 'Auntie', 'Uncle',
     'Hon', 'MP', 'Senator', 'Councillor', 'Secretary',  # Legislative
     'Prince', 'Princess', 'Archduke', 'Archduchess', 'Grand',  # Aristocratic
@@ -164,12 +164,6 @@ class X_Ray():
         self.erl = start + length - 1
 
     def search(self, name, is_person, start, sent, length):
-        if self.lang == 'en':
-            if re.match(r'chapter', name, re.IGNORECASE):
-                return
-            name = re.sub(r'(?:\'s|’s)$', '', name)
-            name = re.sub(r'^(?:the |an |a )', '', name, flags=re.IGNORECASE)
-
         if name in self.terms:
             self.insert_occurrence(
                 self.terms[name]['id'], False, start, length)

@@ -73,6 +73,7 @@ def parse_kfx(path_of_book):
 def parse_mobi(book_path):
     # use code from calibre.ebooks.mobi.reader.mobi8:Mobi8Reader.__call__
     # and calibre.ebook.conversion.plugins.mobi_input:MOBIInput.convert
+    # https://github.com/kevinhendricks/KindleUnpack/blob/master/lib/mobi_k8proc.py#L216
     try:
         mr = MobiReader(book_path, default_log)
     except Exception:
@@ -124,8 +125,8 @@ def find_named_entity(start, x_ray, doc, is_kfx):
         if len(ent.text) <= 1 or re.fullmatch(r'[\W\d]+', ent.text):
             continue
 
-        ent.text = re.sub(r'^\W+', '', ent.text)
-        ent.text = re.sub(r'\W+$', '', ent.text)
+        text = re.sub(r'^\W+', '', ent.text)
+        text = re.sub(r'\W+$', '', text)
         if is_kfx:
             ent_start = start + len(doc.text[:ent.start_char])
             ent_len = len(ent.text)
@@ -133,5 +134,5 @@ def find_named_entity(start, x_ray, doc, is_kfx):
             ent_start = start + len(doc.text[:ent.start_char].encode('utf-8'))
             ent_len = len(ent.text.encode('utf-8'))
 
-        x_ray.search(ent.text, ent.label_ in ['PERSON', 'PER', 'persName'],
+        x_ray.search(text, ent.label_ in ['PERSON', 'PER', 'persName'],
                      ent_start, ent.sent.text, ent_len)

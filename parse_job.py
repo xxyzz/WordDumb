@@ -122,10 +122,10 @@ NER_LABELS = {
 
 
 def find_named_entity(start, x_ray, doc, is_kfx):
+    len_limit = 3 if x_ray.lang == 'en' else 2
+
     for ent in doc.ents:
         if ent.label_ not in NER_LABELS:
-            continue
-        if len(ent.text) <= 1 or re.fullmatch(r'[\W\d]+', ent.text):
             continue
 
         text = re.sub(r'^\W+', '', ent.text)
@@ -135,6 +135,9 @@ def find_named_entity(start, x_ray, doc, is_kfx):
                 return
             text = re.sub(r'(?:\'s|’s)$', '', text)
             text = re.sub(r'^(?:the |an |a )', '', text, flags=re.IGNORECASE)
+
+        if len(ent.text) < len_limit or re.fullmatch(r'[\W\d]+', ent.text):
+            continue
 
         new_start_char = ent.start_char + ent.text.index(text)
         if is_kfx:

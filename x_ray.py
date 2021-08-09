@@ -109,14 +109,12 @@ class X_Ray():
             summary = v['extract']
             if title in dic:
                 self.insert_wiki_intro(is_people, title, summary)
-            else:
-                for key in converts.get(title, []):
-                    if key in dic:
-                        self.insert_wiki_intro(is_people, key, summary)
-                    else:
-                        for k in converts.get(key, []):
-                            if k in dic:  # normalize then redirect
-                                self.insert_wiki_intro(is_people, k, summary)
+            for key in converts.get(title, []):
+                if key in dic:
+                    self.insert_wiki_intro(is_people, key, summary)
+                for k in converts.get(key, []):
+                    if k in dic:  # normalize then redirect
+                        self.insert_wiki_intro(is_people, k, summary)
 
         if is_people:
             self.insert_rest_pending_entities(self.people, self.pending_people)

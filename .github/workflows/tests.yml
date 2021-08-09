@@ -47,6 +47,7 @@ jobs:
           path: |
             ~/.config/calibre/plugins/worddumb-libs
             ~/.config/calibre/plugins/worddumb-nltk
+            ~/.config/calibre/plugins/worddumb-wikipedia
           key: ${{ runner.os }}--${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Run test
@@ -88,6 +89,7 @@ jobs:
           path: |
             ~/Library/Preferences/calibre/plugins/worddumb-libs
             ~/Library/Preferences/calibre/plugins/worddumb-nltk
+            ~/Library/Preferences/calibre/plugins/worddumb-wikipedia
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Run test
@@ -134,6 +136,7 @@ jobs:
           path: |
             ~/AppData/Roaming/calibre/plugins/worddumb-libs
             ~/AppData/Roaming/calibre/plugins/worddumb-nltk
+            ~/AppData/Roaming/calibre/plugins/worddumb-wikipedia
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Run test

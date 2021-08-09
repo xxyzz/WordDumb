@@ -10,6 +10,7 @@ from calibre_plugins.worddumb.database import (insert_x_book_metadata,
                                                insert_x_entity_description,
                                                insert_x_occurrence,
                                                insert_x_type, save_db)
+from calibre_plugins.worddumb.unzip import load_wiki_cache, save_wiki_cache
 
 # https://en.wikipedia.org/wiki/Title
 TITLES = {
@@ -49,6 +50,7 @@ class X_Ray():
         self.pending_people = {}
         self.lang = lang
         self.wikipedia_api = f'https://{lang}.wikipedia.org/w/api.php'
+        self.wiki_cache = load_wiki_cache(lang)
 
         import requests
         self.s = requests.Session()
@@ -87,6 +89,7 @@ class X_Ray():
         else:
             insert_x_entity_description(
                 self.conn, (intro, title, 1, entity['id']))
+            self.wiki_cache[title] = intro
 
     def search_wikipedia(self, is_people, dic):
         r = self.s.get(self.wikipedia_api,
@@ -136,19 +139,31 @@ class X_Ray():
             self.names[data] = self.entity_id
             self.num_people += 1
             if prefs['search_people']:
-                self.pending_people[data] = {'text': text,
-                                             'id': self.entity_id}
-                if len(self.pending_people) == MAX_EXLIMIT:
-                    self.search_wikipedia(True, self.pending_people)
+                if data in self.wiki_cache:
+                    self.people[data] = {'id': self.entity_id}
+                    insert_x_entity_description(
+                        self.conn,
+                        (self.wiki_cache[data], data, 1, self.entity_id))
+                else:
+                    self.pending_people[data] = {
+                        'text': text, 'id': self.entity_id}
+                    if len(self.pending_people) == MAX_EXLIMIT:
+                        self.search_wikipedia(True, self.pending_people)
             else:
                 self.people[data] = self.entity_id
                 insert_x_entity_description(
                     self.conn, (text, data, None, self.entity_id))
         else:
-            self.pending_terms[data] = {'text': text, 'id': self.entity_id}
-            if len(self.pending_terms) == MAX_EXLIMIT:
-                self.search_wikipedia(False, self.pending_terms)
             self.num_terms += 1
+            if data in self.wiki_cache:
+                self.terms[data] = {'id': self.entity_id}
+                insert_x_entity_description(
+                    self.conn,
+                    (self.wiki_cache[data], data, 1, self.entity_id))
+            else:
+                self.pending_terms[data] = {'text': text, 'id': self.entity_id}
+                if len(self.pending_terms) == MAX_EXLIMIT:
+                    self.search_wikipedia(False, self.pending_terms)
 
         self.entity_id += 1
 
@@ -209,6 +224,7 @@ class X_Ray():
 
         self.s.close()
         save_db(self.conn, db_path)
+        save_wiki_cache(self.wiki_cache, self.lang)
 
     def split_name(self, name):
         if self.lang == 'en':

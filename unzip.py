@@ -19,6 +19,29 @@ def load_json(filepath):
             return json.load(f)
 
 
+def wiki_cache_path(lang):
+    return Path(config_dir).joinpath(f'plugins/worddumb-wikipedia/{lang}.json')
+
+
+def load_wiki_cache(lang):
+    cache_path = wiki_cache_path(lang)
+    if cache_path.exists():
+        with cache_path.open() as f:
+            return json.load(f)
+    else:
+        return {}
+
+
+def save_wiki_cache(cache_dic, lang):
+    cache_path = wiki_cache_path(lang)
+    if not cache_path.exists():
+        if not cache_path.parent.exists():
+            cache_path.parent.mkdir()
+        cache_path.touch()
+    with cache_path.open('w') as f:
+        json.dump(cache_dic, f)
+
+
 def install_libs(model, create_ww=True, create_x=True):
     if create_x:
         pkgs = load_json('data/spacy.json')

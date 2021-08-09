@@ -127,6 +127,7 @@ class X_Ray():
         for label, entity in pending_dic.items():
             insert_x_entity_description(
                 self.conn, (entity['text'], label, None, entity['id']))
+            self.wiki_cache[label] = None
 
         dic.update(pending_dic)
         pending_dic.clear()
@@ -139,33 +140,32 @@ class X_Ray():
             self.names[data] = self.entity_id
             self.num_people += 1
             if prefs['search_people']:
-                if data in self.wiki_cache:
-                    self.people[data] = {'id': self.entity_id}
-                    insert_x_entity_description(
-                        self.conn,
-                        (self.wiki_cache[data], data, 1, self.entity_id))
-                else:
-                    self.pending_people[data] = {
-                        'text': text, 'id': self.entity_id}
-                    if len(self.pending_people) == MAX_EXLIMIT:
-                        self.search_wikipedia(True, self.pending_people)
+                self.insert_description(
+                    data, text, self.people, self.pending_people, True)
             else:
                 self.people[data] = self.entity_id
                 insert_x_entity_description(
                     self.conn, (text, data, None, self.entity_id))
         else:
             self.num_terms += 1
-            if data in self.wiki_cache:
-                self.terms[data] = {'id': self.entity_id}
-                insert_x_entity_description(
-                    self.conn,
-                    (self.wiki_cache[data], data, 1, self.entity_id))
-            else:
-                self.pending_terms[data] = {'text': text, 'id': self.entity_id}
-                if len(self.pending_terms) == MAX_EXLIMIT:
-                    self.search_wikipedia(False, self.pending_terms)
+            self.insert_description(
+                data, text, self.terms, self.pending_terms, False)
 
         self.entity_id += 1
+
+    def insert_description(self, key, desc, dic, pending_dic, is_person):
+        if key in self.wiki_cache:
+            dic[key] = {'id': self.entity_id}
+            source = None
+            if self.wiki_cache[key]:
+                desc = self.wiki_cache[key]
+                source = 1
+            insert_x_entity_description(
+                self.conn, (desc, key, source, self.entity_id))
+        else:
+            pending_dic[key] = {'text': desc, 'id': self.entity_id}
+            if len(pending_dic) == MAX_EXLIMIT:
+                self.search_wikipedia(is_person, pending_dic)
 
     def insert_occurrence(self, entity_id, is_person, start, length):
         if is_person:

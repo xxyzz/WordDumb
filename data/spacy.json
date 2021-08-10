@@ -21,7 +21,7 @@
   },
   "charset-normalizer": {
     "compiled": false,
-    "version": "2.0.3"
+    "version": "2.0.4"
   },
   "click": {
     "compiled": false,
@@ -89,7 +89,7 @@
   },
   "tqdm": {
     "compiled": false,
-    "version": "4.61.2"
+    "version": "4.62.0"
   },
   "typer": {
     "compiled": false,

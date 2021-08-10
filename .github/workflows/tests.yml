@@ -48,7 +48,7 @@ jobs:
             ~/.config/calibre/plugins/worddumb-libs
             ~/.config/calibre/plugins/worddumb-nltk
             ~/.config/calibre/plugins/worddumb-wikipedia
-          key: ${{ runner.os }}--${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
+          key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Run test
         run: |

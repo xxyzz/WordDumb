@@ -89,7 +89,6 @@ jobs:
           path: |
             ~/Library/Preferences/calibre/plugins/worddumb-libs
             ~/Library/Preferences/calibre/plugins/worddumb-nltk
-            ~/Library/Preferences/calibre/plugins/worddumb-wikipedia
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Run test

@@ -75,21 +75,20 @@ class X_Ray():
     def insert_wiki_intro(self, is_people, title, intro):
         if is_people:
             entity = self.pending_people[title]
-            self.people[title] = entity
-            del self.pending_people[title]
         else:
             entity = self.pending_terms[title]
-            self.terms[title] = entity
-            del self.pending_terms[title]
 
-        if not any(period in intro for period in ['.', '。']):
-            # disambiguation page
-            insert_x_entity_description(
-                self.conn, (entity['text'], title, None, entity['id']))
-        else:
+        # not a disambiguation page
+        if any(period in intro for period in ['.', '。']):
             insert_x_entity_description(
                 self.conn, (intro, title, 1, entity['id']))
             self.wiki_cache[title] = intro
+            if is_people:
+                self.people[title] = entity
+                del self.pending_people[title]
+            else:
+                self.terms[title] = entity
+                del self.pending_terms[title]
 
     def search_wikipedia(self, is_people, dic):
         r = self.s.get(self.wikipedia_api,

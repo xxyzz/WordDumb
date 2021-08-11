@@ -43,8 +43,8 @@ def save_wiki_cache(cache_dic, lang):
 
 
 def install_libs(model, create_ww=True, create_x=True):
+    pkgs = load_json('data/spacy.json')
     if create_x:
-        pkgs = load_json('data/spacy.json')
         for pkg, value in pkgs.items():
             pip_install(pkg, value['version'], value['compiled'])
         model_v = '3.1.0'
@@ -54,43 +54,37 @@ def install_libs(model, create_ww=True, create_x=True):
         install_extra_deps(model)
 
     # NLTK doesn't require certain version of click and tqdm package
+    # exclude regex to prevent outdated pip to build it on macOS
+    # and calibre has regex
     if create_ww:
-        if create_x:
-            nltk_deps = ['nltk', 'joblib']
+        if platform.system() == 'Darwin':
+            nltk_deps = [
+                (p, None) for p in ['nltk', 'joblib', 'click', 'tqdm']]
         else:
-            nltk_deps = ['nltk', 'joblib', 'click', 'tqdm']  # exclude regex
-        for pkg in nltk_deps:
-            pip_install(pkg)
-        download_nltk_data()
-
-    if create_x:
-        for pkg in ['click', 'tqdm']:
-            if (p := pkg_path(pkg)) in sys.path:
-                sys.path.remove(p)
+            nltk_deps = [('nltk', None), ('joblib', None),
+                         ('click', pkgs['click']['version']),
+                         ('tqdm', pkgs['tqdm']['version'])]
+        for pkg, version in nltk_deps:
+            pip_install(pkg, version)
+        download_nltk_model()
 
 
-def download_nltk_data():
+def download_nltk_model():
     import nltk
 
     nltk_data_path = Path(config_dir).joinpath('plugins/worddumb-nltk')
     nltk_data_path_str = str(nltk_data_path)
-    download_nltk_model(nltk_data_path, 'corpora', 'wordnet')  # morphy
+    model_path = nltk_data_path.joinpath('corpora/wordnet')  # morphy
+    if not model_path.is_dir():
+        nltk.download('wordnet', nltk_data_path_str)
+        model_path.with_suffix('.zip').unlink()
 
     if nltk_data_path_str not in nltk.data.path:
         nltk.data.path.append(nltk_data_path_str)
 
 
-def download_nltk_model(data_folder, parent, model):
-    import nltk
-
-    path = data_folder.joinpath(f'{parent}/{model}')
-    if not path.is_dir():
-        nltk.download(model, str(data_folder))
-        path.with_suffix('.zip').unlink()
-
-
 def pip_install(pkg, pkg_version=None, compiled=False, url=None):
-    folder = pkg_path(pkg)
+    folder = Path(config_dir).joinpath(f'plugins/worddumb-libs/{pkg}')
     py_version = '.'.join(platform.python_version_tuple()[:2])
     if pkg_version:
         folder = folder.with_name(f'{folder.name}_{pkg_version}')
@@ -151,7 +145,3 @@ def install_extra_deps(model):
     if (lang := model[:2]) in data:
         for pkg, value in data[lang].items():
             pip_install(pkg, value['version'], value['compiled'])
-
-
-def pkg_path(pkg):
-    return Path(config_dir).joinpath(f'plugins/worddumb-libs/{pkg}')

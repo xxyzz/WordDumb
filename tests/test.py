@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 import json
-import platform
 import sqlite3
 import sys
 import unittest
 from itertools import zip_longest
 
+from calibre.constants import ismacos
 from calibre.library import db
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 from calibre_plugins.worddumb.metadata import check_metadata, get_asin
@@ -27,7 +27,7 @@ class TestDumbCode(unittest.TestCase):
 
         data = check_metadata(lib_db, book_1984_id)
         (_, cls.fmt, cls.asin, cls.book_path, _, _) = data
-        create_x = False if platform.system() == 'Darwin' else True
+        create_x = False if ismacos else True
         do_job(data, create_x=create_x)
 
     def check_db(self, test_json_path, created_db_path, table, sql):
@@ -55,8 +55,7 @@ class TestDumbCode(unittest.TestCase):
             'metadata',
             'SELECT * FROM metadata')
 
-    @unittest.skipIf(platform.system() == 'Darwin',
-                     "absurd macOS can't load .so files in numpy")
+    @unittest.skipIf(ismacos, "absurd macOS can't load .so files in numpy")
     def test_x_ray_occurrence(self):
         self.check_db(
             'XRAY.entities.json',
@@ -65,7 +64,7 @@ class TestDumbCode(unittest.TestCase):
             f'SELECT * FROM occurrence ORDER BY start LIMIT {LIMIT}')
 
     @unittest.skipIf(
-        platform.system() == 'Darwin',
+        ismacos,
         "It does e-mail and Web browsing, and it shits in Kyle's mouth??")
     def test_x_ray_book_metadata(self):
         self.check_db(
@@ -74,8 +73,7 @@ class TestDumbCode(unittest.TestCase):
             'book_metadata',
             'SELECT erl, num_people, num_terms FROM book_metadata')
 
-    @unittest.skipIf(
-        platform.system() == 'Darwin', "Yes but, can it read?")
+    @unittest.skipIf(ismacos, "Yes but, can it read?")
     def test_x_ray_top_mentioned(self):
         self.check_db(
             'XRAY.entities.json',

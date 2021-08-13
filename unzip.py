@@ -8,6 +8,7 @@ import sys
 import zipfile
 from pathlib import Path
 
+from calibre.constants import is64bit, ismacos, iswindows
 from calibre.utils.config import config_dir
 
 PLUGIN_PATH = Path(config_dir).joinpath('plugins/WordDumb.zip')
@@ -57,7 +58,7 @@ def install_libs(model, create_ww=True, create_x=True):
     # exclude regex to prevent outdated pip to build it on macOS
     # and calibre has regex
     if create_ww:
-        if platform.system() == 'Darwin':
+        if ismacos:
             nltk_deps = [
                 (p, None) for p in ['nltk', 'joblib', 'click', 'tqdm']]
         else:
@@ -95,10 +96,8 @@ def pip_install(pkg, pkg_version=None, compiled=False, url=None):
         for d in folder.parent.glob(f'{pkg}_*'):
             shutil.rmtree(d)  # delete old package
 
-        system = platform.system()
-        args = pip_args(folder, pkg, py_version, system,
-                        pkg_version, compiled, url)
-        if system == 'Windows':
+        args = pip_args(folder, pkg, py_version, pkg_version, compiled, url)
+        if iswindows:
             subprocess.run(args, check=True, capture_output=True,
                            creationflags=subprocess.CREATE_NO_WINDOW)
         else:
@@ -108,12 +107,12 @@ def pip_install(pkg, pkg_version=None, compiled=False, url=None):
         sys.path.insert(0, p)
 
 
-def pip_args(folder, pkg, py_version, system,
+def pip_args(folder, pkg, py_version,
              pkg_version=None, compiled=False, url=None):
     python3 = 'python3'
-    if system == 'Windows':
+    if iswindows:
         python3 = 'py'
-    elif system == 'Darwin':
+    elif ismacos:
         # stupid macOS loses PATH when calibre is not launched in terminal
         if platform.machine() == 'arm64':
             python3 = '/opt/homebrew/bin/python3'
@@ -124,9 +123,9 @@ def pip_args(folder, pkg, py_version, system,
     args = [python3, '-m', 'pip', 'install', '-t', folder, '--no-deps']
     if compiled:
         args.extend(['--python-version', py_version])
-        if system == 'Windows':
+        if iswindows:
             args.append('--platform')
-            if platform.architecture()[0] == '64bit':
+            if is64bit:
                 args.append('win_amd64')
             else:
                 args.append('win32')

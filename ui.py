@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import platform
 from functools import partial
 
+from calibre.constants import ismacos
 from calibre.gui2.actions import InterfaceAction
 from calibre_plugins.worddumb.config import ConfigWidget
 from calibre_plugins.worddumb.main import ParseBook
@@ -13,7 +13,7 @@ class WordDumb(InterfaceAction):
     action_spec = ('WordDumb', None, 'Good morning Krusty Crew!', None)
     action_type = 'current'
     action_add_menu = True
-    if platform.system() == 'Darwin':
+    if ismacos:
         action_menu_clone_qaction = 'Create Word Wise'
     else:
         action_menu_clone_qaction = 'Create Word Wise and X-Ray'
@@ -23,7 +23,7 @@ class WordDumb(InterfaceAction):
         self.qaction.setIcon(icon)
         self.menu = self.qaction.menu()
 
-        if platform.system() == 'Darwin':
+        if ismacos:
             self.qaction.triggered.connect(partial(run, self.gui, True, False))
         else:
             self.qaction.triggered.connect(partial(run, self.gui, True, True))

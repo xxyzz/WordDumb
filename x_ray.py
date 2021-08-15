@@ -34,7 +34,7 @@ TITLES = {
 MAX_EXLIMIT = 20
 
 
-class X_Ray():
+class X_Ray:
     def __init__(self, conn, lang):
         self.conn = conn
         self.entity_id = 1

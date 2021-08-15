@@ -36,18 +36,24 @@ def check_metadata(db, book_id):
     # check ASIN, create a random one if doesn't exist
     book_path = db.format_abspath(book_id, book_fmt)
     asin = get_asin(book_path, book_fmt)
+    update_asin = False
     if asin is None or re.fullmatch('B[0-9A-Z]{9}', asin) is None:
         asin = random_asin()
         mi.set_identifier('mobi-asin', asin)
         db.set_metadata(book_id, mi)
-        if book_fmt == 'KFX':
-            set_kfx_asin(book_path, asin)
-        else:
-            with open(book_path, 'r+b') as f:
-                mu = MetadataUpdater(f)
-                mu.update(mi, asin=asin)
+        update_asin = True
 
-    return book_id, book_fmt, asin, book_path, mi, languages[book_language]
+    return (book_id, book_fmt, asin, book_path, mi,
+            update_asin, languages[book_language])
+
+
+def set_asin(mi, asin, book_fmt, book_path):
+    if book_fmt == 'KFX':
+        set_kfx_asin(book_path, asin)
+    else:
+        with open(book_path, 'r+b') as f:
+            mu = MetadataUpdater(f)
+            mu.update(mi, asin=asin)
 
 
 def random_asin():

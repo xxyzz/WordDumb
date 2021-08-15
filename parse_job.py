@@ -9,13 +9,16 @@ from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import (create_lang_layer,
                                                create_x_ray_db, insert_lemma,
                                                save_db)
+from calibre_plugins.worddumb.metadata import set_asin
 from calibre_plugins.worddumb.unzip import install_libs, load_json
 from calibre_plugins.worddumb.x_ray import X_Ray
 
 
 def do_job(data, create_ww=True, create_x=True,
            abort=None, log=None, notifications=None):
-    (_, book_fmt, asin, book_path, _, lang) = data
+    (_, book_fmt, asin, book_path, mi, updata_asin, lang) = data
+    if updata_asin:
+        set_asin(mi, asin, book_fmt, book_path)
     model = lang['spacy'] + prefs['model_size']
     install_libs(model, create_ww, create_x)
     is_kfx = book_fmt == 'KFX'
@@ -24,16 +27,12 @@ def do_job(data, create_ww=True, create_x=True,
         ll_conn, ll_path = create_lang_layer(asin, book_path, book_fmt)
         if ll_conn is None:
             create_ww = False
-            if not create_x:
-                return
         else:
             lemmas = load_json('data/lemmas.json')
     if create_x:
         x_ray_conn, x_ray_path = create_x_ray_db(asin, book_path, lang['wiki'])
         if x_ray_conn is None:
             create_x = False
-            if not create_ww:
-                return
 
     if create_x:
         x_ray = X_Ray(x_ray_conn, lang['wiki'])

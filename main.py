@@ -10,7 +10,7 @@ from calibre_plugins.worddumb.parse_job import do_job
 from calibre_plugins.worddumb.send_file import SendFile, kindle_connected
 
 
-class ParseBook():
+class ParseBook:
     def __init__(self, gui):
         self.gui = gui
         self.metadata_list = []
@@ -36,7 +36,7 @@ class ParseBook():
         for data in self.metadata_list:
             if data[-1]['wiki'] != 'en':
                 create_ww = False
-            title = data[-2].get('title')
+            title = data[-3].get('title')
             notif = []
             if create_ww:
                 notif.append('Word Wise')

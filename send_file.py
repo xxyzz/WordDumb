@@ -6,11 +6,11 @@ from calibre.gui2 import FunctionDispatcher
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 
 
-class SendFile():
+class SendFile:
     def __init__(self, gui, data):
         self.gui = gui
         self.device_manager = self.gui.device_manager
-        (self.book_id, _, self.asin, self.book_path, self.mi, _) = data
+        (self.book_id, _, self.asin, self.book_path, self.mi, _, _) = data
         self.ll_path = get_ll_path(self.asin, self.book_path)
         self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
 

@@ -26,7 +26,7 @@ class TestDumbCode(unittest.TestCase):
                 break
 
         data = check_metadata(lib_db, book_1984_id)
-        (_, cls.fmt, cls.asin, cls.book_path, _, _) = data
+        (_, cls.fmt, cls.asin, cls.book_path, _, _, _) = data
         create_x = False if ismacos else True
         do_job(data, create_x=create_x)
 

@@ -1,19 +1,11 @@
 {
-  "Jinja2": {
-    "compiled": false,
-    "version": "3.0.1"
-  },
-  "MarkupSafe": {
-    "compiled": true,
-    "version": "2.0.1"
-  },
   "blis": {
     "compiled": true,
     "version": "0.7.4"
   },
   "catalogue": {
     "compiled": false,
-    "version": "2.0.4"
+    "version": "2.0.5"
   },
   "certifi": {
     "compiled": false,
@@ -41,7 +33,7 @@
   },
   "numpy": {
     "compiled": true,
-    "version": "1.21.1"
+    "version": "1.21.2"
   },
   "packaging": {
     "compiled": false,
@@ -89,7 +81,7 @@
   },
   "tqdm": {
     "compiled": false,
-    "version": "4.62.0"
+    "version": "4.62.1"
   },
   "typer": {
     "compiled": false,
@@ -106,5 +98,13 @@
   "wasabi": {
     "compiled": false,
     "version": "0.8.2"
+  },
+    "Jinja2": {
+    "compiled": false,
+    "version": "3.0.1"
+  },
+  "MarkupSafe": {
+    "compiled": true,
+    "version": "2.0.1"
   }
 }

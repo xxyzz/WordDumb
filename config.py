@@ -51,7 +51,7 @@ class ConfigWidget(QWidget):
         zh_wiki_hl.addWidget(self.zh_wiki_box)
         vl.addLayout(zh_wiki_hl)
 
-        donate_button = QPushButton('Donate')
+        donate_button = QPushButton('Tree-fiddy?')
         donate_button.clicked.connect(self.donate)
         vl.addWidget(donate_button)
 

@@ -84,11 +84,7 @@ class ParseBook:
                     'https://wikipedia.org',
                     'It was a pleasure to burn', job.details)
             elif 'CalledProcessError' in job.details:
-                dialog = JobError(self.gui)
-                dialog.show_error(
-                    'subprocess.run failed',
-                    job.exception.stderr.decode('utf-8'),
-                    det_msg=job.details)
+                self.subprocess_error(job)
             elif 'JointMOBI' in job.details:
                 url = 'https://github.com/kevinhendricks/KindleUnpack'
                 self.error_dialog(
@@ -98,9 +94,26 @@ class ParseBook:
                     to split the book.
                     ''', job.details)
             else:
-                self.gui.job_exception(job, dialog_title='Dumb error')
+                self.gui.job_exception(job, dialog_title='Eh!')
             return True
         return False
+
+    def subprocess_error(self, job):
+        exception = job.exception.stderr.decode('utf-8')
+        if 'C++ Build Tools' in exception:
+            self.error_dialog(
+                'Seriously, 32bit?!',
+                '''
+                Install <a href='https://calibre-ebook.com/download_windows64'>
+                64bit calibre</a>, 32bit calibre is not supported.
+                ''',
+                job.details + exception)
+        else:
+            dialog = JobError(self.gui)
+            dialog.show_error(
+                'Weak',
+                'subprocess.run() failed',
+                det_msg=job.details + exception)
 
     def error_dialog(self, title, message, error):
         dialog = JobError(self.gui)

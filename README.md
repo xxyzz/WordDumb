@@ -32,7 +32,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   $ brew install calibre
   ```
 
-  - Windows: use [Chocolatey](https://chocolatey.org) or download from  https://calibre-ebook.com/download_windows64
+  - Windows: install 64bit calibre with [Chocolatey](https://chocolatey.org) or download from https://calibre-ebook.com/download_windows64
 
   ```
   $ choco install calibre

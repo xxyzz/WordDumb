@@ -90,6 +90,8 @@ https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-
 
 - This plugin requires access to https://files.pythonhosted.org (download dependencies) and https://raw.githubusercontent.com (download NLTK and spaCy model) at first run, and https://wikipedia.org every time if X-Ray is enabled. These domains might be blocked in some countries([Censorship of Wikipedia](https://en.wikipedia.org/wiki/Censorship_of_Wikipedia), [Censorship of GitHub](https://en.wikipedia.org/wiki/Censorship_of_GitHub)).
 
+- [Display Word Wise in other languages](./klld)
+
 ## I need about tree-fiddy
 
 <a href="https://liberapay.com/xxyzz/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>

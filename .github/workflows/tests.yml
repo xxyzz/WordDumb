@@ -6,11 +6,13 @@ on:
       - '**'
     paths-ignore:
       - '**.md'
+      - 'klld/**'
   pull_request:
     branches:
       - '**'
     paths-ignore:
       - '**.md'
+      - 'klld/**'
 
 jobs:
   test-ubuntu:

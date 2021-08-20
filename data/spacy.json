@@ -61,11 +61,11 @@
   },
   "smart-open": {
     "compiled": false,
-    "version": "5.1.0"
+    "version": "5.2.0"
   },
   "spacy": {
     "compiled": true,
-    "version": "3.1.1"
+    "version": "3.1.2"
   },
   "spacy-legacy": {
     "compiled": false,

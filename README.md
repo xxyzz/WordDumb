@@ -6,6 +6,8 @@ Languages X-Ray supports: Català, Dansk, Deutsch, English, Español, Français,
 
 X-Ray doesn't support macOS, because macOS prohibits calibre from loading unsigned library.
 
+![screenshot](https://user-images.githubusercontent.com/21101839/130245435-b874f19a-7785-4093-9975-81596efc42bb.png)
+
 ## Contribute
 
 Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).

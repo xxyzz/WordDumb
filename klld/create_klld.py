@@ -5,13 +5,19 @@ import sqlite3
 from collections import defaultdict
 from pathlib import Path
 
-from parse_ja import parse_ja_dict
+from parse_ja import parse_ja_dict, break_ja_def
 
 DICT_TITLES = {
     'de': 'Oxford English - German',
     'es': 'Oxford English - Spanish',
     'ja': 'Progressive English-Japanese'
 }
+
+
+def break_def(full_def, lang):
+    if lang == 'ja':
+        return break_ja_def(full_def)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("en_klld", help="path of kll.en.en.klld file.")
@@ -49,11 +55,12 @@ replace_count = 0
 for lemma, sense_ids in en_klld.items():
     if lemma not in dic:
         continue
-    replace_count += 1
-    for sense_id, def_tuple in zip(sense_ids, dic[lemma]):
+    for sense_id, full_def in zip(sense_ids, dic[lemma]):
         conn.execute(
             'UPDATE senses SET source_id = 3, full_def = ?, short_def = ?,'
-            'example_sentence = ? WHERE id = ?', def_tuple + (sense_id,))
+            'example_sentence = ? WHERE id = ?',
+            break_def(full_def, args.lang) + (sense_id,))
+        replace_count += 1
 
 conn.commit()
 new_klld = Path(f'kll.en.{args.lang}.klld')

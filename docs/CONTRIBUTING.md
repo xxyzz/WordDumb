@@ -32,6 +32,8 @@
 
 - https://docs.python-requests.org
 
+- https://lxml.de
+
 ## Debug
 
 ```

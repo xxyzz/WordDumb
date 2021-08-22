@@ -1,6 +1,16 @@
 # Create klld in other languages
 
-- Download *Progressive English-Japanese Dictionary*
+- Download Kindle default dictionary:
+
+  - *Progressive English-Japanese Dictionary(プログレッシブ英和中辞典)*
+
+  - *Oxford English - German Dictionary*
+
+  - *Oxford English - Spanish Dictionary*
+
+  - *Oxford Hachette English - French Dictionary*
+
+  - *Oxford Paravia English - Italian Dictionary*
 
 - Install or build [mobitool](https://github.com/bfabiszewski/libmobi)
 

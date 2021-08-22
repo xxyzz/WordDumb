@@ -1,33 +1,52 @@
 #!/usr/bin/env python3
 
 import argparse
+import base64
 import sqlite3
 from collections import defaultdict
 from pathlib import Path
 
-from parse_ja import parse_ja_dict, break_ja_def
+from parse_es import parse_es_dict
+from parse_ja import parse_ja_dict
 
 DICT_TITLES = {
-    'de': 'Oxford English - German',
-    'es': 'Oxford English - Spanish',
+    'de': 'Oxford English-German',
+    'es': 'Oxford English-Spanish',
+    'fr': 'Oxford English-French',
+    'it': 'Oxford English-Italian',
     'ja': 'Progressive English-Japanese'
 }
 
 
-def break_def(full_def, lang):
-    if lang == 'ja':
-        return break_ja_def(full_def)
+def encode_def(full_def, short_def, example):
+    return (base64.b64encode(full_def.encode('utf-8')).decode('utf-8'),
+            base64.b64encode(short_def.encode('utf-8')).decode('utf-8'),
+            base64.b64encode(
+                example.encode('utf-8')).decode('utf-8') if example else None)
+
+
+def break_examples(def_tuple, lang):
+    full_def, short_def = def_tuple
+    example_symbol = '¶' if lang == 'ja' else '•'
+    example = None
+    if example_symbol in full_def:
+        full_def, example = full_def.split(example_symbol, maxsplit=1)
+        example = example.split(example_symbol, maxsplit=1)[0]
+    return encode_def(full_def, short_def, example)
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("en_klld", help="path of kll.en.en.klld file.")
 parser.add_argument("dict_rawml", help="path of dictionary rawml file.")
-parser.add_argument("lang", help="dictionary language: de|es|ja.")
+parser.add_argument("lang", choices=DICT_TITLES.keys(),
+                    help="dictionary language.")
 args = parser.parse_args()
 
 dic = defaultdict(list)
 if args.lang == 'ja':
     parse_ja_dict(args.dict_rawml, dic)
+else:
+    parse_es_dict(args.dict_rawml, dic)
 
 klld_conn = sqlite3.connect(args.en_klld)
 en_klld = defaultdict(list)
@@ -55,11 +74,11 @@ replace_count = 0
 for lemma, sense_ids in en_klld.items():
     if lemma not in dic:
         continue
-    for sense_id, full_def in zip(sense_ids, dic[lemma]):
+    for sense_id, def_tuple in zip(sense_ids, dic[lemma]):
         conn.execute(
             'UPDATE senses SET source_id = 3, full_def = ?, short_def = ?,'
             'example_sentence = ? WHERE id = ?',
-            break_def(full_def, args.lang) + (sense_id,))
+            break_examples(def_tuple, args.lang) + (sense_id,))
         replace_count += 1
 
 conn.commit()

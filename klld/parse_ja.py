@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import base64
 import re
 
 from lxml import etree
@@ -47,18 +46,7 @@ def parse_ja_dict(rawml_path, dic):
 
         if len(defs) > 1 and defs[0].startswith('['):
             defs.pop(0)
-        defs = [(x, re.sub(RE, '', x.split('；')[0]).strip()) for x in defs]
+        defs = [(x, re.sub(
+            RE, '', re.split(r'[¶；]', x, 1)[0]).strip()) for x in defs]
         dic[lemma].extend(filter(lambda x: len(x[1]), defs))
         element.clear(keep_tail=True)
-
-
-def break_ja_def(def_tuple):
-    full_def, short_def = def_tuple
-    example = None
-    if '¶' in full_def:
-        full_def, example = full_def.split('¶', maxsplit=1)
-        example = example.split('¶', maxsplit=1)[0]
-    return (base64.b64encode(full_def.encode('utf-8')).decode('utf-8'),
-            base64.b64encode(short_def.encode('utf-8')).decode('utf-8'),
-            base64.b64encode(
-                example.encode('utf-8')).decode('utf-8') if example else None)

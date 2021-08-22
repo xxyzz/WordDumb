@@ -5,6 +5,8 @@ import re
 
 from lxml import etree
 
+RE = r'(?:\(+[^)]+\)+|〔[^〕]+〕|\[[^]]+\]|〈[^〉]+〉|（[^）]+）|［[^］]+］|]|］|⇒|・)'
+
 
 def parse_ja_dict(rawml_path, dic):
     for _, element in etree.iterparse(
@@ -45,20 +47,17 @@ def parse_ja_dict(rawml_path, dic):
 
         if len(defs) > 1 and defs[0].startswith('['):
             defs.pop(0)
+        defs = [(x, re.sub(RE, '', x.split('；')[0]).strip()) for x in defs]
+        dic[lemma].extend(filter(lambda x: len(x[1]), defs))
         element.clear(keep_tail=True)
-        dic[lemma].extend(defs)
 
 
-def break_ja_def(full_def):
+def break_ja_def(def_tuple):
+    full_def, short_def = def_tuple
     example = None
     if '¶' in full_def:
         full_def, example = full_def.split('¶', maxsplit=1)
         example = example.split('¶', maxsplit=1)[0]
-    short_def = re.sub(
-        r'(?:\(+[^)]+\)+|〔[^〕]+〕|\[[^]]+\]|〈[^〉]+〉|（[^）]+）|［[^］]+］)',
-        '', full_def)
-    if '；' in short_def:
-        short_def = short_def.split('；', maxsplit=1)[0]
     return (base64.b64encode(full_def.encode('utf-8')).decode('utf-8'),
             base64.b64encode(short_def.encode('utf-8')).decode('utf-8'),
             base64.b64encode(

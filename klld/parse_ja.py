@@ -7,7 +7,7 @@ from lxml import etree
 RE = r'(?:\(+[^)]+\)+|〔[^〕]+〕|\[[^]]+\]|〈[^〉]+〉|（[^）]+）|［[^］]+］|]|］|⇒|・)'
 
 
-def parse_ja_dict(rawml_path, dic):
+def parse_ja_dict(rawml_path, dic, en_klld):
     for _, element in etree.iterparse(
             rawml_path, tag='hr', html=True,
             remove_blank_text=True, remove_comments=True):
@@ -16,7 +16,7 @@ def parse_ja_dict(rawml_path, dic):
             element.clear(keep_tail=True)
             continue
         lemma = lemma[0].replace('·', '')
-        if not re.fullmatch(r'[a-zA-Z]{3,}', lemma):
+        if lemma not in en_klld:
             element.clear(keep_tail=True)
             continue
         sibling = element.getnext()

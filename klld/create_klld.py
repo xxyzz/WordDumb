@@ -42,12 +42,6 @@ parser.add_argument("lang", choices=DICT_TITLES.keys(),
                     help="dictionary language.")
 args = parser.parse_args()
 
-dic = defaultdict(list)
-if args.lang == 'ja':
-    parse_ja_dict(args.dict_rawml, dic)
-else:
-    parse_es_dict(args.dict_rawml, dic)
-
 klld_conn = sqlite3.connect(args.en_klld)
 en_klld = defaultdict(list)
 for lemma, sense_id in klld_conn.execute(
@@ -57,6 +51,12 @@ for lemma, sense_id in klld_conn.execute(
         WHERE short_def IS NOT NULL
         '''):
     en_klld[lemma].append(sense_id)
+
+dic = defaultdict(list)
+if args.lang == 'ja':
+    parse_ja_dict(args.dict_rawml, dic, en_klld)
+else:
+    parse_es_dict(args.dict_rawml, dic, en_klld)
 
 conn = sqlite3.connect(':memory:')
 klld_conn.backup(conn)
@@ -72,8 +72,6 @@ conn.execute('UPDATE sources SET label = ? WHERE id = 3',
 replace_count = 0
 
 for lemma, sense_ids in en_klld.items():
-    if lemma not in dic:
-        continue
     for sense_id, def_tuple in zip(sense_ids, dic[lemma]):
         conn.execute(
             'UPDATE senses SET source_id = 3, full_def = ?, short_def = ?,'

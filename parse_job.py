@@ -135,7 +135,7 @@ def find_named_entity(start, x_ray, doc, is_kfx):
             text = re.sub(r'(?:\'s|’s)$', '', text)
             text = re.sub(r'^(?:the |an |a )', '', text, flags=re.IGNORECASE)
 
-        if len(ent.text) < len_limit or re.fullmatch(r'[\W\d]+', ent.text):
+        if len(text) < len_limit or re.fullmatch(r'[\W\d]+', text):
             continue
 
         new_start_char = ent.start_char + ent.text.index(text)

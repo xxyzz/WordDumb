@@ -29,7 +29,7 @@ def parse_ja_dict(rawml_path, dic, en_klld):
                     if re.fullmatch(r'\W*', sibling.tail):
                         sibling = sibling.getnext()
                         continue
-                    tail = sibling.tail.strip().removeprefix('/')
+                    tail = re.sub(r'^/', '', sibling.tail.strip())
                     if defs[0] == '':
                         defs[-1] = tail
                     elif sibling.text and re.fullmatch(r'\(\d+\)',
@@ -39,9 +39,9 @@ def parse_ja_dict(rawml_path, dic, en_klld):
                         defs.append(tail)
             else:
                 if sibling.text:
-                    defs[-1] += sibling.text.strip().removeprefix('/')
+                    defs[-1] += re.sub(r'^/', '', sibling.text.strip())
                 if sibling.tail:
-                    defs[-1] += sibling.tail.strip().removeprefix('/')
+                    defs[-1] += re.sub(r'^/', '', sibling.tail.strip())
             sibling = sibling.getnext()
 
         if len(defs) > 1 and defs[0].startswith('['):

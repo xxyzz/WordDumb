@@ -5,7 +5,7 @@
   },
   "catalogue": {
     "compiled": false,
-    "version": "2.0.5"
+    "version": "2.0.6"
   },
   "certifi": {
     "compiled": false,
@@ -61,7 +61,7 @@
   },
   "smart-open": {
     "compiled": false,
-    "version": "5.2.0"
+    "version": "5.2.1"
   },
   "spacy": {
     "compiled": true,
@@ -81,7 +81,7 @@
   },
   "tqdm": {
     "compiled": false,
-    "version": "4.62.1"
+    "version": "4.62.2"
   },
   "typer": {
     "compiled": false,

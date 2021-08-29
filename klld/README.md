@@ -27,11 +27,7 @@ $ mobitool -d -o output_folder -P device_serival_number path_of_dict_azw
 - Create klld
 
 ```
-$ python -m venv .venv
-$ source .venv/bin/activate
-$ pip install lxml
-$ python create_klld.py path_of_en_klld path_of_dict_rawml dict_lang
-$ deactivate
+$ calibre-debug create_klld.py path_of_en_klld path_of_dict_rawml dict_lang
 ```
 
 - Rename klld file to `kll.en.zh.klld`

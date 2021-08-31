@@ -131,7 +131,7 @@ def find_named_entity(start, x_ray, doc, is_kfx):
         text = re.sub(r'\W+$', '', text)
         if x_ray.lang == 'en':
             if re.match(r'chapter', text, re.IGNORECASE):
-                return
+                continue
             text = re.sub(r'(?:\'s|’s)$', '', text)
             text = re.sub(r'^(?:the |an |a )', '', text, flags=re.IGNORECASE)
 

@@ -130,9 +130,11 @@ def find_phrase_and_lemma(doc, matcher, start, lemmas, ll_conn, is_kfx):
         lemma = doc.text[span.start_char:span.end_char].lower()
         if is_kfx:
             index = start + span.start_char
+            end = index + len(lemma)
         else:
             index = start + len(doc.text[:span.start_char].encode('utf-8'))
-        insert_lemma(ll_conn, (index,) + tuple(lemmas[lemma]))
+            end = index + len(lemma.encode('utf-8'))
+        insert_lemma(ll_conn, (index, end) + tuple(lemmas[lemma]))
         ranges.add(span.start_char)
     find_lemma(start, doc.text, lemmas, ll_conn, is_kfx, ranges)
 
@@ -151,7 +153,7 @@ def find_lemma(start, text, lemmas, ll_conn, is_kfx, ranges=None):
                 index = start + match.start()
             else:
                 index = start + len(text[:match.start()].encode('utf-8'))
-            insert_lemma(ll_conn, (index,) + tuple(lemmas[lemma]))
+            insert_lemma(ll_conn, (index, None) + tuple(lemmas[lemma]))
 
 
 # https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L318

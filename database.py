@@ -60,8 +60,8 @@ def create_lang_layer(asin, book_path, book_fmt):
 
 def insert_lemma(ll_conn, data):
     ll_conn.execute('''
-    INSERT INTO glosses (start, difficulty, sense_id, low_confidence)
-    VALUES (?, ?, ?, 0)
+    INSERT INTO glosses (start, end, difficulty, sense_id, low_confidence)
+    VALUES (?, ?, ?, ?, 0)
     ''', data)
 
 

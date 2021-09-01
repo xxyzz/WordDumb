@@ -43,9 +43,9 @@ def save_wiki_cache(cache_dic, lang):
         json.dump(cache_dic, f)
 
 
-def install_libs(model, create_ww=True, create_x=True):
+def install_libs(model, create_ww):
     pkgs = load_json('data/spacy.json')
-    if create_x:
+    if not ismacos:
         for pkg, value in pkgs.items():
             pip_install(pkg, value['version'], value['compiled'])
         model_v = '3.1.0'

@@ -42,7 +42,7 @@ class TestDumbCode(unittest.TestCase):
 
     def test_word_wise_glosses(self):
         self.check_db(
-            'LanguageLayer.en.json',
+            'LanguageLayer_mac.json' if ismacos else 'LanguageLayer.json',
             get_ll_path(self.asin, self.book_path),
             'glosses',
             'SELECT start, difficulty, sense_id FROM glosses '
@@ -50,7 +50,7 @@ class TestDumbCode(unittest.TestCase):
 
     def test_word_wise_metadata(self):
         self.check_db(
-            'LanguageLayer.en.json',
+            'LanguageLayer_mac.json' if ismacos else 'LanguageLayer.json',
             get_ll_path(self.asin, self.book_path),
             'metadata',
             'SELECT * FROM metadata')

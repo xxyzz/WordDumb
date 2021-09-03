@@ -19,16 +19,26 @@ class ConfigWidget(QWidget):
         vl = QVBoxLayout()
         self.setLayout(vl)
 
-        self.search_people_box = QCheckBox('Search people')
+        self.search_people_box = QCheckBox(
+            'Search X-Ray people entities on Wikipedia')
         self.search_people_box.setChecked(prefs['search_people'])
         vl.addWidget(self.search_people_box)
 
         model_size_hl = QHBoxLayout()
-        model_size_label = QLabel('spaCy model size')
+        model_size_label = QLabel(
+            '<a href="https://spacy.io/models/en">spaCy model</a> size')
+        model_size_label.setOpenExternalLinks(True)
+        model_size_label.setToolTip('Larger model improves X-Ray quality')
         self.model_size_box = QComboBox()
-        for size in ['sm', 'md', 'lg']:
-            self.model_size_box.addItem(size)
-        self.model_size_box.setCurrentText(prefs['model_size'])
+        spacy_model_sizes = {
+            'sm': 'small',
+            'md': 'medium',
+            'lg': 'large'
+        }
+        for size, text in spacy_model_sizes.items():
+            self.model_size_box.addItem(text, size)
+        self.model_size_box.setCurrentText(
+            spacy_model_sizes[prefs['model_size']])
         model_size_hl.addWidget(model_size_label)
         model_size_hl.addWidget(self.model_size_box)
         vl.addLayout(model_size_hl)
@@ -68,5 +78,5 @@ class ConfigWidget(QWidget):
 
     def save_settings(self):
         prefs['search_people'] = self.search_people_box.isChecked()
-        prefs['model_size'] = self.model_size_box.currentText()
+        prefs['model_size'] = self.model_size_box.currentData()
         prefs['zh_wiki_variant'] = self.zh_wiki_box.currentData()

@@ -42,15 +42,22 @@ class TestDumbCode(unittest.TestCase):
 
     def test_word_wise_glosses(self):
         self.check_db(
-            'LanguageLayer_mac.json' if ismacos else 'LanguageLayer.json',
+            'LanguageLayer.en.json',
             get_ll_path(self.asin, self.book_path),
             'glosses',
             'SELECT start, difficulty, sense_id FROM glosses '
             f'ORDER BY start LIMIT {LIMIT}')
 
+    def test_word_wise_glosses_count(self):
+        self.check_db(
+            'LanguageLayer.en.json',
+            get_ll_path(self.asin, self.book_path),
+            'count',
+            'SELECT count(*) FROM glosses')
+
     def test_word_wise_metadata(self):
         self.check_db(
-            'LanguageLayer_mac.json' if ismacos else 'LanguageLayer.json',
+            'LanguageLayer.en.json',
             get_ll_path(self.asin, self.book_path),
             'metadata',
             'SELECT * FROM metadata')

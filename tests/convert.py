@@ -39,6 +39,7 @@ if args.l:
     convert(args.l, 'glosses',
             'SELECT start, difficulty, sense_id FROM glosses '
             f'ORDER BY start LIMIT {LIMIT}')
+    convert(args.l, 'count', 'SELECT count(*) FROM glosses')
     convert(args.l, 'metadata', 'SELECT * FROM metadata')
 if args.x:
     convert(args.x, 'occurrence',

@@ -114,6 +114,10 @@ class ParseBook:
                 '''
                 Run the command "sudo apt install python3-pip" to install
                 pip module if you are using Debian or Ubuntu based distro.
+                <br><br>
+                If you still have this error, make sure you installed calibre
+                with the <a href="https://calibre-ebook.com/download_linux">
+                binary install command</a> but not from Flathub or Snap Store.
                 ''',
                 job.details + exception)
         else:

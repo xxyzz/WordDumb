@@ -46,7 +46,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
     pip module is included in python.
 
-  - Ubuntu
+  - Debian or Ubuntu based distro
 
   ```
   $ sudo apt install python3-pip
@@ -78,7 +78,7 @@ https://user-images.githubusercontent.com/21101839/124686751-39f3aa00-df06-11eb-
 
     - Enable "search people" option for nonfiction books and novels that have character pages on Wikipedia to add people descriptions in X-Ray.
     
-    - Larger spaCy model has higher [NER](https://en.wikipedia.org/wiki/Named-entity_recognition) precision, more details at https://spacy.io/models/en
+    - Larger spaCy model has higher [NER](https://en.wikipedia.org/wiki/Named-entity_recognition) precision therefore improves X-Ray quality, more details at https://spacy.io/models/en
 
 https://user-images.githubusercontent.com/21101839/124685798-90f87f80-df04-11eb-8eb6-dee012de6cab.mov
 

@@ -108,6 +108,14 @@ class ParseBook:
                 64bit calibre</a>, 32bit calibre is not supported.
                 ''',
                 job.details + exception)
+        elif 'No module named pip' in exception:
+            self.error_dialog(
+                'Missing pip module',
+                '''
+                Run the command "sudo apt install python3-pip" to install
+                pip module if you are using Debian or Ubuntu based distro.
+                ''',
+                job.details + exception)
         else:
             dialog = JobError(self.gui)
             dialog.show_error(

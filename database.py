@@ -3,7 +3,7 @@ import sqlite3
 from pathlib import Path
 
 from calibre_plugins.worddumb.metadata import get_acr, get_book_revision
-from calibre_plugins.worddumb.unzip import load_json
+from calibre_plugins.worddumb.unzip import load_json_or_pickle
 
 
 def get_ll_path(asin, book_path):
@@ -167,7 +167,7 @@ def create_x_ray_db(asin, book_path, lang):
     INSERT INTO source (id, label, url) VALUES(2, 4, 22);
     ''')
 
-    str_list = load_json('data/x_ray_strings.json')
+    str_list = load_json_or_pickle('data/x_ray_strings.json', True)
     if lang != 'en':
         str_list[-2][-1] = f'https://{lang}.wikipedia.org/wiki/%s'
     x_ray_conn.executemany('INSERT INTO string VALUES(?, ?, ?)', str_list)

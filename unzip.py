@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import pickle
 import platform
 import shutil
 import subprocess
@@ -14,10 +15,13 @@ from calibre.utils.config import config_dir
 PLUGIN_PATH = Path(config_dir).joinpath('plugins/WordDumb.zip')
 
 
-def load_json(filepath):
+def load_json_or_pickle(filepath, is_json):
     with zipfile.ZipFile(PLUGIN_PATH) as zf:
         with zf.open(filepath) as f:
-            return json.load(f)
+            if is_json:
+                return json.load(f)
+            else:
+                return pickle.load(f)
 
 
 def wiki_cache_path(lang):
@@ -43,9 +47,14 @@ def save_wiki_cache(cache_dic, lang):
         json.dump(cache_dic, f)
 
 
-def install_libs(model, create_ww):
-    pkgs = load_json('data/spacy.json')
-    if not ismacos:
+def install_libs(model, create_ww, create_x):
+    if create_ww:
+        libs_path = str(PLUGIN_PATH.joinpath('libs'))  # flashtext
+        if libs_path not in sys.path:
+            sys.path.insert(0, libs_path)
+
+    if create_x:
+        pkgs = load_json_or_pickle('data/spacy.json', True)
         for pkg, value in pkgs.items():
             pip_install(pkg, value['version'], value['compiled'])
         model_v = '3.1.0'
@@ -53,35 +62,6 @@ def install_libs(model, create_ww):
         url += f'{model}-{model_v}/{model}-{model_v}-py3-none-any.whl'
         pip_install(model, model_v, url=url)
         install_extra_deps(model)
-
-    # NLTK doesn't require certain version of click and tqdm package
-    # exclude regex to prevent outdated pip to build it on macOS
-    # and calibre has regex
-    if create_ww:
-        if ismacos:
-            nltk_deps = [
-                (p, None) for p in ['nltk', 'joblib', 'click', 'tqdm']]
-        else:
-            nltk_deps = [('nltk', None), ('joblib', None),
-                         ('click', pkgs['click']['version']),
-                         ('tqdm', pkgs['tqdm']['version'])]
-        for pkg, version in nltk_deps:
-            pip_install(pkg, version)
-        download_nltk_model()
-
-
-def download_nltk_model():
-    import nltk
-
-    nltk_data_path = Path(config_dir).joinpath('plugins/worddumb-nltk')
-    nltk_data_path_str = str(nltk_data_path)
-    model_path = nltk_data_path.joinpath('corpora/wordnet')  # morphy
-    if not model_path.is_dir():
-        nltk.download('wordnet', nltk_data_path_str)
-        model_path.with_suffix('.zip').unlink()
-
-    if nltk_data_path_str not in nltk.data.path:
-        nltk.data.path.append(nltk_data_path_str)
 
 
 def pip_install(pkg, pkg_version=None, compiled=False, url=None):
@@ -140,7 +120,7 @@ def pip_args(folder, pkg, py_version,
 
 def install_extra_deps(model):
     # https://spacy.io/usage/models#languages
-    data = load_json('data/spacy_extra.json')
+    data = load_json_or_pickle('data/spacy_extra.json', True)
     if (lang := model[:2]) in data:
         for pkg, value in data[lang].items():
             pip_install(pkg, value['version'], value['compiled'])

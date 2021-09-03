@@ -5,7 +5,7 @@ import re
 import string
 
 from calibre.ebooks.metadata.mobi import MetadataUpdater
-from calibre_plugins.worddumb.unzip import load_json
+from calibre_plugins.worddumb.unzip import load_json_or_pickle
 
 
 def check_metadata(db, book_id):
@@ -18,7 +18,7 @@ def check_metadata(db, book_id):
     book_language = mi.get("languages")
     if book_language is None or len(book_language) == 0:
         return None
-    languages = load_json('data/languages.json')
+    languages = load_json_or_pickle('data/languages.json', True)
     book_language = book_language[0]
     if book_language not in languages:
         return None

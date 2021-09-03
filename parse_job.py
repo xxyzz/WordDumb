@@ -2,7 +2,6 @@
 import json
 import re
 
-from calibre.constants import ismacos
 from calibre.ebooks.mobi.reader.mobi6 import MobiReader
 from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
 from calibre.utils.logging import default_log
@@ -11,7 +10,7 @@ from calibre_plugins.worddumb.database import (create_lang_layer,
                                                create_x_ray_db, insert_lemma,
                                                save_db)
 from calibre_plugins.worddumb.metadata import set_asin
-from calibre_plugins.worddumb.unzip import install_libs, load_json
+from calibre_plugins.worddumb.unzip import install_libs, load_json_or_pickle
 from calibre_plugins.worddumb.x_ray import X_Ray
 
 
@@ -21,66 +20,40 @@ def do_job(data, create_ww=True, create_x=True,
     if updata_asin:
         set_asin(mi, asin, book_fmt, book_path)
     model = lang['spacy'] + prefs['model_size']
-    install_libs(model, create_ww)
+    install_libs(model, create_ww, create_x)
     is_kfx = book_fmt == 'KFX'
-    ll_conn = None
-    ll_path = None
-    lemmas = None
-    x_ray_conn = None
-    x_ray_path = None
 
     if create_ww:
         ll_conn, ll_path = create_lang_layer(asin, book_path, book_fmt)
         if ll_conn is None:
             create_ww = False
         else:
-            lemmas = load_json('data/lemmas.json')
+            kw_processor = load_json_or_pickle('lemmas_dump', False)
     if create_x:
         x_ray_conn, x_ray_path = create_x_ray_db(asin, book_path, lang['wiki'])
         if x_ray_conn is None:
             create_x = False
 
-    if not ismacos:
-        spacy_job(create_ww, create_x, book_path, is_kfx, lemmas,
-                  ll_conn, model, lang, x_ray_conn, x_ray_path)
-    elif create_ww:
-        for text, start in parse_book(book_path, is_kfx):
-            find_lemma(start, text, lemmas, ll_conn, is_kfx)
-
-    if create_ww:
-        save_db(ll_conn, ll_path)
-
-
-def spacy_job(create_ww, create_x, book_path, is_kfx, lemmas,
-              ll_conn, model, lang, x_ray_conn, x_ray_path):
-    import spacy
-    if create_ww:
-        from spacy.matcher import PhraseMatcher
-        nlp_en = spacy.blank('en')
-        matcher = PhraseMatcher(nlp_en.vocab, attr='LOWER')
-        patterns = list(
-            nlp_en.pipe(
-                filter(lambda x: ' ' in x or '-' in x, lemmas.keys())))
-        matcher.add("phrases", patterns)
-        if not create_x:
-            for doc, start in nlp_en.pipe(
-                    parse_book(book_path, is_kfx), as_tuples=True):
-                find_phrase_and_lemma(
-                    doc, matcher, start, lemmas, ll_conn, is_kfx)
     if create_x:
+        import spacy
         nlp = spacy.load(model, exclude=[
-                'tok2vec', 'morphologizer', 'tagger',
-                'parser', 'attribute_ruler', 'lemmatizer'])
+            'tok2vec', 'morphologizer', 'tagger',
+            'parser', 'attribute_ruler', 'lemmatizer'])
         nlp.enable_pipe("senter")
         x_ray = X_Ray(x_ray_conn, lang['wiki'])
         for doc, start in nlp.pipe(
                 parse_book(book_path, is_kfx), as_tuples=True):
             find_named_entity(start, x_ray, doc, is_kfx)
             if create_ww:
-                find_phrase_and_lemma(
-                    doc, matcher, start, lemmas, ll_conn, is_kfx)
+                find_lemma(start, doc.text, kw_processor, ll_conn, is_kfx)
 
         x_ray.finish(x_ray_path)
+    elif create_ww:
+        for text, start in parse_book(book_path, is_kfx):
+            find_lemma(start, text, kw_processor, ll_conn, is_kfx)
+
+    if create_ww:
+        save_db(ll_conn, ll_path)
 
 
 def parse_book(book_path, is_kfx):
@@ -124,36 +97,19 @@ def parse_mobi(book_path):
                match_text.start() + 1)
 
 
-def find_phrase_and_lemma(doc, matcher, start, lemmas, ll_conn, is_kfx):
-    ranges = set()
-    for span in matcher(doc, as_spans=True):
-        lemma = doc.text[span.start_char:span.end_char].lower()
+def find_lemma(start, text, kw_processor, ll_conn, is_kfx):
+    for data, token_start, token_end in kw_processor.extract_keywords(
+            text, span_info=True):
+        end = None
+        lemma = text[token_start:token_end]
         if is_kfx:
-            index = start + span.start_char
-            end = index + len(lemma)
+            index = start + token_start
         else:
-            index = start + len(doc.text[:span.start_char].encode('utf-8'))
-            end = index + len(lemma.encode('utf-8'))
-        insert_lemma(ll_conn, (index, end) + tuple(lemmas[lemma]))
-        ranges.add(span.start_char)
-    find_lemma(start, doc.text, lemmas, ll_conn, is_kfx, ranges)
-
-
-def find_lemma(start, text, lemmas, ll_conn, is_kfx, ranges=None):
-    from nltk.corpus import wordnet as wn
-
-    for match in re.finditer(r"[a-zA-Z'\u00AD]{3,}", text):
-        if ranges and match.start() in ranges:
-            continue
-        word = match.group(0).replace('\u00AD', '').lower()  # rm soft hyphens
-        lemma = wn.morphy(word)
-        lemma = lemma if lemma else word
-        if lemma in lemmas:
-            if is_kfx:
-                index = start + match.start()
-            else:
-                index = start + len(text[:match.start()].encode('utf-8'))
-            insert_lemma(ll_conn, (index, None) + tuple(lemmas[lemma]))
+            index = start + len(text[:token_start].encode('utf-8'))
+        if ' ' in lemma:
+            end = index + len(lemma) if is_kfx else index + len(
+                lemma.encode('utf-8'))
+        insert_lemma(ll_conn, (index, end) + tuple(data))
 
 
 # https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L318

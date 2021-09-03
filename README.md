@@ -40,7 +40,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   $ choco install calibre
   ```
 
-- Install Python(pip)
+- Install Python(pip) for X-Ray
 
   - Arch Linux
 
@@ -50,16 +50,6 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
   ```
   $ sudo apt install python3-pip
-  ```
-
-  - macOS
-
-  ```
-  // recommended
-  $ brew install python
-
-  // or install outdated pip from Apple Command Line Tools
-  $ xcode-select --install
   ```
 
   - Windows: use Chocolatey or download from https://www.python.org/downloads
@@ -90,7 +80,7 @@ https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-
 
 - Don't add soft hyphens, it will cause the plugin to produce a mediocre X-Ray file.
 
-- This plugin requires access to https://files.pythonhosted.org (download dependencies) and https://raw.githubusercontent.com (download NLTK and spaCy model) at first run, and https://wikipedia.org every time if X-Ray is enabled. These domains might be blocked in some countries([Censorship of Wikipedia](https://en.wikipedia.org/wiki/Censorship_of_Wikipedia), [Censorship of GitHub](https://en.wikipedia.org/wiki/Censorship_of_GitHub)).
+- This plugin requires access to https://files.pythonhosted.org (download dependencies) and https://raw.githubusercontent.com (download spaCy model) at first run, and https://wikipedia.org every time if X-Ray is enabled. These domains might be blocked in some countries([Censorship of Wikipedia](https://en.wikipedia.org/wiki/Censorship_of_Wikipedia), [Censorship of GitHub](https://en.wikipedia.org/wiki/Censorship_of_GitHub)).
 
 - [Display Word Wise in other languages](./klld)
 

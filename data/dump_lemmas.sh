@@ -14,7 +14,7 @@ if [[ "$OSTYPE" != "msys" ]]; then
     deactivate
 else
     py -m venv .venv
-    .\env\Scripts\activate
+    .venv/Scripts/activate
     pip_install
     py data/dump_lemmas.py
     deactivate

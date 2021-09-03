@@ -19,3 +19,7 @@ __pycache__
 
 *.zip
 *.klld
+
+# word wise lemma
+libs
+lemmas_dump

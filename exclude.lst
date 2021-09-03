@@ -1,4 +1,6 @@
+data/lemmas.json
 data/*.py
+data/*.sh
 docs/*
 tests/*
 */__pycache__/*

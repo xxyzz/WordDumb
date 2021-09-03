@@ -17,7 +17,9 @@ jobs:
         run: echo "FILENAME=worddumb-${GITHUB_REF##*/}.zip" >> $GITHUB_ENV
 
       - name: Build plugin
-        run: zip -r ${FILENAME} * -x@exclude.lst
+        run: |
+          ./data/dump_lemmas.sh
+          zip -r ${FILENAME} * -x@exclude.lst
 
       - name: Create Release
         id: create_release

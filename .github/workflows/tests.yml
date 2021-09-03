@@ -35,7 +35,9 @@ jobs:
           rm 1984.mobi
 
       - name: Build plugin
-        run: zip -r worddumb.zip * -x@exclude.lst
+        run: |
+          ./data/dump_lemmas.sh
+          zip -r worddumb.zip * -x@exclude.lst
 
       - name: Add plugin
         run: calibre-customize -a worddumb.zip
@@ -77,7 +79,9 @@ jobs:
           rm 1984.mobi
 
       - name: Build plugin
-        run: zip -r worddumb.zip * -x@exclude.lst
+        run: |
+          ./data/dump_lemmas.sh
+          zip -r worddumb.zip * -x@exclude.lst
 
       - name: Add plugin
         run: calibre-customize -a worddumb.zip
@@ -123,7 +127,9 @@ jobs:
           rm 1984.mobi
 
       - name: Build plugin
-        run: 7z a -x@exclude.lst -x!.* -tzip worddumb.zip
+        run: |
+          ./data/dump_lemmas.sh
+          7z a -x@exclude.lst -x!.* -tzip worddumb.zip
 
       - name: Add plugin
         run: calibre-customize -a worddumb.zip

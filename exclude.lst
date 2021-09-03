@@ -3,6 +3,7 @@ data/*.py
 data/*.sh
 docs/*
 tests/*
-*/__pycache__/*
+**/__pycache__/*
+__pycache__/*
 exclude.lst
 klld/*

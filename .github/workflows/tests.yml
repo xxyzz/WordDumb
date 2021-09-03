@@ -45,19 +45,16 @@ jobs:
       - name: Get calibre python version
         run: echo "CALIBRE_PY=$(calibre-debug -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
 
-      - name: Restore dependencies and nltk model
+      - name: Restore dependencies and Wikipedia cache
         uses: actions/cache@v2
         with:
           path: |
             ~/.config/calibre/plugins/worddumb-libs
-            ~/.config/calibre/plugins/worddumb-nltk
             ~/.config/calibre/plugins/worddumb-wikipedia
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Run test
-        run: |
-          cd tests
-          calibre-debug test.py
+        run: cd tests && calibre-debug test.py
 
   test-macos:
     name: test-macos
@@ -86,21 +83,8 @@ jobs:
       - name: Add plugin
         run: calibre-customize -a worddumb.zip
 
-      - name: Get calibre python version
-        run: echo "CALIBRE_PY=$(calibre-debug -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
-
-      - name: Restore dependencies and nltk model
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/Library/Preferences/calibre/plugins/worddumb-libs
-            ~/Library/Preferences/calibre/plugins/worddumb-nltk
-          key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
-
       - name: Run test
-        run: |
-          cd tests
-          calibre-debug test.py
+        run: cd tests && calibre-debug test.py
 
   test-windows:
     name: test-windows
@@ -137,16 +121,13 @@ jobs:
       - name: Get calibre python version
         run: echo "CALIBRE_PY=$(calibre-debug -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
 
-      - name: Restore dependencies and nltk model
+      - name: Restore dependencies and Wikipedia cache
         uses: actions/cache@v2
         with:
           path: |
             ~/AppData/Roaming/calibre/plugins/worddumb-libs
-            ~/AppData/Roaming/calibre/plugins/worddumb-nltk
             ~/AppData/Roaming/calibre/plugins/worddumb-wikipedia
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Run test
-        run: |
-          cd tests
-          calibre-debug test.py
+        run: cd tests && calibre-debug test.py

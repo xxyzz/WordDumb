@@ -74,10 +74,6 @@ class ParseBook:
                     href='https://github.com/xxyzz/WordDumb#how-to-use'>document</a>
                     of how to install Python.
                     ''', job.details)
-            elif 'FileNotFoundError' in job.details and '.zip' in job.details:
-                self.censorship_error(
-                    'https://raw.githubusercontent.com',
-                    'nltk.download() failed', job.details)
             elif 'ConnectionError' in job.details \
                  and 'wikipedia.org' in job.details:
                 self.censorship_error(

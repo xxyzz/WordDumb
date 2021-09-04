@@ -49,7 +49,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/.config/calibre/plugins/worddumb-libs
+            ~/.config/calibre/plugins/worddumb-libs-py${{ env.CALIBRE_PY }}
             ~/.config/calibre/plugins/worddumb-wikipedia
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
@@ -125,7 +125,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/AppData/Roaming/calibre/plugins/worddumb-libs
+            ~/AppData/Roaming/calibre/plugins/worddumb-libs-py${{ env.CALIBRE_PY }}
             ~/AppData/Roaming/calibre/plugins/worddumb-wikipedia
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 

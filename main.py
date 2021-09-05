@@ -76,9 +76,7 @@ class ParseBook:
                     ''', job.details)
             elif 'ConnectionError' in job.details \
                  and 'wikipedia.org' in job.details:
-                self.censorship_error(
-                    'https://wikipedia.org',
-                    'It was a pleasure to burn', job.details)
+                self.censorship_error('https://wikipedia.org', job.details)
             elif 'CalledProcessError' in job.details:
                 self.subprocess_error(job)
             elif 'JointMOBI' in job.details:
@@ -116,6 +114,9 @@ class ParseBook:
                 binary install command</a> but not from Flathub or Snap Store.
                 ''',
                 job.details + exception)
+        elif 'Timeout' in exception and 'github.com' in exception:
+            self.censorship_error(
+                'https://raw.githubusercontent.com', job.details + exception)
         else:
             dialog = JobError(self.gui)
             dialog.show_error(
@@ -128,9 +129,9 @@ class ParseBook:
         dialog.msg_label.setOpenExternalLinks(True)
         dialog.show_error(title, message, det_msg=error)
 
-    def censorship_error(self, url, title, error):
+    def censorship_error(self, url, error):
         self.error_dialog(
-            title,
+            'It was a pleasure to burn',
             f'''
             Is <a href='{url}'>{url}</a> blocked in your country?
             You might need tools to bypass internet censorship.

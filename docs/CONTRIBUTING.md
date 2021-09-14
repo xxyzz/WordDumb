@@ -37,13 +37,13 @@
 ## Debug
 
 ```
+$ ./data/dump_lemmas.sh
 $ calibre-customize -b . && calibre-debug -g
 ```
 
 ## Build
 
 ```
-$ ./data/dump_lemmas.sh
 $ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
 ```
 

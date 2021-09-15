@@ -7,10 +7,11 @@ from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 
 
 class SendFile:
-    def __init__(self, gui, data):
+    def __init__(self, gui, data, notif):
         self.gui = gui
         self.db = gui.current_db.new_api
         self.device_manager = gui.device_manager
+        self.notif = notif
         self.book_id, self.asin, self.book_path, self.mi, update_asin = data
         if update_asin:
             self.db.set_metadata(self.book_id, self.mi)
@@ -32,6 +33,7 @@ class SendFile:
             device_book_path = Path(device_prefix).joinpath(next(iter(paths)))
             self.move_file_to_device(self.ll_path, device_book_path)
             self.move_file_to_device(self.x_ray_path, device_book_path)
+            self.gui.status_bar.show_message(self.notif)
         elif job is None:
             # upload book and cover to device
             self.gui.update_thumbnail(self.mi)

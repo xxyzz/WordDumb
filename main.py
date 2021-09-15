@@ -52,9 +52,9 @@ class ParseBook:
 
         # send files to device
         if kindle_connected(self.gui):
-            SendFile(self.gui, job.result).send_files(None)
-
-        self.gui.status_bar.show_message(notif)
+            SendFile(self.gui, job.result, notif).send_files(None)
+        else:
+            self.gui.status_bar.show_message(notif)
 
     def job_failed(self, job):
         if job and job.failed:

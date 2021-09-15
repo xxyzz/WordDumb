@@ -9,8 +9,11 @@ from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 class SendFile:
     def __init__(self, gui, data):
         self.gui = gui
-        self.device_manager = self.gui.device_manager
-        (self.book_id, _, self.asin, self.book_path, self.mi, _, _) = data
+        self.db = gui.current_db.new_api
+        self.device_manager = gui.device_manager
+        self.book_id, self.asin, self.book_path, self.mi, update_asin = data
+        if update_asin:
+            self.db.set_metadata(self.book_id, self.mi)
         self.ll_path = get_ll_path(self.asin, self.book_path)
         self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
 
@@ -36,7 +39,7 @@ class SendFile:
                 FunctionDispatcher(self.send_files), [self.book_path],
                 [Path(self.book_path).name], on_card=None, metadata=[self.mi],
                 titles=[i.title for i in [self.mi]],
-                plugboards=self.gui.current_db.new_api.pref('plugboards', {}))
+                plugboards=self.db.new_api.pref('plugboards', {}))
             self.gui.upload_memory[job] = (
                 [self.mi], None, None, [self.book_path])
 

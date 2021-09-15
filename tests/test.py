@@ -9,8 +9,9 @@ from itertools import zip_longest
 from calibre.constants import ismacos
 from calibre.library import db
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
-from calibre_plugins.worddumb.metadata import check_metadata, get_asin
+from calibre_plugins.worddumb.metadata import check_metadata, get_asin_etc
 from calibre_plugins.worddumb.parse_job import do_job
+from calibre_plugins.worddumb.unzip import load_json_or_pickle
 from convert import LIMIT
 
 
@@ -25,10 +26,11 @@ class TestDumbCode(unittest.TestCase):
                 book_1984_id = book_id
                 break
 
-        data = check_metadata(lib_db, book_1984_id)
-        (_, cls.fmt, cls.asin, cls.book_path, _, _, _) = data
+        data = check_metadata(lib_db, book_1984_id,
+                              load_json_or_pickle('data/languages.json', True))
+        (_, cls.fmt, cls.book_path, cls.mi, _) = data
         create_x = False if ismacos else True
-        do_job(data, create_x=create_x)
+        cls.asin = do_job(data, create_x=create_x)[1]
 
     def check_db(self, test_json_path, created_db_path, table, sql):
         with open(test_json_path) as test_json, \
@@ -38,7 +40,9 @@ class TestDumbCode(unittest.TestCase):
                 self.assertEqual(tuple(a), b)
 
     def test_asin(self):
-        self.assertEqual(self.asin, get_asin(self.book_path, self.fmt))
+        self.assertEqual(
+            self.asin,
+            get_asin_etc(self.book_path, self.fmt == 'KFX', self.mi)[0])
 
     def test_word_wise_glosses(self):
         self.check_db(

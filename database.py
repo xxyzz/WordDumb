@@ -2,7 +2,6 @@
 import sqlite3
 from pathlib import Path
 
-from calibre_plugins.worddumb.metadata import get_acr, get_book_revision
 from calibre_plugins.worddumb.unzip import load_json_or_pickle
 
 
@@ -15,9 +14,9 @@ def check_db_file(path):
     if file exists return None otherwise create file
     then return sqlite connection
     '''
-    journal = path.parent.joinpath(path.name + '-journal')
-    if path.is_file():
-        if not journal.is_file():
+    if path.exists():
+        journal = path.with_name(path.name + '-journal')
+        if not journal.exists():
             return None
         else:  # last time failed
             path.unlink()
@@ -26,7 +25,7 @@ def check_db_file(path):
     return sqlite3.connect(':memory:')
 
 
-def create_lang_layer(asin, book_path, book_fmt):
+def create_lang_layer(asin, book_path, acr, revision):
     db_path = get_ll_path(asin, book_path)
     if (ll_conn := check_db_file(db_path)) is None:
         return None, None
@@ -45,10 +44,10 @@ def create_lang_layer(asin, book_path, book_fmt):
         );
     ''')
 
-    metadata = [('acr', get_acr(book_path, book_fmt)),
+    metadata = [('acr', acr),
                 ('targetLanguages', 'en'),
                 ('sidecarRevision', '9'),
-                ('bookRevision', get_book_revision(book_path, book_fmt)),
+                ('bookRevision', revision),
                 ('sourceLanguage', 'en'),
                 ('enDictionaryVersion', '2016-09-14'),
                 ('enDictionaryRevision', '57'),

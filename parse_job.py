@@ -9,22 +9,22 @@ from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import (create_lang_layer,
                                                create_x_ray_db, insert_lemma,
                                                save_db)
-from calibre_plugins.worddumb.metadata import set_asin
+from calibre_plugins.worddumb.metadata import get_asin_etc
 from calibre_plugins.worddumb.unzip import install_libs, load_json_or_pickle
 from calibre_plugins.worddumb.x_ray import X_Ray
 
 
 def do_job(data, create_ww=True, create_x=True,
            abort=None, log=None, notifications=None):
-    (_, book_fmt, asin, book_path, mi, updata_asin, lang) = data
-    if updata_asin:
-        set_asin(mi, asin, book_fmt, book_path)
+    (book_id, book_fmt, book_path, mi, lang) = data
+    is_kfx = book_fmt == 'KFX'
+    asin, acr, revision, update_asin, yj_book = get_asin_etc(book_path,
+                                                             is_kfx, mi)
     model = lang['spacy'] + prefs['model_size']
     install_libs(model, create_ww, create_x)
-    is_kfx = book_fmt == 'KFX'
 
     if create_ww:
-        ll_conn, ll_path = create_lang_layer(asin, book_path, book_fmt)
+        ll_conn, ll_path = create_lang_layer(asin, book_path, acr, revision)
         if ll_conn is None:
             create_ww = False
         else:
@@ -42,33 +42,27 @@ def do_job(data, create_ww=True, create_x=True,
         nlp.enable_pipe("senter")
         x_ray = X_Ray(x_ray_conn, lang['wiki'])
         for doc, start in nlp.pipe(
-                parse_book(book_path, is_kfx), as_tuples=True):
+                parse_book(book_path, yj_book), as_tuples=True):
             find_named_entity(start, x_ray, doc, is_kfx)
             if create_ww:
                 find_lemma(start, doc.text, kw_processor, ll_conn, is_kfx)
 
         x_ray.finish(x_ray_path)
     elif create_ww:
-        for text, start in parse_book(book_path, is_kfx):
+        for text, start in parse_book(book_path, yj_book):
             find_lemma(start, text, kw_processor, ll_conn, is_kfx)
 
     if create_ww:
         save_db(ll_conn, ll_path)
+    return book_id, asin, book_path, mi, update_asin
 
 
-def parse_book(book_path, is_kfx):
-    if is_kfx:
-        yield from parse_kfx(book_path)
+def parse_book(book_path, yj_book):
+    if yj_book:
+        for entry in json.loads(yj_book.convert_to_json_content())['data']:
+            yield (entry['content'], entry['position'])
     else:
         yield from parse_mobi(book_path)
-
-
-def parse_kfx(path_of_book):
-    from calibre_plugins.kfx_input.kfxlib import YJ_Book
-
-    data = YJ_Book(path_of_book).convert_to_json_content()
-    for entry in json.loads(data)['data']:
-        yield (entry['content'], entry['position'])
 
 
 def parse_mobi(book_path):

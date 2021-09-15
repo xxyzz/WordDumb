@@ -8,58 +8,51 @@ from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre_plugins.worddumb.metadata import check_metadata
 from calibre_plugins.worddumb.parse_job import do_job
 from calibre_plugins.worddumb.send_file import SendFile, kindle_connected
+from calibre_plugins.worddumb.unzip import load_json_or_pickle
 
 
 class ParseBook:
     def __init__(self, gui):
         self.gui = gui
-        self.metadata_list = []
+        self.languages = load_json_or_pickle('data/languages.json', True)
 
     def parse(self, create_ww=True, create_x=True):
         # get currently selected books
         rows = self.gui.library_view.selectionModel().selectedRows()
         if not rows or len(rows) == 0:
             return
-        ids = list(map(self.gui.library_view.model().id, rows))
-        if len(ids) == 0:
-            return
-
-        for book_id in ids:
-            if (data := check_metadata(self.gui.current_db.new_api,
-                                       book_id)) is None:
-                continue
-            self.metadata_list.append(data)
-
-        if len(self.metadata_list) == 0:
-            return
-
-        for data in self.metadata_list:
+        ids = map(self.gui.library_view.model().id, rows)
+        show_job_pointer = False
+        for data in filter(None, [check_metadata(
+                self.gui.current_db.new_api,
+                book_id, self.languages) for book_id in ids]):
+            show_job_pointer = True
             if data[-1]['wiki'] != 'en':
                 create_ww = False
-            title = data[-3].get('title')
+            title = data[-2].get('title')
             notif = []
             if create_ww:
                 notif.append('Word Wise')
             if create_x:
                 notif.append('X-Ray')
             notif = ' and '.join(notif)
-
             job = ThreadedJob(
                 "WordDumb's dumb job", f'Generating {notif} for {title}',
                 do_job, (data, create_ww, create_x), {},
-                Dispatcher(partial(self.done, data=data,
+                Dispatcher(partial(self.done,
                                    notif=f'{notif} generated for {title}')))
             self.gui.job_manager.run_threaded_job(job)
 
-        self.gui.jobs_pointer.start()
+        if show_job_pointer:
+            self.gui.jobs_pointer.start()
 
-    def done(self, job, data=None, notif=None):
+    def done(self, job, notif=None):
         if self.job_failed(job):
             return
 
         # send files to device
         if kindle_connected(self.gui):
-            SendFile(self.gui, data).send_files(None)
+            SendFile(self.gui, job.result).send_files(None)
 
         self.gui.status_bar.show_message(notif)
 

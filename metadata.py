@@ -5,20 +5,18 @@ import re
 import string
 
 from calibre.ebooks.metadata.mobi import MetadataUpdater
-from calibre_plugins.worddumb.unzip import load_json_or_pickle
 
 
-def check_metadata(db, book_id):
+def check_metadata(db, book_id, languages):
     # Get the current metadata for this book from the db
     mi = db.get_metadata(book_id, get_cover=True)
     fmts = db.formats(book_id)
     book_fmt = None
-    asin = None
 
     book_language = mi.get("languages")
     if book_language is None or len(book_language) == 0:
         return None
-    languages = load_json_or_pickle('data/languages.json', True)
+
     book_language = book_language[0]
     if book_language not in languages:
         return None
@@ -33,27 +31,8 @@ def check_metadata(db, book_id):
     else:
         return None
 
-    # check ASIN, create a random one if doesn't exist
-    book_path = db.format_abspath(book_id, book_fmt)
-    asin = get_asin(book_path, book_fmt)
-    update_asin = False
-    if asin is None or re.fullmatch('B[0-9A-Z]{9}', asin) is None:
-        asin = random_asin()
-        mi.set_identifier('mobi-asin', asin)
-        db.set_metadata(book_id, mi)
-        update_asin = True
-
-    return (book_id, book_fmt, asin, book_path, mi,
-            update_asin, languages[book_language])
-
-
-def set_asin(mi, asin, book_fmt, book_path):
-    if book_fmt == 'KFX':
-        set_kfx_asin(book_path, asin)
-    else:
-        with open(book_path, 'r+b') as f:
-            mu = MetadataUpdater(f)
-            mu.update(mi, asin=asin)
+    return (book_id, book_fmt, db.format_abspath(book_id, book_fmt),
+            mi, languages[book_language])
 
 
 def random_asin():
@@ -64,50 +43,56 @@ def random_asin():
     return asin
 
 
-def get_asin(book_path, book_fmt):
-    if book_fmt == 'KFX':
-        from calibre_plugins.kfx_input.kfxlib import YJ_Book
+def validate_asin(asin, mi):
+    # check ASIN, create a random one if doesn't exist
+    update_asin = False
+    if asin is None or re.fullmatch('B[0-9A-Z]{9}', asin) is None:
+        asin = random_asin()
+        mi.set_identifier('mobi-asin', asin)
+        update_asin = True
+    return asin, update_asin
 
-        return getattr(YJ_Book(book_path).get_metadata(), 'asin', None)
+
+def get_asin_etc(book_path, is_kfx, mi):
+    asin = None
+    acr = None
+    revision = None
+    yj_book = None
+
+    if is_kfx:
+        from calibre_plugins.kfx_input.kfxlib import YJ_Book, YJ_Metadata
+
+        yj_book = YJ_Book(book_path)
+        yj_md = yj_book.get_metadata()
+        asin = getattr(yj_md, 'asin', None)
+        acr = getattr(yj_md, 'asset_id', None)
+        asin, update_asin = validate_asin(asin, mi)
+        if update_asin:
+            yj_book = YJ_Book(book_path)
+            yj_md = YJ_Metadata()
+            yj_md.asin = asin
+            yj_md.content_type = "EBOK"
+            yj_book.decode_book(set_metadata=yj_md)
+            with open(book_path, 'wb') as f:
+                f.write(yj_book.convert_to_single_kfx())
     else:
-        with open(book_path, 'rb') as f:
+        with open(book_path, 'r+b') as f:
+            acr = f.read(32).rstrip(b'\x00').decode('utf-8')  # Palm db name
+            revision = get_mobi_revision(f)
+            f.seek(0)
             mu = MetadataUpdater(f)
             if (asin := mu.original_exth_records.get(113)) is None:
                 asin = mu.original_exth_records.get(504)
-            return asin.decode('utf-8') if asin else None
-    return None
+            asin = asin.decode('utf-8') if asin else None
+            asin, update_asin = validate_asin(asin, mi)
+            if update_asin:
+                mu.update(mi, asin=asin)
+
+    return asin, acr, revision, update_asin, yj_book
 
 
-def get_acr(book_path, book_fmt):
-    if book_fmt == 'KFX':
-        from calibre_plugins.kfx_input.kfxlib import YJ_Book
-
-        return getattr(YJ_Book(book_path).get_metadata(), 'asset_id', None)
-    else:
-        with open(book_path, 'rb') as f:
-            return f.read(32).rstrip(b'\x00').decode('utf-8')  # Palm db name
-
-
-def get_book_revision(book_path, book_fmt):
-    if book_fmt == 'KFX':
-        return None
-
+def get_mobi_revision(f):
     # modified from calibre.ebooks.mobi.reader.headers:MetadataHeader.header
-    with open(book_path, 'rb') as f:
-        f.seek(78)
-        f.seek(int.from_bytes(f.read(4), 'big') + 32)
-        return f.read(4).hex()  # Unique-ID MOBI header
-
-
-def set_kfx_asin(book_path, asin):
-    from calibre_plugins.kfx_input.kfxlib import YJ_Book, YJ_Metadata
-
-    book = YJ_Book(book_path)
-    md = YJ_Metadata()
-    md.asin = asin
-    md.cde_content_type = "EBOK"
-    book.decode_book(set_metadata=md)
-    updated_book = book.convert_to_single_kfx()
-
-    with open(book_path, 'wb') as f:
-        f.write(updated_book)
+    f.seek(78)
+    f.seek(int.from_bytes(f.read(4), 'big') + 32)
+    return f.read(4).hex()  # Unique-ID MOBI header

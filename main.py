@@ -50,6 +50,9 @@ class ParseBook:
         if self.job_failed(job):
             return
 
+        book_id, _, _, mi, update_asin = job.result
+        if update_asin:
+            self.gui.current_db.new_api.set_metadata(book_id, mi)
         # send files to device
         if kindle_connected(self.gui):
             SendFile(self.gui, job.result, notif).send_files(None)

@@ -110,7 +110,6 @@ def create_x_ray_db(asin, book_path, lang):
     count INTEGER,
     has_info_card TINYINT,
     PRIMARY KEY(id));
-    CREATE INDEX idx_entity_type ON entity(type ASC);
 
     CREATE TABLE entity_description (
     text TEXT,
@@ -122,7 +121,6 @@ def create_x_ray_db(asin, book_path, lang):
     CREATE TABLE entity_excerpt (
     entity INTEGER,
     excerpt INTEGER);
-    CREATE INDEX idx_entity_excerpt ON entity_excerpt(entity ASC);
 
     CREATE TABLE excerpt (
     id INTEGER,
@@ -137,7 +135,6 @@ def create_x_ray_db(asin, book_path, lang):
     entity INTEGER,
     start INTEGER,
     length INTEGER);
-    CREATE INDEX idx_occurrence_start ON occurrence(start ASC);
 
     CREATE TABLE source (
     id INTEGER,
@@ -172,6 +169,13 @@ def create_x_ray_db(asin, book_path, lang):
     x_ray_conn.executemany('INSERT INTO string VALUES(?, ?, ?)', str_list)
 
     return x_ray_conn, db_path
+
+
+def create_x_indices(conn):
+    conn.executescript('''
+    CREATE INDEX idx_entity_type ON entity(type ASC);
+    CREATE INDEX idx_entity_excerpt ON entity_excerpt(entity ASC);
+    CREATE INDEX idx_occurrence_start ON occurrence(start ASC);''')
 
 
 def insert_x_book_metadata(conn, data):

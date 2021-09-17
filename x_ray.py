@@ -5,7 +5,8 @@ from collections import Counter, defaultdict
 
 from calibre_plugins.worddumb import VERSION
 from calibre_plugins.worddumb.config import prefs
-from calibre_plugins.worddumb.database import (insert_x_book_metadata,
+from calibre_plugins.worddumb.database import (create_x_indices,
+                                               insert_x_book_metadata,
                                                insert_x_entity,
                                                insert_x_entity_description,
                                                insert_x_occurrence,
@@ -220,6 +221,7 @@ class X_Ray:
             self.conn, (2, 16, 17, 2, top_mentioned(self.terms_counter)))
 
         self.s.close()
+        create_x_indices(self.conn)
         save_db(self.conn, db_path)
         save_wiki_cache(self.wiki_cache, self.lang)
 

@@ -100,7 +100,8 @@ class ParseBook:
                 job.details + exception)
         elif 'No module named pip' in exception:
             self.error_dialog(
-                'Missing pip module',
+                'Hello, my name is Philip, but everyone calls me Pip, '
+                'because they hate me.',
                 '''
                 Run the command "sudo apt install python3-pip" to install
                 pip module if you are using Debian or Ubuntu based distro.

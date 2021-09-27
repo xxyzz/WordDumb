@@ -3,6 +3,7 @@
 import json
 import pickle
 import platform
+import shutil
 import subprocess
 import sys
 import zipfile
@@ -92,7 +93,7 @@ def pip_install(
 def pip_args(pkg, pkg_version, compiled, url):
     py = 'python3'
     if iswindows:
-        py = 'py'
+        py = 'py' if shutil.which('py') else 'python'
     elif ismacos:
         # stupid macOS loses PATH when calibre is not launched in terminal
         if platform.machine() == 'arm64':

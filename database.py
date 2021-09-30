@@ -187,7 +187,7 @@ def insert_x_book_metadata(conn, data):
 
 
 def insert_x_entity(conn, data):
-    conn.execute('''
+    conn.executemany('''
     INSERT INTO entity (id, label, type, count, has_info_card)
     VALUES(?, ?, ?, ?, 1)
     ''', data)

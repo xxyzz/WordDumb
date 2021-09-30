@@ -192,14 +192,14 @@ class X_Ray:
         if len(self.pending_people) > 0:
             self.search_wikipedia(True, self.pending_people)
 
-        for name, entity_id in self.people.items():
-            insert_x_entity(
-                self.conn,
-                (entity_id, name, 1, self.people_counter[entity_id]))
-        for label, entity_id in self.terms.items():
-            insert_x_entity(
-                self.conn,
-                (entity_id, label, 2, self.terms_counter[entity_id]))
+        insert_x_entity(
+            self.conn,
+            [(entity_id, name, 1, self.people_counter[entity_id]) for
+             name, entity_id in self.people.items()])
+        insert_x_entity(
+            self.conn,
+            [(entity_id, label, 2, self.terms_counter[entity_id]) for
+             label, entity_id in self.terms.items()])
 
         insert_x_book_metadata(
             self.conn, (self.erl, self.num_people, self.num_terms))

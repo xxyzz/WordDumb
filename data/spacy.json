@@ -81,7 +81,7 @@
   },
   "tqdm": {
     "compiled": false,
-    "version": "4.62.2"
+    "version": "4.62.3"
   },
   "typer": {
     "compiled": false,
@@ -93,7 +93,7 @@
   },
   "urllib3": {
     "compiled": false,
-    "version": "1.26.6"
+    "version": "1.26.7"
   },
   "wasabi": {
     "compiled": false,

@@ -85,10 +85,8 @@ class X_Ray:
                 self.conn, (intro, title, 1, entity['id']))
             self.wiki_cache[title] = intro
             if is_people:
-                self.people[title] = entity
                 del self.pending_people[title]
             else:
-                self.terms[title] = entity
                 del self.pending_terms[title]
 
     def search_wikipedia(self, is_people, dic):
@@ -117,17 +115,16 @@ class X_Ray:
                         self.insert_wiki_intro(is_people, k, summary)
 
         if is_people:
-            self.insert_rest_pending_entities(self.people, self.pending_people)
+            self.insert_rest_pending_entities(self.pending_people)
         else:
-            self.insert_rest_pending_entities(self.terms, self.pending_terms)
+            self.insert_rest_pending_entities(self.pending_terms)
 
-    def insert_rest_pending_entities(self, dic, pending_dic):
+    def insert_rest_pending_entities(self, pending_dic):
         for label, entity in pending_dic.items():
             insert_x_entity_description(
                 self.conn, (entity['text'], label, None, entity['id']))
             self.wiki_cache[label] = None
 
-        dic.update(pending_dic)
         pending_dic.clear()
 
     def insert_entity(self, data, is_person, start, text, length):
@@ -136,24 +133,22 @@ class X_Ray:
             for name in self.split_name(data):
                 self.names[name] = self.entity_id
             self.names[data] = self.entity_id
+            self.people[data] = self.entity_id
             self.num_people += 1
             if prefs['search_people']:
-                self.insert_description(
-                    data, text, self.people, self.pending_people, True)
+                self.insert_description(data, text, self.pending_people, True)
             else:
-                self.people[data] = self.entity_id
                 insert_x_entity_description(
                     self.conn, (text, data, None, self.entity_id))
         else:
+            self.terms[data] = self.entity_id
             self.num_terms += 1
-            self.insert_description(
-                data, text, self.terms, self.pending_terms, False)
+            self.insert_description(data, text, self.pending_terms, False)
 
         self.entity_id += 1
 
-    def insert_description(self, key, desc, dic, pending_dic, is_person):
+    def insert_description(self, key, desc, pending_dic, is_person):
         if key in self.wiki_cache:
-            dic[key] = {'id': self.entity_id}
             source = None
             if self.wiki_cache[key]:
                 desc = self.wiki_cache[key]
@@ -176,10 +171,7 @@ class X_Ray:
     def search(self, name, is_person, start, sent, length):
         if name in self.terms:
             self.insert_occurrence(
-                self.terms[name]['id'], False, start, length)
-        elif name in self.pending_terms:
-            self.insert_occurrence(
-                self.pending_terms[name]['id'], False, start, length)
+                self.terms[name], False, start, length)
         elif name in self.names:
             self.insert_occurrence(
                 self.names[name], True, start, length)
@@ -200,18 +192,14 @@ class X_Ray:
         if len(self.pending_people) > 0:
             self.search_wikipedia(True, self.pending_people)
 
-        for name, value in self.people.items():
-            if prefs['search_people']:
-                insert_x_entity(
-                    self.conn,
-                    (value['id'], name, 1, self.people_counter[value['id']]))
-            else:
-                insert_x_entity(
-                    self.conn, (value, name, 1, self.people_counter[value]))
-        for label, value in self.terms.items():
+        for name, entity_id in self.people.items():
             insert_x_entity(
                 self.conn,
-                (value['id'], label, 2, self.terms_counter[value['id']]))
+                (entity_id, name, 1, self.people_counter[entity_id]))
+        for label, entity_id in self.terms.items():
+            insert_x_entity(
+                self.conn,
+                (entity_id, label, 2, self.terms_counter[entity_id]))
 
         insert_x_book_metadata(
             self.conn, (self.erl, self.num_people, self.num_terms))

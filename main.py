@@ -83,8 +83,17 @@ class ParseBook:
                     Please use <a href='{url}'>KindleUnpack</a>'s '-s' option
                     to split the book.
                     ''', job.details)
+            elif 'check_hostname requires server_hostname' in job.details:
+                self.error_dialog(
+                    'Cyberspace is not the space out of law',
+                    '''
+                    Check your proxy configuration environment variables,
+                    they should be set by these commands:<br>
+                    <code>$ export HTTP_PROXY="http://host:port"</code><br>
+                    <code>$ export HTTPS_PROXY="http://host:port"</code>
+                    ''', job.details)
             else:
-                self.gui.job_exception(job, dialog_title='Eh!')
+                self.gui.job_exception(job, dialog_title='Tonnerre de Brest!')
             return True
         return False
 
@@ -117,7 +126,7 @@ class ParseBook:
         else:
             dialog = JobError(self.gui)
             dialog.show_error(
-                'Weak',
+                'Mille millions de mille milliards de mille sabords!',
                 'subprocess.run() failed',
                 det_msg=job.details + exception)
 

@@ -21,7 +21,7 @@ def do_job(data, create_ww=True, create_x=True,
     asin, acr, revision, update_asin, yj_book = get_asin_etc(book_path,
                                                              is_kfx, mi)
     model = lang['spacy'] + prefs['model_size']
-    install_libs(model, create_ww, create_x)
+    install_libs(model, create_ww, create_x, notifications)
 
     if create_ww:
         ll_conn, ll_path = create_lang_layer(asin, book_path, acr, revision)
@@ -34,6 +34,8 @@ def do_job(data, create_ww=True, create_x=True,
         if x_ray_conn is None:
             create_x = False
 
+    if notifications:
+        notifications.put((0, 'Creating files'))
     if create_x:
         import spacy
         nlp = spacy.load(model, exclude=[

@@ -49,7 +49,7 @@ def save_wiki_cache(cache_dic, lang):
         json.dump(cache_dic, f)
 
 
-def install_libs(model, create_ww, create_x):
+def install_libs(model, create_ww, create_x, notif):
     if create_ww:
         libs_path = str(PLUGIN_PATH.joinpath('libs'))  # flashtext
         if libs_path not in sys.path:
@@ -61,20 +61,20 @@ def install_libs(model, create_ww, create_x):
                 old_path.rename(LIBS_PATH)
 
         for pkg, value in load_json_or_pickle('data/spacy.json', True).items():
-            pip_install(
-                pkg, value['version'], value['compiled'], reinstall=reinstall)
+            pip_install(pkg, value['version'], value['compiled'],
+                        reinstall=reinstall, notif=notif)
         model_v = '3.1.0'
         url = 'https://github.com/explosion/spacy-models/releases/download/'
         url += f'{model}-{model_v}/{model}-{model_v}-py3-none-any.whl'
-        pip_install(model, model_v, url=url)
-        install_extra_deps(model)
+        pip_install(model, model_v, url=url, notif=notif)
+        install_extra_deps(model, notif)
 
         if LIBS_PATH not in sys.path:
             sys.path.insert(0, str(LIBS_PATH))
 
 
-def pip_install(
-        pkg, pkg_version=None, compiled=False, url=None, reinstall=False):
+def pip_install(pkg, pkg_version=None, compiled=False,
+                url=None, reinstall=False, notif=None):
     if pkg_version:
         folder = LIBS_PATH.joinpath(
             f"{pkg.replace('-', '_')}-{pkg_version}.dist-info")
@@ -82,6 +82,8 @@ def pip_install(
         folder = LIBS_PATH.joinpath(pkg.replace('-', '_').lower())
 
     if not folder.exists() or (reinstall and compiled):
+        if notif:
+            notif.put((0, f'Installing {pkg}'))
         args = pip_args(pkg, pkg_version, compiled, url)
         if iswindows:
             subprocess.run(args, check=True, capture_output=True,
@@ -120,9 +122,9 @@ def pip_args(pkg, pkg_version, compiled, url):
     return args
 
 
-def install_extra_deps(model):
+def install_extra_deps(model, notif):
     # https://spacy.io/usage/models#languages
     data = load_json_or_pickle('data/spacy_extra.json', True)
     if (lang := model[:2]) in data:
         for pkg, value in data[lang].items():
-            pip_install(pkg, value['version'], value['compiled'])
+            pip_install(pkg, value['version'], value['compiled'], notif=notif)

@@ -47,12 +47,13 @@ class ParseBook:
             self.gui.jobs_pointer.start()
 
     def done(self, job, notif=None):
-        if self.job_failed(job):
-            return
-
         book_id, _, _, mi, update_asin = job.result
         if update_asin:
             self.gui.current_db.new_api.set_metadata(book_id, mi)
+
+        if self.job_failed(job):
+            return
+
         # send files to device
         if kindle_connected(self.gui):
             SendFile(self.gui, job.result, notif).send_files(None)
@@ -85,7 +86,7 @@ class ParseBook:
                     ''', job.details)
             elif 'check_hostname requires server_hostname' in job.details:
                 self.error_dialog(
-                    'Cyberspace is not the space out of law',
+                    'Cyberspace is not a place beyond the rule of law',
                     '''
                     Check your proxy configuration environment variables,
                     they should be set by these commands:<br>

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 pip_install() {
-    python -m pip install flashtext lemminflect
+    python -m pip install -U git+https://github.com/vi3k6i5/flashtext#egg=flashtext lemminflect
     python data/dump_lemmas.py
     deactivate
     mkdir libs

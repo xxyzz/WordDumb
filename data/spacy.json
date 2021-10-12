@@ -9,15 +9,15 @@
   },
   "certifi": {
     "compiled": false,
-    "version": "2021.5.30"
+    "version": "2021.10.8"
   },
   "charset-normalizer": {
     "compiled": false,
-    "version": "2.0.6"
+    "version": "2.0.7"
   },
   "click": {
     "compiled": false,
-    "version": "8.0.1"
+    "version": "8.0.3"
   },
   "cymem": {
     "compiled": true,
@@ -101,7 +101,7 @@
   },
   "Jinja2": {
     "compiled": false,
-    "version": "3.0.1"
+    "version": "3.0.2"
   },
   "MarkupSafe": {
     "compiled": true,

@@ -78,7 +78,7 @@ https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-
 
 - Don't add soft hyphens, it will cause the plugin to produce mediocre Word Wise and X-Ray files.
 
-- This plugin requires access to https://files.pythonhosted.org (download dependencies) and https://raw.githubusercontent.com (download spaCy model) at first run, and https://wikipedia.org every time if X-Ray is enabled. These domains might be blocked in some countries([Censorship of Wikipedia](https://en.wikipedia.org/wiki/Censorship_of_Wikipedia), [Censorship of GitHub](https://en.wikipedia.org/wiki/Censorship_of_GitHub)).
+- This plugin requires access to https://files.pythonhosted.org (download X-Ray dependencies), https://raw.githubusercontent.com (download spaCy model), and https://wikipedia.org (X-Ray descriptions). These domains might be blocked in some countries([Censorship of Wikipedia](https://en.wikipedia.org/wiki/Censorship_of_Wikipedia), [Censorship of GitHub](https://en.wikipedia.org/wiki/Censorship_of_GitHub)).
 
 - [Display Word Wise in other languages](./klld)
 

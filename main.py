@@ -91,7 +91,10 @@ class ParseBook:
                     Check your proxy configuration environment variables,
                     they should be set by these commands:<br>
                     <code>$ export HTTP_PROXY="http://host:port"</code><br>
-                    <code>$ export HTTPS_PROXY="http://host:port"</code>
+                    <code>$ export HTTPS_PROXY="http://host:port"</code><br>
+                    <br>
+                    If you're allergic to terminal, close your proxy and
+                    use a VPN.
                     ''', job.details)
             else:
                 self.gui.job_exception(job, dialog_title='Tonnerre de Brest!')

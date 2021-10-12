@@ -8,7 +8,7 @@ from PyQt5.Qt import (QCheckBox, QComboBox, QHBoxLayout, QLabel, QPushButton,
 
 prefs = JSONConfig('plugins/worddumb')
 prefs.defaults['search_people'] = False
-prefs.defaults['model_size'] = 'sm'
+prefs.defaults['model_size'] = 'md'
 prefs.defaults['zh_wiki_variant'] = 'cn'
 
 

@@ -8,6 +8,7 @@ from itertools import zip_longest
 
 from calibre.constants import ismacos
 from calibre.library import db
+from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 from calibre_plugins.worddumb.metadata import check_metadata, get_asin_etc
 from calibre_plugins.worddumb.parse_job import do_job
@@ -30,7 +31,10 @@ class TestDumbCode(unittest.TestCase):
                               load_json_or_pickle('data/languages.json', True))
         (_, cls.fmt, cls.book_path, cls.mi, _) = data
         create_x = False if ismacos else True
+        origin_model_size = prefs['model_size']
+        prefs['model_size'] = 'sm'
         cls.asin = do_job(data, create_x=create_x)[1]
+        prefs['model_size'] = origin_model_size
 
     def check_db(self, test_json_path, created_db_path, table, sql):
         with open(test_json_path) as test_json, \

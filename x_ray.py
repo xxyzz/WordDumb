@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import re
 from collections import Counter, defaultdict
 
 from calibre_plugins.worddumb import VERSION
@@ -13,26 +12,8 @@ from calibre_plugins.worddumb.database import (create_x_indices,
                                                insert_x_type, save_db)
 from calibre_plugins.worddumb.unzip import load_wiki_cache, save_wiki_cache
 
-# https://en.wikipedia.org/wiki/Title
-TITLES = {
-    'Master', 'Mr', 'Mrs', 'Miss', 'Ms', 'Mx',  # Common titles
-    'Sir', 'Madam', 'Madame', 'Dame', 'Esq',  # Formal titles
-    'Dr', 'Professor', 'Prof', 'Doc', 'QC', 'Cl', 'SCl',  # Academic
-    'Eur', 'Ing', 'Chancellor', 'Vice', 'Principal', 'President', 'Warden',
-    'Dean', 'Regent', 'Rector', 'Provost', 'Director', 'Chief', 'Executive',
-    'Fr', 'Father', 'Pr', 'Pastor', 'Br', 'Brother', 'Si',  # Religious titles
-    'Sister', 'Elder', 'Pope', 'Rabbi', 'Bishop', 'St', 'Saint',
-    'Maid', 'Aunt', 'Auntie', 'Uncle',
-    'Hon', 'MP', 'Senator', 'Councillor', 'Secretary',  # Legislative
-    'Prince', 'Princess', 'Archduke', 'Archduchess', 'Grand',  # Aristocratic
-    'Duke', 'Duchess', 'Marquis', 'Marquess', 'Count', 'Countess', 'Emperor',
-    'Empress', 'King', 'Queen', 'Lord', 'Lady', 'Tasr', 'Tsarina', 'Pharaoh'
-    'Emperor', 'Empress', 'Viceroy', 'Vicereine', 'Baron', 'Baroness',
-    'Admiral', 'Brigadier', 'Captain', 'Colonel', 'Commander',  # Military
-    'Commodore', 'Corporal', 'General', 'Lieutenant', 'Major', 'Marshal',
-    'Officer', 'Private', 'Sergeant'
-}
 MAX_EXLIMIT = 20
+SCORE_THRESHOLD = 80
 
 
 class X_Ray:
@@ -42,7 +23,6 @@ class X_Ray:
         self.num_people = 0
         self.num_terms = 0
         self.erl = 0
-        self.names = {}
         self.people = {}
         self.people_counter = Counter()
         self.terms = {}
@@ -130,9 +110,6 @@ class X_Ray:
     def insert_entity(self, data, is_person, start, text, length):
         self.insert_occurrence(self.entity_id, is_person, start, length)
         if is_person:
-            for name in self.split_name(data):
-                self.names[name] = self.entity_id
-            self.names[data] = self.entity_id
             self.people[data] = self.entity_id
             self.num_people += 1
             if prefs['search_people']:
@@ -169,18 +146,15 @@ class X_Ray:
         self.erl = start + length - 1
 
     def search(self, name, is_person, start, sent, length):
-        if name in self.terms:
-            self.insert_occurrence(
-                self.terms[name], False, start, length)
-        elif name in self.names:
-            self.insert_occurrence(
-                self.names[name], True, start, length)
+        from rapidfuzz.process import extractOne
+
+        if (r := extractOne(name, self.terms.keys(),
+                            score_cutoff=SCORE_THRESHOLD)):
+            self.insert_occurrence(self.terms[r[0]], False, start, length)
+        elif (r := extractOne(name, self.people.keys(),
+                              score_cutoff=SCORE_THRESHOLD)):
+            self.insert_occurrence(self.people[r[0]], True, start, length)
         else:
-            for part in self.split_name(name):
-                if part in self.names:
-                    self.insert_occurrence(
-                        self.names[part], True, start, length)
-                    return
             self.insert_entity(name, is_person, start, sent, length)
 
     def finish(self, db_path):
@@ -212,10 +186,3 @@ class X_Ray:
         create_x_indices(self.conn)
         save_db(self.conn, db_path)
         save_wiki_cache(self.wiki_cache, self.lang)
-
-    def split_name(self, name):
-        if self.lang == 'en':
-            return filter(lambda x: len(x) > 1 and x not in TITLES,
-                          re.split(r'\W', name))
-        else:
-            return re.split(r'\W', name)

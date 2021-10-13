@@ -55,6 +55,10 @@
     "compiled": false,
     "version": "2.4.7"
   },
+  "rapidfuzz": {
+    "compiled": true,
+    "version": "1.7.1"
+  },
   "requests": {
     "compiled": false,
     "version": "2.26.0"

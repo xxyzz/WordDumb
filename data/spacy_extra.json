@@ -2,7 +2,7 @@
   "ja": {
     "Cython": {
       "compiled": true,
-      "version": null
+      "version": "0.29.24"
     },
     "dartsclone": {
       "compiled": false,
@@ -14,17 +14,17 @@
     },
     "sudachidict_core": {
       "compiled": false,
-      "version": "20210608"
+      "version": "20210802"
     },
     "sudachipy": {
       "compiled": true,
-      "version": "0.5.2"
+      "version": "0.5.4"
     }
   },
   "zh": {
     "Cython": {
       "compiled": true,
-      "version": null
+      "version": "0.29.24"
     },
     "spacy-pkuseg": {
       "compiled": true,

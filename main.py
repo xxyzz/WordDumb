@@ -71,6 +71,18 @@ class ParseBook:
                     href='https://github.com/xxyzz/WordDumb#how-to-use'>document</a>
                     of how to install Python.
                     ''', job.details)
+            elif 'check_hostname requires server_hostname' in job.details:
+                self.error_dialog(
+                    'Cyberspace is not a place beyond the rule of law',
+                    '''
+                    Check your proxy configuration environment variables,
+                    they should be set by these commands:<br>
+                    <code>$ export HTTP_PROXY="http://host:port"</code><br>
+                    <code>$ export HTTPS_PROXY="http://host:port"</code><br>
+                    <br>
+                    If you're allergic to terminal, close your proxy and
+                    use a VPN.
+                    ''', job.details)
             elif 'ConnectionError' in job.details \
                  and 'wikipedia.org' in job.details:
                 self.censorship_error('https://wikipedia.org', job.details)
@@ -83,18 +95,6 @@ class ParseBook:
                     f'''
                     Please use <a href='{url}'>KindleUnpack</a>'s '-s' option
                     to split the book.
-                    ''', job.details)
-            elif 'check_hostname requires server_hostname' in job.details:
-                self.error_dialog(
-                    'Cyberspace is not a place beyond the rule of law',
-                    '''
-                    Check your proxy configuration environment variables,
-                    they should be set by these commands:<br>
-                    <code>$ export HTTP_PROXY="http://host:port"</code><br>
-                    <code>$ export HTTPS_PROXY="http://host:port"</code><br>
-                    <br>
-                    If you're allergic to terminal, close your proxy and
-                    use a VPN.
                     ''', job.details)
             else:
                 self.gui.job_exception(job, dialog_title='Tonnerre de Brest!')

@@ -47,12 +47,12 @@ class ParseBook:
             self.gui.jobs_pointer.start()
 
     def done(self, job, notif=None):
+        if self.job_failed(job):
+            return
+
         book_id, _, _, mi, update_asin = job.result
         if update_asin:
             self.gui.current_db.new_api.set_metadata(book_id, mi)
-
-        if self.job_failed(job):
-            return
 
         # send files to device
         if kindle_connected(self.gui):

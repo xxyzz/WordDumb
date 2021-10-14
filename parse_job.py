@@ -129,8 +129,8 @@ def find_named_entity(start, x_ray, doc, is_kfx):
         if x_ray.lang == 'en':
             if re.match(r'c?hapter', text, re.IGNORECASE):
                 continue
-            text = re.sub(r'(?:\'s|’s)$', '', text)
-            text = re.sub(r'^(?:the |an |a )', '', text, flags=re.IGNORECASE)
+            text = re.sub(r"['’][sd]$", '', text)
+            text = re.sub(r'^(?:the|an?) ', '', text, flags=re.IGNORECASE)
 
         if len(text) < len_limit or re.fullmatch(r'[\W\d]+', text):
             continue

@@ -34,6 +34,10 @@
 
 - https://lxml.de
 
+- https://maxbachmann.github.io/RapidFuzz
+
+- https://pip.pypa.io/en/stable/user_guide
+
 ## Debug
 
 ```

@@ -13,7 +13,7 @@ from calibre_plugins.worddumb.database import (create_x_indices,
 from calibre_plugins.worddumb.unzip import load_wiki_cache, save_wiki_cache
 
 MAX_EXLIMIT = 20
-SCORE_THRESHOLD = 80
+SCORE_THRESHOLD = 85.7
 
 
 class X_Ray:

@@ -53,25 +53,17 @@ class X_Ray:
             self.s.headers.update(
                 {'accept-language': f"zh-{prefs['zh_wiki_variant']}"})
 
-    def insert_wiki_intro(self, is_people, title, intro):
-        if is_people:
-            entity = self.pending_people[title]
-        else:
-            entity = self.pending_terms[title]
-
+    def insert_wiki_summary(self, pending_dic, key, summary):
         # not a disambiguation page
-        if any(period in intro for period in ['.', '。']):
+        if any(period in summary for period in ['.', '。']):
             insert_x_entity_description(
-                self.conn, (intro, title, 1, entity['id']))
-            self.wiki_cache[title] = intro
-            if is_people:
-                del self.pending_people[title]
-            else:
-                del self.pending_terms[title]
+                self.conn, (summary, key, 1, pending_dic[key]['id']))
+            self.wiki_cache[key] = summary
+            del pending_dic[key]
 
-    def search_wikipedia(self, is_people, dic):
+    def search_wikipedia(self, pending_dic):
         r = self.s.get(self.wikipedia_api,
-                       params={'titles': '|'.join(dic.keys())})
+                       params={'titles': '|'.join(pending_dic.keys())})
         data = r.json()
         converts = defaultdict(list)
         for t in ['normalized', 'redirects']:
@@ -85,19 +77,16 @@ class X_Ray:
             # they are ordered by pageid, ehh
             title = v['title']
             summary = v['extract']
-            if title in dic:
-                self.insert_wiki_intro(is_people, title, summary)
+            if title in pending_dic:
+                self.insert_wiki_summary(pending_dic, title, summary)
             for key in converts.get(title, []):
-                if key in dic:
-                    self.insert_wiki_intro(is_people, key, summary)
+                if key in pending_dic:
+                    self.insert_wiki_summary(pending_dic, key, summary)
                 for k in converts.get(key, []):
-                    if k in dic:  # normalize then redirect
-                        self.insert_wiki_intro(is_people, k, summary)
+                    if k in pending_dic:  # normalize then redirect
+                        self.insert_wiki_summary(pending_dic, k, summary)
 
-        if is_people:
-            self.insert_rest_pending_entities(self.pending_people)
-        else:
-            self.insert_rest_pending_entities(self.pending_terms)
+        self.insert_rest_pending_entities(pending_dic)
 
     def insert_rest_pending_entities(self, pending_dic):
         for label, entity in pending_dic.items():
@@ -113,29 +102,29 @@ class X_Ray:
             self.people[data] = self.entity_id
             self.num_people += 1
             if prefs['search_people']:
-                self.insert_description(data, text, self.pending_people, True)
+                self.insert_description(data, text, self.pending_people)
             else:
                 insert_x_entity_description(
                     self.conn, (text, data, None, self.entity_id))
         else:
             self.terms[data] = self.entity_id
             self.num_terms += 1
-            self.insert_description(data, text, self.pending_terms, False)
+            self.insert_description(data, text, self.pending_terms)
 
         self.entity_id += 1
 
-    def insert_description(self, key, desc, pending_dic, is_person):
+    def insert_description(self, key, desc, pending_dic):
         if key in self.wiki_cache:
             source = None
-            if self.wiki_cache[key]:
-                desc = self.wiki_cache[key]
+            if (cached_desc := self.wiki_cache[key]):
+                desc = cached_desc
                 source = 1
             insert_x_entity_description(
                 self.conn, (desc, key, source, self.entity_id))
         else:
             pending_dic[key] = {'text': desc, 'id': self.entity_id}
             if len(pending_dic) == MAX_EXLIMIT:
-                self.search_wikipedia(is_person, pending_dic)
+                self.search_wikipedia(pending_dic)
 
     def insert_occurrence(self, entity_id, is_person, start, length):
         if is_person:
@@ -162,9 +151,9 @@ class X_Ray:
             return ','.join(map(str, [e[0] for e in counter.most_common(10)]))
 
         if len(self.pending_terms) > 0:
-            self.search_wikipedia(False, self.pending_terms)
+            self.search_wikipedia(self.pending_terms)
         if len(self.pending_people) > 0:
-            self.search_wikipedia(True, self.pending_people)
+            self.search_wikipedia(self.pending_people)
 
         insert_x_entity(
             self.conn,

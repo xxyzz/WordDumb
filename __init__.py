@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from calibre.customize import InterfaceActionBase
 
-VERSION = (3, 13, 3)
+VERSION = (3, 14, 0)
 
 
 class WordDumbDumb(InterfaceActionBase):

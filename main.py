@@ -96,6 +96,14 @@ class ParseBook:
                     Please use <a href='{url}'>KindleUnpack</a>'s '-s' option
                     to split the book.
                     ''', job.details)
+            elif 'DLL load failed' in job.details:
+                url = 'https://support.microsoft.com/en-us/help/2977003/' \
+                    'the-latest-supported-visual-c-downloads'
+                self.error_dialog(
+                    'Missing dll',
+                    f'''
+                    Install <a href='{url}'>Visual C++ 2019 redistributable</a>
+                    ''', job.datails)
             else:
                 self.gui.job_exception(job, dialog_title='Tonnerre de Brest!')
             return True

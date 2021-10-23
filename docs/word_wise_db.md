@@ -78,7 +78,7 @@ b'a name or title'
 b'an honorary appellation'
 ```
 
-[Base64 - Wikipedia](https://en.m.wikipedia.org/wiki/Base64)
+[Base64 - Wikipedia](https://en.wikipedia.org/wiki/Base64)
 
 [base64 — Base16, Base32, Base64, Base85 Data Encodings — Python 3.9.0 documentation](https://docs.python.org/3/library/base64.html)
 

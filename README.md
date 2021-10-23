@@ -34,10 +34,10 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   $ brew install calibre
   ```
 
-  - Windows: install calibre with [Chocolatey](https://chocolatey.org) or download from https://calibre-ebook.com/download_windows64
+  - Windows: use [Chocolatey](https://chocolatey.org) or download from https://calibre-ebook.com/download_windows64
 
   ```
-  $ choco install calibre
+  # choco install calibre
   ```
 
 - Install Python(pip) for X-Ray
@@ -55,20 +55,20 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   - Windows: use Chocolatey or download from https://www.python.org/downloads
 
   ```
-  $ choco install python
+  # choco install python
   ```
 
 - Install WordDumb:
 
 https://user-images.githubusercontent.com/21101839/124686751-39f3aa00-df06-11eb-9b07-8c8f98544683.mov
 
-- Install [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books(optional).
+- Install [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books(optional if you don't use this format).
 
 - Set preferences
 
     - Enable "search people" option for nonfiction books and novels that have character pages on Wikipedia to add people descriptions in X-Ray.
     
-    - Larger spaCy model has higher [NER](https://en.wikipedia.org/wiki/Named-entity_recognition) precision therefore improves X-Ray quality, more details at https://spacy.io/models/en
+    - Larger spaCy model has higher [Named-entity recognition](https://en.wikipedia.org/wiki/Named-entity_recognition) precision therefore improves X-Ray quality, more details at https://spacy.io/models/en
 
 https://user-images.githubusercontent.com/21101839/124685798-90f87f80-df04-11eb-8eb6-dee012de6cab.mov
 

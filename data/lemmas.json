@@ -1,19 +1,691 @@
 {
-  "a k a": [
+  "'tis": [
     1,
-    79109
+    47369
   ],
-  "a m": [
+  "'twas": [
+    1,
+    69709
+  ],
+  "(as) good as new": [
+    1,
+    65348
+  ],
+  "AAA": [
+    2,
+    27643
+  ],
+  "ASAP": [
+    1,
+    24730
+  ],
+  "Afro": [
+    4,
+    26731
+  ],
+  "Alsatian": [
+    1,
+    11698
+  ],
+  "Americanize": [
+    1,
+    14595
+  ],
+  "Anglican": [
+    2,
+    470
+  ],
+  "Anglo-Saxon": [
+    1,
+    14935
+  ],
+  "Arab": [
     5,
-    79418
+    17634
   ],
-  "a marked man woman": [
+  "Arabian": [
+    2,
+    20599
+  ],
+  "Arabic": [
+    4,
+    31014
+  ],
+  "Ark": [
+    2,
+    25302
+  ],
+  "Asian": [
+    5,
+    27133
+  ],
+  "Asiatic": [
+    2,
+    17165
+  ],
+  "Association football": [
+    1,
+    38018
+  ],
+  "August": [
+    5,
+    37034
+  ],
+  "Aussie": [
+    1,
+    33057
+  ],
+  "Australian": [
+    5,
+    14069
+  ],
+  "Austrian": [
+    3,
+    25571
+  ],
+  "B movie": [
+    1,
+    33712
+  ],
+  "BBQ": [
+    1,
+    23100
+  ],
+  "BCE": [
+    2,
+    6526
+  ],
+  "Baptist": [
+    3,
+    10224
+  ],
+  "Bengali": [
+    2,
+    19318
+  ],
+  "Bordeaux": [
+    2,
+    5688
+  ],
+  "British": [
+    5,
+    40407
+  ],
+  "Broadway": [
+    3,
+    837
+  ],
+  "Bulgarian": [
+    2,
+    31171
+  ],
+  "CIA": [
+    1,
+    5921
+  ],
+  "Canadian": [
+    5,
+    41716
+  ],
+  "Caribbean": [
+    4,
+    182
+  ],
+  "Caucasian": [
+    2,
+    32228
+  ],
+  "Celtic": [
+    2,
+    32193
+  ],
+  "Chardonnay": [
+    1,
+    38559
+  ],
+  "Chink": [
+    1,
+    5288
+  ],
+  "Christmas": [
+    4,
+    802
+  ],
+  "Confederate": [
+    3,
+    8933
+  ],
+  "Creole": [
+    2,
+    24969
+  ],
+  "Cub Scout": [
+    1,
+    35706
+  ],
+  "Cyclops": [
+    1,
+    11603
+  ],
+  "DEET": [
+    1,
+    2377
+  ],
+  "DNA": [
+    5,
+    16279
+  ],
+  "Dane": [
+    2,
+    42945
+  ],
+  "Danish": [
+    2,
+    41012
+  ],
+  "Darwinian": [
+    1,
+    39777
+  ],
+  "Day-Glo": [
+    1,
+    18874
+  ],
+  "Dem.": [
+    3,
+    32015
+  ],
+  "Dumpster": [
+    1,
+    1600
+  ],
+  "Dutch": [
+    5,
+    30576
+  ],
+  "ESP": [
+    4,
+    8378
+  ],
+  "Eurasian": [
+    1,
+    36827
+  ],
+  "Excellency": [
+    2,
+    31365
+  ],
+  "Exchequer": [
+    2,
+    36281
+  ],
+  "FDA": [
+    2,
+    7439
+  ],
+  "FTP": [
+    2,
+    30434
+  ],
+  "February": [
+    5,
+    30350
+  ],
+  "Finnish": [
+    2,
+    32826
+  ],
+  "Flemish": [
+    1,
+    19118
+  ],
+  "Fourth of July": [
+    1,
+    33093
+  ],
+  "Francophone": [
+    1,
+    18746
+  ],
+  "French": [
+    5,
+    9868
+  ],
+  "Freudian": [
+    1,
+    29733
+  ],
+  "Gallic": [
+    1,
+    15371
+  ],
+  "Georgian": [
+    2,
+    24699
+  ],
+  "Germanic": [
+    2,
+    34604
+  ],
+  "God/heaven forbid": [
+    1,
+    27552
+  ],
+  "Godspeed": [
+    1,
+    35254
+  ],
+  "Gorgon": [
+    1,
+    40448
+  ],
+  "Gothic": [
+    3,
+    20074
+  ],
+  "Grecian": [
+    1,
+    36263
+  ],
+  "Gypsy": [
+    3,
+    21401
+  ],
+  "HTML": [
+    3,
+    13311
+  ],
+  "Hall of Fame": [
+    1,
+    34523
+  ],
+  "Hebraic": [
+    1,
+    15722
+  ],
+  "Hellenic": [
+    1,
+    1143
+  ],
+  "Hispanic": [
+    4,
+    11103
+  ],
+  "IRA": [
+    3,
+    33646
+  ],
+  "Inc.": [
+    5,
+    5249
+  ],
+  "Internet service provider": [
+    1,
+    21522
+  ],
+  "Irish": [
+    5,
+    31397
+  ],
+  "Israeli": [
+    4,
+    38969
+  ],
+  "JPEG": [
+    1,
+    32194
+  ],
+  "January": [
+    5,
+    5091
+  ],
+  "Japanese": [
+    5,
+    1219
+  ],
+  "Judas": [
+    1,
+    24675
+  ],
+  "July": [
+    5,
+    2499
+  ],
+  "Jun.": [
+    2,
+    28050
+  ],
+  "Kleenex": [
+    1,
+    13701
+  ],
+  "Kraut": [
+    1,
+    35666
+  ],
+  "LAN": [
+    3,
+    14536
+  ],
+  "LED": [
+    5,
+    40903
+  ],
+  "LOL": [
+    1,
+    16167
+  ],
+  "Ladyship": [
+    1,
+    28516
+  ],
+  "Latin": [
+    5,
+    31194
+  ],
+  "Latino": [
+    2,
+    11700
+  ],
+  "Lordy": [
+    1,
+    36321
+  ],
+  "MOT": [
+    2,
+    33274
+  ],
+  "Machiavellian": [
+    1,
+    27535
+  ],
+  "Madonna": [
+    2,
+    3911
+  ],
+  "Mafia": [
+    2,
+    16856
+  ],
+  "Maori": [
+    1,
+    41411
+  ],
+  "Masonic": [
+    1,
+    16759
+  ],
+  "Mediterranean": [
+    4,
+    28682
+  ],
+  "Methodist": [
+    3,
+    1883
+  ],
+  "Mexican jumping bean": [
+    1,
+    10894
+  ],
+  "Middle English": [
+    4,
+    1396
+  ],
+  "NASA": [
+    2,
+    45913
+  ],
+  "Navajo": [
+    2,
+    63166
+  ],
+  "Neanderthal": [
+    1,
+    52106
+  ],
+  "Negro": [
+    4,
+    57812
+  ],
+  "Neolithic": [
+    2,
+    76778
+  ],
+  "New Year": [
+    5,
+    70577
+  ],
+  "Nordic": [
+    2,
+    45401
+  ],
+  "Norse": [
+    1,
+    72128
+  ],
+  "October": [
+    5,
+    52264
+  ],
+  "Olympiad": [
+    1,
+    47259
+  ],
+  "Olympian": [
+    1,
+    69177
+  ],
+  "Olympic": [
+    2,
+    74411
+  ],
+  "Oriental": [
+    3,
+    63066
+  ],
+  "Oxbridge": [
+    1,
+    52584
+  ],
+  "POW": [
+    2,
+    52692
+  ],
+  "PTSD": [
+    2,
+    76266
+  ],
+  "Paleolithic": [
+    1,
+    47114
+  ],
+  "Polaroid": [
+    1,
+    62059
+  ],
+  "Popsicle": [
+    1,
+    49750
+  ],
+  "Portuguese": [
+    3,
+    58405
+  ],
+  "Presbyterian": [
+    3,
+    62376
+  ],
+  "Protestant": [
+    5,
+    64464
+  ],
+  "Providence": [
+    3,
+    47637
+  ],
+  "Punch-and-Judy show": [
+    1,
+    64981
+  ],
+  "QED": [
+    1,
+    73250
+  ],
+  "REM": [
+    2,
+    47533
+  ],
+  "Rollerblade": [
+    1,
+    58555
+  ],
+  "Roman": [
+    5,
+    46249
+  ],
+  "Romanesque": [
+    1,
+    47604
+  ],
+  "Rottweiler": [
+    1,
+    44928
+  ],
+  "SWAT": [
+    1,
+    51209
+  ],
+  "Saturday": [
+    5,
+    45681
+  ],
+  "Scandinavian": [
+    2,
+    68706
+  ],
+  "Scottish": [
+    3,
+    73619
+  ],
+  "Semite": [
+    1,
+    55585
+  ],
+  "Semitic": [
+    2,
+    58256
+  ],
+  "Shakespearean": [
+    1,
+    49014
+  ],
+  "Slavic": [
+    1,
+    61661
+  ],
+  "Socratic": [
+    1,
+    70483
+  ],
+  "Styrofoam": [
+    1,
+    63062
+  ],
+  "Sunday": [
+    5,
+    62722
+  ],
+  "Swahili": [
+    1,
+    70889
+  ],
+  "Swiss": [
+    3,
+    58749
+  ],
+  "Teflon": [
+    1,
+    46780
+  ],
+  "Teletype": [
+    1,
+    69054
+  ],
+  "Teutonic": [
+    1,
+    76346
+  ],
+  "Tu.": [
+    2,
+    56877
+  ],
+  "Turkish": [
+    4,
+    68223
+  ],
+  "Utopian": [
+    2,
+    97848
+  ],
+  "Valley girl": [
+    1,
+    74698
+  ],
+  "Venus": [
+    3,
+    46007
+  ],
+  "Victorian": [
+    3,
+    69452
+  ],
+  "Viking": [
+    2,
+    61633
+  ],
+  "Webmaster": [
+    1,
+    75122
+  ],
+  "Wednesday": [
+    4,
+    65137
+  ],
+  "Wellington": [
+    2,
+    76478
+  ],
+  "Westerner": [
+    1,
+    47201
+  ],
+  "Whig": [
+    2,
+    72674
+  ],
+  "Windbreaker": [
+    1,
+    46281
+  ],
+  "Yiddish": [
+    2,
+    48444
+  ],
+  "Yule": [
+    1,
+    72422
+  ],
+  "a marked man/woman": [
     1,
     12051
   ],
-  "aaa": [
-    2,
-    27643
+  "a.k.a.": [
+    1,
+    79109
+  ],
+  "a.m.": [
+    5,
+    79418
   ],
   "aah": [
     1,
@@ -255,7 +927,7 @@
     3,
     14542
   ],
-  "abound in with": [
+  "abound in/with": [
     1,
     3301
   ],
@@ -263,11 +935,11 @@
     1,
     80363
   ],
-  "above mentioned": [
+  "above-mentioned": [
     3,
     79454
   ],
-  "above named": [
+  "above-named": [
     1,
     79108
   ],
@@ -303,7 +975,7 @@
     1,
     95816
   ],
-  "abridgment": [
+  "abridgement": [
     1,
     81083
   ],
@@ -975,7 +1647,7 @@
     5,
     14022
   ],
-  "act play the fool": [
+  "act/play the fool": [
     1,
     6628
   ],
@@ -1595,10 +2267,6 @@
     5,
     36175
   ],
-  "aesthetically": [
-    1,
-    80294
-  ],
   "aesthetics": [
     3,
     79368
@@ -1763,10 +2431,6 @@
     1,
     30571
   ],
-  "afro": [
-    4,
-    26731
-  ],
   "aft": [
     2,
     31642
@@ -1831,7 +2495,7 @@
     1,
     84011
   ],
-  "age related": [
+  "age-related": [
     1,
     81634
   ],
@@ -2015,13 +2679,13 @@
     1,
     32843
   ],
+  "agriculturalist": [
+    1,
+    81354
+  ],
   "agriculture": [
     5,
     42977
-  ],
-  "agriculturist": [
-    1,
-    81354
   ],
   "agronomist": [
     1,
@@ -2579,7 +3243,7 @@
     3,
     6141
   ],
-  "almond shaped": [
+  "almond-shaped": [
     1,
     82526
   ],
@@ -2654,10 +3318,6 @@
   "alprazolam": [
     1,
     81583
-  ],
-  "alsatian": [
-    1,
-    11698
   ],
   "alter ego": [
     4,
@@ -2926,10 +3586,6 @@
   "amercement": [
     1,
     105576
-  ],
-  "americanize": [
-    1,
-    14595
   ],
   "amethyst": [
     1,
@@ -3207,10 +3863,6 @@
     4,
     33456
   ],
-  "ance": [
-    1,
-    13883
-  ],
   "ancestor": [
     5,
     26121
@@ -3243,7 +3895,7 @@
     2,
     39327
   ],
-  "and or otherwise": [
+  "and/or otherwise": [
     1,
     68282
   ],
@@ -3319,17 +3971,9 @@
     1,
     9342
   ],
-  "anglican": [
-    2,
-    470
-  ],
   "anglicize": [
     1,
     25652
-  ],
-  "anglo saxon": [
-    1,
-    14935
   ],
   "angst": [
     1,
@@ -3407,7 +4051,7 @@
     4,
     25332
   ],
-  "ankle deep": [
+  "ankle-deep": [
     1,
     78535
   ],
@@ -3523,7 +4167,7 @@
     1,
     107207
   ],
-  "anon": [
+  "anon.": [
     3,
     79949
   ],
@@ -3679,7 +4323,7 @@
     5,
     79756
   ],
-  "anti american": [
+  "anti-American": [
     1,
     82161
   ],
@@ -3859,7 +4503,7 @@
     1,
     112082
   ],
-  "anybody's anyone's guess": [
+  "anybody's/anyone's guess": [
     1,
     39066
   ],
@@ -4199,7 +4843,7 @@
     1,
     106045
   ],
-  "applique": [
+  "appliqu\u00e9": [
     1,
     37050
   ],
@@ -4327,7 +4971,7 @@
     1,
     78634
   ],
-  "approx": [
+  "approx.": [
     2,
     29200
   ],
@@ -4339,7 +4983,7 @@
     4,
     14801
   ],
-  "appt": [
+  "appt.": [
     1,
     14890
   ],
@@ -4415,21 +5059,9 @@
     1,
     21455
   ],
-  "arab": [
-    5,
-    17634
-  ],
   "arabesque": [
     1,
     27285
-  ],
-  "arabian": [
-    2,
-    20599
-  ],
-  "arabic": [
-    4,
-    31014
   ],
   "arable": [
     1,
@@ -4491,14 +5123,6 @@
     5,
     39723
   ],
-  "archaeological": [
-    3,
-    79343
-  ],
-  "archaeologist": [
-    2,
-    84184
-  ],
   "archaeology": [
     4,
     29069
@@ -4522,6 +5146,14 @@
   "archenemy": [
     1,
     1155
+  ],
+  "archeological": [
+    3,
+    79343
+  ],
+  "archeologist": [
+    2,
+    84184
   ],
   "archer": [
     3,
@@ -4702,10 +5334,6 @@
   "arithmetically": [
     1,
     112958
-  ],
-  "ark": [
-    2,
-    25302
   ],
   "arm's length": [
     1,
@@ -4995,25 +5623,13 @@
     3,
     32803
   ],
-  "ary": [
-    1,
-    35124
-  ],
-  "as all get out": [
+  "as all get-out": [
     1,
     29034
-  ],
-  "as good as new": [
-    1,
-    65348
   ],
   "as like as not": [
     1,
     10539
-  ],
-  "asap": [
-    1,
-    24730
   ],
   "asbestos": [
     2,
@@ -5079,7 +5695,7 @@
     5,
     4430
   ],
-  "ash blond": [
+  "ash-blond": [
     1,
     2620
   ],
@@ -5098,14 +5714,6 @@
   "ashtray": [
     1,
     41817
-  ],
-  "asian": [
-    5,
-    27133
-  ],
-  "asiatic": [
-    2,
-    17165
   ],
   "asinine": [
     1,
@@ -5339,10 +5947,6 @@
     1,
     36745
   ],
-  "association football": [
-    1,
-    38018
-  ],
   "associationism": [
     1,
     102116
@@ -5527,11 +6131,11 @@
     1,
     102814
   ],
-  "at a moment's minute's notice": [
+  "at a moment's/minute's notice": [
     1,
     50814
   ],
-  "at in close quarters": [
+  "at/in close quarters": [
     1,
     56479
   ],
@@ -5570,10 +6174,6 @@
   "atilt": [
     1,
     89932
-  ],
-  "ation": [
-    1,
-    12734
   ],
   "atlas": [
     1,
@@ -5635,7 +6235,7 @@
     2,
     3425
   ],
-  "attache": [
+  "attach\u00e9": [
     1,
     32013
   ],
@@ -5843,10 +6443,6 @@
     1,
     79562
   ],
-  "august": [
-    5,
-    37034
-  ],
   "auntie": [
     1,
     3098
@@ -5871,10 +6467,6 @@
     1,
     16134
   ],
-  "aussie": [
-    1,
-    33057
-  ],
   "austere": [
     2,
     4121
@@ -5883,17 +6475,9 @@
     2,
     4780
   ],
-  "australian": [
-    5,
-    14069
-  ],
   "australopithecine": [
     1,
     79938
-  ],
-  "austrian": [
-    3,
-    25571
   ],
   "autarchy": [
     1,
@@ -5931,6 +6515,10 @@
     1,
     79479
   ],
+  "authorisation": [
+    3,
+    96304
+  ],
   "authoritarian": [
     2,
     35755
@@ -5954,10 +6542,6 @@
   "authority": [
     5,
     41690
-  ],
-  "authorization": [
-    3,
-    96304
   ],
   "authorize": [
     4,
@@ -6251,7 +6835,7 @@
     3,
     11264
   ],
-  "awe inspiring": [
+  "awe-inspiring": [
     1,
     79316
   ],
@@ -6339,10 +6923,6 @@
     1,
     10372
   ],
-  "b movie": [
-    1,
-    33712
-  ],
   "baba": [
     2,
     80076
@@ -6375,10 +6955,6 @@
     1,
     84366
   ],
-  "baby faced": [
-    1,
-    83429
-  ],
   "baby powder": [
     1,
     84377
@@ -6386,6 +6962,10 @@
   "baby sitting": [
     1,
     106053
+  ],
+  "baby-faced": [
+    1,
+    83429
   ],
   "babysit": [
     1,
@@ -6747,7 +7327,7 @@
     3,
     13617
   ],
-  "bald headed": [
+  "bald-headed": [
     1,
     80878
   ],
@@ -6963,7 +7543,7 @@
     1,
     79806
   ],
-  "bandy legged": [
+  "bandy-legged": [
     1,
     82407
   ],
@@ -7099,10 +7679,6 @@
     1,
     97803
   ],
-  "baptist": [
-    3,
-    10224
-  ],
   "baptize": [
     2,
     43124
@@ -7171,11 +7747,11 @@
     5,
     16987
   ],
-  "bare breasted": [
+  "bare-breasted": [
     1,
     81366
   ],
-  "bare knuckle": [
+  "bare-knuckle": [
     1,
     2806
   ],
@@ -7575,7 +8151,7 @@
     1,
     104461
   ],
-  "battle ax": [
+  "battle-ax": [
     1,
     29191
   ],
@@ -7639,15 +8215,7 @@
     1,
     32659
   ],
-  "bbq": [
-    1,
-    23100
-  ],
-  "bce": [
-    2,
-    6526
-  ],
-  "be get carried away": [
+  "be/get carried away": [
     1,
     3744
   ],
@@ -8083,13 +8651,13 @@
     5,
     97291
   ],
-  "behavioral": [
-    4,
-    98746
-  ],
   "behaviorist": [
     1,
     82861
+  ],
+  "behavioural": [
+    4,
+    98746
   ],
   "behead": [
     1,
@@ -8331,10 +8899,6 @@
     1,
     113200
   ],
-  "bengali": [
-    2,
-    19318
-  ],
   "benighted": [
     1,
     16171
@@ -8475,11 +9039,11 @@
     1,
     41351
   ],
-  "best known": [
+  "best-known": [
     5,
     78570
   ],
-  "best loved": [
+  "best-loved": [
     1,
     83804
   ],
@@ -8547,17 +9111,17 @@
     1,
     14177
   ],
-  "better known": [
-    3,
-    83688
-  ],
-  "better looking": [
-    1,
-    81407
-  ],
   "better off": [
     5,
     11217
+  ],
+  "better-known": [
+    3,
+    83688
+  ],
+  "better-looking": [
+    1,
+    81407
   ],
   "betterment": [
     1,
@@ -8635,7 +9199,7 @@
     4,
     31027
   ],
-  "bibliographic": [
+  "bibliographical": [
     1,
     82252
   ],
@@ -8727,7 +9291,7 @@
     2,
     102869
   ],
-  "big bellied": [
+  "big-bellied": [
     1,
     83560
   ],
@@ -9271,10 +9835,6 @@
     1,
     78457
   ],
-  "blase": [
-    1,
-    11330
-  ],
   "blasphemous": [
     1,
     105356
@@ -9298,6 +9858,10 @@
   "blastosphere": [
     1,
     109508
+  ],
+  "blas\u00e9": [
+    1,
+    11330
   ],
   "blatant": [
     1,
@@ -9719,19 +10283,19 @@
     1,
     3904
   ],
-  "blue black": [
+  "blue-black": [
     1,
     83788
   ],
-  "blue gray": [
+  "blue-gray": [
     1,
     82876
   ],
-  "blue grey": [
+  "blue-grey": [
     1,
     81222
   ],
-  "blue white": [
+  "blue-white": [
     1,
     81659
   ],
@@ -9767,7 +10331,7 @@
     1,
     39316
   ],
-  "bluish purple": [
+  "bluish-purple": [
     1,
     81131
   ],
@@ -10335,10 +10899,6 @@
     1,
     81867
   ],
-  "bordeaux": [
-    2,
-    5688
-  ],
   "bordello": [
     1,
     21223
@@ -10447,7 +11007,7 @@
     1,
     19906
   ],
-  "bottom feeding": [
+  "bottom-feeding": [
     1,
     81580
   ],
@@ -10575,7 +11135,7 @@
     1,
     5361
   ],
-  "bowl shaped": [
+  "bowl-shaped": [
     1,
     83596
   ],
@@ -10607,7 +11167,7 @@
     1,
     84873
   ],
-  "box shaped": [
+  "box-shaped": [
     1,
     83509
   ],
@@ -11151,11 +11711,11 @@
     1,
     81707
   ],
-  "bright eyed and bushy tailed": [
+  "bright-eyed and bushy-tailed": [
     1,
     18008
   ],
-  "bright red": [
+  "bright-red": [
     5,
     80743
   ],
@@ -11275,10 +11835,6 @@
     1,
     9735
   ],
-  "british": [
-    5,
-    40407
-  ],
   "brittle": [
     2,
     39052
@@ -11326,10 +11882,6 @@
   "broadside": [
     1,
     27303
-  ],
-  "broadway": [
-    3,
-    837
   ],
   "brocade": [
     1,
@@ -11694,10 +12246,6 @@
   "bulbous": [
     1,
     2723
-  ],
-  "bulgarian": [
-    2,
-    31171
   ],
   "bulge": [
     2,
@@ -12191,7 +12739,7 @@
     2,
     31975
   ],
-  "button down": [
+  "button-down": [
     2,
     14806
   ],
@@ -12235,19 +12783,19 @@
     1,
     2705
   ],
-  "by from all accounts": [
-    1,
-    2823
-  ],
-  "by product": [
-    3,
-    16538
-  ],
   "by rights": [
     2,
     47575
   ],
-  "bye bye": [
+  "by-product": [
+    3,
+    16538
+  ],
+  "by/from all accounts": [
+    1,
+    2823
+  ],
+  "bye-bye": [
     1,
     82787
   ],
@@ -12423,10 +12971,6 @@
     1,
     108605
   ],
-  "cafe": [
-    4,
-    6321
-  ],
   "cafeteria": [
     2,
     1714
@@ -12442,6 +12986,10 @@
   "caftan": [
     1,
     29678
+  ],
+  "caf\u00e9": [
+    4,
+    6321
   ],
   "cage": [
     4,
@@ -12571,7 +13119,7 @@
     1,
     854
   ],
-  "call phone in sick": [
+  "call/phone in sick": [
     1,
     48192
   ],
@@ -12767,15 +13315,11 @@
     1,
     102849
   ],
-  "canadian": [
-    5,
-    41716
-  ],
   "canal": [
     5,
     28576
   ],
-  "canape": [
+  "canap\u00e9": [
     1,
     20860
   ],
@@ -12983,6 +13527,10 @@
     3,
     37358
   ],
+  "capitalisation": [
+    2,
+    108392
+  ],
   "capitalism": [
     5,
     36712
@@ -12990,10 +13538,6 @@
   "capitalist": [
     5,
     4222
-  ],
-  "capitalization": [
-    2,
-    108392
   ],
   "capitalize": [
     2,
@@ -13259,10 +13803,6 @@
     1,
     93297
   ],
-  "caribbean": [
-    4,
-    182
-  ],
   "caribe": [
     1,
     85884
@@ -13383,7 +13923,7 @@
     5,
     18860
   ],
-  "carry win the day": [
+  "carry/win the day": [
     1,
     20086
   ],
@@ -13527,11 +14067,11 @@
     1,
     81876
   ],
-  "cast about around for": [
+  "cast about/around for": [
     1,
     6953
   ],
-  "cast shed throw light on": [
+  "cast/shed/throw light on": [
     1,
     39077
   ],
@@ -13599,7 +14139,7 @@
     1,
     101847
   ],
-  "cat o' nine tails": [
+  "cat-o'-nine-tails": [
     1,
     83502
   ],
@@ -13715,7 +14255,7 @@
     1,
     113924
   ],
-  "categorization": [
+  "categorisation": [
     2,
     109365
   ],
@@ -13802,10 +14342,6 @@
   "catwalk": [
     1,
     14990
-  ],
-  "caucasian": [
-    2,
-    32228
   ],
   "caucus": [
     1,
@@ -14043,10 +14579,6 @@
     2,
     40430
   ],
-  "celtic": [
-    2,
-    32193
-  ],
   "cement": [
     4,
     17680
@@ -14107,6 +14639,10 @@
     3,
     80538
   ],
+  "centralisation": [
+    2,
+    110312
+  ],
   "centralism": [
     1,
     14639
@@ -14118,10 +14654,6 @@
   "centrality": [
     2,
     97090
-  ],
-  "centralization": [
-    2,
-    110312
   ],
   "centralize": [
     1,
@@ -14511,10 +15043,6 @@
     1,
     29884
   ],
-  "chardonnay": [
-    1,
-    38559
-  ],
   "chargeable": [
     1,
     38365
@@ -14602,10 +15130,6 @@
   "chastisement": [
     1,
     108093
-  ],
-  "chateau": [
-    2,
-    38644
   ],
   "chattel": [
     2,
@@ -14835,13 +15359,13 @@
     3,
     13372
   ],
-  "cherry red": [
-    1,
-    80604
-  ],
   "cherry tree": [
     3,
     80950
+  ],
+  "cherry-red": [
+    1,
+    80604
   ],
   "cherub": [
     1,
@@ -15043,10 +15567,6 @@
     1,
     6570
   ],
-  "chink": [
-    1,
-    5288
-  ],
   "chinked": [
     1,
     90642
@@ -15095,7 +15615,7 @@
     1,
     17226
   ],
-  "chit chat": [
+  "chit-chat": [
     1,
     106625
   ],
@@ -15163,7 +15683,7 @@
     1,
     80063
   ],
-  "chock full": [
+  "chock-full": [
     1,
     3699
   ],
@@ -15270,10 +15790,6 @@
   "christlike": [
     1,
     94080
-  ],
-  "christmas": [
-    4,
-    802
   ],
   "chromatic": [
     1,
@@ -15427,9 +15943,9 @@
     1,
     41480
   ],
-  "cia": [
-    1,
-    5921
+  "ch\u00e2teau": [
+    2,
+    38644
   ],
   "cicada": [
     1,
@@ -15443,7 +15959,7 @@
     3,
     5359
   ],
-  "cigar shaped": [
+  "cigar-shaped": [
     1,
     83414
   ],
@@ -15487,7 +16003,7 @@
     2,
     26755
   ],
-  "circle the your wagons": [
+  "circle the/your wagons": [
     1,
     59700
   ],
@@ -16007,13 +16523,13 @@
     1,
     94356
   ],
-  "cliche": [
-    2,
-    8972
-  ],
   "cliched": [
     1,
     107125
+  ],
+  "clich\u00e9": [
+    2,
+    8972
   ],
   "click": [
     5,
@@ -16363,7 +16879,7 @@
     3,
     12080
   ],
-  "clutch grasp at straws": [
+  "clutch/grasp at straws": [
     1,
     45054
   ],
@@ -16379,15 +16895,15 @@
     5,
     83196
   ],
-  "co author": [
+  "co-author": [
     1,
     80279
   ],
-  "co pilot": [
+  "co-pilot": [
     1,
     82742
   ],
-  "co worker": [
+  "co-worker": [
     1,
     83401
   ],
@@ -17011,13 +17527,13 @@
     1,
     80215
   ],
+  "colonisation": [
+    3,
+    83510
+  ],
   "colonist": [
     3,
     39495
-  ],
-  "colonization": [
-    3,
-    83510
   ],
   "colonize": [
     2,
@@ -17043,13 +17559,13 @@
     1,
     81882
   ],
-  "color blind": [
-    1,
-    26279
-  ],
   "color scheme": [
     4,
     26362
+  ],
+  "color-blind": [
+    1,
+    26279
   ],
   "coloration": [
     1,
@@ -17159,11 +17675,11 @@
     5,
     38387
   ],
-  "come in into bloom": [
+  "come in/into bloom": [
     1,
     38231
   ],
-  "come in into view sight": [
+  "come in/into view/sight": [
     1,
     22863
   ],
@@ -17171,11 +17687,11 @@
     5,
     11908
   ],
-  "come spring leap to mind": [
+  "come/spring/leap to mind": [
     1,
     39460
   ],
-  "come turn up trumps": [
+  "come/turn up trumps": [
     1,
     49846
   ],
@@ -17311,7 +17827,7 @@
     5,
     33226
   ],
-  "commercialization": [
+  "commercialisation": [
     1,
     108393
   ],
@@ -17415,7 +17931,7 @@
     2,
     110836
   ],
-  "communique": [
+  "communiqu\u00e9": [
     1,
     7436
   ],
@@ -17495,7 +18011,7 @@
     4,
     25423
   ],
-  "compartmentalization": [
+  "compartmentalisation": [
     1,
     108549
   ],
@@ -18186,10 +18702,6 @@
   "confederacy": [
     2,
     32572
-  ],
-  "confederate": [
-    3,
-    8933
   ],
   "confederation": [
     2,
@@ -19063,7 +19575,7 @@
     5,
     14205
   ],
-  "continent wide": [
+  "continent-wide": [
     1,
     80322
   ],
@@ -19943,9 +20455,17 @@
     1,
     79710
   ],
+  "cosily": [
+    1,
+    81259
+  ],
   "cosine": [
     1,
     19701
+  ],
+  "cosiness": [
+    1,
+    80446
   ],
   "cosmetic": [
     3,
@@ -20095,7 +20615,7 @@
     4,
     24868
   ],
-  "count toward towards": [
+  "count toward/towards": [
     1,
     12371
   ],
@@ -20519,14 +21039,6 @@
     1,
     84313
   ],
-  "cozily": [
-    1,
-    81259
-  ],
-  "coziness": [
-    1,
-    80446
-  ],
   "cozy": [
     2,
     35312
@@ -20851,7 +21363,7 @@
     1,
     6871
   ],
-  "creepy crawly": [
+  "creepy-crawly": [
     1,
     82124
   ],
@@ -20891,10 +21403,6 @@
     1,
     84346
   ],
-  "creole": [
-    2,
-    24969
-  ],
   "crepe": [
     1,
     34245
@@ -20903,7 +21411,7 @@
     1,
     29564
   ],
-  "crescent shaped": [
+  "crescent-shaped": [
     1,
     83484
   ],
@@ -21127,7 +21635,7 @@
     1,
     4019
   ],
-  "cross section": [
+  "cross-section": [
     5,
     80696
   ],
@@ -21459,7 +21967,7 @@
     2,
     13941
   ],
-  "crystallization": [
+  "crystallisation": [
     2,
     83009
   ],
@@ -21475,10 +21983,6 @@
     2,
     34926
   ],
-  "cub scout": [
-    1,
-    35706
-  ],
   "cubby": [
     1,
     32775
@@ -21491,7 +21995,7 @@
     3,
     19832
   ],
-  "cube shaped": [
+  "cube-shaped": [
     1,
     84103
   ],
@@ -21763,7 +22267,7 @@
     2,
     8868
   ],
-  "curly haired": [
+  "curly-haired": [
     1,
     81076
   ],
@@ -22007,10 +22511,6 @@
     1,
     83669
   ],
-  "cyclops": [
-    1,
-    11603
-  ],
   "cyclorama": [
     1,
     83532
@@ -22235,13 +22735,13 @@
     4,
     86993
   ],
-  "dancing master": [
-    1,
-    80710
-  ],
   "dancing school": [
     1,
     80921
+  ],
+  "dancing-master": [
+    1,
+    80710
   ],
   "dandelion": [
     1,
@@ -22263,15 +22763,11 @@
     1,
     92461
   ],
-  "dane": [
-    2,
-    42945
-  ],
   "dang": [
     1,
     17852
   ],
-  "dangerous ground territory": [
+  "dangerous ground/territory": [
     1,
     39397
   ],
@@ -22282,10 +22778,6 @@
   "dangling": [
     1,
     83497
-  ],
-  "danish": [
-    2,
-    41012
   ],
   "dank": [
     1,
@@ -22315,10 +22807,6 @@
     1,
     3084
   ],
-  "dark brown": [
-    5,
-    79487
-  ],
   "dark lantern": [
     1,
     83430
@@ -22327,7 +22815,11 @@
     4,
     82577
   ],
-  "dark skinned": [
+  "dark-brown": [
+    5,
+    79487
+  ],
+  "dark-skinned": [
     1,
     81606
   ],
@@ -22374,10 +22866,6 @@
   "dartboard": [
     1,
     10148
-  ],
-  "darwinian": [
-    1,
-    39777
   ],
   "das": [
     2,
@@ -22462,10 +22950,6 @@
   "dawn": [
     5,
     31020
-  ],
-  "day glo": [
-    1,
-    18874
   ],
   "daybreak": [
     2,
@@ -22579,7 +23063,7 @@
     4,
     9079
   ],
-  "deaf mute": [
+  "deaf-mute": [
     1,
     80418
   ],
@@ -23111,7 +23595,7 @@
     4,
     13565
   ],
-  "deep set": [
+  "deep-set": [
     1,
     79369
   ],
@@ -23134,10 +23618,6 @@
   "deerskin": [
     1,
     80420
-  ],
-  "deet": [
-    1,
-    2377
   ],
   "deface": [
     1,
@@ -23643,15 +24123,11 @@
     1,
     42415
   ],
-  "dem": [
-    3,
-    32015
-  ],
   "demagogue": [
     1,
     40611
   ],
-  "demagoguery": [
+  "demagogy": [
     1,
     81856
   ],
@@ -23711,7 +24187,7 @@
     2,
     34401
   ],
-  "demobilization": [
+  "demobilisation": [
     1,
     108110
   ],
@@ -23719,7 +24195,7 @@
     1,
     22807
   ],
-  "democratization": [
+  "democratisation": [
     2,
     110309
   ],
@@ -24147,7 +24623,7 @@
     2,
     18154
   ],
-  "dept": [
+  "dept.": [
     3,
     7971
   ],
@@ -24387,7 +24863,7 @@
     1,
     2295
   ],
-  "despondency": [
+  "despondence": [
     1,
     82809
   ],
@@ -24502,10 +24978,6 @@
   "detector": [
     4,
     36107
-  ],
-  "detente": [
-    2,
-    8089
   ],
   "detention": [
     3,
@@ -25123,7 +25595,7 @@
     2,
     34794
   ],
-  "dilate on upon": [
+  "dilate on/upon": [
     1,
     27846
   ],
@@ -27015,7 +27487,7 @@
     1,
     399
   ],
-  "divorcee": [
+  "divorc\u00e9e": [
     1,
     30737
   ],
@@ -27051,15 +27523,11 @@
     1,
     42023
   ],
-  "dna": [
-    5,
-    16279
-  ],
   "do away with": [
     1,
     9574
   ],
-  "do work wonders": [
+  "do/work wonders": [
     1,
     65632
   ],
@@ -27479,7 +27947,7 @@
     5,
     3565
   ],
-  "dot com": [
+  "dot-com": [
     1,
     83276
   ],
@@ -27495,13 +27963,13 @@
     1,
     17217
   ],
-  "double barreled": [
-    1,
-    15152
-  ],
   "double digit": [
     1,
     97683
+  ],
+  "double-barreled": [
+    1,
+    15152
   ],
   "doublespeak": [
     1,
@@ -28003,7 +28471,7 @@
     1,
     81173
   ],
-  "dried out": [
+  "dried-out": [
     1,
     82865
   ],
@@ -28251,7 +28719,7 @@
     4,
     8470
   ],
-  "dual purpose": [
+  "dual-purpose": [
     2,
     82223
   ],
@@ -28423,15 +28891,11 @@
     1,
     11038
   ],
-  "dumpster": [
-    1,
-    1600
-  ],
   "dumpy": [
     1,
     29909
   ],
-  "dun colored": [
+  "dun-colored": [
     1,
     83152
   ],
@@ -28551,15 +29015,11 @@
     2,
     21790
   ],
-  "dutch": [
-    5,
-    30576
-  ],
   "dutiful": [
     1,
     28106
   ],
-  "duty bound": [
+  "duty-bound": [
     1,
     80786
   ],
@@ -28682,6 +29142,10 @@
   "dystopian": [
     1,
     97847
+  ],
+  "d\u00e9tente": [
+    2,
+    8089
   ],
   "eager": [
     4,
@@ -29047,10 +29511,6 @@
     2,
     6987
   ],
-  "eer": [
-    1,
-    25660
-  ],
   "eerie": [
     1,
     25206
@@ -29274,10 +29734,6 @@
   "elaboration": [
     2,
     107726
-  ],
-  "elan": [
-    1,
-    29631
   ],
   "eland": [
     1,
@@ -29870,10 +30326,6 @@
   "emigration": [
     3,
     103538
-  ],
-  "emigre": [
-    1,
-    30639
   ],
   "eminence": [
     2,
@@ -30575,7 +31027,7 @@
     1,
     41100
   ],
-  "enrollment": [
+  "enrolment": [
     3,
     84151
   ],
@@ -30639,7 +31091,7 @@
     2,
     89635
   ],
-  "enter the picture scene": [
+  "enter the picture/scene": [
     1,
     7293
   ],
@@ -30763,10 +31215,6 @@
     1,
     32821
   ],
-  "entree": [
-    1,
-    27330
-  ],
   "entrench": [
     1,
     38749
@@ -30798,6 +31246,10 @@
   "entryway": [
     1,
     36350
+  ],
+  "entr\u00e9e": [
+    1,
+    27330
   ],
   "entwine": [
     1,
@@ -30927,7 +31379,7 @@
     4,
     14549
   ],
-  "epidemiological": [
+  "epidemiologic": [
     1,
     83515
   ],
@@ -31355,10 +31807,6 @@
     2,
     22280
   ],
-  "esp": [
-    4,
-    8378
-  ],
   "especial": [
     1,
     21196
@@ -31395,10 +31843,6 @@
     5,
     97462
   ],
-  "est": [
-    5,
-    39747
-  ],
   "establishment": [
     5,
     10023
@@ -31410,6 +31854,10 @@
   "esteemed": [
     1,
     82075
+  ],
+  "esthetically": [
+    1,
+    80294
   ],
   "estimable": [
     1,
@@ -31431,7 +31879,7 @@
     3,
     4873
   ],
-  "etc": [
+  "etc.": [
     5,
     12263
   ],
@@ -31595,10 +32043,6 @@
     1,
     92794
   ],
-  "eurasian": [
-    1,
-    36827
-  ],
   "eureka": [
     1,
     30753
@@ -31679,7 +32123,7 @@
     4,
     22168
   ],
-  "even now then": [
+  "even now/then": [
     1,
     10666
   ],
@@ -31711,7 +32155,7 @@
     1,
     4197
   ],
-  "ever changing": [
+  "ever-changing": [
     1,
     80083
   ],
@@ -31731,7 +32175,7 @@
     1,
     113931
   ],
-  "every now and then again": [
+  "every now and then/again": [
     1,
     716
   ],
@@ -31819,7 +32263,7 @@
     1,
     4644
   ],
-  "ex husband": [
+  "ex-husband": [
     1,
     82258
   ],
@@ -31915,10 +32359,6 @@
     4,
     32984
   ],
-  "excellency": [
-    2,
-    31365
-  ],
   "exceptionable": [
     1,
     36940
@@ -31950,10 +32390,6 @@
   "exchanger": [
     2,
     79032
-  ],
-  "exchequer": [
-    2,
-    36281
   ],
   "excise": [
     2,
@@ -32183,7 +32619,7 @@
     1,
     27448
   ],
-  "exhibitionist": [
+  "exhibitionistic": [
     1,
     81620
   ],
@@ -32339,7 +32775,7 @@
     1,
     113981
   ],
-  "expedience": [
+  "expediency": [
     1,
     78982
   ],
@@ -32835,7 +33271,7 @@
     1,
     21551
   ],
-  "eye popping": [
+  "eye-popping": [
     1,
     82664
   ],
@@ -32902,6 +33338,10 @@
   "eyewitness": [
     1,
     4577
+  ],
+  "fMRI": [
+    1,
+    79589
   ],
   "fable": [
     3,
@@ -33039,6 +33479,10 @@
     1,
     93013
   ],
+  "faecal": [
+    1,
+    81887
+  ],
   "faery": [
     1,
     110565
@@ -33111,11 +33555,11 @@
     1,
     6065
   ],
-  "fall in into line": [
+  "fall in/into line": [
     1,
     18226
   ],
-  "fall run afoul of": [
+  "fall/run afoul of": [
     1,
     40400
   ],
@@ -33547,10 +33991,6 @@
     1,
     29317
   ],
-  "fda": [
-    2,
-    7439
-  ],
   "fealty": [
     1,
     36034
@@ -33619,14 +34059,6 @@
     1,
     43065
   ],
-  "february": [
-    5,
-    30350
-  ],
-  "fecal": [
-    1,
-    81887
-  ],
   "feces": [
     1,
     16011
@@ -33651,6 +34083,10 @@
     5,
     10852
   ],
+  "federalisation": [
+    1,
+    111936
+  ],
   "federalism": [
     2,
     101428
@@ -33658,10 +34094,6 @@
   "federalist": [
     2,
     1763
-  ],
-  "federalization": [
-    1,
-    111936
   ],
   "federate": [
     1,
@@ -33875,13 +34307,13 @@
     3,
     3819
   ],
+  "fertilisation": [
+    3,
+    103514
+  ],
   "fertility": [
     3,
     25697
-  ],
-  "fertilization": [
-    3,
-    103514
   ],
   "fertilize": [
     2,
@@ -34023,11 +34455,11 @@
     1,
     104743
   ],
-  "fiance": [
+  "fianc\u00e9": [
     1,
     38490
   ],
-  "fiancee": [
+  "fianc\u00e9e": [
     1,
     19606
   ],
@@ -34331,7 +34763,7 @@
     2,
     31360
   ],
-  "fine looking": [
+  "fine-looking": [
     1,
     82035
   ],
@@ -34382,10 +34814,6 @@
   "finiteness": [
     1,
     96429
-  ],
-  "finnish": [
-    2,
-    32826
   ],
   "fir": [
     2,
@@ -34607,11 +35035,11 @@
     1,
     113604
   ],
-  "five pointed": [
+  "five-pointed": [
     1,
     81872
   ],
-  "five year old": [
+  "five-year-old": [
     1,
     82817
   ],
@@ -34623,7 +35051,7 @@
     1,
     81741
   ],
-  "fix on upon": [
+  "fix on/upon": [
     1,
     42847
   ],
@@ -34683,6 +35111,10 @@
     1,
     43071
   ],
+  "flack": [
+    1,
+    36910
+  ],
   "flagellum": [
     1,
     91871
@@ -34723,10 +35155,6 @@
     1,
     25397
   ],
-  "flak": [
-    1,
-    36910
-  ],
   "flake": [
     3,
     2081
@@ -34751,7 +35179,7 @@
     5,
     38857
   ],
-  "flame colored": [
+  "flame-colored": [
     1,
     83896
   ],
@@ -34827,7 +35255,7 @@
     2,
     35931
   ],
-  "flat topped": [
+  "flat-topped": [
     1,
     80722
   ],
@@ -34899,7 +35327,7 @@
     4,
     7896
   ],
-  "flavorful": [
+  "flavourful": [
     1,
     103145
   ],
@@ -34966,10 +35394,6 @@
   "fleeting": [
     2,
     1332
-  ],
-  "flemish": [
-    1,
-    19118
   ],
   "flense": [
     1,
@@ -35434,10 +35858,6 @@
   "flyweight": [
     1,
     14625
-  ],
-  "fmri": [
-    1,
-    79589
   ],
   "foal": [
     1,
@@ -36287,11 +36707,11 @@
     1,
     80999
   ],
-  "foster child": [
+  "foster-child": [
     2,
     83719
   ],
-  "foster father": [
+  "foster-father": [
     2,
     81307
   ],
@@ -36307,7 +36727,7 @@
     3,
     29623
   ],
-  "foul smelling": [
+  "foul-smelling": [
     1,
     81516
   ],
@@ -36343,23 +36763,23 @@
     1,
     19019
   ],
-  "four footed": [
+  "four-footed": [
     1,
     79634
   ],
-  "four lane": [
+  "four-lane": [
     1,
     80798
   ],
-  "four pounder": [
+  "four-pounder": [
     1,
     82121
   ],
-  "four wheel": [
+  "four-wheel": [
     2,
     23842
   ],
-  "four year old": [
+  "four-year-old": [
     1,
     79539
   ],
@@ -36374,10 +36794,6 @@
   "foursome": [
     1,
     30816
-  ],
-  "fourth of july": [
-    1,
-    33093
   ],
   "fourthly": [
     1,
@@ -36499,10 +36915,6 @@
     1,
     12824
   ],
-  "francophone": [
-    1,
-    18746
-  ],
   "frangipani": [
     1,
     78667
@@ -36539,13 +36951,13 @@
     1,
     3219
   ],
+  "fraternisation": [
+    1,
+    81715
+  ],
   "fraternity": [
     2,
     14680
-  ],
-  "fraternization": [
-    1,
-    81715
   ],
   "fraternize": [
     1,
@@ -36603,13 +37015,13 @@
     1,
     106335
   ],
-  "free full rein": [
-    1,
-    56997
-  ],
   "free will": [
     5,
     26536
+  ],
+  "free/full rein": [
+    1,
+    56997
   ],
   "freebie": [
     1,
@@ -36691,10 +37103,6 @@
     1,
     23456
   ],
-  "french": [
-    5,
-    9868
-  ],
   "frenetic": [
     1,
     37380
@@ -36762,10 +37170,6 @@
   "fretwork": [
     1,
     7264
-  ],
-  "freudian": [
-    1,
-    29733
   ],
   "friable": [
     1,
@@ -36931,7 +37335,7 @@
     1,
     5055
   ],
-  "from the get go": [
+  "from the get-go": [
     1,
     19294
   ],
@@ -37083,10 +37487,6 @@
     1,
     79860
   ],
-  "ftp": [
-    2,
-    30434
-  ],
   "fuddle": [
     1,
     109232
@@ -37115,19 +37515,19 @@
     3,
     103524
   ],
-  "full page": [
-    2,
-    82557
-  ],
   "full skirt": [
     2,
     88815
   ],
-  "full steam speed ahead": [
+  "full steam/speed ahead": [
     1,
     33374
   ],
-  "full time": [
+  "full-page": [
+    2,
+    82557
+  ],
+  "full-time": [
     5,
     2178
   ],
@@ -37235,7 +37635,7 @@
     2,
     38670
   ],
-  "funnel shaped": [
+  "funnel-shaped": [
     1,
     78588
   ],
@@ -37431,7 +37831,7 @@
     2,
     35200
   ],
-  "gad about around": [
+  "gad about/around": [
     1,
     34216
   ],
@@ -37542,10 +37942,6 @@
   "galley": [
     2,
     11879
-  ],
-  "gallic": [
-    1,
-    15371
   ],
   "galling": [
     1,
@@ -37847,7 +38243,7 @@
     1,
     83390
   ],
-  "gastronomic": [
+  "gastronomical": [
     1,
     79597
   ],
@@ -38223,7 +38619,7 @@
     1,
     79320
   ],
-  "geologic": [
+  "geological": [
     1,
     79696
   ],
@@ -38243,7 +38639,7 @@
     1,
     79858
   ],
-  "geometric": [
+  "geometrical": [
     3,
     101122
   ],
@@ -38266,10 +38662,6 @@
   "geopolitical": [
     1,
     98513
-  ],
-  "georgian": [
-    2,
-    24699
   ],
   "geostationary": [
     1,
@@ -38294,10 +38686,6 @@
   "germane": [
     1,
     36025
-  ],
-  "germanic": [
-    2,
-    34604
   ],
   "germinal": [
     1,
@@ -38895,7 +39283,7 @@
     5,
     26197
   ],
-  "glory days years": [
+  "glory days/years": [
     1,
     11864
   ],
@@ -39143,10 +39531,6 @@
     1,
     20669
   ],
-  "god heaven forbid": [
-    1,
-    27552
-  ],
   "goddaughter": [
     1,
     36018
@@ -39191,10 +39575,6 @@
     1,
     178
   ],
-  "godspeed": [
-    1,
-    35254
-  ],
   "gofer": [
     1,
     29514
@@ -39215,7 +39595,7 @@
     3,
     81320
   ],
-  "golden brown": [
+  "golden-brown": [
     4,
     82399
   ],
@@ -39267,10 +39647,6 @@
     1,
     20566
   ],
-  "good by": [
-    4,
-    79259
-  ],
   "good fortune": [
     5,
     83835
@@ -39286,6 +39662,10 @@
   "good temper": [
     1,
     80343
+  ],
+  "good-by": [
+    4,
+    79259
   ],
   "goodly": [
     1,
@@ -39367,10 +39747,6 @@
     1,
     79177
   ],
-  "gorgon": [
-    1,
-    40448
-  ],
   "gorilla": [
     2,
     10211
@@ -39414,10 +39790,6 @@
   "goth": [
     1,
     28816
-  ],
-  "gothic": [
-    3,
-    20074
   ],
   "gouge": [
     1,
@@ -39891,25 +40263,17 @@
     5,
     6102
   ],
-  "gray green": [
+  "gray-green": [
     1,
     82256
   ],
-  "gray haired": [
+  "gray-haired": [
     1,
     80395
   ],
-  "gray white": [
+  "gray-white": [
     1,
     81576
-  ],
-  "grayish": [
-    1,
-    78822
-  ],
-  "grayness": [
-    1,
-    78470
   ],
   "graze": [
     3,
@@ -39943,10 +40307,6 @@
     2,
     15974
   ],
-  "great aunt": [
-    2,
-    78805
-  ],
   "great grandchild": [
     1,
     82720
@@ -39967,7 +40327,11 @@
     1,
     80088
   ],
-  "great uncle": [
+  "great-aunt": [
+    2,
+    78805
+  ],
+  "great-uncle": [
     2,
     83422
   ],
@@ -39986,10 +40350,6 @@
   "greave": [
     1,
     78782
-  ],
-  "grecian": [
-    1,
-    36263
   ],
   "greed": [
     2,
@@ -40059,17 +40419,25 @@
     1,
     88392
   ],
-  "grey green": [
+  "grey-green": [
     1,
     83071
   ],
-  "grey haired": [
+  "grey-haired": [
     1,
     79243
   ],
   "greyhound": [
     1,
     4755
+  ],
+  "greyish": [
+    1,
+    78822
+  ],
+  "greyness": [
+    1,
+    78470
   ],
   "grid": [
     5,
@@ -40791,11 +41159,11 @@
     1,
     37543
   ],
-  "gynecological": [
+  "gynaecological": [
     1,
     82520
   ],
-  "gynecologist": [
+  "gynaecologist": [
     1,
     80730
   ],
@@ -40806,10 +41174,6 @@
   "gyp": [
     1,
     6747
-  ],
-  "gypsy": [
-    3,
-    21401
   ],
   "gyrate": [
     1,
@@ -40875,7 +41239,7 @@
     1,
     101573
   ],
-  "habitue": [
+  "habitu\u00e9": [
     1,
     42575
   ],
@@ -40918,6 +41282,10 @@
   "haddock": [
     1,
     13718
+  ],
+  "haemorrhagic": [
+    1,
+    83405
   ],
   "hag": [
     1,
@@ -41023,14 +41391,6 @@
     4,
     79322
   ],
-  "half hearted": [
-    1,
-    79232
-  ],
-  "half heartedly": [
-    1,
-    82854
-  ],
   "half mile": [
     5,
     83614
@@ -41039,7 +41399,15 @@
     1,
     101298
   ],
-  "half yearly": [
+  "half-hearted": [
+    1,
+    79232
+  ],
+  "half-heartedly": [
+    1,
+    82854
+  ],
+  "half-yearly": [
     1,
     81056
   ],
@@ -41062,10 +41430,6 @@
   "halibut": [
     1,
     16013
-  ],
-  "hall of fame": [
-    1,
-    34523
   ],
   "hallelujah": [
     1,
@@ -41171,13 +41535,13 @@
     1,
     98315
   ],
-  "hand held": [
-    1,
-    81745
-  ],
   "hand mirror": [
     1,
     89112
+  ],
+  "hand-held": [
+    1,
+    81745
   ],
   "handbag": [
     2,
@@ -41427,15 +41791,15 @@
     1,
     80145
   ],
-  "hard boiled": [
+  "hard-boiled": [
     1,
     10673
   ],
-  "hard fought": [
+  "hard-fought": [
     1,
     36364
   ],
-  "hard pressed": [
+  "hard-pressed": [
     2,
     29738
   ],
@@ -41487,7 +41851,7 @@
     1,
     83892
   ],
-  "hardly scarcely ever": [
+  "hardly/scarcely ever": [
     1,
     5059
   ],
@@ -41667,7 +42031,7 @@
     1,
     85582
   ],
-  "harum scarum": [
+  "harum-scarum": [
     1,
     80626
   ],
@@ -41783,7 +42147,7 @@
     1,
     82821
   ],
-  "hauler": [
+  "haulier": [
     1,
     87887
   ],
@@ -42091,7 +42455,7 @@
     1,
     19182
   ],
-  "heart shaped": [
+  "heart-shaped": [
     1,
     81200
   ],
@@ -42231,13 +42595,13 @@
     1,
     4740
   ],
-  "heavy handed": [
-    1,
-    29505
-  ],
   "heavy hitter": [
     1,
     36858
+  ],
+  "heavy-handed": [
+    1,
+    29505
   ],
   "heavyset": [
     1,
@@ -42246,10 +42610,6 @@
   "heavyweight": [
     1,
     7315
-  ],
-  "hebraic": [
-    1,
-    15722
   ],
   "hecatomb": [
     1,
@@ -42399,10 +42759,6 @@
     2,
     34842
   ],
-  "hellenic": [
-    1,
-    1143
-  ],
   "hellhound": [
     1,
     111277
@@ -42463,7 +42819,7 @@
     4,
     4471
   ],
-  "hemispheric": [
+  "hemispherical": [
     1,
     82927
   ],
@@ -42490,10 +42846,6 @@
   "hemorrhage": [
     3,
     26351
-  ],
-  "hemorrhagic": [
-    1,
-    83405
   ],
   "hemorrhoid": [
     1,
@@ -42839,7 +43191,7 @@
     1,
     34477
   ],
-  "hide and go seek": [
+  "hide-and-go-seek": [
     1,
     18109
   ],
@@ -42867,7 +43219,7 @@
     1,
     78942
   ],
-  "hierarchical": [
+  "hierarchic": [
     3,
     89611
   ],
@@ -42891,33 +43243,33 @@
     1,
     82579
   ],
-  "high ceilinged": [
-    1,
-    82594
-  ],
-  "high crowned": [
-    1,
-    81788
-  ],
-  "high low": [
-    2,
-    80669
-  ],
-  "high low profile": [
-    1,
-    56062
-  ],
-  "high powered": [
-    1,
-    22614
-  ],
   "high quality": [
     5,
     80733
   ],
-  "high yield": [
+  "high-ceilinged": [
+    1,
+    82594
+  ],
+  "high-crowned": [
+    1,
+    81788
+  ],
+  "high-low": [
+    2,
+    80669
+  ],
+  "high-powered": [
+    1,
+    22614
+  ],
+  "high-yield": [
     3,
     78925
+  ],
+  "high/low profile": [
+    1,
+    56062
   ],
   "highball": [
     1,
@@ -43090,10 +43442,6 @@
   "hirsute": [
     1,
     12870
-  ],
-  "hispanic": [
-    4,
-    11103
   ],
   "hiss": [
     3,
@@ -43271,7 +43619,7 @@
     5,
     1151
   ],
-  "hold stand your ground": [
+  "hold/stand your ground": [
     1,
     4741
   ],
@@ -43311,7 +43659,7 @@
     4,
     7148
   ],
-  "hollow eyed": [
+  "hollow-eyed": [
     1,
     82705
   ],
@@ -43555,7 +43903,7 @@
     5,
     28643
   ],
-  "honey colored": [
+  "honey-colored": [
     1,
     80701
   ],
@@ -43655,13 +44003,13 @@
     5,
     22364
   ],
-  "hook nosed": [
-    1,
-    83449
-  ],
   "hook up": [
     5,
     671
+  ],
+  "hook-nosed": [
+    1,
+    83449
   ],
   "hookah": [
     1,
@@ -43839,11 +44187,11 @@
     5,
     16414
   ],
-  "horror stricken": [
+  "horror-stricken": [
     1,
     83259
   ],
-  "horror struck": [
+  "horror-struck": [
     1,
     81237
   ],
@@ -43931,13 +44279,13 @@
     1,
     113380
   ],
+  "hospitalisation": [
+    2,
+    106048
+  ],
   "hospitality": [
     3,
     41458
-  ],
-  "hospitalization": [
-    2,
-    106048
   ],
   "hospitalize": [
     2,
@@ -44119,13 +44467,9 @@
     4,
     81039
   ],
-  "ht": [
+  "ht.": [
     2,
     28659
-  ],
-  "html": [
-    3,
-    13311
   ],
   "http": [
     3,
@@ -44327,10 +44671,6 @@
     1,
     33177
   ],
-  "humorless": [
-    1,
-    90120
-  ],
   "humorlessly": [
     1,
     78876
@@ -44342,6 +44682,10 @@
   "humorously": [
     1,
     113378
+  ],
+  "humourless": [
+    1,
+    90120
   ],
   "hump": [
     2,
@@ -44799,6 +45143,10 @@
     1,
     113341
   ],
+  "iPod": [
+    1,
+    79955
+  ],
   "iambic": [
     1,
     82869
@@ -44807,7 +45155,7 @@
     1,
     18766
   ],
-  "ibid": [
+  "ibid.": [
     1,
     78540
   ],
@@ -45019,10 +45367,6 @@
     1,
     4081
   ],
-  "ify": [
-    1,
-    14472
-  ],
   "igloo": [
     1,
     29537
@@ -45091,14 +45435,6 @@
     1,
     20575
   ],
-  "ill breeding": [
-    1,
-    79880
-  ],
-  "ill chosen": [
-    1,
-    79574
-  ],
   "ill fame": [
     1,
     81482
@@ -45119,27 +45455,35 @@
     1,
     84048
   ],
-  "ill omened": [
-    1,
-    82389
-  ],
-  "ill smelling": [
-    1,
-    80461
-  ],
   "ill temper": [
     1,
     78709
-  ],
-  "ill treatment": [
-    2,
-    78833
   ],
   "ill turn": [
     1,
     110091
   ],
-  "ill usage": [
+  "ill-breeding": [
+    1,
+    79880
+  ],
+  "ill-chosen": [
+    1,
+    79574
+  ],
+  "ill-omened": [
+    1,
+    82389
+  ],
+  "ill-smelling": [
+    1,
+    80461
+  ],
+  "ill-treatment": [
+    2,
+    78833
+  ],
+  "ill-usage": [
     1,
     79166
   ],
@@ -45719,7 +46063,7 @@
     1,
     85228
   ],
-  "impinge on upon": [
+  "impinge on/upon": [
     1,
     14114
   ],
@@ -46091,19 +46435,19 @@
     1,
     38300
   ],
-  "in a one sense": [
+  "in a/one sense": [
     1,
     55342
   ],
-  "in good great large part": [
+  "in good/great/large part": [
     1,
     52308
   ],
-  "in good safe hands": [
+  "in good/safe hands": [
     1,
     17841
   ],
-  "in its their entirety": [
+  "in its/their entirety": [
     1,
     40460
   ],
@@ -46119,11 +46463,11 @@
     1,
     14685
   ],
-  "in with regard to": [
+  "in/with regard to": [
     1,
     73644
   ],
-  "in within living memory": [
+  "in/within living memory": [
     1,
     10993
   ],
@@ -46303,10 +46647,6 @@
     1,
     28989
   ],
-  "inc": [
-    5,
-    5249
-  ],
   "incalculable": [
     1,
     21636
@@ -46467,7 +46807,7 @@
     1,
     43140
   ],
-  "incl": [
+  "incl.": [
     1,
     24151
   ],
@@ -47187,21 +47527,21 @@
     1,
     6744
   ],
+  "industrialisation": [
+    3,
+    108835
+  ],
+  "industrialised": [
+    1,
+    89990
+  ],
   "industrialist": [
     2,
     26964
   ],
-  "industrialization": [
-    3,
-    108835
-  ],
   "industrialize": [
     1,
     10358
-  ],
-  "industrialized": [
-    1,
-    89990
   ],
   "industrious": [
     1,
@@ -48339,7 +48679,7 @@
     2,
     3803
   ],
-  "inside out": [
+  "inside-out": [
     5,
     81515
   ],
@@ -48939,7 +49279,7 @@
     4,
     15139
   ],
-  "interdependence": [
+  "interdependency": [
     2,
     82446
   ],
@@ -49059,7 +49399,7 @@
     3,
     22713
   ],
-  "internalization": [
+  "internalisation": [
     1,
     102544
   ],
@@ -49082,10 +49422,6 @@
   "internet": [
     5,
     86178
-  ],
-  "internet service provider": [
-    1,
-    21522
   ],
   "internist": [
     1,
@@ -49755,14 +50091,6 @@
     1,
     79546
   ],
-  "ipod": [
-    1,
-    79955
-  ],
-  "ira": [
-    3,
-    33646
-  ],
   "irascible": [
     1,
     5608
@@ -49787,10 +50115,6 @@
     2,
     40648
   ],
-  "irish": [
-    5,
-    31397
-  ],
   "irk": [
     1,
     16477
@@ -49799,13 +50123,13 @@
     1,
     31925
   ],
-  "iron grey": [
-    1,
-    82831
-  ],
   "iron out": [
     3,
     9790
+  ],
+  "iron-grey": [
+    1,
+    82831
   ],
   "ironclad": [
     1,
@@ -49887,7 +50211,7 @@
     2,
     6260
   ],
-  "irrelevance": [
+  "irrelevancy": [
     1,
     78998
   ],
@@ -50107,10 +50431,6 @@
     1,
     80994
   ],
-  "israeli": [
-    4,
-    38969
-  ],
   "issuance": [
     2,
     11818
@@ -50167,17 +50487,9 @@
     2,
     8580
   ],
-  "itsy bitsy": [
+  "itsy-bitsy": [
     1,
     9926
-  ],
-  "ity": [
-    1,
-    42002
-  ],
-  "ive": [
-    2,
-    13550
   ],
   "ivory": [
     3,
@@ -50187,13 +50499,9 @@
     2,
     451
   ],
-  "ivy covered": [
+  "ivy-covered": [
     1,
     80529
-  ],
-  "ize": [
-    1,
-    39586
   ],
   "jab": [
     1,
@@ -50215,11 +50523,11 @@
     1,
     82251
   ],
-  "jack in the box": [
+  "jack-in-the-box": [
     1,
     17528
   ],
-  "jack of all trades": [
+  "jack-of-all-trades": [
     1,
     20622
   ],
@@ -50291,7 +50599,7 @@
     1,
     1390
   ],
-  "jalapeno": [
+  "jalape\u00f1o": [
     1,
     14309
   ],
@@ -50335,17 +50643,9 @@
     1,
     5159
   ],
-  "january": [
-    5,
-    5091
-  ],
   "japan": [
     5,
     86248
-  ],
-  "japanese": [
-    5,
-    1219
   ],
   "jape": [
     1,
@@ -50583,13 +50883,13 @@
     3,
     29967
   ],
-  "jeweled": [
-    1,
-    79544
-  ],
   "jeweler": [
     1,
     15840
+  ],
+  "jewelled": [
+    1,
+    79544
   ],
   "jewelry": [
     3,
@@ -50855,10 +51155,6 @@
     1,
     31726
   ],
-  "jpeg": [
-    1,
-    32194
-  ],
   "jubilant": [
     1,
     33309
@@ -50874,10 +51170,6 @@
   "jubilee": [
     2,
     17185
-  ],
-  "judas": [
-    1,
-    24675
   ],
   "judgmental": [
     1,
@@ -50959,10 +51251,6 @@
     1,
     39268
   ],
-  "july": [
-    5,
-    2499
-  ],
   "jumble": [
     1,
     18649
@@ -50986,10 +51274,6 @@
   "jumpy": [
     1,
     32492
-  ],
-  "jun": [
-    2,
-    28050
   ],
   "junction": [
     5,
@@ -51115,6 +51399,10 @@
     2,
     108475
   ],
+  "kWh": [
+    1,
+    14653
+  ],
   "kafir": [
     1,
     87894
@@ -51195,7 +51483,7 @@
     3,
     9338
   ],
-  "keen eyed": [
+  "keen-eyed": [
     1,
     81217
   ],
@@ -51455,7 +51743,7 @@
     4,
     6706
   ],
-  "kind hearted": [
+  "kind-hearted": [
     1,
     78858
   ],
@@ -51507,7 +51795,7 @@
     3,
     37259
   ],
-  "king size": [
+  "king-size": [
     1,
     12707
   ],
@@ -51602,10 +51890,6 @@
   "klaxon": [
     1,
     79351
-  ],
-  "kleenex": [
-    1,
-    13701
   ],
   "kleptomaniac": [
     1,
@@ -51779,7 +52063,7 @@
     1,
     78871
   ],
-  "know different otherwise": [
+  "know different/otherwise": [
     1,
     40199
   ],
@@ -51831,10 +52115,6 @@
     1,
     22080
   ],
-  "kraut": [
-    1,
-    35666
-  ],
   "krill": [
     1,
     26274
@@ -51871,10 +52151,6 @@
     1,
     100956
   ],
-  "kwh": [
-    1,
-    14653
-  ],
   "lab": [
     5,
     21133
@@ -51891,7 +52167,7 @@
     1,
     105552
   ],
-  "labor intensive": [
+  "labor-intensive": [
     3,
     21080
   ],
@@ -52002,10 +52278,6 @@
   "ladylike": [
     1,
     28014
-  ],
-  "ladyship": [
-    1,
-    28516
   ],
   "lag": [
     3,
@@ -52134,10 +52406,6 @@
   "lampshade": [
     1,
     16792
-  ],
-  "lan": [
-    3,
-    14536
   ],
   "lanai": [
     1,
@@ -52319,7 +52587,7 @@
     1,
     12016
   ],
-  "large scale": [
+  "large-scale": [
     5,
     35566
   ],
@@ -52479,17 +52747,9 @@
     1,
     86519
   ],
-  "latin": [
-    5,
-    31194
-  ],
   "latinate": [
     1,
     83151
-  ],
-  "latino": [
-    2,
-    11700
   ],
   "latitude": [
     3,
@@ -52615,7 +52875,7 @@
     2,
     37671
   ],
-  "lavish on upon": [
+  "lavish on/upon": [
     1,
     18010
   ],
@@ -52699,7 +52959,7 @@
     5,
     9432
   ],
-  "lay set eyes on": [
+  "lay/set eyes on": [
     1,
     17181
   ],
@@ -52895,10 +53155,6 @@
     1,
     31492
   ],
-  "led": [
-    5,
-    40903
-  ],
   "lede": [
     1,
     101190
@@ -52935,11 +53191,11 @@
     1,
     7897
   ],
-  "left hander": [
+  "left-hander": [
     1,
     9666
   ],
-  "left of center": [
+  "left-of-center": [
     1,
     83929
   ],
@@ -53291,13 +53547,13 @@
     1,
     4072
   ],
-  "level headed": [
-    1,
-    82206
-  ],
   "level off": [
     4,
     2731
+  ],
+  "level-headed": [
+    1,
+    82206
   ],
   "levelheaded": [
     1,
@@ -53519,17 +53775,17 @@
     5,
     21324
   ],
-  "life size": [
-    2,
-    10335
-  ],
-  "life time": [
-    3,
-    81750
-  ],
   "life's work": [
     1,
     13192
+  ],
+  "life-size": [
+    2,
+    10335
+  ],
+  "life-time": [
+    3,
+    81750
   ],
   "lifeblood": [
     1,
@@ -53603,15 +53859,15 @@
     5,
     82538
   ],
-  "light colored": [
+  "light-colored": [
     1,
     82718
   ],
-  "light haired": [
+  "light-haired": [
     1,
     80890
   ],
-  "light hearted": [
+  "light-hearted": [
     1,
     84051
   ],
@@ -54107,7 +54363,7 @@
     1,
     109413
   ],
-  "load bearing": [
+  "load-bearing": [
     1,
     80635
   ],
@@ -54179,13 +54435,13 @@
     3,
     873
   ],
+  "localisation": [
+    2,
+    100741
+  ],
   "locality": [
     4,
     34413
-  ],
-  "localization": [
-    2,
-    100741
   ],
   "localize": [
     2,
@@ -54327,7 +54583,7 @@
     1,
     2743
   ],
-  "logistic": [
+  "logistical": [
     2,
     79744
   ],
@@ -54371,10 +54627,6 @@
     1,
     89120
   ],
-  "lol": [
-    1,
-    16167
-  ],
   "loll": [
     1,
     28776
@@ -54407,7 +54659,7 @@
     1,
     2978
   ],
-  "long range": [
+  "long-range": [
     5,
     1589
   ],
@@ -54575,10 +54827,6 @@
     2,
     5647
   ],
-  "lordy": [
-    1,
-    36321
-  ],
   "lore": [
     3,
     33781
@@ -54691,27 +54939,27 @@
     2,
     114092
   ],
-  "low budget": [
+  "low-budget": [
     2,
     83400
   ],
-  "low ceilinged": [
+  "low-ceilinged": [
     1,
     83477
   ],
-  "low cost": [
+  "low-cost": [
     5,
     78853
   ],
-  "low key": [
+  "low-key": [
     2,
     37191
   ],
-  "low level": [
+  "low-level": [
     5,
     11359
   ],
-  "low pressure": [
+  "low-pressure": [
     4,
     80647
   ],
@@ -55019,13 +55267,13 @@
     1,
     7198
   ],
-  "lusterless": [
-    1,
-    92391
-  ],
   "lustful": [
     1,
     8894
+  ],
+  "lustreless": [
+    1,
+    92391
   ],
   "lustrous": [
     1,
@@ -55147,10 +55395,6 @@
     1,
     18529
   ],
-  "machiavellian": [
-    1,
-    27535
-  ],
   "machicolate": [
     1,
     82483
@@ -55183,7 +55427,7 @@
     1,
     34515
   ],
-  "macrame": [
+  "macram\u00e9": [
     1,
     37037
   ],
@@ -55239,10 +55483,6 @@
     4,
     34497
   ],
-  "madonna": [
-    2,
-    3911
-  ],
   "madras": [
     1,
     86794
@@ -55258,10 +55498,6 @@
   "maestro": [
     1,
     7242
-  ],
-  "mafia": [
-    2,
-    16856
   ],
   "mafioso": [
     1,
@@ -55387,7 +55623,7 @@
     1,
     31313
   ],
-  "mah jongg": [
+  "mah-jongg": [
     1,
     9658
   ],
@@ -55491,13 +55727,9 @@
     1,
     33828
   ],
-  "make a the connection": [
+  "make a/the connection": [
     1,
     16178
-  ],
-  "make find common cause": [
-    1,
-    30034
   ],
   "make out": [
     5,
@@ -55506,6 +55738,10 @@
   "make up": [
     5,
     26331
+  ],
+  "make/find common cause": [
+    1,
+    30034
   ],
   "makeover": [
     1,
@@ -55751,10 +55987,6 @@
     3,
     1795
   ],
-  "maneuverability": [
-    1,
-    90698
-  ],
   "maneuverable": [
     1,
     38684
@@ -55911,6 +56143,10 @@
     1,
     39247
   ],
+  "manoeuvrability": [
+    1,
+    90698
+  ],
   "manor": [
     2,
     10361
@@ -56014,10 +56250,6 @@
   "manuscript": [
     5,
     37240
-  ],
-  "maori": [
-    1,
-    41411
   ],
   "maple": [
     3,
@@ -56263,13 +56495,13 @@
     3,
     10203
   ],
+  "marvellously": [
+    1,
+    80758
+  ],
   "marvelous": [
     2,
     3667
-  ],
-  "marvelously": [
-    1,
-    80758
   ],
   "marzipan": [
     1,
@@ -56318,10 +56550,6 @@
   "mason": [
     4,
     29379
-  ],
-  "masonic": [
-    1,
-    16759
   ],
   "masonry": [
     2,
@@ -56479,10 +56707,6 @@
     2,
     113590
   ],
-  "materiel": [
-    1,
-    23362
-  ],
   "maternal": [
     4,
     21095
@@ -56575,6 +56799,10 @@
     5,
     11443
   ],
+  "mat\u00e9riel": [
+    1,
+    23362
+  ],
   "maul": [
     1,
     79536
@@ -56623,7 +56851,7 @@
     1,
     113320
   ],
-  "maximization": [
+  "maximisation": [
     1,
     107741
   ],
@@ -56739,7 +56967,7 @@
     1,
     89375
   ],
-  "meat eating": [
+  "meat-eating": [
     1,
     81192
   ],
@@ -56767,6 +56995,10 @@
     2,
     113724
   ],
+  "mechanised": [
+    1,
+    91433
+  ],
   "mechanism": [
     5,
     12632
@@ -56778,10 +57010,6 @@
   "mechanize": [
     1,
     5132
-  ],
-  "mechanized": [
-    1,
-    91433
   ],
   "med": [
     5,
@@ -56875,7 +57103,7 @@
     1,
     4440
   ],
-  "meditate on upon": [
+  "meditate on/upon": [
     1,
     7158
   ],
@@ -56886,10 +57114,6 @@
   "meditatively": [
     1,
     113304
-  ],
-  "mediterranean": [
-    4,
-    28682
   ],
   "medley": [
     1,
@@ -56986,10 +57210,6 @@
   "melancholy": [
     3,
     21478
-  ],
-  "melange": [
-    1,
-    21275
   ],
   "melanin": [
     1,
@@ -57535,10 +57755,6 @@
     1,
     114508
   ],
-  "methodist": [
-    3,
-    1883
-  ],
   "methodological": [
     2,
     84008
@@ -57562,10 +57778,6 @@
   "meticulously": [
     1,
     114358
-  ],
-  "metier": [
-    1,
-    17060
   ],
   "metric": [
     3,
@@ -57606,10 +57818,6 @@
   "mewl": [
     1,
     79866
-  ],
-  "mexican jumping bean": [
-    1,
-    10894
   ],
   "mezzanine": [
     1,
@@ -57735,35 +57943,35 @@
     5,
     16590
   ],
-  "mid august": [
+  "mid-August": [
     1,
     82265
   ],
-  "mid february": [
+  "mid-February": [
     1,
     81090
   ],
-  "mid fifties": [
-    1,
-    80533
-  ],
-  "mid july": [
+  "mid-July": [
     1,
     79581
   ],
-  "mid september": [
+  "mid-September": [
     1,
     82019
   ],
-  "mid seventies": [
+  "mid-fifties": [
+    1,
+    80533
+  ],
+  "mid-seventies": [
     1,
     83391
   ],
-  "mid thirties": [
+  "mid-thirties": [
     1,
     83790
   ],
-  "mid twenties": [
+  "mid-twenties": [
     1,
     82712
   ],
@@ -57787,11 +57995,7 @@
     1,
     108071
   ],
-  "middle english": [
-    4,
-    1396
-  ],
-  "middle of the road": [
+  "middle-of-the-road": [
     1,
     18214
   ],
@@ -57891,7 +58095,7 @@
     1,
     79034
   ],
-  "might have been": [
+  "might-have-been": [
     1,
     81680
   ],
@@ -57939,15 +58143,11 @@
     4,
     9161
   ],
-  "mil": [
-    5,
-    27790
-  ],
   "mild": [
     4,
     26051
   ],
-  "mild mannered": [
+  "mild-mannered": [
     1,
     80727
   ],
@@ -58023,7 +58223,7 @@
     2,
     81246
   ],
-  "milk white": [
+  "milk-white": [
     1,
     80639
   ],
@@ -58041,7 +58241,7 @@
   ],
   "mill": [
     5,
-    7218
+    27790
   ],
   "mill wheel": [
     1,
@@ -58179,7 +58379,7 @@
     1,
     82751
   ],
-  "mind watch your step": [
+  "mind/watch your step": [
     1,
     68293
   ],
@@ -58435,7 +58635,7 @@
     1,
     38349
   ],
-  "misbehavior": [
+  "misbehaviour": [
     1,
     84205
   ],
@@ -58871,7 +59071,7 @@
     1,
     25633
   ],
-  "mixed messages signals": [
+  "mixed messages/signals": [
     1,
     4669
   ],
@@ -58963,7 +59163,7 @@
     3,
     97503
   ],
-  "modeler": [
+  "modeller": [
     1,
     89258
   ],
@@ -58991,6 +59191,10 @@
     2,
     81072
   ],
+  "modernisation": [
+    3,
+    82622
+  ],
   "modernism": [
     2,
     18635
@@ -59002,10 +59206,6 @@
   "modernity": [
     4,
     11612
-  ],
-  "modernization": [
-    3,
-    82622
   ],
   "modernize": [
     2,
@@ -59419,7 +59619,7 @@
     2,
     13058
   ],
-  "moon around about": [
+  "moon around/about": [
     1,
     1073
   ],
@@ -59691,10 +59891,6 @@
     1,
     61988
   ],
-  "mot": [
-    2,
-    33274
-  ],
   "mote": [
     1,
     22599
@@ -59715,7 +59911,7 @@
     4,
     19367
   ],
-  "mother in law apartment": [
+  "mother-in-law apartment": [
     1,
     35359
   ],
@@ -60615,6 +60811,14 @@
     1,
     111539
   ],
+  "m\u00e9lange": [
+    1,
+    21275
+  ],
+  "m\u00e9tier": [
+    1,
+    17060
+  ],
   "naan": [
     1,
     48728
@@ -60791,10 +60995,6 @@
     1,
     44408
   ],
-  "nasa": [
-    2,
-    45913
-  ],
   "nasal": [
     3,
     46848
@@ -60831,6 +61031,10 @@
     1,
     74253
   ],
+  "nationalisation": [
+    1,
+    108147
+  ],
   "nationalism": [
     5,
     66367
@@ -60846,10 +61050,6 @@
   "nationality": [
     4,
     44701
-  ],
-  "nationalization": [
-    1,
-    108147
   ],
   "nationalize": [
     1,
@@ -60879,6 +61079,10 @@
     1,
     68468
   ],
+  "naturalisation": [
+    1,
+    90826
+  ],
   "naturalist": [
     3,
     64354
@@ -60886,10 +61090,6 @@
   "naturalistic": [
     2,
     62907
-  ],
-  "naturalization": [
-    1,
-    90826
   ],
   "naturalized": [
     1,
@@ -60934,10 +61134,6 @@
   "nautical": [
     1,
     58571
-  ],
-  "navajo": [
-    2,
-    63166
   ],
   "naval": [
     4,
@@ -60986,10 +61182,6 @@
   "ne'er": [
     1,
     50902
-  ],
-  "neanderthal": [
-    1,
-    52106
   ],
   "nearness": [
     1,
@@ -61067,10 +61259,6 @@
     1,
     52202
   ],
-  "nee": [
-    2,
-    46248
-  ],
   "needful": [
     1,
     71420
@@ -61099,7 +61287,7 @@
     1,
     53794
   ],
-  "neg": [
+  "neg.": [
     1,
     60219
   ],
@@ -61147,10 +61335,6 @@
     2,
     61221
   ],
-  "negro": [
-    4,
-    57812
-  ],
   "neigh": [
     1,
     75158
@@ -61178,10 +61362,6 @@
   "neoliberalism": [
     1,
     101432
-  ],
-  "neolithic": [
-    2,
-    76778
   ],
   "neologism": [
     1,
@@ -61215,7 +61395,7 @@
     2,
     74841
   ],
-  "nerve racking": [
+  "nerve-racking": [
     1,
     64695
   ],
@@ -61382,10 +61562,6 @@
   "nevertheless": [
     5,
     45536
-  ],
-  "new year": [
-    5,
-    70577
   ],
   "newbie": [
     1,
@@ -61622,10 +61798,6 @@
   "nihilistic": [
     1,
     98540
-  ],
-  "nik": [
-    1,
-    53471
   ],
   "nil": [
     2,
@@ -62163,10 +62335,6 @@
     2,
     43384
   ],
-  "nordic": [
-    2,
-    45401
-  ],
   "noria": [
     1,
     87195
@@ -62190,10 +62358,6 @@
   "normative": [
     2,
     57665
-  ],
-  "norse": [
-    1,
-    72128
   ],
   "northbound": [
     1,
@@ -62271,7 +62435,7 @@
     1,
     75466
   ],
-  "not a one bit": [
+  "not a/one bit": [
     1,
     19587
   ],
@@ -62443,7 +62607,7 @@
     5,
     61822
   ],
-  "nuclear free": [
+  "nuclear-free": [
     1,
     51947
   ],
@@ -62642,6 +62806,10 @@
   "nymphet": [
     1,
     59807
+  ],
+  "n\u00e9e": [
+    2,
+    46248
   ],
   "o'er": [
     1,
@@ -63087,10 +63255,6 @@
     2,
     74029
   ],
-  "october": [
-    5,
-    52264
-  ],
   "octogenarian": [
     1,
     44780
@@ -63159,13 +63323,13 @@
     3,
     78384
   ],
-  "odorless": [
-    1,
-    93326
-  ],
   "odorous": [
     1,
     57494
+  ],
+  "odourless": [
+    1,
+    93326
   ],
   "odyssey": [
     2,
@@ -63351,18 +63515,6 @@
     1,
     100777
   ],
-  "olympiad": [
-    1,
-    47259
-  ],
-  "olympian": [
-    1,
-    69177
-  ],
-  "olympic": [
-    2,
-    74411
-  ],
   "omega": [
     2,
     53786
@@ -63415,19 +63567,11 @@
     1,
     94678
   ],
-  "on at the threshold": [
-    1,
-    67982
-  ],
-  "on everyone's everybody's lips": [
+  "on everyone's/everybody's lips": [
     1,
     9416
   ],
-  "on onto the defensive": [
-    1,
-    4832
-  ],
-  "on that this score": [
+  "on that/this score": [
     1,
     65518
   ],
@@ -63435,7 +63579,15 @@
     1,
     1539
   ],
-  "on under pain of": [
+  "on/at the threshold": [
+    1,
+    67982
+  ],
+  "on/onto the defensive": [
+    1,
+    4832
+  ],
+  "on/under pain of": [
     1,
     57688
   ],
@@ -63567,7 +63719,7 @@
     1,
     103217
   ],
-  "op art": [
+  "op-art": [
     1,
     54047
   ],
@@ -63587,13 +63739,13 @@
     2,
     54363
   ],
-  "open ended": [
-    1,
-    54846
-  ],
   "open up": [
     5,
     51823
+  ],
+  "open-ended": [
+    1,
+    54846
   ],
   "opener": [
     2,
@@ -63951,10 +64103,6 @@
     4,
     50339
   ],
-  "oriental": [
-    3,
-    63066
-  ],
   "orientation": [
     5,
     49693
@@ -64038,10 +64186,6 @@
   "ortolan": [
     1,
     109663
-  ],
-  "ory": [
-    1,
-    71402
   ],
   "oscillate": [
     1,
@@ -64143,10 +64287,6 @@
     4,
     59346
   ],
-  "ous": [
-    1,
-    58864
-  ],
   "oust": [
     1,
     61152
@@ -64155,15 +64295,15 @@
     1,
     64647
   ],
-  "out of body experience": [
-    1,
-    66331
-  ],
   "out of the blue": [
     1,
     40105
   ],
-  "out of the way": [
+  "out-of-body experience": [
+    1,
+    66331
+  ],
+  "out-of-the-way": [
     1,
     71799
   ],
@@ -64387,10 +64527,6 @@
     1,
     44942
   ],
-  "outre": [
-    1,
-    67849
-  ],
   "outreach": [
     2,
     68532
@@ -64410,6 +64546,10 @@
   "outrun": [
     1,
     58169
+  ],
+  "outr\u00e9": [
+    1,
+    67849
   ],
   "outsell": [
     1,
@@ -65107,10 +65247,6 @@
     1,
     66550
   ],
-  "oxbridge": [
-    1,
-    52584
-  ],
   "oxcart": [
     1,
     75055
@@ -65362,10 +65498,6 @@
   "paleness": [
     1,
     95195
-  ],
-  "paleolithic": [
-    1,
-    47114
   ],
   "paleontologist": [
     1,
@@ -65711,7 +65843,7 @@
     2,
     45308
   ],
-  "para": [
+  "para.": [
     4,
     75996
   ],
@@ -66171,10 +66303,6 @@
     2,
     49435
   ],
-  "passe": [
-    1,
-    52718
-  ],
   "passel": [
     1,
     69388
@@ -66210,6 +66338,10 @@
   "password": [
     4,
     59802
+  ],
+  "pass\u00e9": [
+    1,
+    52718
   ],
   "pasta": [
     3,
@@ -66278,10 +66410,6 @@
   "patchy": [
     1,
     56438
-  ],
-  "pate": [
-    1,
-    78238
   ],
   "patella": [
     1,
@@ -66475,7 +66603,7 @@
     1,
     73410
   ],
-  "pay a call visit": [
+  "pay a call/visit": [
     1,
     65233
   ],
@@ -66700,10 +66828,6 @@
     58654
   ],
   "pedigree": [
-    2,
-    66690
-  ],
-  "pedigreed": [
     1,
     105631
   ],
@@ -67391,13 +67515,13 @@
     2,
     61614
   ],
+  "personalised": [
+    1,
+    106594
+  ],
   "personalize": [
     1,
     60443
-  ],
-  "personalized": [
-    1,
-    106594
   ],
   "personhood": [
     2,
@@ -67699,7 +67823,7 @@
     2,
     46498
   ],
-  "phantasmagoric": [
+  "phantasmagorical": [
     1,
     105508
   ],
@@ -68063,7 +68187,7 @@
     1,
     57149
   ],
-  "pick a fight quarrel": [
+  "pick a fight/quarrel": [
     1,
     77551
   ],
@@ -68347,10 +68471,6 @@
     5,
     67002
   ],
-  "pinata": [
-    1,
-    73601
-  ],
   "pinball": [
     1,
     49754
@@ -68459,7 +68579,7 @@
     2,
     66390
   ],
-  "pious hope wish": [
+  "pious hope/wish": [
     1,
     60956
   ],
@@ -68527,7 +68647,7 @@
     5,
     61394
   ],
-  "pitch a fit tantrum": [
+  "pitch a fit/tantrum": [
     1,
     58930
   ],
@@ -68618,6 +68738,10 @@
   "pizzeria": [
     1,
     51020
+  ],
+  "pi\u00f1ata": [
+    1,
+    73601
   ],
   "placard": [
     1,
@@ -69215,7 +69339,7 @@
     1,
     104082
   ],
-  "pocket size": [
+  "pocket-size": [
     1,
     62963
   ],
@@ -69342,10 +69466,6 @@
   "polarize": [
     2,
     73691
-  ],
-  "polaroid": [
-    1,
-    62059
   ],
   "pole": [
     5,
@@ -69675,21 +69795,17 @@
     2,
     46098
   ],
-  "popsicle": [
-    1,
-    49750
-  ],
   "populace": [
     2,
     77953
   ],
+  "popularisation": [
+    1,
+    106470
+  ],
   "popularity": [
     4,
     45020
-  ],
-  "popularization": [
-    1,
-    106470
   ],
   "popularize": [
     1,
@@ -69839,10 +69955,6 @@
     2,
     43454
   ],
-  "portuguese": [
-    3,
-    58405
-  ],
   "poser": [
     1,
     75604
@@ -69915,7 +70027,7 @@
     1,
     73555
   ],
-  "post traumatic stress disorder": [
+  "post-traumatic stress disorder": [
     1,
     43677
   ],
@@ -70127,7 +70239,7 @@
     3,
     63570
   ],
-  "potter around about": [
+  "potter around/about": [
     1,
     73337
   ],
@@ -70162,10 +70274,6 @@
   "pout": [
     1,
     66248
-  ],
-  "pow": [
-    2,
-    52692
   ],
   "powder": [
     5,
@@ -70378,10 +70486,6 @@
   "precipitous": [
     1,
     50756
-  ],
-  "precis": [
-    1,
-    68324
   ],
   "precise": [
     5,
@@ -70679,7 +70783,7 @@
     1,
     69163
   ],
-  "premised on upon": [
+  "premised on/upon": [
     1,
     65911
   ],
@@ -70803,10 +70907,6 @@
     1,
     50910
   ],
-  "presbyterian": [
-    3,
-    62376
-  ],
   "presbytery": [
     1,
     65920
@@ -70843,7 +70943,7 @@
     1,
     52510
   ],
-  "present company excepted excluded": [
+  "present company excepted/excluded": [
     1,
     77263
   ],
@@ -70923,7 +71023,7 @@
     4,
     43987
   ],
-  "presume on upon": [
+  "presume on/upon": [
     1,
     57041
   ],
@@ -71047,7 +71147,7 @@
     4,
     51845
   ],
-  "prey on upon": [
+  "prey on/upon": [
     1,
     46002
   ],
@@ -71211,7 +71311,7 @@
     1,
     62417
   ],
-  "privatization": [
+  "privatisation": [
     2,
     108142
   ],
@@ -71363,7 +71463,7 @@
     1,
     53553
   ],
-  "prodigal son daughter": [
+  "prodigal son/daughter": [
     1,
     72535
   ],
@@ -71995,18 +72095,6 @@
     2,
     43380
   ],
-  "protege": [
-    1,
-    57694
-  ],
-  "protegee": [
-    1,
-    77862
-  ],
-  "protestant": [
-    5,
-    64464
-  ],
   "protestation": [
     1,
     60238
@@ -72059,6 +72147,14 @@
     1,
     76810
   ],
+  "prot\u00e9g\u00e9": [
+    1,
+    57694
+  ],
+  "prot\u00e9g\u00e9e": [
+    1,
+    77862
+  ],
   "provable": [
     1,
     107422
@@ -72078,10 +72174,6 @@
   "proverbial": [
     1,
     69094
-  ],
-  "providence": [
-    3,
-    47637
   ],
   "provident": [
     1,
@@ -72202,6 +72294,10 @@
   "prying": [
     1,
     47241
+  ],
+  "pr\u00e9cis": [
+    1,
+    68324
   ],
   "psalm": [
     3,
@@ -72362,10 +72458,6 @@
   "pterosaur": [
     1,
     111847
-  ],
-  "ptsd": [
-    2,
-    76266
   ],
   "pub": [
     4,
@@ -72598,10 +72690,6 @@
   "punch": [
     4,
     75052
-  ],
-  "punch and judy show": [
-    1,
-    64981
   ],
   "puncher": [
     1,
@@ -72995,9 +73083,9 @@
     1,
     66723
   ],
-  "qed": [
+  "p\u00e2t\u00e9": [
     1,
-    73250
+    78238
   ],
   "qua": [
     2,
@@ -73995,7 +74083,7 @@
     1,
     92399
   ],
-  "rat a tat": [
+  "rat-a-tat": [
     1,
     61233
   ],
@@ -74035,6 +74123,10 @@
     4,
     62592
   ],
+  "rationalisation": [
+    2,
+    98863
+  ],
   "rationalist": [
     1,
     98560
@@ -74042,10 +74134,6 @@
   "rationality": [
     4,
     112072
-  ],
-  "rationalization": [
-    2,
-    98863
   ],
   "rationalize": [
     2,
@@ -74155,7 +74243,7 @@
     2,
     65783
   ],
-  "razor sharp": [
+  "razor-sharp": [
     1,
     48191
   ],
@@ -74291,7 +74379,7 @@
     3,
     59129
   ],
-  "rear wheel drive": [
+  "rear-wheel drive": [
     1,
     51606
   ],
@@ -74547,7 +74635,7 @@
     1,
     106548
   ],
-  "recherche": [
+  "recherch\u00e9": [
     1,
     55039
   ],
@@ -74639,7 +74727,7 @@
     1,
     106624
   ],
-  "recognizable": [
+  "recognisable": [
     2,
     90106
   ],
@@ -75639,7 +75727,7 @@
     2,
     49179
   ],
-  "relevance": [
+  "relevancy": [
     4,
     97445
   ],
@@ -75711,13 +75799,9 @@
     3,
     55426
   ],
-  "rely on upon": [
+  "rely on/upon": [
     1,
     48249
-  ],
-  "rem": [
-    2,
-    47533
   ],
   "remainder": [
     4,
@@ -77327,7 +77411,7 @@
     1,
     46749
   ],
-  "right hander": [
+  "right-hander": [
     1,
     61272
   ],
@@ -77531,7 +77615,7 @@
     3,
     66960
   ],
-  "risque": [
+  "risqu\u00e9": [
     1,
     61889
   ],
@@ -77755,10 +77839,6 @@
     3,
     65795
   ],
-  "rollerblade": [
-    1,
-    58555
-  ],
   "rollicking": [
     1,
     72909
@@ -77767,17 +77847,9 @@
     1,
     45154
   ],
-  "roman": [
-    5,
-    46249
-  ],
   "romance": [
     5,
     51597
-  ],
-  "romanesque": [
-    1,
-    47604
   ],
   "romanticism": [
     2,
@@ -77958,10 +78030,6 @@
   "rotting": [
     1,
     99583
-  ],
-  "rottweiler": [
-    1,
-    44928
   ],
   "rotund": [
     1,
@@ -78295,13 +78363,13 @@
     5,
     53342
   ],
-  "run of the mill": [
-    1,
-    77542
-  ],
   "run the table": [
     1,
     49203
+  ],
+  "run-of-the-mill": [
+    1,
+    77542
   ],
   "runabout": [
     1,
@@ -78435,7 +78503,7 @@
     1,
     66152
   ],
-  "saber rattling": [
+  "saber-rattling": [
     1,
     43395
   ],
@@ -79099,10 +79167,6 @@
     3,
     61745
   ],
-  "saturday": [
-    5,
-    45681
-  ],
   "saturnine": [
     1,
     72813
@@ -79139,7 +79203,7 @@
     3,
     66606
   ],
-  "saute": [
+  "saut\u00e9": [
     1,
     74459
   ],
@@ -79310,10 +79374,6 @@
   "scandalous": [
     1,
     67114
-  ],
-  "scandinavian": [
-    2,
-    68706
   ],
   "scanner": [
     3,
@@ -79726,10 +79786,6 @@
   "scotch": [
     2,
     55556
-  ],
-  "scottish": [
-    3,
-    73619
   ],
   "scoundrel": [
     2,
@@ -80183,10 +80239,6 @@
     1,
     49237
   ],
-  "seance": [
-    1,
-    73469
-  ],
   "seaplane": [
     1,
     48318
@@ -80247,7 +80299,7 @@
     3,
     78307
   ],
-  "seat of the pants": [
+  "seat-of-the-pants": [
     1,
     45096
   ],
@@ -80431,7 +80483,7 @@
     1,
     92194
   ],
-  "see think fit": [
+  "see/think fit": [
     1,
     36407
   ],
@@ -80547,15 +80599,15 @@
     2,
     51735
   ],
-  "self centered": [
+  "self-centered": [
     1,
     64495
   ],
-  "self conscious": [
+  "self-conscious": [
     1,
     76400
   ],
-  "self defense": [
+  "self-defense": [
     2,
     62915
   ],
@@ -80678,14 +80730,6 @@
   "semirigid": [
     1,
     93189
-  ],
-  "semite": [
-    1,
-    55585
-  ],
-  "semitic": [
-    2,
-    58256
   ],
   "semitransparent": [
     1,
@@ -80959,7 +81003,7 @@
     4,
     77716
   ],
-  "serialization": [
+  "serialisation": [
     1,
     107945
   ],
@@ -81063,7 +81107,7 @@
     1,
     51599
   ],
-  "settle a the score": [
+  "settle a/the score": [
     1,
     44152
   ],
@@ -81199,10 +81243,6 @@
     1,
     66066
   ],
-  "shakespearean": [
-    1,
-    49014
-  ],
   "shakeup": [
     1,
     108281
@@ -81323,7 +81363,7 @@
     1,
     69330
   ],
-  "share spread the wealth": [
+  "share/spread the wealth": [
     1,
     48381
   ],
@@ -82567,7 +82607,7 @@
     1,
     70172
   ],
-  "sister in law": [
+  "sister-in-law": [
     1,
     47506
   ],
@@ -82947,10 +82987,6 @@
     5,
     75701
   ],
-  "slavic": [
-    1,
-    61661
-  ],
   "slavish": [
     1,
     70115
@@ -83075,7 +83111,7 @@
     2,
     56776
   ],
-  "slick back down": [
+  "slick back/down": [
     1,
     75151
   ],
@@ -84019,10 +84055,6 @@
     3,
     58465
   ],
-  "socratic": [
-    1,
-    70483
-  ],
   "sod": [
     2,
     45523
@@ -84471,7 +84503,7 @@
     1,
     58003
   ],
-  "souffle": [
+  "souffl\u00e9": [
     1,
     70331
   ],
@@ -85459,7 +85491,7 @@
     1,
     77008
   ],
-  "spring into to action life": [
+  "spring into/to action/life": [
     1,
     71097
   ],
@@ -85771,13 +85803,13 @@
     1,
     60766
   ],
+  "stabilisation": [
+    3,
+    108114
+  ],
   "stability": [
     5,
     67580
-  ],
-  "stabilization": [
-    3,
-    108114
   ],
   "stabilize": [
     3,
@@ -86123,7 +86155,7 @@
     4,
     45684
   ],
-  "state of the art": [
+  "state-of-the-art": [
     1,
     60184
   ],
@@ -86475,13 +86507,13 @@
     3,
     77064
   ],
+  "sterilisation": [
+    2,
+    106300
+  ],
   "sterility": [
     1,
     110531
-  ],
-  "sterilization": [
-    2,
-    106300
   ],
   "sterilize": [
     1,
@@ -87075,7 +87107,7 @@
     4,
     61283
   ],
-  "straw colored": [
+  "straw-colored": [
     1,
     67627
   ],
@@ -87454,10 +87486,6 @@
   "stymie": [
     1,
     54338
-  ],
-  "styrofoam": [
-    1,
-    63062
   ],
   "suave": [
     1,
@@ -88011,10 +88039,6 @@
     1,
     50999
   ],
-  "sunday": [
-    5,
-    62722
-  ],
   "sunder": [
     1,
     63183
@@ -88347,7 +88371,7 @@
     3,
     53345
   ],
-  "surface to air missile": [
+  "surface-to-air missile": [
     1,
     53659
   ],
@@ -88515,10 +88539,6 @@
     1,
     105687
   ],
-  "swahili": [
-    1,
-    70889
-  ],
   "swallow": [
     5,
     60836
@@ -88562,10 +88582,6 @@
   "swastika": [
     1,
     78054
-  ],
-  "swat": [
-    1,
-    51209
   ],
   "swatch": [
     1,
@@ -88718,10 +88734,6 @@
   "swish": [
     1,
     72201
-  ],
-  "swiss": [
-    3,
-    58749
   ],
   "switch off": [
     5,
@@ -88950,6 +88962,10 @@
   "systemic": [
     3,
     68084
+  ],
+  "s\u00e9ance": [
+    1,
+    73469
   ],
   "tab": [
     5,
@@ -89259,13 +89275,13 @@
     1,
     57128
   ],
+  "tantalising": [
+    1,
+    90272
+  ],
   "tantalize": [
     1,
     45977
-  ],
-  "tantalizing": [
-    1,
-    90272
   ],
   "tantamount": [
     1,
@@ -89619,10 +89635,6 @@
     1,
     69391
   ],
-  "teflon": [
-    1,
-    46780
-  ],
   "telecast": [
     1,
     55886
@@ -89686,10 +89698,6 @@
   "telescopic": [
     1,
     43965
-  ],
-  "teletype": [
-    1,
-    69054
   ],
   "televise": [
     1,
@@ -90015,10 +90023,6 @@
     1,
     74216
   ],
-  "teutonic": [
-    1,
-    76346
-  ],
   "textbook": [
     4,
     52976
@@ -90071,7 +90075,7 @@
     1,
     98659
   ],
-  "the annunciation": [
+  "the Annunciation": [
     2,
     25149
   ],
@@ -90083,7 +90087,7 @@
     1,
     28734
   ],
-  "the final last straw": [
+  "the final/last straw": [
     1,
     59330
   ],
@@ -90611,7 +90615,7 @@
     2,
     53325
   ],
-  "tic tac toe": [
+  "tic-tac-toe": [
     1,
     66260
   ],
@@ -90735,7 +90739,7 @@
     1,
     44138
   ],
-  "time honored": [
+  "time-honored": [
     1,
     67799
   ],
@@ -90862,10 +90866,6 @@
   "tiresome": [
     1,
     51722
-  ],
-  "tis": [
-    1,
-    47369
   ],
   "titan": [
     2,
@@ -91111,7 +91111,7 @@
     1,
     47567
   ],
-  "top of the line": [
+  "top-of-the-line": [
     1,
     62167
   ],
@@ -91299,7 +91299,7 @@
     1,
     77927
   ],
-  "touch tone": [
+  "touch-tone": [
     1,
     72071
   ],
@@ -91687,7 +91687,7 @@
     1,
     44294
   ],
-  "translucence": [
+  "translucency": [
     1,
     91352
   ],
@@ -92339,10 +92339,6 @@
     1,
     63222
   ],
-  "tu": [
-    2,
-    56877
-  ],
   "tub": [
     3,
     73347
@@ -92383,7 +92379,7 @@
     3,
     57404
   ],
-  "tug of war": [
+  "tug-of-war": [
     1,
     52381
   ],
@@ -92523,10 +92519,6 @@
     5,
     57522
   ],
-  "turkish": [
-    4,
-    68223
-  ],
   "turmoil": [
     3,
     58707
@@ -92650,10 +92642,6 @@
   "twang": [
     1,
     65523
-  ],
-  "twas": [
-    1,
-    69709
   ],
   "tweak": [
     1,
@@ -93147,7 +93135,7 @@
     1,
     74927
   ],
-  "unbeknownst unbeknown to": [
+  "unbeknownst/unbeknown to": [
     1,
     44041
   ],
@@ -95811,21 +95799,17 @@
     1,
     46904
   ],
+  "urbanised": [
+    1,
+    105076
+  ],
   "urbanization": [
     2,
     55240
   ],
-  "urbanized": [
-    1,
-    105076
-  ],
   "urchin": [
     2,
     76840
-  ],
-  "ure": [
-    1,
-    66013
   ],
   "urgency": [
     3,
@@ -95922,10 +95906,6 @@
   "utopia": [
     3,
     67851
-  ],
-  "utopian": [
-    2,
-    97848
   ],
   "utter": [
     4,
@@ -96075,10 +96055,6 @@
     5,
     77476
   ],
-  "valley girl": [
-    1,
-    74698
-  ],
   "valor": [
     1,
     71664
@@ -96147,7 +96123,7 @@
     3,
     54005
   ],
-  "vaporization": [
+  "vaporisation": [
     1,
     103851
   ],
@@ -96366,10 +96342,6 @@
   "venue": [
     3,
     65295
-  ],
-  "venus": [
-    3,
-    46007
   ],
   "veracity": [
     1,
@@ -96631,10 +96603,6 @@
     4,
     64697
   ],
-  "victorian": [
-    3,
-    69452
-  ],
   "victorious": [
     2,
     61902
@@ -96643,7 +96611,7 @@
     1,
     65547
   ],
-  "vicuna": [
+  "vicu\u00f1a": [
     1,
     60540
   ],
@@ -96702,10 +96670,6 @@
   "vigorous": [
     3,
     75458
-  ],
-  "viking": [
-    2,
-    61633
   ],
   "vile": [
     2,
@@ -96999,11 +96963,11 @@
     5,
     59003
   ],
-  "voila": [
+  "voil\u00e0": [
     1,
     76784
   ],
-  "vol": [
+  "vol.": [
     5,
     71023
   ],
@@ -97719,7 +97683,7 @@
     1,
     71650
   ],
-  "wean from off": [
+  "wean from/off": [
     1,
     73358
   ],
@@ -97783,10 +97747,6 @@
     4,
     52452
   ],
-  "webmaster": [
-    1,
-    75122
-  ],
   "wed": [
     4,
     45971
@@ -97802,10 +97762,6 @@
   "wedlock": [
     1,
     63157
-  ],
-  "wednesday": [
-    4,
-    65137
   ],
   "wee": [
     2,
@@ -97883,10 +97839,6 @@
     1,
     77864
   ],
-  "wellington": [
-    2,
-    76478
-  ],
   "wellness": [
     2,
     72016
@@ -97922,10 +97874,6 @@
   "westerly": [
     1,
     63392
-  ],
-  "westerner": [
-    1,
-    47201
   ],
   "westernize": [
     1,
@@ -98066,10 +98014,6 @@
   "whiff": [
     1,
     56133
-  ],
-  "whig": [
-    2,
-    72674
   ],
   "whilst": [
     3,
@@ -98387,7 +98331,7 @@
     1,
     48639
   ],
-  "will o' the wisp": [
+  "will-o'-the-wisp": [
     1,
     70651
   ],
@@ -98450,10 +98394,6 @@
   "windbreak": [
     1,
     77772
-  ],
-  "windbreaker": [
-    1,
-    46281
   ],
   "windchill": [
     1,
@@ -98623,7 +98563,7 @@
     2,
     58349
   ],
-  "with bad ill grace": [
+  "with bad/ill grace": [
     1,
     39849
   ],
@@ -99347,10 +99287,6 @@
     1,
     66697
   ],
-  "yiddish": [
-    2,
-    48444
-  ],
   "yin": [
     2,
     59415
@@ -99407,7 +99343,7 @@
     1,
     65038
   ],
-  "yr": [
+  "yr.": [
     3,
     65355
   ],
@@ -99418,10 +99354,6 @@
   "yucky": [
     1,
     59851
-  ],
-  "yule": [
-    1,
-    72422
   ],
   "yummy": [
     1,
@@ -99530,5 +99462,13 @@
   "zoom": [
     2,
     55862
+  ],
+  "\u00e9lan": [
+    1,
+    29631
+  ],
+  "\u00e9migr\u00e9": [
+    1,
+    30639
   ]
 }

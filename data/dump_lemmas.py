@@ -2,6 +2,7 @@
 
 import json
 import pickle
+from itertools import chain, product
 
 from flashtext import KeywordProcessor
 from lemminflect import getAllInflections
@@ -9,24 +10,31 @@ from lemminflect import getAllInflections
 with open('data/lemmas.json') as f:
     lemmas = json.load(f)
 
-keywords = set()
 keyword_processor = KeywordProcessor()
 for lemma, values in lemmas.items():
-    keyword_processor.add_keyword(lemma, values)
-    keywords.add(lemma)
-    for _, inflections in getAllInflections(lemma).items():
-        for inflection in inflections:
-            if inflection not in keywords:
-                keyword_processor.add_keyword(inflection, values)
-                keywords.add(inflection)
-    if ' ' in lemma:  # phrasae
-        words = lemma.split(' ')
-        for i, word in enumerate(words):
-            words_copy = words.copy()
-            for _, inflections in getAllInflections(word).items():
-                for inflection in inflections:
-                    words_copy[i] = inflection
-                    keyword_processor.add_keyword(' '.join(words_copy), values)
+    if '(' in lemma:  # 'take (something) into account'
+        continue
+
+    if '/' not in lemma:
+        keyword_processor.add_keyword(lemma, values)
+
+    if ' ' in lemma:  # phrase, for example: 'slick back/down'
+        list_of_inflections_list = []
+        for word in lemma.split(' '):
+            inflections_list = []
+            for w in word.split('/'):
+                inflections_list.append(w)
+                inflections_list.extend(filter(
+                    lambda x: x != w, chain(*getAllInflections(w).values())))
+            list_of_inflections_list.append(inflections_list)
+
+        for phrase in map(lambda x: ' '.join(x),
+                          product(*list_of_inflections_list)):
+            keyword_processor.add_keyword(phrase, values)
+    else:
+        for inflection in filter(lambda x: x != lemma and x not in lemma,
+                                 chain(*getAllInflections(lemma).values())):
+            keyword_processor.add_keyword(inflection, values)
 
 with open('lemmas_dump', 'wb') as f:
     pickle.dump(keyword_processor, f)

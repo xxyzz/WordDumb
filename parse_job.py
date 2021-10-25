@@ -4,7 +4,6 @@ import re
 
 from calibre.ebooks.mobi.reader.mobi6 import MobiReader
 from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
-from calibre.utils.logging import default_log
 from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import (create_lang_layer,
                                                create_x_ray_db, insert_lemma,
@@ -18,8 +17,8 @@ def do_job(data, create_ww=True, create_x=True,
            abort=None, log=None, notifications=None):
     (book_id, book_fmt, book_path, mi, lang) = data
     is_kfx = book_fmt == 'KFX'
-    asin, acr, revision, update_asin, yj_book = get_asin_etc(book_path,
-                                                             is_kfx, mi)
+    asin, acr, revision, update_asin, yj_book, codec = get_asin_etc(
+        book_path, is_kfx, mi)
     model = lang['spacy'] + prefs['model_size']
     install_libs(model, create_ww, create_x, notifications)
 
@@ -47,12 +46,13 @@ def do_job(data, create_ww=True, create_x=True,
                 parse_book(book_path, yj_book), as_tuples=True):
             find_named_entity(start, x_ray, doc, is_kfx)
             if create_ww:
-                find_lemma(start, doc.text, kw_processor, ll_conn, is_kfx)
+                find_lemma(
+                    start, doc.text, kw_processor, ll_conn, is_kfx, codec)
 
         x_ray.finish(x_ray_path)
     elif create_ww:
         for text, start in parse_book(book_path, yj_book):
-            find_lemma(start, text, kw_processor, ll_conn, is_kfx)
+            find_lemma(start, text, kw_processor, ll_conn, is_kfx, codec)
 
     if create_ww:
         save_db(ll_conn, ll_path)
@@ -72,16 +72,16 @@ def parse_mobi(book_path):
     # and calibre.ebook.conversion.plugins.mobi_input:MOBIInput.convert
     # https://github.com/kevinhendricks/KindleUnpack/blob/master/lib/mobi_k8proc.py#L216
     try:
-        mr = MobiReader(book_path, default_log)
+        mr = MobiReader(book_path)
     except Exception:
-        mr = MobiReader(book_path, default_log, try_extra_data_fix=True)
+        mr = MobiReader(book_path, try_extra_data_fix=True)
     if mr.kf8_type == 'joint':
         raise Exception('JointMOBI')
     mr.check_for_drm()
     mr.extract_text()
     html = mr.mobi_html
     if mr.kf8_type == 'standalone':
-        m8r = Mobi8Reader(mr, default_log)
+        m8r = Mobi8Reader(mr, mr.log)
         m8r.kf8_sections = mr.sections
         m8r.read_indices()
         m8r.build_parts()
@@ -89,11 +89,11 @@ def parse_mobi(book_path):
 
     # match text between HTML tags
     for match_text in re.finditer(b'>[^<>]+<', html):
-        yield (match_text.group(0)[1:-1].decode('utf-8'),
+        yield (match_text.group(0)[1:-1].decode(mr.book_header.codec),
                match_text.start() + 1)
 
 
-def find_lemma(start, text, kw_processor, ll_conn, is_kfx):
+def find_lemma(start, text, kw_processor, ll_conn, is_kfx, codec):
     for data, token_start, token_end in kw_processor.extract_keywords(
             text, span_info=True):
         end = None
@@ -101,10 +101,10 @@ def find_lemma(start, text, kw_processor, ll_conn, is_kfx):
         if is_kfx:
             index = start + token_start
         else:
-            index = start + len(text[:token_start].encode('utf-8'))
+            index = start + len(text[:token_start].encode(codec))
         if ' ' in lemma:
             end = index + len(lemma) if is_kfx else index + len(
-                lemma.encode('utf-8'))
+                lemma.encode(codec))
         insert_lemma(ll_conn, (index, end) + tuple(data))
 
 

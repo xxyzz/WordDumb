@@ -58,6 +58,7 @@ def get_asin_etc(book_path, is_kfx, mi):
     acr = None
     revision = None
     yj_book = None
+    codec = 'utf-8'
 
     if is_kfx:
         from calibre_plugins.kfx_input.kfxlib import YJ_Book, YJ_Metadata
@@ -81,14 +82,15 @@ def get_asin_etc(book_path, is_kfx, mi):
             revision = get_mobi_revision(f)
             f.seek(0)
             mu = MetadataUpdater(f)
+            codec = mu.codec
             if (asin := mu.original_exth_records.get(113)) is None:
                 asin = mu.original_exth_records.get(504)
-            asin = asin.decode('utf-8') if asin else None
+            asin = asin.decode(mu.codec) if asin else None
             asin, update_asin = validate_asin(asin, mi)
             if update_asin:
                 mu.update(mi, asin=asin)
 
-    return asin, acr, revision, update_asin, yj_book
+    return asin, acr, revision, update_asin, yj_book, codec
 
 
 def get_mobi_revision(f):

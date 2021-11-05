@@ -53,13 +53,15 @@ class X_Ray:
             self.s.headers.update(
                 {'accept-language': f"zh-{prefs['zh_wiki_variant']}"})
 
-    def insert_wiki_summary(self, pending_dic, key, summary):
+    def insert_wiki_summary(self, pending_dic, key, title, summary):
         # not a disambiguation page
         if any(period in summary for period in ['.', '。']):
             insert_x_entity_description(
                 self.conn, (summary, key, 1, pending_dic[key]['id']))
             self.wiki_cache[key] = summary
             del pending_dic[key]
+            if key != title and title not in self.wiki_cache:
+                self.wiki_cache[title] = summary
 
     def search_wikipedia(self, pending_dic):
         r = self.s.get(self.wikipedia_api,
@@ -78,13 +80,14 @@ class X_Ray:
             title = v['title']
             summary = v['extract']
             if title in pending_dic:
-                self.insert_wiki_summary(pending_dic, title, summary)
+                self.insert_wiki_summary(pending_dic, title, title, summary)
             for key in converts.get(title, []):
                 if key in pending_dic:
-                    self.insert_wiki_summary(pending_dic, key, summary)
+                    self.insert_wiki_summary(pending_dic, key, title, summary)
                 for k in converts.get(key, []):
                     if k in pending_dic:  # normalize then redirect
-                        self.insert_wiki_summary(pending_dic, k, summary)
+                        self.insert_wiki_summary(
+                            pending_dic, k, title, summary)
 
         self.insert_rest_pending_entities(pending_dic)
 

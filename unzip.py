@@ -63,7 +63,7 @@ def install_libs(model, create_ww, create_x, notif):
         for pkg, value in load_json_or_pickle('data/spacy.json', True).items():
             pip_install(pkg, value['version'], value['compiled'],
                         reinstall=reinstall, notif=notif)
-        model_v = '3.1.0'
+        model_v = '3.2.0'
         url = 'https://github.com/explosion/spacy-models/releases/download/'
         url += f'{model}-{model_v}/{model}-{model_v}-py3-none-any.whl'
         pip_install(model, model_v, url=url, notif=notif)

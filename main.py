@@ -10,6 +10,8 @@ from calibre_plugins.worddumb.parse_job import do_job
 from calibre_plugins.worddumb.send_file import SendFile, kindle_connected
 from calibre_plugins.worddumb.unzip import load_json_or_pickle
 
+PROXY_ERR_MSG = 'check_hostname requires server_hostname'
+
 
 class ParseBook:
     def __init__(self, gui):
@@ -65,24 +67,14 @@ class ParseBook:
             if 'FileNotFoundError' in job.details and \
                'subprocess.py' in job.details:
                 self.error_dialog(
-                    "Can't find Python",
+                    'We want... a shrubbery!',
                     '''
                     Please read the <a
                     href='https://github.com/xxyzz/WordDumb#how-to-use'>document</a>
                     of how to install Python.
                     ''', job.details)
-            elif 'check_hostname requires server_hostname' in job.details:
-                self.error_dialog(
-                    'Cyberspace is not a place beyond the rule of law',
-                    '''
-                    Check your proxy configuration environment variables,
-                    they should be set by these commands:<br>
-                    <code>$ export HTTP_PROXY="http://host:port"</code><br>
-                    <code>$ export HTTPS_PROXY="http://host:port"</code><br>
-                    <br>
-                    If you're allergic to terminal, close your proxy and
-                    use a VPN.
-                    ''', job.details)
+            elif PROXY_ERR_MSG in job.details:
+                self.proxy_error(job.details)
             elif 'ConnectionError' in job.details \
                  and 'wikipedia.org' in job.details:
                 self.censorship_error('https://wikipedia.org', job.details)
@@ -100,7 +92,7 @@ class ParseBook:
                 url = 'https://support.microsoft.com/en-us/help/2977003/' \
                     'the-latest-supported-visual-c-downloads'
                 self.error_dialog(
-                    'Missing dll',
+                    'Welcome to DLL Hell',
                     f'''
                     Install <a href='{url}'>Visual C++ 2019 redistributable</a>
                     ''', job.datails)
@@ -135,17 +127,31 @@ class ParseBook:
         elif 'Timeout' in exception and 'github.com' in exception:
             self.censorship_error(
                 'https://raw.githubusercontent.com', job.details + exception)
+        elif PROXY_ERR_MSG in exception:
+            self.proxy_error(job.details + exception)
         else:
-            dialog = JobError(self.gui)
-            dialog.show_error(
+            self.error_dialog(
                 'Mille millions de mille milliards de mille sabords!',
                 'subprocess.run() failed',
-                det_msg=job.details + exception)
+                job.details + exception)
 
     def error_dialog(self, title, message, error):
         dialog = JobError(self.gui)
         dialog.msg_label.setOpenExternalLinks(True)
         dialog.show_error(title, message, det_msg=error)
+
+    def proxy_error(self, err_msg):
+        self.error_dialog(
+            'Cyberspace is not a place beyond the rule of law',
+            '''
+            Check your proxy configuration environment variables,
+            they should be set by these commands:<br>
+            <code>$ export HTTP_PROXY="http://host:port"</code><br>
+            <code>$ export HTTPS_PROXY="http://host:port"</code><br>
+            <br>
+            If you're allergic to terminal, close your proxy and
+            use a VPN.
+            ''', err_msg)
 
     def censorship_error(self, url, error):
         self.error_dialog(

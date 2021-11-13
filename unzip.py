@@ -73,15 +73,10 @@ def install_libs(model, create_ww, create_x, notif):
             sys.path.insert(0, str(LIBS_PATH))
 
 
-def pip_install(pkg, pkg_version=None, compiled=False,
-                url=None, reinstall=False, notif=None):
-    if pkg_version:
-        folder = LIBS_PATH.joinpath(
-            f"{pkg.replace('-', '_')}-{pkg_version}.dist-info")
-    else:
-        folder = LIBS_PATH.joinpath(pkg.replace('-', '_').lower())
-
-    if not folder.exists() or (reinstall and compiled):
+def pip_install(pkg, pkg_version, compiled=False, url=None,
+                reinstall=False, notif=None):
+    pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
+    if not any(LIBS_PATH.glob(pattern)) or (reinstall and compiled):
         if notif:
             notif.put((0, f'Installing {pkg}'))
         args = pip_args(pkg, pkg_version, compiled, url)

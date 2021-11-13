@@ -44,7 +44,9 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
   - Arch Linux
 
-    pip module is included in python.
+  ```
+  # pacman -Syu --needed python-pip
+  ```
 
   - Debian or Ubuntu based distro
 

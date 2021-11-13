@@ -1,24 +1,12 @@
 {
   "ja": {
-    "Cython": {
+    "SudachiDict-core": {
+      "compiled": false,
+      "version": "20210802.post1"
+    },
+    "SudachiPy": {
       "compiled": true,
-      "version": "0.29.24"
-    },
-    "dartsclone": {
-      "compiled": false,
-      "version": "0.9.0"
-    },
-    "sortedcontainers": {
-      "compiled": false,
-      "version": "2.1.0"
-    },
-    "sudachidict_core": {
-      "compiled": false,
-      "version": "20210802"
-    },
-    "sudachipy": {
-      "compiled": true,
-      "version": "0.5.4"
+      "version": "0.6.0"
     }
   },
   "zh": {

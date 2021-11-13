@@ -29,7 +29,7 @@
   },
   "langcodes": {
     "compiled": false,
-    "version": "3.2.1"
+    "version": "3.3.0"
   },
   "murmurhash": {
     "compiled": true,
@@ -113,7 +113,7 @@
   },
   "Jinja2": {
     "compiled": false,
-    "version": "3.0.2"
+    "version": "3.0.3"
   },
   "MarkupSafe": {
     "compiled": true,

@@ -107,7 +107,7 @@ def pip_args(pkg, pkg_version, compiled, url):
             if is64bit:
                 args.append('win_amd64')
             else:
-                args.append('win32')
+                raise Exception('32BIT_CALIBRE')
     if url:
         args.append(url)
     elif pkg_version:

@@ -96,6 +96,14 @@ class ParseBook:
                     f'''
                     Install <a href='{url}'>Visual C++ 2019 redistributable</a>
                     ''', job.datails)
+            elif '32BIT_CALIBRE' in job.details:
+                url = 'https://calibre-ebook.com/download_windows64'
+                self.error_dialog(
+                    'Seriously, 32bit?!',
+                    f'''
+                    Install <a href='{url}'>64bit calibre</a>,
+                    32bit calibre is not supported.
+                    ''', job.details)
             else:
                 self.gui.job_exception(job, dialog_title='Tonnerre de Brest!')
             return True
@@ -103,15 +111,7 @@ class ParseBook:
 
     def subprocess_error(self, job):
         exception = job.exception.stderr
-        if 'C++ Build Tools' in exception:
-            self.error_dialog(
-                'Seriously, 32bit?!',
-                '''
-                Install <a href='https://calibre-ebook.com/download_windows64'>
-                64bit calibre</a>, 32bit calibre is not supported.
-                ''',
-                job.details + exception)
-        elif 'No module named pip' in exception:
+        if 'No module named pip' in exception:
             self.error_dialog(
                 'Hello, my name is Philip, but everyone calls me Pip, '
                 'because they hate me.',

@@ -102,7 +102,7 @@ class ParseBook:
         return False
 
     def subprocess_error(self, job):
-        exception = job.exception.stderr.decode('utf-8')
+        exception = job.exception.stderr
         if 'C++ Build Tools' in exception:
             self.error_dialog(
                 'Seriously, 32bit?!',

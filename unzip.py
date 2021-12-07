@@ -81,10 +81,10 @@ def pip_install(pkg, pkg_version, compiled=False, url=None,
             notif.put((0, f'Installing {pkg}'))
         args = pip_args(pkg, pkg_version, compiled, url)
         if iswindows:
-            subprocess.run(args, check=True, capture_output=True,
+            subprocess.run(args, check=True, capture_output=True, text=True,
                            creationflags=subprocess.CREATE_NO_WINDOW)
         else:
-            subprocess.run(args, check=True, capture_output=True)
+            subprocess.run(args, check=True, capture_output=True, text=True)
 
 
 def pip_args(pkg, pkg_version, compiled, url):

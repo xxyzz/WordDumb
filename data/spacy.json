@@ -13,7 +13,7 @@
   },
   "charset-normalizer": {
     "compiled": false,
-    "version": "2.0.7"
+    "version": "2.0.9"
   },
   "click": {
     "compiled": false,
@@ -41,7 +41,7 @@
   },
   "packaging": {
     "compiled": false,
-    "version": "21.2"
+    "version": "21.3"
   },
   "pathy": {
     "compiled": false,
@@ -57,11 +57,11 @@
   },
   "pyparsing": {
     "compiled": false,
-    "version": "2.4.7"
+    "version": "3.0.6"
   },
   "rapidfuzz": {
     "compiled": true,
-    "version": "1.8.2"
+    "version": "1.8.3"
   },
   "requests": {
     "compiled": false,
@@ -101,7 +101,7 @@
   },
   "typing-extensions": {
     "compiled": false,
-    "version": "3.10.0.2"
+    "version": "4.0.1"
   },
   "urllib3": {
     "compiled": false,
@@ -109,7 +109,7 @@
   },
   "wasabi": {
     "compiled": false,
-    "version": "0.8.2"
+    "version": "0.9.0"
   },
   "Jinja2": {
     "compiled": false,

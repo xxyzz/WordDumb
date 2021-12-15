@@ -61,7 +61,7 @@
   },
   "rapidfuzz": {
     "compiled": true,
-    "version": "1.8.3"
+    "version": "1.9.1"
   },
   "requests": {
     "compiled": false,
@@ -73,7 +73,7 @@
   },
   "spacy": {
     "compiled": true,
-    "version": "3.2.0"
+    "version": "3.2.1"
   },
   "spacy-legacy": {
     "compiled": false,

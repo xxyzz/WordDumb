@@ -71,21 +71,19 @@ def parse_mobi(book_path):
     # use code from calibre.ebooks.mobi.reader.mobi8:Mobi8Reader.__call__
     # and calibre.ebook.conversion.plugins.mobi_input:MOBIInput.convert
     # https://github.com/kevinhendricks/KindleUnpack/blob/master/lib/mobi_k8proc.py#L216
-    try:
-        mr = MobiReader(book_path)
-    except Exception:
-        mr = MobiReader(book_path, try_extra_data_fix=True)
-    if mr.kf8_type == 'joint':
-        raise Exception('JointMOBI')
-    mr.check_for_drm()
-    mr.extract_text()
-    html = mr.mobi_html
-    if mr.kf8_type == 'standalone':
-        m8r = Mobi8Reader(mr, mr.log)
-        m8r.kf8_sections = mr.sections
-        m8r.read_indices()
-        m8r.build_parts()
-        html = b''.join(m8r.parts)
+    with open(book_path, 'rb') as f:
+        mr = MobiReader(f)
+        if mr.kf8_type == 'joint':
+            raise Exception('JointMOBI')
+        mr.check_for_drm()
+        mr.extract_text()
+        html = mr.mobi_html
+        if mr.kf8_type == 'standalone':
+            m8r = Mobi8Reader(mr, mr.log)
+            m8r.kf8_sections = mr.sections
+            m8r.read_indices()
+            m8r.build_parts()
+            html = b''.join(m8r.parts)
 
     # match text between HTML tags
     for match_text in re.finditer(b'>[^<>]+<', html):

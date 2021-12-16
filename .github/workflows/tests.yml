@@ -55,6 +55,9 @@ jobs:
 
       - name: Run test
         run: cd tests && calibre-debug test.py
+        env:
+          PYTHONWARNINGS: default
+          CALIBRE_SHOW_DEPRECATION_WARNINGS: 1
 
       - name: Upload plugin
         uses: actions/upload-artifact@v2
@@ -91,6 +94,9 @@ jobs:
 
       - name: Run test
         run: cd tests && calibre-debug test.py
+        env:
+          PYTHONWARNINGS: default
+          CALIBRE_SHOW_DEPRECATION_WARNINGS: 1
 
   test-windows:
     name: test-windows
@@ -137,3 +143,6 @@ jobs:
 
       - name: Run test
         run: cd tests && calibre-debug test.py
+        env:
+          PYTHONWARNINGS: default
+          CALIBRE_SHOW_DEPRECATION_WARNINGS: 1

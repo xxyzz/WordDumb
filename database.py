@@ -87,15 +87,14 @@ def create_x_ray_db(asin, book_path, lang):
     preview_images TEXT);
 
     CREATE TABLE bookmentions_entity (
-    id INTEGER,
+    id INTEGER PRIMARY KEY,
     asin TEXT,
     title TEXT,
     authors TEXT,
     description TEXT,
     ratings INTEGER,
     totalRatings INTEGER,
-    type TEXT,
-    PRIMARY KEY(id));
+    type TEXT);
 
     CREATE TABLE bookmentions_occurrence (
     entity INTEGER,
@@ -103,33 +102,30 @@ def create_x_ray_db(asin, book_path, lang):
     length INTEGER);
 
     CREATE TABLE entity (
-    id INTEGER,
+    id INTEGER PRIMARY KEY,
     label TEXT,
     loc_label INTEGER,
     type INTEGER,
     count INTEGER,
-    has_info_card TINYINT,
-    PRIMARY KEY(id));
+    has_info_card TINYINT);
 
     CREATE TABLE entity_description (
     text TEXT,
     source_wildcard TEXT,
     source INTEGER,
-    entity INTEGER,
-    PRIMARY KEY(entity));
+    entity INTEGER PRIMARY KEY);
 
     CREATE TABLE entity_excerpt (
     entity INTEGER,
     excerpt INTEGER);
 
     CREATE TABLE excerpt (
-    id INTEGER,
+    id INTEGER PRIMARY KEY,
     start INTEGER,
     length INTEGER,
     image TEXT,
     related_entities TEXT,
-    goto INTEGER,
-    PRIMARY KEY(id));
+    goto INTEGER);
 
     CREATE TABLE occurrence (
     entity INTEGER,
@@ -137,12 +133,11 @@ def create_x_ray_db(asin, book_path, lang):
     length INTEGER);
 
     CREATE TABLE source (
-    id INTEGER,
+    id INTEGER PRIMARY KEY,
     label INTEGER,
     url INTEGER,
     license_label INTEGER,
-    license_url INTEGER,
-    PRIMARY KEY(id));
+    license_url INTEGER);
 
     CREATE TABLE string (
     id INTEGER,
@@ -150,12 +145,11 @@ def create_x_ray_db(asin, book_path, lang):
     text TEXT);
 
     CREATE TABLE type (
-    id INTEGER,
+    id INTEGER PRIMARY KEY,
     label INTEGER,
     singular_label INTEGER,
     icon INTEGER,
-    top_mentioned_entities TEXT,
-    PRIMARY KEY(id));
+    top_mentioned_entities TEXT);
 
     INSERT INTO entity (id, loc_label, has_info_card) VALUES(0, 1, 0);
     INSERT INTO source (id, label, url) VALUES(0, 5, 20);
@@ -179,18 +173,14 @@ def create_x_indices(conn):
 
 
 def insert_x_book_metadata(conn, data):
-    conn.execute('''
-    INSERT INTO book_metadata (srl, erl, has_images, has_excerpts,
-    show_spoilers_default, num_people, num_terms, num_images)
-    VALUES(0, ?, 0, 0, 1, ?, ?, 0)
-    ''', data)
+    conn.execute(
+        'INSERT INTO book_metadata VALUES(0, ?, ?, 0, 0, ?, ?, ?, ?)', data)
 
 
 def insert_x_entity(conn, data):
     conn.executemany('''
     INSERT INTO entity (id, label, type, count, has_info_card)
-    VALUES(?, ?, ?, ?, 1)
-    ''', data)
+    VALUES(?, ?, ?, ?, 1)''', data)
 
 
 def insert_x_entity_description(conn, data):
@@ -203,6 +193,12 @@ def insert_x_occurrence(conn, data):
 
 def insert_x_type(conn, data):
     conn.execute('INSERT INTO type VALUES(?, ?, ?, ?, ?)', data)
+
+
+def insert_x_excerpt_image(conn, data):
+    conn.execute('''
+    INSERT INTO excerpt (id, start, length, image, goto)
+    VALUES(?, ?, 0, ?, ?)''', data)
 
 
 def save_db(source, dest_path):

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 from collections import Counter, defaultdict
 
 from calibre_plugins.worddumb import VERSION
@@ -8,6 +9,7 @@ from calibre_plugins.worddumb.database import (create_x_indices,
                                                insert_x_book_metadata,
                                                insert_x_entity,
                                                insert_x_entity_description,
+                                               insert_x_excerpt_image,
                                                insert_x_occurrence,
                                                insert_x_type, save_db)
 from calibre_plugins.worddumb.unzip import load_wiki_cache, save_wiki_cache
@@ -17,7 +19,7 @@ SCORE_THRESHOLD = 85.7
 
 
 class X_Ray:
-    def __init__(self, conn, lang):
+    def __init__(self, conn, lang, book_path, is_kfx, codec):
         self.conn = conn
         self.entity_id = 1
         self.num_people = 0
@@ -32,6 +34,10 @@ class X_Ray:
         self.lang = lang
         self.wikipedia_api = f'https://{lang}.wikipedia.org/w/api.php'
         self.wiki_cache = load_wiki_cache(lang)
+        self.num_images = 0
+        self.book_path = book_path
+        self.is_kfx = is_kfx
+        self.codec = codec
 
         import requests
         self.s = requests.Session()
@@ -167,8 +173,16 @@ class X_Ray:
             [(entity_id, label, 2, self.terms_counter[entity_id]) for
              label, entity_id in self.terms.items()])
 
+        if not self.is_kfx:
+            self.find_images()
+        if self.num_images:
+            preview_images = ','.join(map(str, range(self.num_images)))
+        else:
+            preview_images = None
         insert_x_book_metadata(
-            self.conn, (self.erl, self.num_people, self.num_terms))
+            self.conn,
+            (self.erl, 1 if self.num_images else 0,
+             self.num_people, self.num_terms, self.num_images, preview_images))
         insert_x_type(
             self.conn, (1, 14, 15, 1, top_mentioned(self.people_counter)))
         insert_x_type(
@@ -178,3 +192,15 @@ class X_Ray:
         create_x_indices(self.conn)
         save_db(self.conn, db_path)
         save_wiki_cache(self.wiki_cache, self.lang)
+
+    def find_images(self):
+        from calibre_plugins.worddumb.parse_job import parse_mobi
+
+        for match_tag in re.finditer(b'<img [^>]+/>',
+                                     parse_mobi(self.book_path)):
+            if (match_src := re.search(r'src="([^"]+)"',
+                                       match_tag.group(0).decode(self.codec))):
+                insert_x_excerpt_image(
+                    self.conn, (self.num_images, match_tag.start(),
+                                match_src.group(1), match_tag.start()))
+                self.num_images += 1

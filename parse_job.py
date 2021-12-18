@@ -41,9 +41,9 @@ def do_job(data, create_ww=True, create_x=True,
             'tok2vec', 'morphologizer', 'tagger',
             'parser', 'attribute_ruler', 'lemmatizer'])
         nlp.enable_pipe("senter")
-        x_ray = X_Ray(x_ray_conn, lang['wiki'])
+        x_ray = X_Ray(x_ray_conn, lang['wiki'], book_path, is_kfx, codec)
         for doc, start in nlp.pipe(
-                parse_book(book_path, yj_book), as_tuples=True):
+                parse_book(book_path, yj_book, codec), as_tuples=True):
             find_named_entity(start, x_ray, doc, is_kfx, codec)
             if create_ww:
                 find_lemma(
@@ -51,7 +51,7 @@ def do_job(data, create_ww=True, create_x=True,
 
         x_ray.finish(x_ray_path)
     elif create_ww:
-        for text, start in parse_book(book_path, yj_book):
+        for text, start in parse_book(book_path, yj_book, codec):
             find_lemma(start, text, kw_processor, ll_conn, is_kfx, codec)
 
     if create_ww:
@@ -59,12 +59,15 @@ def do_job(data, create_ww=True, create_x=True,
     return book_id, asin, book_path, mi, update_asin
 
 
-def parse_book(book_path, yj_book):
+def parse_book(book_path, yj_book, codec):
     if yj_book:
         for entry in json.loads(yj_book.convert_to_json_content())['data']:
             yield (entry['content'], entry['position'])
     else:
-        yield from parse_mobi(book_path)
+        # match text between HTML tags
+        for match_text in re.finditer(b'>[^<>]+<', parse_mobi(book_path)):
+            yield (match_text.group(0)[1:-1].decode(codec),
+                   match_text.start() + 1)
 
 
 def parse_mobi(book_path):
@@ -84,11 +87,7 @@ def parse_mobi(book_path):
             m8r.read_indices()
             m8r.build_parts()
             html = b''.join(m8r.parts)
-
-    # match text between HTML tags
-    for match_text in re.finditer(b'>[^<>]+<', html):
-        yield (match_text.group(0)[1:-1].decode(mr.book_header.codec),
-               match_text.start() + 1)
+        return html
 
 
 def find_lemma(start, text, kw_processor, ll_conn, is_kfx, codec):

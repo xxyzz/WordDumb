@@ -69,6 +69,14 @@ notable clips
 |  3 | 25976 |    585 |       | 259                                          |      |
 |  4 | 27980 |    435 |       | 29,161,94,54                                 |      |
 
+
+MOBI image:
+
+| id  | start  | length |              image               | related_entities |  goto  |
+|-----|--------|--------|----------------------------------|------------------|--------|
+| 179 | 690    | 0      | kindle:embed:0007?mime=image/jpg |                  | 690    |
+| 180 | 386520 | 1390   | kindle:embed:0008?mime=image/jpg |                  | 386400 |
+
 ## occurrence
 
 all mentions

@@ -19,7 +19,7 @@ SCORE_THRESHOLD = 85.7
 
 
 class X_Ray:
-    def __init__(self, conn, lang, book_path, is_kfx, codec):
+    def __init__(self, conn, lang, kfx_json, mobi_html, mobi_codec):
         self.conn = conn
         self.entity_id = 1
         self.num_people = 0
@@ -35,9 +35,9 @@ class X_Ray:
         self.wikipedia_api = f'https://{lang}.wikipedia.org/w/api.php'
         self.wiki_cache = load_wiki_cache(lang)
         self.num_images = 0
-        self.book_path = book_path
-        self.is_kfx = is_kfx
-        self.codec = codec
+        self.kfx_json = kfx_json
+        self.mobi_html = mobi_html
+        self.mobi_codec = mobi_codec
 
         import requests
         self.s = requests.Session()
@@ -173,8 +173,10 @@ class X_Ray:
             [(entity_id, label, 2, self.terms_counter[entity_id]) for
              label, entity_id in self.terms.items()])
 
-        if not self.is_kfx:
-            self.find_images()
+        if self.kfx_json:
+            self.find_kfx_images()
+        else:
+            self.find_mobi_images()
         if self.num_images:
             preview_images = ','.join(map(str, range(self.num_images)))
         else:
@@ -193,13 +195,18 @@ class X_Ray:
         save_db(self.conn, db_path)
         save_wiki_cache(self.wiki_cache, self.lang)
 
-    def find_images(self):
-        from calibre_plugins.worddumb.parse_job import parse_mobi
+    def find_kfx_images(self):
+        for entry in filter(lambda x: x['type'] == 2, self.kfx_json):
+            insert_x_excerpt_image(
+                self.conn, (self.num_images, entry['position'],
+                            entry['content'], entry['position']))
+            self.num_images += 1
 
-        for match_tag in re.finditer(b'<img [^>]+/>',
-                                     parse_mobi(self.book_path)):
-            if (match_src := re.search(r'src="([^"]+)"',
-                                       match_tag.group(0).decode(self.codec))):
+    def find_mobi_images(self):
+        for match_tag in re.finditer(b'<img [^>]+/>', self.mobi_html):
+            if (match_src := re.search(
+                    r'src="([^"]+)"',
+                    match_tag.group(0).decode(self.mobi_codec))):
                 insert_x_excerpt_image(
                     self.conn, (self.num_images, match_tag.start(),
                                 match_src.group(1), match_tag.start()))

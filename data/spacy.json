@@ -37,7 +37,7 @@
   },
   "numpy": {
     "compiled": true,
-    "version": "1.21.4"
+    "version": "1.21.5"
   },
   "packaging": {
     "compiled": false,

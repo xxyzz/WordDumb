@@ -15,6 +15,8 @@ srl: start reading location, where a new book should open for the first time
 
 erl: end reading location, where 'before you go' page shows
 
+preview_images: excerpt ids of images joined by ','
+
 ## bookmentions_entity
 
 | id | asin       | title                  | authors                | description    |          ratings | totalRatings | type        |
@@ -76,6 +78,23 @@ MOBI image:
 |-----|--------|--------|----------------------------------|------------------|--------|
 | 179 | 690    | 0      | kindle:embed:0007?mime=image/jpg |                  | 690    |
 | 180 | 386520 | 1390   | kindle:embed:0008?mime=image/jpg |                  | 386400 |
+
+image: `src` attribute of `<img>`
+
+goto: `<img>` tag byte offsets
+
+start: byte offsets of the next sentence below the image
+
+length: byte length of the sentence
+
+KFX image:
+
+|  id |   start | length | image | related_entities |    goto |
+|-----+---------+--------+-------+------------------+---------|
+| 576 |       1 |      0 | e6    |                  |       1 |
+| 577 | 2179585 |     71 | e2GX  |                  | 2179583 |
+
+image: KFX resources identifier
 
 ## occurrence
 

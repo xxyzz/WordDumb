@@ -196,18 +196,27 @@ class X_Ray:
         save_wiki_cache(self.wiki_cache, self.lang)
 
     def find_kfx_images(self):
+        images = set()
         for entry in filter(lambda x: x['type'] == 2, self.kfx_json):
+            if entry['content'] in images:
+                continue
+            images.add(entry['content'])
             insert_x_excerpt_image(
                 self.conn, (self.num_images, entry['position'],
                             entry['content'], entry['position']))
             self.num_images += 1
 
     def find_mobi_images(self):
+        images = set()
         for match_tag in re.finditer(b'<img [^>]+/>', self.mobi_html):
             if (match_src := re.search(
                     r'src="([^"]+)"',
                     match_tag.group(0).decode(self.mobi_codec))):
+                image = match_src.group(1)
+                if image in images:
+                    continue
+                images.add(image)
                 insert_x_excerpt_image(
                     self.conn, (self.num_images, match_tag.start(),
-                                match_src.group(1), match_tag.start()))
+                                image, match_tag.start()))
                 self.num_images += 1

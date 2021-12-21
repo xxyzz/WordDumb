@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
+import json
 import random
 import re
 import string
 
 from calibre.ebooks.metadata.mobi import MetadataUpdater
+from calibre.ebooks.mobi.reader.mobi6 import MobiReader
+from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
 
 
 def check_metadata(db, book_id, languages):
@@ -54,11 +57,10 @@ def validate_asin(asin, mi):
 
 
 def get_asin_etc(book_path, is_kfx, mi):
-    asin = None
-    acr = None
     revision = None
-    yj_book = None
-    codec = 'utf-8'
+    kfx_json = None
+    mobi_html = None
+    mobi_codec = None
 
     if is_kfx:
         from calibre_plugins.kfx_input.kfxlib import YJ_Book, YJ_Metadata
@@ -76,21 +78,23 @@ def get_asin_etc(book_path, is_kfx, mi):
             yj_book.decode_book(set_metadata=yj_md)
             with open(book_path, 'wb') as f:
                 f.write(yj_book.convert_to_single_kfx())
+        kfx_json = json.loads(yj_book.convert_to_json_content())['data']
     else:
         with open(book_path, 'r+b') as f:
             acr = f.read(32).rstrip(b'\x00').decode('utf-8')  # Palm db name
             revision = get_mobi_revision(f)
             f.seek(0)
             mu = MetadataUpdater(f)
-            codec = mu.codec
+            mobi_codec = mu.codec
             if (asin := mu.original_exth_records.get(113)) is None:
                 asin = mu.original_exth_records.get(504)
             asin = asin.decode(mu.codec) if asin else None
             asin, update_asin = validate_asin(asin, mi)
             if update_asin:
                 mu.update(mi, asin=asin)
+        mobi_html = extract_mobi(book_path)
 
-    return asin, acr, revision, update_asin, yj_book, codec
+    return asin, acr, revision, update_asin, kfx_json, mobi_html, mobi_codec
 
 
 def get_mobi_revision(f):
@@ -98,3 +102,23 @@ def get_mobi_revision(f):
     f.seek(78)
     f.seek(int.from_bytes(f.read(4), 'big') + 32)
     return f.read(4).hex()  # Unique-ID MOBI header
+
+
+def extract_mobi(book_path):
+    # use code from calibre.ebooks.mobi.reader.mobi8:Mobi8Reader.__call__
+    # and calibre.ebook.conversion.plugins.mobi_input:MOBIInput.convert
+    # https://github.com/kevinhendricks/KindleUnpack/blob/master/lib/mobi_k8proc.py#L216
+    with open(book_path, 'rb') as f:
+        mr = MobiReader(f)
+        if mr.kf8_type == 'joint':
+            raise Exception('JointMOBI')
+        mr.check_for_drm()
+        mr.extract_text()
+        html = mr.mobi_html
+        if mr.kf8_type == 'standalone':
+            m8r = Mobi8Reader(mr, mr.log)
+            m8r.kf8_sections = mr.sections
+            m8r.read_indices()
+            m8r.build_parts()
+            html = b''.join(m8r.parts)  # KindleUnpack
+        return html

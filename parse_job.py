@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
-import json
 import re
 
-from calibre.ebooks.mobi.reader.mobi6 import MobiReader
-from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
 from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import (create_lang_layer,
                                                create_x_ray_db, insert_lemma,
@@ -17,8 +14,9 @@ def do_job(data, create_ww=True, create_x=True,
            abort=None, log=None, notifications=None):
     (book_id, book_fmt, book_path, mi, lang) = data
     is_kfx = book_fmt == 'KFX'
-    asin, acr, revision, update_asin, yj_book, codec = get_asin_etc(
-        book_path, is_kfx, mi)
+    (asin, acr, revision, update_asin,
+     kfx_json, mobi_html, mobi_codec) = get_asin_etc(book_path, is_kfx, mi)
+
     model = lang['spacy'] + prefs['model_size']
     install_libs(model, create_ww, create_x, notifications)
 
@@ -41,67 +39,50 @@ def do_job(data, create_ww=True, create_x=True,
             'tok2vec', 'morphologizer', 'tagger',
             'parser', 'attribute_ruler', 'lemmatizer'])
         nlp.enable_pipe("senter")
-        x_ray = X_Ray(x_ray_conn, lang['wiki'], book_path, is_kfx, codec)
+        x_ray = X_Ray(
+            x_ray_conn, lang['wiki'], kfx_json, mobi_html, mobi_codec)
         for doc, start in nlp.pipe(
-                parse_book(book_path, yj_book, codec), as_tuples=True):
-            find_named_entity(start, x_ray, doc, is_kfx, codec)
+                parse_book(kfx_json, mobi_html, mobi_codec), as_tuples=True):
+            find_named_entity(start, x_ray, doc, mobi_codec)
             if create_ww:
                 find_lemma(
-                    start, doc.text, kw_processor, ll_conn, is_kfx, codec)
+                    start, doc.text, kw_processor, ll_conn, mobi_codec)
 
         x_ray.finish(x_ray_path)
     elif create_ww:
-        for text, start in parse_book(book_path, yj_book, codec):
-            find_lemma(start, text, kw_processor, ll_conn, is_kfx, codec)
+        for text, start in parse_book(kfx_json, mobi_html, mobi_codec):
+            find_lemma(start, text, kw_processor, ll_conn, mobi_codec)
 
     if create_ww:
         save_db(ll_conn, ll_path)
     return book_id, asin, book_path, mi, update_asin
 
 
-def parse_book(book_path, yj_book, codec):
-    if yj_book:
-        for entry in json.loads(yj_book.convert_to_json_content())['data']:
+def parse_book(kfx_json, mobi_html, mobi_codec):
+    if kfx_json:
+        for entry in filter(lambda x: x['type'] == 1, kfx_json):
             yield (entry['content'], entry['position'])
     else:
-        # match text between HTML tags
-        for match_text in re.finditer(b'>[^<>]+<', parse_mobi(book_path)):
-            yield (match_text.group(0)[1:-1].decode(codec),
+        # match text inside HTML tags
+        for match_text in re.finditer(b'>[^<>]+<', mobi_html):
+            yield (match_text.group(0)[1:-1].decode(mobi_codec),
                    match_text.start() + 1)
 
 
-def parse_mobi(book_path):
-    # use code from calibre.ebooks.mobi.reader.mobi8:Mobi8Reader.__call__
-    # and calibre.ebook.conversion.plugins.mobi_input:MOBIInput.convert
-    # https://github.com/kevinhendricks/KindleUnpack/blob/master/lib/mobi_k8proc.py#L216
-    with open(book_path, 'rb') as f:
-        mr = MobiReader(f)
-        if mr.kf8_type == 'joint':
-            raise Exception('JointMOBI')
-        mr.check_for_drm()
-        mr.extract_text()
-        html = mr.mobi_html
-        if mr.kf8_type == 'standalone':
-            m8r = Mobi8Reader(mr, mr.log)
-            m8r.kf8_sections = mr.sections
-            m8r.read_indices()
-            m8r.build_parts()
-            html = b''.join(m8r.parts)
-        return html
-
-
-def find_lemma(start, text, kw_processor, ll_conn, is_kfx, codec):
+def find_lemma(start, text, kw_processor, ll_conn, mobi_codec):
     for data, token_start, token_end in kw_processor.extract_keywords(
             text, span_info=True):
         end = None
         lemma = text[token_start:token_end]
-        if is_kfx:
-            index = start + token_start
+        if mobi_codec:
+            index = start + len(text[:token_start].encode(mobi_codec))
         else:
-            index = start + len(text[:token_start].encode(codec))
+            index = start + token_start
         if ' ' in lemma:
-            end = index + len(lemma) if is_kfx else index + len(
-                lemma.encode(codec))
+            if mobi_codec:
+                end = index + len(lemma.encode(mobi_codec))
+            else:
+                end = index + len(lemma)
         insert_lemma(ll_conn, (index, end) + tuple(data))
 
 
@@ -114,7 +95,7 @@ NER_LABELS = {
 }
 
 
-def find_named_entity(start, x_ray, doc, is_kfx, codec):
+def find_named_entity(start, x_ray, doc, mobi_codec):
     len_limit = 3 if x_ray.lang == 'en' else 2
 
     for ent in doc.ents:
@@ -133,12 +114,13 @@ def find_named_entity(start, x_ray, doc, is_kfx, codec):
             continue
 
         new_start_char = ent.start_char + ent.text.index(text)
-        if is_kfx:
+        if mobi_codec:
+            ent_start = start + len(
+                doc.text[:new_start_char].encode(mobi_codec))
+            ent_len = len(text.encode(mobi_codec))
+        else:
             ent_start = start + len(doc.text[:new_start_char])
             ent_len = len(text)
-        else:
-            ent_start = start + len(doc.text[:new_start_char].encode(codec))
-            ent_len = len(text.encode(codec))
 
         x_ray.search(text, ent.label_ in ['PERSON', 'PER', 'persName'],
                      ent_start, ent.sent.text, ent_len)

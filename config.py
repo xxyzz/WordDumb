@@ -3,8 +3,8 @@
 import webbrowser
 
 from calibre.utils.config import JSONConfig
-from PyQt5.Qt import (QCheckBox, QComboBox, QHBoxLayout, QLabel, QPushButton,
-                      QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QCheckBox, QComboBox, QHBoxLayout, QLabel,
+                             QPushButton, QVBoxLayout, QWidget)
 
 prefs = JSONConfig('plugins/worddumb')
 prefs.defaults['search_people'] = False

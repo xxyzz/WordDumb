@@ -4,8 +4,6 @@ A calibre plugin that generates Word Wise and X-Ray files then sends them to Kin
 
 Languages X-Ray supports: Català, Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Norsk bokmål, Polski, Português, Română, Ελληνικά, Македонски, Русский, 中文, 日本語.
 
-X-Ray doesn't support macOS, because macOS prohibits calibre from loading unsigned library.
-
 ![screenshot](https://user-images.githubusercontent.com/21101839/130245435-b874f19a-7785-4093-9975-81596efc42bb.png)
 
 ## Contribute
@@ -48,10 +46,20 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   # pacman -Syu --needed python-pip
   ```
 
-  - Debian or Ubuntu based distro
+  - Debian based distro
 
   ```
   $ sudo apt install python3-pip
+  ```
+
+  - macOS
+
+  ```
+  // install from HomeBrew(recommanded)
+  $ brew install python
+
+  // or install Apple Command Line Tools
+  $ xcode-select --install
   ```
 
   - Windows: use Chocolatey or download from https://www.python.org/downloads

@@ -19,7 +19,8 @@ class ParseBook:
     def __init__(self, gui):
         self.gui = gui
         plugin_path = Path(config_dir).joinpath('plugins/WordDumb.zip')
-        self.languages = load_json_or_pickle(plugin_path, 'data/languages.json')
+        self.languages = load_json_or_pickle(
+            plugin_path, 'data/languages.json')
 
     def parse(self, create_ww=True, create_x=True):
         # get currently selected books
@@ -120,7 +121,7 @@ class ParseBook:
                 'because they hate me.',
                 '''
                 Run the command "sudo apt install python3-pip" to install
-                pip module if you are using Debian or Ubuntu based distro.
+                pip module if you are using Debian based distro.
                 <br><br>
                 If you still have this error, make sure you installed calibre
                 with the <a href="https://calibre-ebook.com/download_linux">

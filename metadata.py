@@ -5,10 +5,6 @@ import random
 import re
 import string
 
-from calibre.ebooks.metadata.mobi import MetadataUpdater
-from calibre.ebooks.mobi.reader.mobi6 import MobiReader
-from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
-
 
 def check_metadata(db, book_id, languages):
     # Get the current metadata for this book from the db
@@ -80,6 +76,8 @@ def get_asin_etc(book_path, is_kfx, mi):
                 f.write(yj_book.convert_to_single_kfx())
         kfx_json = json.loads(yj_book.convert_to_json_content())['data']
     else:
+        from calibre.ebooks.metadata.mobi import MetadataUpdater
+
         with open(book_path, 'r+b') as f:
             acr = f.read(32).rstrip(b'\x00').decode('utf-8')  # Palm db name
             revision = get_mobi_revision(f)
@@ -108,6 +106,9 @@ def extract_mobi(book_path):
     # use code from calibre.ebooks.mobi.reader.mobi8:Mobi8Reader.__call__
     # and calibre.ebook.conversion.plugins.mobi_input:MOBIInput.convert
     # https://github.com/kevinhendricks/KindleUnpack/blob/master/lib/mobi_k8proc.py#L216
+    from calibre.ebooks.mobi.reader.mobi6 import MobiReader
+    from calibre.ebooks.mobi.reader.mobi8 import Mobi8Reader
+
     with open(book_path, 'rb') as f:
         mr = MobiReader(f)
         if mr.kf8_type == 'joint':

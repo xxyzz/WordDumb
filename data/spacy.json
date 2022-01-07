@@ -13,7 +13,7 @@
   },
   "charset-normalizer": {
     "compiled": false,
-    "version": "2.0.9"
+    "version": "2.0.10"
   },
   "click": {
     "compiled": false,
@@ -37,7 +37,7 @@
   },
   "numpy": {
     "compiled": true,
-    "version": "1.21.5"
+    "version": "1.22.0"
   },
   "packaging": {
     "compiled": false,
@@ -65,7 +65,7 @@
   },
   "requests": {
     "compiled": false,
-    "version": "2.26.0"
+    "version": "2.27.1"
   },
   "smart-open": {
     "compiled": false,

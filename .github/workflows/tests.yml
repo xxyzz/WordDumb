@@ -92,8 +92,8 @@ jobs:
       - name: Add plugin
         run: calibre-customize -a worddumb.zip
 
-      - name: Get calibre python version
-        run: echo "CALIBRE_PY=$(calibre-debug -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
+      - name: Get python version
+        run: echo "CALIBRE_PY=$(python3 -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
 
       - name: Restore dependencies and Wikipedia cache
         uses: actions/cache@v2

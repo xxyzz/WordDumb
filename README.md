@@ -55,7 +55,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   - macOS
 
   ```
-  // install from HomeBrew(recommanded)
+  // install from Homebrew(recommanded)
   $ brew install python
 
   // or install Apple Command Line Tools

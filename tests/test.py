@@ -5,9 +5,10 @@ import sqlite3
 import sys
 import unittest
 from itertools import zip_longest
+from pathlib import Path
 
-from calibre.constants import ismacos
 from calibre.library import db
+from calibre.utils.config import config_dir
 from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 from calibre_plugins.worddumb.metadata import check_metadata, get_asin_etc
@@ -27,13 +28,14 @@ class TestDumbCode(unittest.TestCase):
                 book_1984_id = book_id
                 break
 
-        data = check_metadata(lib_db, book_1984_id,
-                              load_json_or_pickle('data/languages.json', True))
+        plugin_path = Path(config_dir).joinpath('plugins/WordDumb.zip')
+        data = check_metadata(
+            lib_db, book_1984_id,
+            load_json_or_pickle(plugin_path, 'data/languages.json'))
         (_, cls.fmt, cls.book_path, cls.mi, _) = data
-        create_x = False if ismacos else True
         origin_model_size = prefs['model_size']
         prefs['model_size'] = 'sm'
-        cls.asin = do_job(data, create_x=create_x)[1]
+        cls.asin = do_job(data)[1]
         prefs['model_size'] = origin_model_size
 
     def check_db(self, test_json_path, created_db_path, table, sql):
@@ -70,7 +72,6 @@ class TestDumbCode(unittest.TestCase):
             'metadata',
             'SELECT * FROM metadata')
 
-    @unittest.skipIf(ismacos, "absurd macOS can't load .so files in numpy")
     def test_x_ray_occurrence(self):
         self.check_db(
             'XRAY.entities.json',
@@ -78,9 +79,6 @@ class TestDumbCode(unittest.TestCase):
             'occurrence',
             f'SELECT * FROM occurrence ORDER BY start LIMIT {LIMIT}')
 
-    @unittest.skipIf(
-        ismacos,
-        "It does e-mail and Web browsing, and it shits in Kyle's mouth??")
     def test_x_ray_book_metadata(self):
         self.check_db(
             'XRAY.entities.json',
@@ -88,7 +86,6 @@ class TestDumbCode(unittest.TestCase):
             'book_metadata',
             'SELECT erl, num_people, num_terms FROM book_metadata')
 
-    @unittest.skipIf(ismacos, "Yes but, can it read?")
     def test_x_ray_top_mentioned(self):
         self.check_db(
             'XRAY.entities.json',

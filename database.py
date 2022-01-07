@@ -2,33 +2,19 @@
 import sqlite3
 from pathlib import Path
 
-from calibre_plugins.worddumb.unzip import load_json_or_pickle
+try:
+    from calibre_plugins.worddumb.unzip import load_json_or_pickle
+except ImportError:
+    from unzip import load_json_or_pickle
 
 
 def get_ll_path(asin, book_path):
     return Path(book_path).parent.joinpath(f'LanguageLayer.en.{asin}.kll')
 
 
-def check_db_file(path):
-    '''
-    if file exists return None otherwise create file
-    then return sqlite connection
-    '''
-    if path.exists():
-        journal = path.with_name(path.name + '-journal')
-        if not journal.exists():
-            return None
-        else:  # last time failed
-            path.unlink()
-            journal.unlink()
-
-    return sqlite3.connect(':memory:')
-
-
 def create_lang_layer(asin, book_path, acr, revision):
     db_path = get_ll_path(asin, book_path)
-    if (ll_conn := check_db_file(db_path)) is None:
-        return None, None
+    ll_conn = sqlite3.connect(':memory:')
     ll_conn.executescript('''
         CREATE TABLE metadata (
             key TEXT,
@@ -68,10 +54,9 @@ def get_x_ray_path(asin, book_path):
     return Path(book_path).parent.joinpath(f'XRAY.entities.{asin}.asc')
 
 
-def create_x_ray_db(asin, book_path, lang):
+def create_x_ray_db(asin, book_path, lang, plugin_path):
     db_path = get_x_ray_path(asin, book_path)
-    if (x_ray_conn := check_db_file(db_path)) is None:
-        return None, None
+    x_ray_conn = sqlite3.connect(':memory:')
     x_ray_conn.executescript('''
     PRAGMA user_version = 1;
 
@@ -157,7 +142,7 @@ def create_x_ray_db(asin, book_path, lang):
     INSERT INTO source (id, label, url) VALUES(2, 4, 22);
     ''')
 
-    str_list = load_json_or_pickle('data/x_ray_strings.json', True)
+    str_list = load_json_or_pickle(plugin_path, 'data/x_ray_strings.json')
     if lang != 'en':
         str_list[-2][-1] = f'https://{lang}.wikipedia.org/wiki/%s'
     x_ray_conn.executemany('INSERT INTO string VALUES(?, ?, ?)', str_list)

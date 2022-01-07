@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 from functools import partial
+from pathlib import Path
 
 from calibre.gui2 import Dispatcher
 from calibre.gui2.dialogs.message_box import JobError
 from calibre.gui2.threaded_jobs import ThreadedJob
+from calibre.utils.config import config_dir
 from calibre_plugins.worddumb.metadata import check_metadata
 from calibre_plugins.worddumb.parse_job import do_job
 from calibre_plugins.worddumb.send_file import SendFile, kindle_connected
@@ -16,7 +18,8 @@ PROXY_ERR_MSG = 'check_hostname requires server_hostname'
 class ParseBook:
     def __init__(self, gui):
         self.gui = gui
-        self.languages = load_json_or_pickle('data/languages.json', True)
+        plugin_path = Path(config_dir).joinpath('plugins/WordDumb.zip')
+        self.languages = load_json_or_pickle(plugin_path, 'data/languages.json')
 
     def parse(self, create_ww=True, create_x=True):
         # get currently selected books

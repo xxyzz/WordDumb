@@ -2,24 +2,31 @@
 
 import re
 from collections import Counter, defaultdict
+from pathlib import Path
 
-from calibre_plugins.worddumb import VERSION
-from calibre_plugins.worddumb.config import prefs
-from calibre_plugins.worddumb.database import (create_x_indices,
-                                               insert_x_book_metadata,
-                                               insert_x_entity,
-                                               insert_x_entity_description,
-                                               insert_x_excerpt_image,
-                                               insert_x_occurrence,
-                                               insert_x_type, save_db)
-from calibre_plugins.worddumb.unzip import load_wiki_cache, save_wiki_cache
+try:
+    from calibre_plugins.worddumb.database import (create_x_indices,
+                                                   insert_x_book_metadata,
+                                                   insert_x_entity,
+                                                   insert_x_entity_description,
+                                                   insert_x_excerpt_image,
+                                                   insert_x_occurrence,
+                                                   insert_x_type, save_db)
+    from calibre_plugins.worddumb.unzip import load_wiki_cache, save_wiki_cache
+except ImportError:
+    from database import (create_x_indices, insert_x_book_metadata,
+                          insert_x_entity, insert_x_entity_description,
+                          insert_x_excerpt_image, insert_x_occurrence,
+                          insert_x_type, save_db)
+    from unzip import load_wiki_cache, save_wiki_cache
 
 MAX_EXLIMIT = 20
 SCORE_THRESHOLD = 85.7
 
 
 class X_Ray:
-    def __init__(self, conn, lang, kfx_json, mobi_html, mobi_codec):
+    def __init__(self, conn, lang, kfx_json, mobi_html, mobi_codec,
+                 plugin_path, plugin_version, zh_wiki, search_people):
         self.conn = conn
         self.entity_id = 1
         self.num_people = 0
@@ -33,11 +40,14 @@ class X_Ray:
         self.pending_people = {}
         self.lang = lang
         self.wikipedia_api = f'https://{lang}.wikipedia.org/w/api.php'
-        self.wiki_cache = load_wiki_cache(lang)
+        self.wiki_cache_path = Path(plugin_path).parent.joinpath(
+            f'worddumb-wikipedia/{lang}.json')
+        self.wiki_cache = load_wiki_cache(self.wiki_cache_path)
         self.num_images = 0
         self.kfx_json = kfx_json
         self.mobi_html = mobi_html
         self.mobi_codec = mobi_codec
+        self.search_people = search_people
 
         import requests
         self.s = requests.Session()
@@ -52,12 +62,12 @@ class X_Ray:
             'formatversion': 2
         }
         self.s.headers.update({
-            'user-agent': f"WordDumb/{'.'.join(map(str, VERSION))} "
+            'user-agent': f'WordDumb/{plugin_version} '
             '(https://github.com/xxyzz/WordDumb)'
         })
         if lang == 'zh':
             self.s.headers.update(
-                {'accept-language': f"zh-{prefs['zh_wiki_variant']}"})
+                {'accept-language': f"zh-{zh_wiki}"})
 
     def insert_wiki_summary(self, pending_dic, key, title, summary):
         # not a disambiguation page
@@ -110,7 +120,7 @@ class X_Ray:
         if is_person:
             self.people[data] = self.entity_id
             self.num_people += 1
-            if prefs['search_people']:
+            if self.search_people:
                 self.insert_description(data, text, self.pending_people)
             else:
                 insert_x_entity_description(
@@ -193,7 +203,7 @@ class X_Ray:
         self.s.close()
         create_x_indices(self.conn)
         save_db(self.conn, db_path)
-        save_wiki_cache(self.wiki_cache, self.lang)
+        save_wiki_cache(self.wiki_cache_path, self.wiki_cache, self.lang)
 
     def find_kfx_images(self):
         images = set()

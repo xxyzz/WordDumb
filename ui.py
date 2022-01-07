@@ -2,7 +2,6 @@
 
 from functools import partial
 
-from calibre.constants import ismacos
 from calibre.gui2.actions import InterfaceAction
 from calibre_plugins.worddumb.config import ConfigWidget
 from calibre_plugins.worddumb.main import ParseBook
@@ -13,26 +12,20 @@ class WordDumb(InterfaceAction):
     action_spec = ('WordDumb', None, 'Good morning Krusty Crew!', None)
     action_type = 'current'
     action_add_menu = True
-    if ismacos:
-        action_menu_clone_qaction = 'Create Word Wise'
-    else:
-        action_menu_clone_qaction = 'Create Word Wise and X-Ray'
+    action_menu_clone_qaction = 'Create Word Wise and X-Ray'
 
     def genesis(self):
         icon = get_icons('starfish.svg')  # noqa: F821
         self.qaction.setIcon(icon)
         self.menu = self.qaction.menu()
 
-        if ismacos:
-            self.qaction.triggered.connect(partial(run, self.gui, True, False))
-        else:
-            self.qaction.triggered.connect(partial(run, self.gui, True, True))
-            self.create_menu_action(
-                self.menu, 'Word Wise', 'Create Word Wise',
-                triggered=partial(run, self.gui, True, False))
-            self.create_menu_action(
-                self.menu, 'X-Ray', 'Create X-Ray',
-                triggered=partial(run, self.gui, False, True))
+        self.qaction.triggered.connect(partial(run, self.gui, True, True))
+        self.create_menu_action(
+            self.menu, 'Word Wise', 'Create Word Wise',
+            triggered=partial(run, self.gui, True, False))
+        self.create_menu_action(
+            self.menu, 'X-Ray', 'Create X-Ray',
+            triggered=partial(run, self.gui, False, True))
 
         self.menu.addSeparator()
         self.create_menu_action(self.menu, 'Preferences', 'Preferences',

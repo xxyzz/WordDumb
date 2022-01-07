@@ -1,13 +1,28 @@
 #!/usr/bin/env python3
+import json
 import re
+import subprocess
+import sys
+from pathlib import Path
 
-from calibre_plugins.worddumb.config import prefs
-from calibre_plugins.worddumb.database import (create_lang_layer,
-                                               create_x_ray_db, insert_lemma,
-                                               save_db)
-from calibre_plugins.worddumb.metadata import get_asin_etc
-from calibre_plugins.worddumb.unzip import install_libs, load_json_or_pickle
-from calibre_plugins.worddumb.x_ray import X_Ray
+try:
+    from calibre.constants import ismacos
+    from calibre.utils.config import config_dir
+    from calibre_plugins.worddumb import VERSION
+    from calibre_plugins.worddumb.config import prefs
+    from calibre_plugins.worddumb.database import (create_lang_layer,
+                                                   create_x_ray_db,
+                                                   get_ll_path, get_x_ray_path,
+                                                   insert_lemma, save_db)
+    from calibre_plugins.worddumb.deps import InstallDeps
+    from calibre_plugins.worddumb.metadata import get_asin_etc
+    from calibre_plugins.worddumb.unzip import load_json_or_pickle
+    from calibre_plugins.worddumb.x_ray import X_Ray
+except ImportError:
+    from database import (create_lang_layer, create_x_ray_db, get_ll_path,
+                          get_x_ray_path, insert_lemma, save_db)
+    from unzip import load_json_or_pickle
+    from x_ray import X_Ray
 
 
 def do_job(data, create_ww=True, create_x=True,
@@ -18,29 +33,75 @@ def do_job(data, create_ww=True, create_x=True,
      kfx_json, mobi_html, mobi_codec) = get_asin_etc(book_path, is_kfx, mi)
 
     model = lang['spacy'] + prefs['model_size']
-    install_libs(model, create_ww, create_x, notifications)
-
-    if create_ww:
-        ll_conn, ll_path = create_lang_layer(asin, book_path, acr, revision)
-        if ll_conn is None:
-            create_ww = False
-        else:
-            kw_processor = load_json_or_pickle('lemmas_dump', False)
+    plugin_path = str(Path(config_dir).joinpath('plugins/WordDumb.zip'))
+    create_ww = create_ww and not get_ll_path(asin, book_path).exists()
+    create_x = create_x and not get_x_ray_path(asin, book_path).exists()
     if create_x:
-        x_ray_conn, x_ray_path = create_x_ray_db(asin, book_path, lang['wiki'])
-        if x_ray_conn is None:
-            create_x = False
+        install_deps = InstallDeps(model, plugin_path, notifications)
 
     if notifications:
         notifications.put((0, 'Creating files'))
+
+    version = '.'.join(map(str, VERSION))
+    if ismacos and create_x:
+        extract_path = save_extract_file(book_path, kfx_json, mobi_html)
+        args = [install_deps.py, plugin_path, '-x', asin, book_path, acr,
+                revision, model, lang['wiki'], extract_path, mobi_codec,
+                plugin_path, version, prefs['zh_wiki_variant']]
+        if create_ww:
+            args.append('-l')
+        if prefs['search_people']:
+            args.append('-s')
+        subprocess.run(args, check=True, capture_output=True, text=True)
+    else:
+        create_files(
+            create_ww, create_x, asin, book_path, acr, revision, model,
+            lang['wiki'], kfx_json, mobi_html, mobi_codec, plugin_path,
+            version, prefs['zh_wiki_variant'],  prefs['search_people'])
+
+    return book_id, asin, book_path, mi, update_asin
+
+
+def save_extract_file(book_path, kfx_json, mobi_html):
+    book_path = Path(book_path)
+    if kfx_json:
+        extract_file = book_path.with_name(book_path.name + '.json')
+        with open(extract_file, 'w') as f:
+            json.dump(kfx_json, f)
+    else:
+        extract_file = book_path.with_name(book_path.name + '.rwaml')
+        with open(extract_file, 'wb') as f:
+            f.write(mobi_html)
+    return str(extract_file)
+
+
+def insert_lib_path(path):
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+
+def create_files(create_ww, create_x, asin, book_path, acr, revision, model,
+                 wiki_lang, kfx_json, mobi_html, mobi_codec, plugin_path,
+                 plugin_version, zh_wiki, search_people):
+    if create_ww:
+        ll_conn, ll_path = create_lang_layer(asin, book_path, acr, revision)
+        insert_lib_path(str(Path(plugin_path).joinpath('libs')))  # flashtext
+        kw_processor = load_json_or_pickle(plugin_path, 'lemmas_dump')
+
     if create_x:
+        for path in Path(plugin_path).parent.glob('worddumb-libs-py*'):
+            insert_lib_path(str(path))
         import spacy
+
+        x_ray_conn, x_ray_path = create_x_ray_db(
+            asin, book_path, wiki_lang, plugin_path)
         nlp = spacy.load(model, exclude=[
             'tok2vec', 'morphologizer', 'tagger',
             'parser', 'attribute_ruler', 'lemmatizer'])
         nlp.enable_pipe("senter")
         x_ray = X_Ray(
-            x_ray_conn, lang['wiki'], kfx_json, mobi_html, mobi_codec)
+            x_ray_conn, wiki_lang, kfx_json, mobi_html, mobi_codec,
+            plugin_path, plugin_version, zh_wiki, search_people)
         for doc, start in nlp.pipe(
                 parse_book(kfx_json, mobi_html, mobi_codec), as_tuples=True):
             find_named_entity(start, x_ray, doc, mobi_codec)
@@ -55,7 +116,6 @@ def do_job(data, create_ww=True, create_x=True,
 
     if create_ww:
         save_db(ll_conn, ll_path)
-    return book_id, asin, book_path, mi, update_asin
 
 
 def parse_book(kfx_json, mobi_html, mobi_codec):

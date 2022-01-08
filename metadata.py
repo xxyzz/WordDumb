@@ -53,10 +53,10 @@ def validate_asin(asin, mi):
 
 
 def get_asin_etc(book_path, is_kfx, mi):
-    revision = None
+    revision = ''
     kfx_json = None
     mobi_html = None
-    mobi_codec = None
+    mobi_codec = ''
 
     if is_kfx:
         from calibre_plugins.kfx_input.kfxlib import YJ_Book, YJ_Metadata
@@ -64,7 +64,7 @@ def get_asin_etc(book_path, is_kfx, mi):
         yj_book = YJ_Book(book_path)
         yj_md = yj_book.get_metadata()
         asin = getattr(yj_md, 'asin', None)
-        acr = getattr(yj_md, 'asset_id', None)
+        acr = getattr(yj_md, 'asset_id', '')
         asin, update_asin = validate_asin(asin, mi)
         if update_asin:
             yj_book = YJ_Book(book_path)

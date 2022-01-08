@@ -44,15 +44,19 @@ def do_job(data, create_ww=True, create_x=True,
 
     version = '.'.join(map(str, VERSION))
     if ismacos and create_x:
-        extract_path = save_extract_file(book_path, kfx_json, mobi_html)
-        args = [install_deps.py, plugin_path, '-x', asin, book_path, acr,
-                revision, model, lang['wiki'], extract_path, mobi_codec,
-                plugin_path, version, prefs['zh_wiki_variant']]
+        args = [install_deps.py, plugin_path, asin, book_path, acr, revision,
+                model, lang['wiki'], mobi_codec, plugin_path, version,
+                prefs['zh_wiki_variant']]
         if create_ww:
             args.append('-l')
         if prefs['search_people']:
             args.append('-s')
-        subprocess.run(args, check=True, capture_output=True, text=True)
+        if is_kfx:
+            input_str = json.dumps(kfx_json)
+        else:
+            input_str = mobi_html.decode(mobi_codec)
+        subprocess.run(
+            args, input=input_str, check=True, capture_output=True, text=True)
     else:
         create_files(
             create_ww, create_x, asin, book_path, acr, revision, model,
@@ -60,19 +64,6 @@ def do_job(data, create_ww=True, create_x=True,
             version, prefs['zh_wiki_variant'],  prefs['search_people'])
 
     return book_id, asin, book_path, mi, update_asin
-
-
-def save_extract_file(book_path, kfx_json, mobi_html):
-    book_path = Path(book_path)
-    if kfx_json:
-        extract_file = book_path.with_name(book_path.name + '.json')
-        with open(extract_file, 'w') as f:
-            json.dump(kfx_json, f)
-    else:
-        extract_file = book_path.with_name(book_path.name + '.rwaml')
-        with open(extract_file, 'wb') as f:
-            f.write(mobi_html)
-    return str(extract_file)
 
 
 def insert_lib_path(path):

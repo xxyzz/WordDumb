@@ -25,8 +25,7 @@ for lemma, values in lemmas.items():
                     lambda x: x != w, chain(*getAllInflections(w).values())))
             list_of_inflections_list.append(inflections_list)
 
-        for phrase in map(lambda x: ' '.join(x),
-                          product(*list_of_inflections_list)):
+        for phrase in map(' '.join, product(*list_of_inflections_list)):
             keyword_processor.add_keyword(phrase, values)
     else:
         keyword_processor.add_keyword(lemma, values)

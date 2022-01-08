@@ -26,10 +26,12 @@ class InstallDeps:
             py = 'py' if shutil.which('py') else 'python'
         elif ismacos:
             # stupid macOS loses PATH when calibre is not launched in terminal
-            if platform.machine() == 'arm64':
-                py = '/opt/homebrew/bin/python3'
-            else:
-                py = '/usr/local/bin/python3'
+            py_paths = ['/opt/homebrew/bin/python3',  # arm
+                        '/usr/local/bin/python3',  # x86_64
+                        '/usr/bin/python3']  # Command Line Tools
+            py_paths = [p for p in py_paths if Path(p).exists()]
+            if py_paths:
+                py = py_paths[0]
             command = 'import platform;' \
                 'print(".".join(platform.python_version_tuple()[:2]))'
             r = subprocess.run([py, '-c', command], check=True,
@@ -77,10 +79,13 @@ class InstallDeps:
             args.extend(['--python-version', self.py_v])
             if iswindows:
                 args.append('--platform')
-                if is64bit:
+                if is64bit:  # in case someone installed 32bit python
                     args.append('win_amd64')
                 else:
                     raise Exception('32BIT_CALIBRE')
+            elif ismacos:
+                # prevent command line tool's pip from compiling package
+                args.extend(['--platform', 'macosx_10_9_x86_64'])
         if url:
             args.append(url)
         elif pkg_version:

@@ -30,8 +30,6 @@ class InstallDeps:
                 py = '/opt/homebrew/bin/python3'
             else:
                 py = '/usr/local/bin/python3'
-            if not Path(py).exists():
-                py = '/usr/bin/python3'  # command line tools
             command = 'import platform;' \
                 'print(".".join(platform.python_version_tuple()[:2]))'
             r = subprocess.run([py, '-c', command], check=True,

@@ -20,7 +20,10 @@ class ConfigWidget(QWidget):
         self.setLayout(vl)
 
         self.search_people_box = QCheckBox(
-            'Search X-Ray people entities on Wikipedia')
+            'Fetch X-Ray people descriptions from Wikipedia')
+        self.search_people_box.setToolTip(
+            'Enable this option for nonfiction books and novels that '
+            'have character pages on Wikipedia')
         self.search_people_box.setChecked(prefs['search_people'])
         vl.addWidget(self.search_people_box)
 

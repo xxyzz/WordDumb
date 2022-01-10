@@ -22,10 +22,7 @@ def load_wiki_cache(cache_path):
         return {}
 
 
-def save_wiki_cache(cache_path, cache_dic, lang):
-    if not cache_path.exists():
-        if not cache_path.parent.exists():
-            cache_path.parent.mkdir()
-        cache_path.touch()
+def save_wiki_cache(cache_path, cache_dic):
+    cache_path.parent.mkdir(exist_ok=True)
     with cache_path.open('w') as f:
         json.dump(cache_dic, f)

@@ -82,7 +82,6 @@ for lemma, sense_ids in en_klld.items():
 conn.commit()
 new_klld = Path(f'kll.en.{args.lang}.klld')
 new_klld.unlink(missing_ok=True)
-new_klld.touch()
 new_klld_conn = sqlite3.connect(new_klld)
 with new_klld_conn:
     conn.backup(new_klld_conn)

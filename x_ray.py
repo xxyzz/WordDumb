@@ -203,7 +203,7 @@ class X_Ray:
         self.s.close()
         create_x_indices(self.conn)
         save_db(self.conn, db_path)
-        save_wiki_cache(self.wiki_cache_path, self.wiki_cache, self.lang)
+        save_wiki_cache(self.wiki_cache_path, self.wiki_cache)
 
     def find_kfx_images(self):
         images = set()

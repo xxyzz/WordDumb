@@ -46,7 +46,8 @@ class ParseBook:
                 "WordDumb's dumb job", f'Generating {notif} for {title}',
                 do_job, (data, create_ww, create_x), {},
                 Dispatcher(partial(self.done,
-                                   notif=f'{notif} generated for {title}')))
+                                   notif=f'{notif} generated for {title}')),
+                killable=False)
             self.gui.job_manager.run_threaded_job(job)
 
         if show_job_pointer:

@@ -26,8 +26,8 @@ class InstallDeps:
             py = 'py' if shutil.which('py') else 'python'
         elif ismacos:
             # stupid macOS loses PATH when calibre is not launched in terminal
-            py_paths = ['/opt/homebrew/bin/python3',  # arm
-                        '/usr/local/bin/python3',  # x86_64
+            py_paths = ['/opt/homebrew/bin/python3',  # ARM
+                        '/usr/local/bin/python3',  # x86-64
                         '/usr/bin/python3']  # Command Line Tools
             py_paths = [p for p in py_paths if Path(p).exists()]
             if py_paths:

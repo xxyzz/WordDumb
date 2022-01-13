@@ -120,13 +120,12 @@ def create_files(create_ww, create_x, asin, book_path, acr, revision, model,
 
 def parse_book(kfx_json, mobi_html, mobi_codec):
     if kfx_json:
-        for entry in filter(lambda x: x['type'] == 1, kfx_json):
-            yield (entry['content'], entry['position'])
+        return ((e['content'],
+                 e['position']) for e in kfx_json if e['type'] == 1)
     else:
         # match text inside HTML tags
-        for match_text in re.finditer(b'>[^<>]+<', mobi_html):
-            yield (match_text.group(0)[1:-1].decode(mobi_codec),
-                   match_text.start() + 1)
+        return ((m.group(0)[1:-1].decode(mobi_codec),
+                 m.start() + 1) for m in re.finditer(b'>[^<>]+<', mobi_html))
 
 
 def find_lemma(start, text, kw_processor, ll_conn, mobi_codec):

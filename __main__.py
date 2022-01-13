@@ -36,4 +36,4 @@ else:
 create_files(
     args.l, True, args.asin, args.book_path, args.acr, args.revision,
     args.model, args.wiki_lang, kfx_json, mobi_html, args.mobi_codec,
-    args.plugin_path, args.version, args.zh_wiki, args.s)
+    args.plugin_path, args.version, args.zh_wiki, args.s, None)

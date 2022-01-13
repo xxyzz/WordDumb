@@ -61,7 +61,8 @@ def do_job(data, create_ww=True, create_x=True,
         create_files(
             create_ww, create_x, asin, book_path, acr, revision, model,
             lang['wiki'], kfx_json, mobi_html, mobi_codec, plugin_path,
-            version, prefs['zh_wiki_variant'],  prefs['search_people'])
+            version, prefs['zh_wiki_variant'],  prefs['search_people'],
+            notifications)
 
     return book_id, asin, book_path, mi, update_asin
 
@@ -73,7 +74,13 @@ def insert_lib_path(path):
 
 def create_files(create_ww, create_x, asin, book_path, acr, revision, model,
                  wiki_lang, kfx_json, mobi_html, mobi_codec, plugin_path,
-                 plugin_version, zh_wiki, search_people):
+                 plugin_version, zh_wiki, search_people, notif):
+    if notif:
+        if kfx_json:
+            last_start = max(d['position'] for d in kfx_json if d['type'] == 1)
+        else:
+            last_start = len(mobi_html)
+
     if create_ww:
         ll_conn, ll_path = create_lang_layer(asin, book_path, acr, revision)
         insert_lib_path(str(Path(plugin_path).joinpath('libs')))  # flashtext
@@ -99,6 +106,8 @@ def create_files(create_ww, create_x, asin, book_path, acr, revision, model,
             if create_ww:
                 find_lemma(
                     start, doc.text, kw_processor, ll_conn, mobi_codec)
+            if notif:
+                notif.put((start / last_start, 'Creating files'))
 
         x_ray.finish(x_ray_path)
     elif create_ww:

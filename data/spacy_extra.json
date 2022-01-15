@@ -18,5 +18,11 @@
       "compiled": true,
       "version": "0.0.28"
     }
+  },
+  "apple": {
+    "thinc-apple-ops": {
+      "compiled": true,
+      "version": "0.0.5"
+    }
   }
 }

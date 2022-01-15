@@ -101,3 +101,7 @@ class InstallDeps:
         if (lang := self.model[:2]) in data:
             for pkg, value in data[lang].items():
                 self.pip_install(pkg, value['version'], value['compiled'])
+
+        if ismacos and self.machine == 'arm64':
+            for pkg, value in data['apple'].items():
+                self.pip_install(pkg, value['version'], value['compiled'])

@@ -7,30 +7,24 @@ import string
 
 
 def check_metadata(db, book_id, languages):
-    # Get the current metadata for this book from the db
     mi = db.get_metadata(book_id, get_cover=True)
-    fmts = db.formats(book_id)
-    book_fmt = None
 
     book_language = mi.get("languages")
-    if book_language is None or len(book_language) == 0:
+    if not book_language:
         return None
-
     book_language = book_language[0]
     if book_language not in languages:
         return None
 
-    # check book format
-    if 'KFX' in fmts:
-        book_fmt = 'KFX'
-    elif 'AZW3' in fmts:
-        book_fmt = 'AZW3'
-    elif 'MOBI' in fmts:
-        book_fmt = 'MOBI'
+    book_fmts = db.formats(book_id)
+    chosen_fmt = None
+    supported_fmts = ['KFX', 'AZW3', 'AZW', 'MOBI']
+    if (fmts := [f for f in supported_fmts if f in book_fmts]):
+        chosen_fmt = fmts[0]
     else:
         return None
 
-    return (book_id, book_fmt, db.format_abspath(book_id, book_fmt),
+    return (book_id, chosen_fmt, db.format_abspath(book_id, chosen_fmt),
             mi, languages[book_language])
 
 

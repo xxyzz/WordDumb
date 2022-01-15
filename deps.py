@@ -16,6 +16,7 @@ class InstallDeps:
         self.model_v = '3.2.0'
         self.plugin_path = plugin_path
         self.notif = notif
+        self.machine = platform.machine()
         self.which_python()
         self.install_x_ray_deps()
 
@@ -26,12 +27,12 @@ class InstallDeps:
             py = 'py' if shutil.which('py') else 'python'
         elif ismacos:
             # stupid macOS loses PATH when calibre is not launched in terminal
-            py_paths = ['/opt/homebrew/bin/python3',  # ARM
-                        '/usr/local/bin/python3',  # x86-64
-                        '/usr/bin/python3']  # Command Line Tools
-            py_paths = [p for p in py_paths if Path(p).exists()]
-            if py_paths:
-                py = py_paths[0]
+            if self.machine == 'arm64':
+                py = '/opt/homebrew/bin/python3'
+            else:
+                py = '/usr/local/bin/python3'
+            if not shutil.which(py):
+                py = '/usr/bin/python3'  # Command Line Tools
             command = 'import platform;' \
                 'print(".".join(platform.python_version_tuple()[:2]))'
             r = subprocess.run([py, '-c', command], check=True,
@@ -83,7 +84,7 @@ class InstallDeps:
                     args.append('win_amd64')
                 else:
                     raise Exception('32BIT_CALIBRE')
-            elif ismacos:
+            elif ismacos and self.machine == 'x86_64':
                 # prevent command line tool's pip from compiling package
                 args.extend(['--platform', 'macosx_10_9_x86_64'])
         if url:

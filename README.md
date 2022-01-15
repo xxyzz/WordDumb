@@ -56,6 +56,9 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
   ```
   $ brew install python
+
+  // or install Command Line Tools
+  $ xcode-select --install
   ```
 
   - Windows: use Chocolatey or download from https://www.python.org/downloads

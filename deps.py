@@ -7,7 +7,8 @@ from pathlib import Path
 
 from calibre.constants import is64bit, ismacos, iswindows
 from calibre.utils.config import config_dir
-from calibre_plugins.worddumb.unzip import load_json_or_pickle
+
+from .unzip import load_json_or_pickle
 
 
 class InstallDeps:

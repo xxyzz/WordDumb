@@ -17,7 +17,7 @@ class WordDumbDumb(InterfaceActionBase):
         return True
 
     def config_widget(self):
-        from calibre_plugins.worddumb.config import ConfigWidget
+        from .config import ConfigWidget
         return ConfigWidget()
 
     def save_settings(self, config_widget):

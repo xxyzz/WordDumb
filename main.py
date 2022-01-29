@@ -7,10 +7,11 @@ from calibre.gui2 import Dispatcher
 from calibre.gui2.dialogs.message_box import JobError
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import config_dir
-from calibre_plugins.worddumb.metadata import check_metadata
-from calibre_plugins.worddumb.parse_job import do_job
-from calibre_plugins.worddumb.send_file import SendFile, kindle_connected
-from calibre_plugins.worddumb.unzip import load_json_or_pickle
+
+from .metadata import check_metadata
+from .parse_job import do_job
+from .send_file import SendFile, kindle_connected
+from .unzip import load_json_or_pickle
 
 PROXY_ERR_MSG = 'check_hostname requires server_hostname'
 

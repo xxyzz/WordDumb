@@ -3,8 +3,9 @@
 from functools import partial
 
 from calibre.gui2.actions import InterfaceAction
-from calibre_plugins.worddumb.config import ConfigWidget
-from calibre_plugins.worddumb.main import ParseBook
+
+from .config import ConfigWidget
+from .main import ParseBook
 
 
 class WordDumb(InterfaceAction):

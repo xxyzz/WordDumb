@@ -5,14 +5,11 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 try:
-    from calibre_plugins.worddumb.database import (create_x_indices,
-                                                   insert_x_book_metadata,
-                                                   insert_x_entity,
-                                                   insert_x_entity_description,
-                                                   insert_x_excerpt_image,
-                                                   insert_x_occurrence,
-                                                   insert_x_type, save_db)
-    from calibre_plugins.worddumb.unzip import load_wiki_cache, save_wiki_cache
+    from .database import (create_x_indices, insert_x_book_metadata,
+                           insert_x_entity, insert_x_entity_description,
+                           insert_x_excerpt_image, insert_x_occurrence,
+                           insert_x_type, save_db)
+    from .unzip import load_wiki_cache, save_wiki_cache
 except ImportError:
     from database import (create_x_indices, insert_x_book_metadata,
                           insert_x_entity, insert_x_entity_description,

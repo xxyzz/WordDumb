@@ -3,7 +3,7 @@ import sqlite3
 from pathlib import Path
 
 try:
-    from calibre_plugins.worddumb.unzip import load_json_or_pickle
+    from .unzip import load_json_or_pickle
 except ImportError:
     from unzip import load_json_or_pickle
 

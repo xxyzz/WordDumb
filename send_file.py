@@ -3,7 +3,8 @@ import shutil
 from pathlib import Path
 
 from calibre.gui2 import FunctionDispatcher
-from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
+
+from .database import get_ll_path, get_x_ray_path
 
 
 class SendFile:

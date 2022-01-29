@@ -6,18 +6,10 @@ import sys
 from pathlib import Path
 
 try:
-    from calibre.constants import ismacos
-    from calibre.utils.config import config_dir
-    from calibre_plugins.worddumb import VERSION
-    from calibre_plugins.worddumb.config import prefs
-    from calibre_plugins.worddumb.database import (create_lang_layer,
-                                                   create_x_ray_db,
-                                                   get_ll_path, get_x_ray_path,
-                                                   insert_lemma, save_db)
-    from calibre_plugins.worddumb.deps import InstallDeps
-    from calibre_plugins.worddumb.metadata import get_asin_etc
-    from calibre_plugins.worddumb.unzip import load_json_or_pickle
-    from calibre_plugins.worddumb.x_ray import X_Ray
+    from .database import (create_lang_layer, create_x_ray_db, get_ll_path,
+                           get_x_ray_path, insert_lemma, save_db)
+    from .unzip import load_json_or_pickle
+    from .x_ray import X_Ray
 except ImportError:
     from database import (create_lang_layer, create_x_ray_db, get_ll_path,
                           get_x_ray_path, insert_lemma, save_db)
@@ -27,6 +19,14 @@ except ImportError:
 
 def do_job(data, create_ww=True, create_x=True,
            abort=None, log=None, notifications=None):
+    from calibre.constants import ismacos
+    from calibre.utils.config import config_dir
+    from calibre_plugins.worddumb import VERSION
+
+    from .config import prefs
+    from .deps import InstallDeps
+    from .metadata import get_asin_etc
+
     (book_id, book_fmt, book_path, mi, lang) = data
     is_kfx = book_fmt == 'KFX'
     (asin, acr, revision, update_asin,
@@ -61,7 +61,7 @@ def do_job(data, create_ww=True, create_x=True,
         create_files(
             create_ww, create_x, asin, book_path, acr, revision, model,
             lang['wiki'], kfx_json, mobi_html, mobi_codec, plugin_path,
-            version, prefs['zh_wiki_variant'],  prefs['search_people'],
+            version, prefs['zh_wiki_variant'], prefs['search_people'],
             notifications)
 
     return book_id, asin, book_path, mi, update_asin

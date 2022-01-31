@@ -110,6 +110,10 @@ class ParseBook:
                     Install <a href='{url}'>64bit calibre</a>,
                     32bit calibre is not supported.
                     ''', job.details)
+            elif 'ModuleNotFoundError' in job.details \
+                 and 'calibre_plugins.kfx_input' in job.details:
+                self.error_dialog('Requires KFX Input',
+                                  'Install the KFX Input plugin.', job.details)
             else:
                 self.gui.job_exception(job, dialog_title='Tonnerre de Brest!')
             return True

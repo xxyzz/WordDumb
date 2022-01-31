@@ -64,7 +64,7 @@ def do_job(data, create_ww=True, create_x=True,
             version, prefs['zh_wiki_variant'], prefs['search_people'],
             notifications)
 
-    return book_id, asin, book_path, mi, update_asin
+    return book_id, asin, book_path, mi, update_asin, is_kfx
 
 
 def insert_lib_path(path):

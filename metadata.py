@@ -46,11 +46,12 @@ def validate_asin(asin, mi):
     return asin, update_asin
 
 
-def get_asin_etc(book_path, is_kfx, mi):
+def get_asin_etc(book_path, is_kfx, mi, library_asin=None):
     revision = ''
     kfx_json = None
     mobi_html = None
     mobi_codec = ''
+    update_asin = False
 
     if is_kfx:
         from calibre_plugins.kfx_input.kfxlib import YJ_Book, YJ_Metadata
@@ -59,16 +60,20 @@ def get_asin_etc(book_path, is_kfx, mi):
         yj_md = yj_book.get_metadata()
         asin = getattr(yj_md, 'asin', None)
         acr = getattr(yj_md, 'asset_id', '')
-        asin, update_asin = validate_asin(asin, mi)
+        if library_asin is None:
+            asin, update_asin = validate_asin(asin, mi)
+        elif library_asin != asin:
+            update_asin = True
         if update_asin:
             yj_book = YJ_Book(book_path)
             yj_md = YJ_Metadata()
-            yj_md.asin = asin
+            yj_md.asin = library_asin if library_asin else asin
             yj_md.content_type = "EBOK"
             yj_book.decode_book(set_metadata=yj_md)
             with open(book_path, 'wb') as f:
                 f.write(yj_book.convert_to_single_kfx())
-        kfx_json = json.loads(yj_book.convert_to_json_content())['data']
+        if library_asin is None:
+            kfx_json = json.loads(yj_book.convert_to_json_content())['data']
     else:
         from calibre.ebooks.metadata.mobi import MetadataUpdater
 
@@ -81,10 +86,14 @@ def get_asin_etc(book_path, is_kfx, mi):
             if (asin := mu.original_exth_records.get(113)) is None:
                 asin = mu.original_exth_records.get(504)
             asin = asin.decode(mu.codec) if asin else None
-            asin, update_asin = validate_asin(asin, mi)
+            if library_asin is None:
+                asin, update_asin = validate_asin(asin, mi)
+            elif library_asin != asin:
+                update_asin = True
             if update_asin:
                 mu.update(mi, asin=asin)
-        mobi_html = extract_mobi(book_path)
+        if library_asin is None:
+            mobi_html = extract_mobi(book_path)
 
     return asin, acr, revision, update_asin, kfx_json, mobi_html, mobi_codec
 

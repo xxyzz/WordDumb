@@ -5,6 +5,7 @@ from pathlib import Path
 from calibre.gui2 import FunctionDispatcher
 
 from .database import get_ll_path, get_x_ray_path
+from .metadata import get_asin_etc
 
 
 class SendFile:
@@ -12,7 +13,7 @@ class SendFile:
         self.gui = gui
         self.device_manager = gui.device_manager
         self.notif = notif
-        self.book_id, self.asin, self.book_path, self.mi, _ = data
+        self.book_id, self.asin, self.book_path, self.mi, _, self.is_kfx = data
         self.ll_path = get_ll_path(self.asin, self.book_path)
         self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
 
@@ -28,6 +29,8 @@ class SendFile:
         # /Volumes/Kindle
         device_prefix = self.device_manager.device._main_prefix
         if has_book:
+            if job is None:
+                get_asin_etc(self.book_path, self.is_kfx, self.mi, self.asin)
             device_book_path = Path(device_prefix).joinpath(next(iter(paths)))
             self.move_file_to_device(self.ll_path, device_book_path)
             self.move_file_to_device(self.x_ray_path, device_book_path)

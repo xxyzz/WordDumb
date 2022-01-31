@@ -58,7 +58,7 @@ class ParseBook:
         if self.job_failed(job):
             return
 
-        book_id, _, _, mi, update_asin = job.result
+        book_id, _, _, mi, update_asin, _ = job.result
         if update_asin:
             self.gui.current_db.new_api.set_metadata(book_id, mi)
 

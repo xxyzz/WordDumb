@@ -13,7 +13,7 @@
   },
   "charset-normalizer": {
     "compiled": false,
-    "version": "2.0.10"
+    "version": "2.0.11"
   },
   "click": {
     "compiled": false,
@@ -37,7 +37,7 @@
   },
   "numpy": {
     "compiled": true,
-    "version": "1.22.1"
+    "version": "1.22.2"
   },
   "packaging": {
     "compiled": false,
@@ -61,7 +61,7 @@
   },
   "rapidfuzz": {
     "compiled": true,
-    "version": "1.9.1"
+    "version": "2.0.1"
   },
   "requests": {
     "compiled": false,
@@ -73,7 +73,7 @@
   },
   "spacy": {
     "compiled": true,
-    "version": "3.2.1"
+    "version": "3.2.2"
   },
   "spacy-legacy": {
     "compiled": false,

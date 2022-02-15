@@ -3,13 +3,16 @@
 import webbrowser
 
 from calibre.utils.config import JSONConfig
+from PyQt5.QtCore import QRegularExpression
+from PyQt5.QtGui import QRegularExpressionValidator
 from PyQt5.QtWidgets import (QCheckBox, QComboBox, QHBoxLayout, QLabel,
-                             QPushButton, QVBoxLayout, QWidget)
+                             QLineEdit, QPushButton, QVBoxLayout, QWidget)
 
 prefs = JSONConfig('plugins/worddumb')
 prefs.defaults['search_people'] = False
 prefs.defaults['model_size'] = 'md'
 prefs.defaults['zh_wiki_variant'] = 'cn'
+prefs.defaults['fandom'] = ''
 
 
 class ConfigWidget(QWidget):
@@ -20,12 +23,25 @@ class ConfigWidget(QWidget):
         self.setLayout(vl)
 
         self.search_people_box = QCheckBox(
-            'Fetch X-Ray people descriptions from Wikipedia')
+            'Fetch X-Ray people descriptions from Wikipedia or Fandom')
         self.search_people_box.setToolTip(
             'Enable this option for nonfiction books and novels that '
-            'have character pages on Wikipedia')
+            'have character pages on Wikipedia/Fandom')
         self.search_people_box.setChecked(prefs['search_people'])
         vl.addWidget(self.search_people_box)
+
+        fandom_hl = QHBoxLayout()
+        fandom_label = QLabel('Fandom URL')
+        fandom_hl.addWidget(fandom_label)
+        self.fandom_url = QLineEdit()
+        self.fandom_url.setText(prefs['fandom'])
+        self.fandom_url.setPlaceholderText('https://x.fandom.com')
+        fandom_re = QRegularExpression(r'https:\/\/\w+\.fandom\.com')
+        fandom_validator = QRegularExpressionValidator(fandom_re)
+        self.fandom_url.setValidator(fandom_validator)
+
+        fandom_hl.addWidget(self.fandom_url)
+        vl.addLayout(fandom_hl)
 
         model_size_hl = QHBoxLayout()
         model_size_label = QLabel(
@@ -83,3 +99,4 @@ class ConfigWidget(QWidget):
         prefs['search_people'] = self.search_people_box.isChecked()
         prefs['model_size'] = self.model_size_box.currentData()
         prefs['zh_wiki_variant'] = self.zh_wiki_box.currentData()
+        prefs['fandom'] = self.fandom_url.text()

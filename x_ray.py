@@ -23,7 +23,8 @@ SCORE_THRESHOLD = 85.7
 
 class X_Ray:
     def __init__(self, conn, lang, kfx_json, mobi_html, mobi_codec,
-                 plugin_path, plugin_version, zh_wiki, search_people):
+                 plugin_path, plugin_version, zh_wiki, search_people,
+                 fandom_url):
         self.conn = conn
         self.entity_id = 1
         self.num_people = 0
@@ -35,16 +36,20 @@ class X_Ray:
         self.terms_counter = Counter()
         self.pending_terms = {}
         self.pending_people = {}
-        self.lang = lang
-        self.wikipedia_api = f'https://{lang}.wikipedia.org/w/api.php'
-        self.wiki_cache_path = Path(plugin_path).parent.joinpath(
-            f'worddumb-wikipedia/{lang}.json')
-        self.wiki_cache = load_wiki_cache(self.wiki_cache_path)
         self.num_images = 0
         self.kfx_json = kfx_json
         self.mobi_html = mobi_html
         self.mobi_codec = mobi_codec
         self.search_people = search_people
+        if fandom_url:
+            self.wiki_api = f'{fandom_url}/api.php'
+            self.wiki_cache_path = Path(plugin_path).parent.joinpath(
+                f'worddumb-fandom/{fandom_url[8:]}.json')
+        else:
+            self.wiki_api = f'https://{lang}.wikipedia.org/w/api.php'
+            self.wiki_cache_path = Path(plugin_path).parent.joinpath(
+                f'worddumb-wikipedia/{lang}.json')
+        self.wiki_cache = load_wiki_cache(self.wiki_cache_path)
 
         import requests
         self.s = requests.Session()
@@ -62,7 +67,7 @@ class X_Ray:
             'user-agent': f'WordDumb/{plugin_version} '
             '(https://github.com/xxyzz/WordDumb)'
         })
-        if lang == 'zh':
+        if lang == 'zh' and not fandom_url:
             self.s.headers.update(
                 {'accept-language': f"zh-{zh_wiki}"})
 
@@ -77,7 +82,7 @@ class X_Ray:
                 self.wiki_cache[title] = summary
 
     def search_wikipedia(self, pending_dic):
-        r = self.s.get(self.wikipedia_api,
+        r = self.s.get(self.wiki_api,
                        params={'titles': '|'.join(pending_dic.keys())})
         data = r.json()
         converts = defaultdict(list)

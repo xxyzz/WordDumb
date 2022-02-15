@@ -24,6 +24,7 @@ parser.add_argument('mobi_codec')
 parser.add_argument('plugin_path')
 parser.add_argument('version')
 parser.add_argument('zh_wiki')
+parser.add_argument('fandom')
 args = parser.parse_args()
 
 kfx_json = None
@@ -36,4 +37,4 @@ else:
 create_files(
     args.l, True, args.asin, args.book_path, args.acr, args.revision,
     args.model, args.wiki_lang, kfx_json, mobi_html, args.mobi_codec,
-    args.plugin_path, args.version, args.zh_wiki, args.s, None)
+    args.plugin_path, args.version, args.zh_wiki, args.s, args.fandom, None)

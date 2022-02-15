@@ -46,7 +46,7 @@ def do_job(data, create_ww=True, create_x=True,
     if ismacos and create_x:
         args = [install_deps.py, plugin_path, asin, book_path, acr, revision,
                 model, lang['wiki'], mobi_codec, plugin_path, version,
-                prefs['zh_wiki_variant']]
+                prefs['zh_wiki_variant'], prefs['fandom']]
         if create_ww:
             args.append('-l')
         if prefs['search_people']:
@@ -62,7 +62,7 @@ def do_job(data, create_ww=True, create_x=True,
             create_ww, create_x, asin, book_path, acr, revision, model,
             lang['wiki'], kfx_json, mobi_html, mobi_codec, plugin_path,
             version, prefs['zh_wiki_variant'], prefs['search_people'],
-            notifications)
+            prefs['fandom'], notifications)
 
     return book_id, asin, book_path, mi, update_asin, is_kfx
 
@@ -74,7 +74,7 @@ def insert_lib_path(path):
 
 def create_files(create_ww, create_x, asin, book_path, acr, revision, model,
                  wiki_lang, kfx_json, mobi_html, mobi_codec, plugin_path,
-                 plugin_version, zh_wiki, search_people, notif):
+                 plugin_version, zh_wiki, search_people, fandom_url, notif):
     if notif:
         if kfx_json:
             last_start = max(d['position'] for d in kfx_json if d['type'] == 1)
@@ -92,17 +92,17 @@ def create_files(create_ww, create_x, asin, book_path, acr, revision, model,
         import spacy
 
         x_ray_conn, x_ray_path = create_x_ray_db(
-            asin, book_path, wiki_lang, plugin_path)
+            asin, book_path, wiki_lang, plugin_path, fandom_url)
         nlp = spacy.load(model, exclude=[
             'tok2vec', 'morphologizer', 'tagger',
             'parser', 'attribute_ruler', 'lemmatizer'])
         nlp.enable_pipe("senter")
         x_ray = X_Ray(
             x_ray_conn, wiki_lang, kfx_json, mobi_html, mobi_codec,
-            plugin_path, plugin_version, zh_wiki, search_people)
+            plugin_path, plugin_version, zh_wiki, search_people, fandom_url)
         for doc, start in nlp.pipe(
                 parse_book(kfx_json, mobi_html, mobi_codec), as_tuples=True):
-            find_named_entity(start, x_ray, doc, mobi_codec)
+            find_named_entity(start, x_ray, doc, mobi_codec, wiki_lang)
             if create_ww:
                 find_lemma(
                     start, doc.text, kw_processor, ll_conn, mobi_codec)
@@ -154,8 +154,8 @@ NER_LABELS = {
 }
 
 
-def find_named_entity(start, x_ray, doc, mobi_codec):
-    len_limit = 3 if x_ray.lang == 'en' else 2
+def find_named_entity(start, x_ray, doc, mobi_codec, lang):
+    len_limit = 3 if lang == 'en' else 2
 
     for ent in doc.ents:
         if ent.label_ not in NER_LABELS:
@@ -163,7 +163,7 @@ def find_named_entity(start, x_ray, doc, mobi_codec):
 
         text = re.sub(r'^\W+', '', ent.text)
         text = re.sub(r'\W+$', '', text)
-        if x_ray.lang == 'en':
+        if lang == 'en':
             if re.match(r'c?hapter', text, re.IGNORECASE):
                 continue
             text = re.sub(r"['’][sd]$", '', text)

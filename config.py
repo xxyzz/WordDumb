@@ -30,19 +30,6 @@ class ConfigWidget(QWidget):
         self.search_people_box.setChecked(prefs['search_people'])
         vl.addWidget(self.search_people_box)
 
-        fandom_hl = QHBoxLayout()
-        fandom_label = QLabel('Fandom URL')
-        fandom_hl.addWidget(fandom_label)
-        self.fandom_url = QLineEdit()
-        self.fandom_url.setText(prefs['fandom'])
-        self.fandom_url.setPlaceholderText('https://x.fandom.com')
-        fandom_re = QRegularExpression(r'https:\/\/\w+\.fandom\.com')
-        fandom_validator = QRegularExpressionValidator(fandom_re)
-        self.fandom_url.setValidator(fandom_validator)
-
-        fandom_hl.addWidget(self.fandom_url)
-        vl.addLayout(fandom_hl)
-
         model_size_hl = QHBoxLayout()
         model_size_label = QLabel(
             '<a href="https://spacy.io/models/en">spaCy model</a> size')
@@ -79,6 +66,18 @@ class ConfigWidget(QWidget):
         zh_wiki_hl.addWidget(zh_label)
         zh_wiki_hl.addWidget(self.zh_wiki_box)
         vl.addLayout(zh_wiki_hl)
+
+        fandom_hl = QHBoxLayout()
+        fandom_label = QLabel('Fandom URL')
+        fandom_hl.addWidget(fandom_label)
+        self.fandom_url = QLineEdit()
+        self.fandom_url.setText(prefs['fandom'])
+        self.fandom_url.setPlaceholderText('https://x.fandom.com')
+        fandom_re = QRegularExpression(r'https:\/\/\w+\.fandom\.com')
+        fandom_validator = QRegularExpressionValidator(fandom_re)
+        self.fandom_url.setValidator(fandom_validator)
+        fandom_hl.addWidget(self.fandom_url)
+        vl.addLayout(fandom_hl)
 
         donate_button = QPushButton('Tree-fiddy?')
         donate_button.clicked.connect(self.donate)

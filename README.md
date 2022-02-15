@@ -75,7 +75,7 @@ https://user-images.githubusercontent.com/21101839/124686751-39f3aa00-df06-11eb-
 
 - Set preferences
 
-    - Enable "Fetch X-Ray people descriptions from Wikipedia" option for nonfiction books and novels that have character pages on Wikipedia. A quote from the book will be used if it's disabled or the page is not found.
+    - Enable "Fetch X-Ray people descriptions from Wikipedia or Fandom" option for nonfiction books and novels that have character pages on Wikipedia or Fandom. A quote from the book will be used if it's disabled or the page is not found.
 
     - Larger spaCy model has higher [Named-entity recognition](https://en.wikipedia.org/wiki/Named-entity_recognition) precision therefore improves X-Ray quality, more details at https://spacy.io/models/en
 

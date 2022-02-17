@@ -1,7 +1,7 @@
 {
   "blis": {
     "compiled": true,
-    "version": "0.7.5"
+    "version": "0.7.6"
   },
   "catalogue": {
     "compiled": false,
@@ -13,7 +13,7 @@
   },
   "charset-normalizer": {
     "compiled": false,
-    "version": "2.0.11"
+    "version": "2.0.12"
   },
   "click": {
     "compiled": false,
@@ -61,7 +61,7 @@
   },
   "rapidfuzz": {
     "compiled": true,
-    "version": "2.0.1"
+    "version": "2.0.2"
   },
   "requests": {
     "compiled": false,
@@ -101,7 +101,7 @@
   },
   "typing-extensions": {
     "compiled": false,
-    "version": "4.0.1"
+    "version": "4.1.1"
   },
   "urllib3": {
     "compiled": false,

@@ -26,7 +26,8 @@ def convert(path, table, sql):
         dic[table].append(d)
     test_db.close()
 
-    with open(f'{".".join(db_file.stem.split(".")[:2])}.json', 'r+') as f:
+    with open(f'{".".join(db_file.stem.split(".")[:2])}.json', 'r+',
+              encoding='utf_8') as f:
         new_dic = json.load(f)
         new_dic.update(dic)
         f.seek(0)

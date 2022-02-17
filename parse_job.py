@@ -173,13 +173,16 @@ def find_named_entity(start, x_ray, doc, mobi_codec, lang):
             continue
 
         new_start_char = ent.start_char + ent.text.index(text)
+        selectable_text = text
+        if lang == 'en' and (m := re.search(r'\s', doc.text[ent.end_char:])):
+            selectable_text = doc.text[new_start_char:ent.end_char + m.start()]
         if mobi_codec:
             ent_start = start + len(
                 doc.text[:new_start_char].encode(mobi_codec))
-            ent_len = len(text.encode(mobi_codec))
+            ent_len = len(selectable_text.encode(mobi_codec))
         else:
             ent_start = start + len(doc.text[:new_start_char])
-            ent_len = len(text)
+            ent_len = len(selectable_text)
 
         x_ray.search(text, ent.label_ in ['PERSON', 'PER', 'persName'],
                      ent_start, ent.sent.text, ent_len)

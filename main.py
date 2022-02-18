@@ -22,6 +22,9 @@ class ParseBook:
         plugin_path = Path(config_dir).joinpath('plugins/WordDumb.zip')
         self.languages = load_json_or_pickle(
             plugin_path, 'data/languages.json')
+        self.github_url = 'https://github.com/xxyzz/WordDumb'
+        self.report_bug = 'please copy error message then report bug at ' \
+            f'<a href="{self.github_url}/issues">GitHub</a>'
 
     def parse(self, create_ww=True, create_x=True):
         # get currently selected books
@@ -74,11 +77,9 @@ class ParseBook:
                'subprocess.py' in job.details:
                 self.error_dialog(
                     'We want... a shrubbery!',
-                    '''
-                    Please read the <a
-                    href='https://github.com/xxyzz/WordDumb#how-to-use'>document</a>
-                    of how to install Python.
-                    ''', job.details)
+                    f"Please read the <a href='{self.github_url}#how-to-use'>"
+                    'document</a> of how to install Python.',
+                    job.details)
             elif PROXY_ERR_MSG in job.details:
                 self.proxy_error(job.details)
             elif 'ConnectionError' in job.details \
@@ -115,7 +116,10 @@ class ParseBook:
                 self.error_dialog('Requires KFX Input',
                                   'Install the KFX Input plugin.', job.details)
             else:
-                self.gui.job_exception(job, dialog_title='Tonnerre de Brest!')
+                self.error_dialog(
+                    'Tonnerre de Brest!',
+                    f'An error occurred, {self.report_bug}',
+                    job.details)
             return True
         return False
 
@@ -142,7 +146,7 @@ class ParseBook:
         else:
             self.error_dialog(
                 'Mille millions de mille milliards de mille sabords!',
-                'subprocess.run() failed',
+                f'subprocess.run() failed, {self.report_bug}',
                 job.details + exception)
 
     def error_dialog(self, title, message, error):

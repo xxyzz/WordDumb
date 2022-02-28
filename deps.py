@@ -22,25 +22,25 @@ class InstallDeps:
         self.install_x_ray_deps()
 
     def which_python(self):
-        py = 'python3'
+        self.py = 'python3'
         self.py_v = '.'.join(platform.python_version_tuple()[:2])
         if iswindows:
-            py = 'py' if shutil.which('py') else 'python'
+            self.py = 'py' if shutil.which('py') else 'python'
         elif ismacos:
             # stupid macOS loses PATH when calibre is not launched in terminal
             if self.machine == 'arm64':
-                py = '/opt/homebrew/bin/python3'
+                self.py = '/opt/homebrew/bin/python3'
             else:
-                py = '/usr/local/bin/python3'
-            if not shutil.which(py):
-                py = '/usr/bin/python3'  # Command Line Tools
+                self.py = '/usr/local/bin/python3'
+            if not shutil.which(self.py):
+                self.py = '/usr/bin/python3'  # Command Line Tools
+                self.upgrade_mac_pip()
             command = 'import platform;' \
                 'print(".".join(platform.python_version_tuple()[:2]))'
-            r = subprocess.run([py, '-c', command], check=True,
+            r = subprocess.run([self.py, '-c', command], check=True,
                                capture_output=True, text=True)
             self.py_v = r.stdout.strip()
 
-        self.py = py
         self.libs_path = Path(config_dir).joinpath(
             f"plugins/worddumb-libs-py{self.py_v}")
 
@@ -85,9 +85,6 @@ class InstallDeps:
                     args.append('win_amd64')
                 else:
                     raise Exception('32BIT_CALIBRE')
-            elif ismacos and self.machine == 'x86_64':
-                # prevent command line tool's pip from compiling package
-                args.extend(['--platform', 'macosx_10_9_x86_64'])
         if url:
             args.append(url)
         elif pkg_version:
@@ -106,3 +103,10 @@ class InstallDeps:
         if ismacos and self.machine == 'arm64':
             for pkg, value in data['apple'].items():
                 self.pip_install(pkg, value['version'], value['compiled'])
+
+    def upgrade_mac_pip(self):
+        r = subprocess.run([self.py, '-m', 'pip', '--version'],
+                           check=True, capture_output=True, text=True)
+        if r.stdout.startswith('pip 20'):
+            subprocess.run([self.py, '-m', 'pip', 'install', '-U', 'pip'],
+                           check=True, capture_output=True, text=True)

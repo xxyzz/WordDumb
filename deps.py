@@ -105,8 +105,12 @@ class InstallDeps:
                 self.pip_install(pkg, value['version'], value['compiled'])
 
     def upgrade_mac_pip(self):
+        import re
+
         r = subprocess.run([self.py, '-m', 'pip', '--version'],
                            check=True, capture_output=True, text=True)
-        if r.stdout.startswith('pip 20'):
-            subprocess.run([self.py, '-m', 'pip', 'install', '-U', 'pip'],
-                           check=True, capture_output=True, text=True)
+        m = re.match(r'pip (\d+)\.', r.stdout)
+        if m and int(m.group(1)) < 22:
+            subprocess.run(
+                [self.py, '-m', 'pip', 'install', '--user', '-U', 'pip'],
+                check=True, capture_output=True, text=True)

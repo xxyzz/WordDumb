@@ -72,8 +72,9 @@ class ConfigWidget(QWidget):
         fandom_hl.addWidget(fandom_label)
         self.fandom_url = QLineEdit()
         self.fandom_url.setText(prefs['fandom'])
-        self.fandom_url.setPlaceholderText('https://x.fandom.com')
-        fandom_re = QRegularExpression(r'https:\/\/[\w-]+\.fandom\.com')
+        self.fandom_url.setPlaceholderText('https://*.fandom.com[/language]')
+        fandom_re = QRegularExpression(
+            r'https:\/\/[\w-]+\.fandom\.com(\/\w{2})?')
         fandom_validator = QRegularExpressionValidator(fandom_re)
         self.fandom_url.setValidator(fandom_validator)
         fandom_hl.addWidget(self.fandom_url)

@@ -32,10 +32,15 @@ class ParseBook:
         for data in filter(None, [check_metadata(
                 self.gui.current_db.new_api,
                 book_id, self.languages) for book_id in ids]):
-            show_job_pointer = True
-            if data[-1]['wiki'] != 'en':
+            _, book_fmt, _, mi, lang = data
+            if book_fmt == 'EPUB':
                 create_ww = False
-            title = data[-2].get('title')
+            if not create_ww and not create_x:
+                continue
+            show_job_pointer = True
+            if lang['wiki'] != 'en':
+                create_ww = False
+            title = mi.get('title')
             notif = []
             if create_ww:
                 notif.append('Word Wise')
@@ -57,12 +62,12 @@ class ParseBook:
         if self.job_failed(job):
             return
 
-        book_id, _, _, mi, update_asin, _ = job.result
+        book_id, _, _, mi, update_asin, book_fmt = job.result
         if update_asin:
             self.gui.current_db.new_api.set_metadata(book_id, mi)
 
         # send files to device
-        if kindle_connected(self.gui):
+        if device_connected(self.gui, book_fmt):
             SendFile(self.gui, job.result, notif).send_files(None)
         else:
             self.gui.status_bar.show_message(notif)

@@ -25,14 +25,15 @@ parser.add_argument('plugin_path')
 parser.add_argument('version')
 parser.add_argument('zh_wiki')
 parser.add_argument('fandom')
+parser.add_argument('book_fmt')
 args = parser.parse_args()
 
 kfx_json = None
 mobi_html = None
-if args.mobi_codec:
-    mobi_html = sys.stdin.read().encode(args.mobi_codec)
-else:
+if args.book_fmt == 'KFX':
     kfx_json = json.load(sys.stdin)
+elif args.book_fmt != 'EPUB':
+    mobi_html = sys.stdin.read().encode(args.mobi_codec)
 
 create_files(
     args.l, True, args.asin, args.book_path, args.acr, args.revision,

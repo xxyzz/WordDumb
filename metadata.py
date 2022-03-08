@@ -18,7 +18,7 @@ def check_metadata(db, book_id, languages):
 
     book_fmts = db.formats(book_id)
     chosen_fmt = None
-    supported_fmts = ['KFX', 'AZW3', 'AZW', 'MOBI']
+    supported_fmts = ['KFX', 'AZW3', 'AZW', 'MOBI', 'EPUB']
     if (fmts := [f for f in supported_fmts if f in book_fmts]):
         chosen_fmt = fmts[0]
     else:
@@ -46,14 +46,16 @@ def validate_asin(asin, mi):
     return asin, update_asin
 
 
-def get_asin_etc(book_path, is_kfx, mi, library_asin=None):
+def get_asin_etc(book_path, book_fmt, mi, library_asin=None):
     revision = ''
     kfx_json = None
     mobi_html = None
     mobi_codec = ''
     update_asin = False
+    asin = ''
+    acr = ''
 
-    if is_kfx:
+    if book_fmt == 'KFX':
         from calibre_plugins.kfx_input.kfxlib import YJ_Book, YJ_Metadata
 
         yj_book = YJ_Book(book_path)
@@ -74,7 +76,7 @@ def get_asin_etc(book_path, is_kfx, mi, library_asin=None):
                 f.write(yj_book.convert_to_single_kfx())
         if library_asin is None:
             kfx_json = json.loads(yj_book.convert_to_json_content())['data']
-    else:
+    elif book_fmt != 'EPUB':
         from calibre.ebooks.metadata.mobi import MetadataUpdater
 
         with open(book_path, 'r+b') as f:

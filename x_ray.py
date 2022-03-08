@@ -37,7 +37,7 @@ class X_Ray:
         self.search_people = search_people
         self.mediawiki = mediawiki
 
-    def insert_wiki_summary(self, key, title, summary):
+    def insert_wiki_summary(self, key, summary):
         insert_x_entity_description(
                 self.conn, (summary, key, 1, self.pending_dic[key]['id']))
 

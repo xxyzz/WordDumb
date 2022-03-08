@@ -79,16 +79,16 @@ class MediaWiki:
                 continue  # very likely a disambiguation page
             self.cache_dic[title] = summary
             if title in title_dic:
-                callback(title, title, summary)
+                callback(title, summary)
                 del title_dic[title]
             for key in converts.get(title, []):
                 if key in title_dic:
-                    callback(key, title, summary)
+                    callback(key, summary)
                     del title_dic[key]
                     self.cache_dic[key] = summary
                 for k in converts.get(key, []):
                     if k in title_dic:  # normalize then redirect
-                        callback(k, title, summary)
+                        callback(k, summary)
                         del title_dic[k]
                         self.cache_dic[k] = summary
 

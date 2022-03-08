@@ -82,7 +82,7 @@ class X_Ray_EPUB:
                 return
             if name in self.mediawiki.cache_dic and \
                self.mediawiki.cache_dic[name]:
-                self.update_summary(name, name, self.mediawiki.cache_dic[name])
+                self.update_summary(name, self.mediawiki.cache_dic[name])
             else:
                 self.pending_dic[name] = None
                 if len(self.pending_dic) == MAX_EXLIMIT:
@@ -91,7 +91,7 @@ class X_Ray_EPUB:
 
         self.ent_dic[xhtml].append((start, end, name, ent_id))
 
-    def update_summary(self, key, title, summary):
+    def update_summary(self, key, summary):
         self.entities[key]['summary'] = summary
         self.entities[key]['quote'] = False
 

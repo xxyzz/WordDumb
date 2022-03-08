@@ -33,8 +33,8 @@ class X_Ray_EPUB:
         self.extract_folder = Path(book_path).with_name('extract')
         if self.extract_folder.exists():
             shutil.rmtree(self.extract_folder)
-        self.content_folder = None
-        self.xhtml_folder = None
+        self.xhtml_folder = self.extract_folder
+        self.xhtml_href_has_folder = False
 
     def extract_epub(self):
         from lxml import etree
@@ -45,16 +45,12 @@ class X_Ray_EPUB:
         with self.extract_folder.joinpath(
                 'META-INF/container.xml').open('rb') as f:
             root = etree.fromstring(f.read())
-            self.opf_path = root.find(
+            opf_path = root.find(
                 './/n:rootfile', NAMESPACES).get("full-path")
-            content_folder = Path(self.opf_path).parent.name
-            if content_folder:
-                self.content_folder = content_folder
-            else:
-                for folder in ['OEBPS', 'epub']:
-                    if self.extract_folder.joinpath(folder).is_dir():
-                        self.content_folder = folder
-        with self.extract_folder.joinpath(self.opf_path).open('rb') as opf:
+            self.opf_path = self.extract_folder.joinpath(opf_path)
+            if not self.opf_path.exists():
+                self.opf_path = next(self.extract_folder.rglob(opf_path))
+        with self.opf_path.open('rb') as opf:
             self.opf_root = etree.fromstring(opf.read())
             item_path = 'opf:manifest/opf:item' \
                 '[@media-type="application/xhtml+xml"]'
@@ -62,23 +58,22 @@ class X_Ray_EPUB:
                 if item.get('properties') == 'nav':
                     continue
                 xhtml = item.get("href")
-                xhtml_folder = Path(xhtml).parent.name
-                if xhtml_folder and xhtml_folder != self.xhtml_folder \
-                   and xhtml_folder != self.content_folder:
-                    self.xhtml_folder = xhtml_folder
-                if not xhtml.startswith(self.content_folder):
-                    xhtml = f'{self.content_folder}/{xhtml}'
                 xhtml_path = self.extract_folder.joinpath(xhtml)
-                if xhtml_path.exists():
-                    with xhtml_path.open() as f:
-                        xhtml_str = f.read()
-                        body_start = xhtml_str.index('<body')
-                        body_end = xhtml_str.index('</body>') + len('</body>')
-                        body_str = xhtml_str[body_start:body_end]
-                        for m in re.finditer(r'>[^<]+<', body_str):
-                            yield (m.group(0)[1:-1], (m.start() + 1, xhtml))
+                if not xhtml_path.exists():
+                    xhtml_path = next(self.extract_folder.rglob(xhtml))
+                if not xhtml_path.parent.samefile(self.extract_folder):
+                    self.xhtml_folder = xhtml_path.parent
+                if '/' in xhtml:
+                    self.xhtml_href_has_folder = True
+                with xhtml_path.open() as f:
+                    xhtml_str = f.read()
+                    body_start = xhtml_str.index('<body')
+                    body_end = xhtml_str.index('</body>') + len('</body>')
+                    body_str = xhtml_str[body_start:body_end]
+                    for m in re.finditer(r'>[^<]+<', body_str):
+                        yield (m.group(0)[1:-1], (m.start() + 1, xhtml_path))
 
-    def search(self, name, is_person, sent, start, end, xhtml):
+    def search(self, name, is_person, sent, start, end, xhtml_path):
         from rapidfuzz.process import extractOne
 
         if (r := extractOne(
@@ -99,7 +94,7 @@ class X_Ray_EPUB:
                         self.mediawiki.query(
                             self.pending_dic, self.update_summary)
                         self.pending_dic.clear()
-                    
+
         self.ent_dic[xhtml_path].append((start, end, name, ent_id))
 
     def update_summary(self, key, summary):
@@ -112,8 +107,8 @@ class X_Ray_EPUB:
         self.mediawiki.save_cache()
 
     def insert_a_tags(self):
-        for xhtml, ent_list in self.ent_dic.items():
-            with self.extract_folder.joinpath(xhtml).open() as f:
+        for xhtml_path, ent_list in self.ent_dic.items():
+            with xhtml_path.open() as f:
                 xhtml_str = f.read()
                 body_start = xhtml_str.index('<body')
                 body_end = xhtml_str.index('</body>') + len('</body>')
@@ -129,7 +124,7 @@ class X_Ray_EPUB:
             s += body_str[last_end:]
             new_xhtml_str = xhtml_str[:body_start] + s + xhtml_str[body_end:]
 
-            with self.extract_folder.joinpath(xhtml).open('w') as f:
+            with xhtml_path.open('w') as f:
                 if NAMESPACES['ops'] not in new_xhtml_str:
                     # add epub namespace
                     new_xhtml_str = new_xhtml_str.replace(
@@ -159,29 +154,22 @@ class X_Ray_EPUB:
                 {self.mediawiki.source_name}</a>
                 '''
             s += '</aside>'
-
         s += '</body></html>'
-
-        if self.xhtml_folder:
-            x_ray_href = f'{self.xhtml_folder}/x_ray.xhtml'
-            x_ray_path = self.extract_folder.joinpath(
-                f'{self.content_folder}/{x_ray_href}')
-        else:
-            x_ray_href = f'{self.content_folder}/x_ray.xhtml'
-            x_ray_path = self.extract_folder.joinpath(x_ray_href)
-
-        with x_ray_path.open('w') as f:
+        with self.xhtml_folder.joinpath('x_ray.xhtml').open('w') as f:
             f.write(s)
 
-        manifest = self.opf_root.find('opf:manifest', NAMESPACES)
-        s = f'<item href="{x_ray_href}" id="x_ray.xhtml" '\
+        if self.xhtml_href_has_folder:
+            x_ray_href = f'{self.xhtml_folder.name}/x_ray.xhtml'
+        else:
+            x_ray_href = 'x_ray.xhtml'
+        s = f'<item href="{x_ray_href}" id="x_ray.xhtml" ' \
             'media-type="application/xhtml+xml"/>'
+        manifest = self.opf_root.find('opf:manifest', NAMESPACES)
         manifest.append(etree.fromstring(s))
         spine = self.opf_root.find('opf:spine', NAMESPACES)
         s = '<itemref idref="x_ray.xhtml"/>'
         spine.append(etree.fromstring(s))
-
-        with self.extract_folder.joinpath(self.opf_path).open('w') as f:
+        with self.opf_path.open('w') as f:
             f.write(etree.tostring(self.opf_root, encoding=str))
 
         self.book_path = Path(self.book_path)

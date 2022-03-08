@@ -184,7 +184,7 @@ NER_LABELS = {
 PERSON_LABELS = ['PERSON', 'PER', 'persName']
 
 
-def find_named_entity(start, x_ray, doc, mobi_codec, lang, xhtml=None):
+def find_named_entity(start, x_ray, doc, mobi_codec, lang, xhtml_path=None):
     len_limit = 3 if lang == 'en' else 2
 
     for ent in doc.ents:
@@ -203,10 +203,10 @@ def find_named_entity(start, x_ray, doc, mobi_codec, lang, xhtml=None):
             continue
 
         new_start_char = ent.start_char + ent.text.index(text)
-        if xhtml:  # EPUB
+        if xhtml_path:  # EPUB
             x_ray.search(text, ent.label_ in PERSON_LABELS,
                          ent.sent.text, start + new_start_char,
-                         start + new_start_char + len(text), xhtml)
+                         start + new_start_char + len(text), xhtml_path)
             continue
 
         selectable_text = text

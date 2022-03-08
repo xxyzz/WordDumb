@@ -89,18 +89,18 @@ class X_Ray_EPUB:
             self.num_ents += 1
             self.entities[name] = {
                 'id': ent_id, 'summary': sent, 'quote': True}
-            if is_person and not self.search_people:
-                return
-            if name in self.mediawiki.cache_dic and \
-               self.mediawiki.cache_dic[name]:
-                self.update_summary(name, self.mediawiki.cache_dic[name])
-            else:
-                self.pending_dic[name] = None
-                if len(self.pending_dic) == MAX_EXLIMIT:
-                    self.mediawiki.query(self.pending_dic, self.update_summary)
-                    self.pending_dic.clear()
-
-        self.ent_dic[xhtml].append((start, end, name, ent_id))
+            if not is_person or self.search_people:
+                if name in self.mediawiki.cache_dic and \
+                   self.mediawiki.cache_dic[name]:
+                    self.update_summary(name, self.mediawiki.cache_dic[name])
+                else:
+                    self.pending_dic[name] = None
+                    if len(self.pending_dic) == MAX_EXLIMIT:
+                        self.mediawiki.query(
+                            self.pending_dic, self.update_summary)
+                        self.pending_dic.clear()
+                    
+        self.ent_dic[xhtml_path].append((start, end, name, ent_id))
 
     def update_summary(self, key, summary):
         self.entities[key]['summary'] = summary

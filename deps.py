@@ -12,11 +12,12 @@ from .unzip import load_json_or_pickle
 
 
 class InstallDeps:
-    def __init__(self, model, plugin_path, notif):
+    def __init__(self, model, plugin_path, book_fmt, notif):
         self.model = model
         self.model_v = '3.2.0'
         self.plugin_path = plugin_path
         self.notif = notif
+        self.book_fmt = book_fmt
         self.machine = platform.machine()
         self.which_python()
         self.install_x_ray_deps()
@@ -100,9 +101,13 @@ class InstallDeps:
             for pkg, value in data[lang].items():
                 self.pip_install(pkg, value['version'], value['compiled'])
 
-        if ismacos and self.machine == 'arm64':
-            for pkg, value in data['apple'].items():
-                self.pip_install(pkg, value['version'], value['compiled'])
+        if ismacos:
+            if self.book_fmt == 'EPUB':
+                for pkg, value in data['mac_epub'].items():
+                    self.pip_install(pkg, value['version'], value['compiled'])
+            if self.machine == 'arm64':
+                for pkg, value in data['mac_arm'].items():
+                    self.pip_install(pkg, value['version'], value['compiled'])
 
     def upgrade_mac_pip(self):
         import re

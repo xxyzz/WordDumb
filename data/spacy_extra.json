@@ -19,10 +19,16 @@
       "version": "0.0.28"
     }
   },
-  "apple": {
+  "mac_arm": {
     "thinc-apple-ops": {
       "compiled": true,
       "version": "0.0.5"
+    }
+  },
+  "mac_epub": {
+    "lxml": {
+      "compiled": true,
+      "version": "4.8.0"
     }
   }
 }

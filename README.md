@@ -1,6 +1,6 @@
 # WordDumb
 
-A calibre plugin that generates Word Wise and X-Ray files then sends them to Kindle. Supports KFX, AZW3, AZW and MOBI eBooks.
+A calibre plugin that generates Word Wise and X-Ray files then sends them to Kindle. Supports KFX, AZW3, AZW, MOBI and EPUB eBooks.
 
 Languages supported by X-Ray: Català, Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Norsk bokmål, Polski, Português, Română, Ελληνικά, Македонски, Русский, 中文, 日本語.
 

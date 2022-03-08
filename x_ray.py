@@ -76,7 +76,8 @@ class X_Ray:
         else:
             self.pending_dic[key] = {'text': desc, 'id': self.entity_id}
             if len(self.pending_dic) == MAX_EXLIMIT:
-                self.mediawiki.query(self.insert_wiki_summary)
+                self.mediawiki.query(
+                    self.pending_dic, self.insert_wiki_summary)
                 self.insert_rest_pending_entities()
 
     def insert_occurrence(self, entity_id, is_person, start, length):

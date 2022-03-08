@@ -13,7 +13,8 @@ class SendFile:
         self.gui = gui
         self.device_manager = gui.device_manager
         self.notif = notif
-        self.book_id, self.asin, self.book_path, self.mi, _, self.is_kfx = data
+        (self.book_id, self.asin, self.book_path,
+         self.mi, _, self.book_fmt) = data
         self.ll_path = get_ll_path(self.asin, self.book_path)
         self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
 
@@ -24,18 +25,22 @@ class SendFile:
                 self.gui.job_exception(job, dialog_title='Upload book failed')
                 return
             self.gui.books_uploaded(job)
+            if self.book_fmt == 'EPUB':
+                self.gui.status_bar.show_message(self.notif)
+                Path(self.book_path).unlink()
+                return
 
         [has_book, _, _, _, paths] = self.gui.book_on_device(self.book_id)
         # /Volumes/Kindle
         device_prefix = self.device_manager.device._main_prefix
-        if has_book:
+        if has_book and self.book_fmt != 'EPUB':
             if job is None:
-                get_asin_etc(self.book_path, self.is_kfx, self.mi, self.asin)
+                get_asin_etc(self.book_path, self.book_fmt, self.mi, self.asin)
             device_book_path = Path(device_prefix).joinpath(next(iter(paths)))
             self.move_file_to_device(self.ll_path, device_book_path)
             self.move_file_to_device(self.x_ray_path, device_book_path)
             self.gui.status_bar.show_message(self.notif)
-        elif job is None:
+        elif job is None or self.book_fmt == 'EPUB':
             # upload book and cover to device
             self.gui.update_thumbnail(self.mi)
             job = self.device_manager.upload_books(
@@ -60,9 +65,10 @@ class SendFile:
         shutil.move(str(file_path), str(dst_path))
 
 
-def kindle_connected(gui):
+def device_connected(gui, book_fmt):
     if not gui.device_manager.is_device_present:
         return False
-    if gui.device_manager.device.VENDOR_NAME != 'KINDLE':
+    if book_fmt != 'EPUB' and \
+       gui.device_manager.device.VENDOR_NAME != 'KINDLE':
         return False
     return True

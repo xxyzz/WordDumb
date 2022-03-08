@@ -66,7 +66,7 @@ def do_job(data, create_ww=True, create_x=True,
             input_str = ''
         else:
             input_str = mobi_html.decode(mobi_codec)
- 
+
         subprocess.run(
             args, input=input_str, check=True, capture_output=True, text=True)
     else:

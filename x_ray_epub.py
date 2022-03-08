@@ -144,11 +144,10 @@ class X_Ray_EPUB:
             '''
             if not data['quote']:
                 s += f'''
-                <br>
                 <a href="{self.mediawiki.source_link}{entity}">
                 {self.mediawiki.source_name}</a>
                 '''
-            s += '</aside><hr>'
+            s += '</aside>'
 
         s += '</body></html>'
 

@@ -50,15 +50,17 @@ class X_Ray_EPUB:
             content_folder = Path(self.opf_path).parent.name
             if content_folder:
                 self.content_folder = content_folder
-            elif self.extract_folder.joinpath('OEBPS').is_dir():
-                self.content_folder = 'OEBPS'
-            elif self.extract_folder.joinpath('epub').is_dir():
-                self.content_folder = 'epub'
+            else:
+                for folder in ['OEBPS', 'epub']:
+                    if self.extract_folder.joinpath(folder).is_dir():
+                        self.content_folder = folder
         with self.extract_folder.joinpath(self.opf_path).open('rb') as opf:
             self.opf_root = etree.fromstring(opf.read())
             item_path = 'opf:manifest/opf:item' \
                 '[@media-type="application/xhtml+xml"]'
             for item in self.opf_root.findall(item_path, NAMESPACES):
+                if item.get('properties') == 'nav':
+                    continue
                 xhtml = item.get("href")
                 xhtml_folder = Path(xhtml).parent.name
                 if xhtml_folder and xhtml_folder != self.xhtml_folder \

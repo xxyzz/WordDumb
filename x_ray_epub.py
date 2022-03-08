@@ -33,7 +33,8 @@ class X_Ray_EPUB:
         self.extract_folder = Path(book_path).with_name('extract')
         if self.extract_folder.exists():
             shutil.rmtree(self.extract_folder)
-        self.xhtml_folder = 'OEBPS'
+        self.content_folder = None
+        self.xhtml_folder = None
 
     def extract_epub(self):
         from lxml import etree
@@ -46,6 +47,13 @@ class X_Ray_EPUB:
             root = etree.fromstring(f.read())
             self.opf_path = root.find(
                 './/n:rootfile', NAMESPACES).get("full-path")
+            content_folder = Path(self.opf_path).parent.name
+            if content_folder:
+                self.content_folder = content_folder
+            elif self.extract_folder.joinpath('OEBPS').is_dir():
+                self.content_folder = 'OEBPS'
+            elif self.extract_folder.joinpath('epub').is_dir():
+                self.content_folder = 'epub'
         with self.extract_folder.joinpath(self.opf_path).open('rb') as opf:
             self.opf_root = etree.fromstring(opf.read())
             item_path = 'opf:manifest/opf:item' \
@@ -53,10 +61,11 @@ class X_Ray_EPUB:
             for item in self.opf_root.findall(item_path, NAMESPACES):
                 xhtml = item.get("href")
                 xhtml_folder = Path(xhtml).parent.name
-                if xhtml_folder and xhtml_folder != self.xhtml_folder:
+                if xhtml_folder and xhtml_folder != self.xhtml_folder \
+                   and xhtml_folder != self.content_folder:
                     self.xhtml_folder = xhtml_folder
-                if not xhtml.startswith('OEBPS'):
-                    xhtml = f'OEBPS/{xhtml}'
+                if not xhtml.startswith(self.content_folder):
+                    xhtml = f'{self.content_folder}/{xhtml}'
                 xhtml_path = self.extract_folder.joinpath(xhtml)
                 if xhtml_path.exists():
                     with xhtml_path.open() as f:
@@ -151,12 +160,14 @@ class X_Ray_EPUB:
 
         s += '</body></html>'
 
-        if self.xhtml_folder == 'OEBPS':
-            x_ray_href = 'OEBPS/x_ray.xhtml'
-            x_ray_path = self.extract_folder.joinpath(x_ray_href)
-        else:
+        if self.xhtml_folder:
             x_ray_href = f'{self.xhtml_folder}/x_ray.xhtml'
-            x_ray_path = self.extract_folder.joinpath(f'OEBPS/{x_ray_href}')
+            x_ray_path = self.extract_folder.joinpath(
+                f'{self.content_folder}/{x_ray_href}')
+        else:
+            x_ray_href = f'{self.content_folder}/x_ray.xhtml'
+            x_ray_path = self.extract_folder.joinpath(x_ray_href)
+
         with x_ray_path.open('w') as f:
             f.write(s)
 

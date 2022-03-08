@@ -1,30 +1,25 @@
 #!/usr/bin/env python3
 
 import re
-from collections import Counter, defaultdict
-from pathlib import Path
+from collections import Counter
 
 try:
     from .database import (create_x_indices, insert_x_book_metadata,
                            insert_x_entity, insert_x_entity_description,
                            insert_x_excerpt_image, insert_x_occurrence,
                            insert_x_type, save_db)
-    from .unzip import load_wiki_cache, save_wiki_cache
+    from .mediawiki import MAX_EXLIMIT, SCORE_THRESHOLD
 except ImportError:
     from database import (create_x_indices, insert_x_book_metadata,
                           insert_x_entity, insert_x_entity_description,
                           insert_x_excerpt_image, insert_x_occurrence,
                           insert_x_type, save_db)
-    from unzip import load_wiki_cache, save_wiki_cache
-
-MAX_EXLIMIT = 20
-SCORE_THRESHOLD = 85.7
+    from mediawiki import MAX_EXLIMIT, SCORE_THRESHOLD
 
 
 class X_Ray:
-    def __init__(self, conn, lang, kfx_json, mobi_html, mobi_codec,
-                 plugin_path, plugin_version, zh_wiki, search_people,
-                 fandom_url):
+    def __init__(self, conn, kfx_json, mobi_html, mobi_codec,
+                 search_people, mediawiki):
         self.conn = conn
         self.entity_id = 1
         self.num_people = 0
@@ -34,88 +29,24 @@ class X_Ray:
         self.people_counter = Counter()
         self.terms = {}
         self.terms_counter = Counter()
-        self.pending_terms = {}
-        self.pending_people = {}
+        self.pending_dic = {}
         self.num_images = 0
         self.kfx_json = kfx_json
         self.mobi_html = mobi_html
         self.mobi_codec = mobi_codec
         self.search_people = search_people
-        if fandom_url:
-            self.wiki_api = f'{fandom_url}/api.php'
-            self.wiki_cache_path = Path(plugin_path).parent.joinpath(
-                f'worddumb-fandom/{fandom_url[8:]}.json')
-        else:
-            self.wiki_api = f'https://{lang}.wikipedia.org/w/api.php'
-            self.wiki_cache_path = Path(plugin_path).parent.joinpath(
-                f'worddumb-wikipedia/{lang}.json')
-        self.wiki_cache = load_wiki_cache(self.wiki_cache_path)
+        self.mediawiki = mediawiki
 
-        import requests
-        self.s = requests.Session()
-        self.s.params = {
-            'format': 'json',
-            'action': 'query',
-            'prop': 'extracts',
-            'exintro': 1,
-            'explaintext': 1,
-            'redirects': 1,
-            'exsentences': 7,
-            'formatversion': 2
-        }
-        self.s.headers.update({
-            'user-agent': f'WordDumb/{plugin_version} '
-            '(https://github.com/xxyzz/WordDumb)'
-        })
-        if lang == 'zh' and not fandom_url:
-            self.s.headers.update(
-                {'accept-language': f"zh-{zh_wiki}"})
+    def insert_wiki_summary(self, key, title, summary):
+        insert_x_entity_description(
+                self.conn, (summary, key, 1, self.pending_dic[key]['id']))
 
-    def insert_wiki_summary(self, pending_dic, key, title, summary):
-        # not a disambiguation page
-        if any(period in summary for period in ['.', '。']):
-            insert_x_entity_description(
-                self.conn, (summary, key, 1, pending_dic[key]['id']))
-            self.wiki_cache[key] = summary
-            del pending_dic[key]
-            if key != title and title not in self.wiki_cache:
-                self.wiki_cache[title] = summary
-
-    def search_wikipedia(self, pending_dic):
-        r = self.s.get(self.wiki_api,
-                       params={'titles': '|'.join(pending_dic.keys())})
-        data = r.json()
-        converts = defaultdict(list)
-        for t in ['normalized', 'redirects']:
-            for d in data['query'].get(t, []):
-                # different titles can be redirected to the same page
-                converts[d['to']].append(d['from'])
-
-        for v in data['query']['pages']:
-            if 'extract' not in v:  # missing or invalid
-                continue
-            # they are ordered by pageid, ehh
-            title = v['title']
-            summary = v['extract']
-            if title in pending_dic:
-                self.insert_wiki_summary(pending_dic, title, title, summary)
-            for key in converts.get(title, []):
-                if key in pending_dic:
-                    self.insert_wiki_summary(pending_dic, key, title, summary)
-                for k in converts.get(key, []):
-                    if k in pending_dic:  # normalize then redirect
-                        self.insert_wiki_summary(
-                            pending_dic, k, title, summary)
-
-        self.insert_rest_pending_entities(pending_dic)
-
-    def insert_rest_pending_entities(self, pending_dic):
-        for label, entity in pending_dic.items():
+    def insert_rest_pending_entities(self):
+        for label, entity in self.pending_dic.items():
             insert_x_entity_description(
                 self.conn, (entity['text'], label, None, entity['id']))
-            self.wiki_cache[label] = None
 
-        pending_dic.clear()
+        self.pending_dic.clear()
 
     def insert_entity(self, data, is_person, start, text, length):
         self.insert_occurrence(self.entity_id, is_person, start, length)
@@ -123,29 +54,30 @@ class X_Ray:
             self.people[data] = self.entity_id
             self.num_people += 1
             if self.search_people:
-                self.insert_description(data, text, self.pending_people)
+                self.insert_description(data, text)
             else:
                 insert_x_entity_description(
                     self.conn, (text, data, None, self.entity_id))
         else:
             self.terms[data] = self.entity_id
             self.num_terms += 1
-            self.insert_description(data, text, self.pending_terms)
+            self.insert_description(data, text)
 
         self.entity_id += 1
 
-    def insert_description(self, key, desc, pending_dic):
-        if key in self.wiki_cache:
+    def insert_description(self, key, desc):
+        if key in self.mediawiki.cache_dic:
             source = None
-            if (cached_desc := self.wiki_cache[key]):
+            if (cached_desc := self.mediawiki.cache_dic[key]):
                 desc = cached_desc
                 source = 1
             insert_x_entity_description(
                 self.conn, (desc, key, source, self.entity_id))
         else:
-            pending_dic[key] = {'text': desc, 'id': self.entity_id}
-            if len(pending_dic) == MAX_EXLIMIT:
-                self.search_wikipedia(pending_dic)
+            self.pending_dic[key] = {'text': desc, 'id': self.entity_id}
+            if len(self.pending_dic) == MAX_EXLIMIT:
+                self.mediawiki.query(self.insert_wiki_summary)
+                self.insert_rest_pending_entities()
 
     def insert_occurrence(self, entity_id, is_person, start, length):
         if is_person:
@@ -171,10 +103,9 @@ class X_Ray:
         def top_mentioned(counter):
             return ','.join(map(str, [e[0] for e in counter.most_common(10)]))
 
-        if len(self.pending_terms) > 0:
-            self.search_wikipedia(self.pending_terms)
-        if len(self.pending_people) > 0:
-            self.search_wikipedia(self.pending_people)
+        if len(self.pending_dic) > 0:
+            self.mediawiki.query(self.pending_dic, self.insert_wiki_summary)
+            self.insert_rest_pending_entities()
 
         insert_x_entity(
             self.conn,
@@ -202,10 +133,9 @@ class X_Ray:
         insert_x_type(
             self.conn, (2, 16, 17, 2, top_mentioned(self.terms_counter)))
 
-        self.s.close()
         create_x_indices(self.conn)
         save_db(self.conn, db_path)
-        save_wiki_cache(self.wiki_cache_path, self.wiki_cache)
+        self.mediawiki.save_cache()
 
     def find_kfx_images(self):
         images = set()

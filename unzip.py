@@ -12,17 +12,3 @@ def load_json_or_pickle(plugin_path, filepath):
                 return json.load(f)
             else:
                 return pickle.load(f)
-
-
-def load_wiki_cache(cache_path):
-    if cache_path.exists():
-        with cache_path.open() as f:
-            return json.load(f)
-    else:
-        return {}
-
-
-def save_wiki_cache(cache_path, cache_dic):
-    cache_path.parent.mkdir(exist_ok=True)
-    with cache_path.open('w') as f:
-        json.dump(cache_dic, f)

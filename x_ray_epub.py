@@ -85,9 +85,9 @@ class X_Ray_EPUB:
             self.entities[name] = {
                 'id': ent_id, 'summary': sent, 'quote': True}
             if not is_person or self.search_people:
-                if name in self.mediawiki.cache_dic and \
-                   self.mediawiki.cache_dic[name]:
-                    self.update_summary(name, self.mediawiki.cache_dic[name])
+                if name in self.mediawiki.cache_dic:
+                    if (cached_summary := self.mediawiki.cache_dic[name]):
+                        self.update_summary(name, cached_summary)
                 else:
                     self.pending_dic[name] = None
                     if len(self.pending_dic) == MAX_EXLIMIT:

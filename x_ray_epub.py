@@ -102,6 +102,8 @@ class X_Ray_EPUB:
         self.entities[key]['quote'] = False
 
     def modify_epub(self):
+        if len(self.pending_dic):
+            self.mediawiki.query(self.pending_dic, self.update_summary)
         self.insert_a_tags()
         self.create_x_ray_page()
         self.mediawiki.save_cache()

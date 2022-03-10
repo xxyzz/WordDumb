@@ -84,7 +84,7 @@ class ConfigWidget(QWidget):
         donate_button.clicked.connect(self.donate)
         vl.addWidget(donate_button)
 
-        github_button = QPushButton('Source code')
+        github_button = QPushButton('Source code and document')
         github_button.clicked.connect(self.github)
         vl.addWidget(github_button)
 

@@ -38,7 +38,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   # choco install calibre
   ```
 
-- Install Python(pip) for X-Ray
+- Install Python(pip) for X-Ray(optional if you only create Word Wise)
 
   - Arch Linux
 

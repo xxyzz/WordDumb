@@ -54,7 +54,7 @@ class X_Ray_EPUB:
             self.opf_root = etree.fromstring(opf.read())
             item_path = 'opf:manifest/opf:item' \
                 '[@media-type="application/xhtml+xml"]'
-            for item in self.opf_root.findall(item_path, NAMESPACES):
+            for item in self.opf_root.iterfind(item_path, NAMESPACES):
                 if item.get('properties') == 'nav':
                     continue
                 xhtml = item.get("href")

@@ -1,5 +1,28 @@
 # Contributing
 
+## Debug
+
+```
+// run this script when debugging for the first time and when data/lemmas.json is changed
+$ ./data/dump_lemmas.sh
+$ calibre-customize -b . && calibre-debug -g
+```
+
+## Add more Word Wise lemmas
+
+Get `kll.en.en.klld` and `LanguageLayer.en.ASIN.kll` from your Kindle device(please read [word\_wise\_db](./word_wise_db.md)), then:
+
+```
+$ cd data
+$ python3 add_lemmas.py path-of-klld path-of-kll
+```
+
+## Create zip file
+
+```
+$ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
+```
+
 ## Documents
 
 - https://manual.calibre-ebook.com
@@ -37,28 +60,6 @@
 - https://maxbachmann.github.io/RapidFuzz
 
 - https://pip.pypa.io/en/stable/user_guide
-
-## Debug
-
-```
-$ ./data/dump_lemmas.sh
-$ calibre-customize -b . && calibre-debug -g
-```
-
-## Build
-
-```
-$ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
-```
-
-## Add more words
-
-Get `kll.en.en.klld` and `LanguageLayer.en.ASIN.kll` from your Kindle device(please read [word\_wise\_db](./word_wise_db.md)), then:
-
-```
-$ cd data
-$ add_lemmas.py ./path-of-klld ./path-of-kll
-```
 
 ## Kindle firmware
 

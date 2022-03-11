@@ -23,6 +23,16 @@ $ python3 add_lemmas.py path-of-klld path-of-kll
 $ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
 ```
 
+## Remove FAT32 dirty bit
+
+```
+// run these commands on Linux
+// use fdisk or df to find Kindle device
+# fdisk -l
+// run fsck
+# fsck /dev/sdb1
+```
+
 ## Documents
 
 - https://manual.calibre-ebook.com

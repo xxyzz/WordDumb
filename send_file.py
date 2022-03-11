@@ -62,7 +62,7 @@ class SendFile:
         if dst_path.is_file():
             dst_path.unlink()
         # Python 3.9 accepts path-like object, calibre uses 3.8
-        shutil.move(str(file_path), str(dst_path))
+        shutil.move(str(file_path), str(dst_path), shutil.copy)
 
 
 def device_connected(gui, book_fmt):

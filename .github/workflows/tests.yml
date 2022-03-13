@@ -40,7 +40,9 @@ jobs:
           zip -r worddumb-${{ github.sha }}.zip * -x@exclude.lst
 
       - name: Add plugin
-        run: calibre-customize -a worddumb-${{ github.sha }}.zip
+        run: |
+          calibre-customize -a worddumb-${{ github.sha }}.zip
+          rm worddumb-${{ github.sha }}.zip
 
       - name: Get calibre python version
         run: echo "CALIBRE_PY=$(calibre-debug -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
@@ -62,8 +64,19 @@ jobs:
       - name: Upload plugin
         uses: actions/upload-artifact@v3
         with:
-          name: worddumb-${{ github.sha }}.zip
-          path: ${{ github.workspace }}/worddumb-${{ github.sha }}.zip
+          name: worddumb-${{ github.sha }}
+          path: |
+            .
+            !.*
+            !data/lemmas.json
+            !data/*.py
+            !data/*.sh
+            !docs/*
+            !tests/*
+            !**/__pycache__/*
+            !__pycache__/*
+            !exclude.lst
+            !klld/*
 
   test-macos:
     name: test-macos

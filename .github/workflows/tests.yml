@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install calibre
         run: sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
@@ -60,7 +60,7 @@ jobs:
           CALIBRE_SHOW_DEPRECATION_WARNINGS: 1
 
       - name: Upload plugin
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: worddumb-${{ github.sha }}.zip
           path: ${{ github.workspace }}/worddumb-${{ github.sha }}.zip
@@ -70,7 +70,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install calibre
         run: brew install calibre
@@ -117,7 +117,7 @@ jobs:
         shell: bash
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install calibre and wget
         run: |

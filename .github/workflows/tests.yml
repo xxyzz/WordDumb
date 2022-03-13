@@ -15,15 +15,31 @@ on:
       - 'klld/**'
 
 jobs:
-  test-ubuntu:
-    name: test-ubuntu
-    runs-on: ubuntu-latest
+  test:
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install calibre
+      - name: Install calibre on Ubuntu
+        if: matrix.os == 'ubuntu-latest'
         run: sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
+
+      - name: Install calibre on macOS
+        if: matrix.os == 'macos-latest'
+        run: brew install calibre
+
+      - name: Install calibre and wget on Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install calibre wget
+          echo "/C/Program Files/Calibre2" >> $GITHUB_PATH
 
       - name: Download 1984 ebook
         run: wget https://www.planetebook.com/free-ebooks/1984.mobi
@@ -34,10 +50,17 @@ jobs:
           calibredb add 1984.mobi --with-library ~/Calibre\ Library
           rm 1984.mobi
 
-      - name: Build plugin
+      - name: Build plugin(Unix)
+        if: matrix.os != 'windows-latest'
         run: |
           ./data/dump_lemmas.sh
           zip -r worddumb-${{ github.sha }}.zip * -x@exclude.lst
+
+      - name: Build plugin(Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          ./data/dump_lemmas.sh
+          7z a -x@exclude.lst -x!.* -tzip worddumb-${{ github.sha }}.zip
 
       - name: Add plugin
         run: |
@@ -45,14 +68,38 @@ jobs:
           rm worddumb-${{ github.sha }}.zip
 
       - name: Get calibre python version
+        if: matrix.os != 'macos-latest'
         run: echo "CALIBRE_PY=$(calibre-debug -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
 
-      - name: Restore dependencies and Wikipedia cache
+      - name: Get macOS python version
+        if: matrix.os == 'macos-latest'
+        run: echo "MACOS_PY=$(python3 -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
+
+      - name: Restore dependencies and Wikipedia cache(Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/cache@v2
         with:
           path: |
             ~/.config/calibre/plugins/worddumb-libs-py${{ env.CALIBRE_PY }}
             ~/.config/calibre/plugins/worddumb-wikipedia
+          key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
+
+      - name: Restore dependencies and Wikipedia cache(macOS)
+        if: matrix.os == 'macos-latest'
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/Library/Preferences/calibre/plugins/worddumb-libs-py${{ env.MACOS_PY }}
+            ~/Library/Preferences/calibre/plugins/worddumb-wikipedia
+          key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.MACOS_PY }}
+
+      - name: Restore dependencies and Wikipedia cache(Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/AppData/Roaming/calibre/plugins/worddumb-libs-py${{ env.CALIBRE_PY }}
+            ~/AppData/Roaming/calibre/plugins/worddumb-wikipedia
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Run test
@@ -62,6 +109,7 @@ jobs:
           CALIBRE_SHOW_DEPRECATION_WARNINGS: 1
 
       - name: Upload plugin
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v3
         with:
           name: worddumb-${{ github.sha }}
@@ -77,96 +125,3 @@ jobs:
             !__pycache__/*
             !exclude.lst
             !klld/*
-
-  test-macos:
-    name: test-macos
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install calibre
-        run: brew install calibre
-
-      - name: Download 1984 ebook
-        run: wget https://www.planetebook.com/free-ebooks/1984.mobi
-
-      - name: Add 1984 to library
-        run: |
-          mkdir ~/Calibre\ Library
-          calibredb add 1984.mobi --with-library ~/Calibre\ Library
-          rm 1984.mobi
-
-      - name: Build plugin
-        run: |
-          ./data/dump_lemmas.sh
-          zip -r worddumb.zip * -x@exclude.lst
-
-      - name: Add plugin
-        run: calibre-customize -a worddumb.zip
-
-      - name: Get python version
-        run: echo "CALIBRE_PY=$(python3 -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
-
-      - name: Restore dependencies and Wikipedia cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/Library/Preferences/calibre/plugins/worddumb-libs-py${{ env.CALIBRE_PY }}
-            ~/Library/Preferences/calibre/plugins/worddumb-wikipedia
-          key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
-
-      - name: Run test
-        run: cd tests && calibre-debug test.py
-        env:
-          PYTHONWARNINGS: default
-          CALIBRE_SHOW_DEPRECATION_WARNINGS: 1
-
-  test-windows:
-    name: test-windows
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install calibre and wget
-        run: |
-          choco install calibre wget
-          echo "/C/Program Files/Calibre2" >> $GITHUB_PATH
-
-      - name: Download 1984 ebook
-        run: wget https://www.planetebook.com/free-ebooks/1984.mobi
-
-      - name: Add 1984 to library
-        run: |
-          mkdir ~/Calibre\ Library
-          calibredb add 1984.mobi --with-library ~/Calibre\ Library
-          rm 1984.mobi
-
-      - name: Build plugin
-        run: |
-          ./data/dump_lemmas.sh
-          7z a -x@exclude.lst -x!.* -tzip worddumb.zip
-
-      - name: Add plugin
-        run: calibre-customize -a worddumb.zip
-
-      - name: Get calibre python version
-        run: echo "CALIBRE_PY=$(calibre-debug -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
-
-      - name: Restore dependencies and Wikipedia cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/AppData/Roaming/calibre/plugins/worddumb-libs-py${{ env.CALIBRE_PY }}
-            ~/AppData/Roaming/calibre/plugins/worddumb-wikipedia
-          key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
-
-      - name: Run test
-        run: cd tests && calibre-debug test.py
-        env:
-          PYTHONWARNINGS: default
-          CALIBRE_SHOW_DEPRECATION_WARNINGS: 1

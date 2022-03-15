@@ -8,14 +8,14 @@ from pathlib import Path
 try:
     from .database import (create_lang_layer, create_x_ray_db, get_ll_path,
                            get_x_ray_path, insert_lemma, save_db)
-    from .mediawiki import MediaWiki
+    from .mediawiki import MediaWiki, Wikimedia_Commons
     from .unzip import load_json_or_pickle
     from .x_ray import X_Ray
     from .x_ray_epub import X_Ray_EPUB
 except ImportError:
     from database import (create_lang_layer, create_x_ray_db, get_ll_path,
                           get_x_ray_path, insert_lemma, save_db)
-    from mediawiki import MediaWiki
+    from mediawiki import MediaWiki, Wikimedia_Commons
     from unzip import load_json_or_pickle
     from x_ray import X_Ray
     from x_ray_epub import X_Ray_EPUB
@@ -118,7 +118,9 @@ def create_files(create_ww, create_x, asin, book_path, acr, revision, model,
             wiki_lang, plugin_version, plugin_path, zh_wiki, fandom_url)
 
         if not kfx_json and not mobi_codec:
-            x_ray = X_Ray_EPUB(book_path, search_people, mediawiki)
+            commons = Wikimedia_Commons(
+                wiki_lang, plugin_path, plugin_version, zh_wiki)
+            x_ray = X_Ray_EPUB(book_path, search_people, mediawiki, commons)
             for doc, data in nlp.pipe(x_ray.extract_epub(), as_tuples=True):
                 find_named_entity(
                     data[0], x_ray, doc, None, wiki_lang, data[1])

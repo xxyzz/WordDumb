@@ -17,12 +17,12 @@ NAMESPACES = {
     'n': 'urn:oasis:names:tc:opendocument:xmlns:container',
     'opf': 'http://www.idpf.org/2007/opf',
     'ops': 'http://www.idpf.org/2007/ops',
-    None: 'http://www.w3.org/1999/xhtml'
+    'xml': 'http://www.w3.org/1999/xhtml'
 }
 
 
 class X_Ray_EPUB:
-    def __init__(self, book_path, search_people, mediawiki):
+    def __init__(self, book_path, search_people, mediawiki, wiki_commons):
         self.book_path = book_path
         self.search_people = search_people
         self.mediawiki = mediawiki
@@ -35,6 +35,9 @@ class X_Ray_EPUB:
             shutil.rmtree(self.extract_folder)
         self.xhtml_folder = self.extract_folder
         self.xhtml_href_has_folder = False
+        self.wikimedia_commons = wiki_commons
+        self.image_folder = self.extract_folder
+        self.image_href_has_folder = False
 
     def extract_epub(self):
         from lxml import etree
@@ -52,6 +55,19 @@ class X_Ray_EPUB:
                 self.opf_path = next(self.extract_folder.rglob(opf_path))
         with self.opf_path.open('rb') as opf:
             self.opf_root = etree.fromstring(opf.read())
+            item_path = 'opf:manifest/opf:item' \
+                '[starts-with(@media-type, "image/")]'
+            for item in self.opf_root.xpath(item_path, namespaces=NAMESPACES):
+                image = item.get("href")
+                image_path = self.extract_folder.joinpath(image)
+                if not image_path.exists():
+                    image_path = next(self.extract_folder.rglob(image))
+                if not image_path.parent.samefile(self.extract_folder):
+                    self.image_folder = image_path.parent
+                if '/' in image:
+                    self.image_href_has_folder = True
+                    break
+
             item_path = 'opf:manifest/opf:item' \
                 '[@media-type="application/xhtml+xml"]'
             for item in self.opf_root.iterfind(item_path, NAMESPACES):
@@ -104,11 +120,11 @@ class X_Ray_EPUB:
     def modify_epub(self):
         if len(self.pending_dic):
             self.mediawiki.query(self.pending_dic, self.update_summary)
-        self.insert_a_tags()
+        self.insert_anchor_elements()
         self.create_x_ray_page()
         self.mediawiki.save_cache()
 
-    def insert_a_tags(self):
+    def insert_anchor_elements(self):
         for xhtml_path, ent_list in self.ent_dic.items():
             with xhtml_path.open() as f:
                 xhtml_str = f.read()
@@ -130,14 +146,20 @@ class X_Ray_EPUB:
                 if NAMESPACES['ops'] not in new_xhtml_str:
                     # add epub namespace
                     new_xhtml_str = new_xhtml_str.replace(
-                        f'xmlns="{NAMESPACES[None]}"',
-                        f'xmlns="{NAMESPACES[None]}" '
+                        f'xmlns="{NAMESPACES["xml"]}"',
+                        f'xmlns="{NAMESPACES["xml"]}" '
                         f'xmlns:epub="{NAMESPACES["ops"]}"')
                 f.write(new_xhtml_str)
 
     def create_x_ray_page(self):
         from lxml import etree
 
+        images = set()
+        image_prefix = ''
+        if self.xhtml_href_has_folder:
+            image_prefix += '../'
+        if self.image_href_has_folder:
+            image_prefix += f'{self.image_folder.name}/'
         s = '''
         <html xmlns="http://www.w3.org/1999/xhtml"
         xmlns:epub="http://www.idpf.org/2007/ops"
@@ -155,19 +177,36 @@ class X_Ray_EPUB:
                 <a href="{self.mediawiki.source_link}{entity}">
                 {self.mediawiki.source_name}</a>
                 '''
+            if not data['quote'] and (
+                    result := self.wikimedia_commons.get_image(entity)):
+                filename, file_path = result
+                s += f'''
+                <img style="max-width:100%" src="{image_prefix}{filename}" />
+                <a href="{self.wikimedia_commons.source_url}{filename}">
+                Wikimedia Commons</a>
+                '''
+                shutil.copy(file_path, self.image_folder.joinpath(filename))
+                images.add(filename)
             s += '</aside>'
         s += '</body></html>'
+        self.wikimedia_commons.close_session()
         with self.xhtml_folder.joinpath('x_ray.xhtml').open('w') as f:
             f.write(s)
 
+        xhtml_prefix = ''
+        image_prefix = ''
         if self.xhtml_href_has_folder:
-            x_ray_href = f'{self.xhtml_folder.name}/x_ray.xhtml'
-        else:
-            x_ray_href = 'x_ray.xhtml'
-        s = f'<item href="{x_ray_href}" id="x_ray.xhtml" ' \
+            xhtml_prefix = f'{self.xhtml_folder.name}/'
+        if self.image_href_has_folder:
+            image_prefix = f'{self.image_folder.name}/'
+        s = f'<item href="{xhtml_prefix}x_ray.xhtml" id="x_ray.xhtml" ' \
             'media-type="application/xhtml+xml"/>'
         manifest = self.opf_root.find('opf:manifest', NAMESPACES)
         manifest.append(etree.fromstring(s))
+        for image_name in images:
+            s = f'<item href="{image_prefix}{image_name}" id="{image_name}" '\
+                'media-type="image/svg+xml"/>'
+            manifest.append(etree.fromstring(s))
         spine = self.opf_root.find('opf:spine', NAMESPACES)
         s = '<itemref idref="x_ray.xhtml"/>'
         spine.append(etree.fromstring(s))

@@ -4,6 +4,11 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
+try:
+    from .unzip import load_json_or_pickle
+except ImportError:
+    from unzip import load_json_or_pickle
+
 MAX_EXLIMIT = 20
 SCORE_THRESHOLD = 85.7
 
@@ -42,7 +47,7 @@ class MediaWiki:
             '(https://github.com/xxyzz/WordDumb)'
         })
         if lang == 'zh' and not fandom_url:
-            self.session.headers.update({'accept-language': f"zh-{zh_wiki}"})
+            self.session.params['variant'] = f'zh-{zh_wiki}'
             self.source_link = f'https://zh.wikipedia.org/zh-{zh_wiki}/'
 
     def load_cache(self):
@@ -94,3 +99,45 @@ class MediaWiki:
 
         for title in title_dic:  # use quote next time
             self.cache_dic[title] = None
+
+
+class Wikimedia_Commons:
+    def __init__(self, lang, plugin_path, plugin_version, zh_variant):
+        import requests
+
+        if lang == 'zh':
+            maps_json = f'data/zh-{zh_variant}.json'
+        else:
+            maps_json = f'data/maps_{lang}.json'
+        self.map_url = load_json_or_pickle(plugin_path, maps_json)
+        self.cache_folder = Path(plugin_path).parent.joinpath(
+            'worddumb-wikipedia')
+        self.source_url = 'https://commons.wikimedia.org/wiki/File:'
+        if self.map_url is not None:
+            self.session = requests.Session()
+            self.session.headers.update({
+                'user-agent': f'WordDumb/{plugin_version} '
+                '(https://github.com/xxyzz/WordDumb)'
+            })
+
+    def get_image(self, location):
+        if self.map_url is None:
+            return None
+
+        if location in self.map_url:
+            url = self.map_url[location]
+            filename = url.split('/')[-1]
+            file_path = self.cache_folder.joinpath(filename)
+            if not file_path.exists():
+                self.download_image(url, file_path)
+            return filename, file_path
+        return None
+
+    def download_image(self, url, file_path):
+        r = self.session.get(url)
+        with file_path.open('w') as f:
+            f.write(r.text)
+
+    def close_session(self):
+        if self.map_url is not None:
+            self.session.close()

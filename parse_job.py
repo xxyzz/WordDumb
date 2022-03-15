@@ -200,6 +200,11 @@ def find_named_entity(start, x_ray, doc, mobi_codec, lang, xhtml_path=None):
                 continue
             text = re.sub(r"['’][sd]$", '', text)
             text = re.sub(r'^(?:the|an?) ', '', text, flags=re.IGNORECASE)
+        if lang == 'es':
+            # https://en.wikipedia.org/wiki/Spanish_determiners#Articles
+            text = re.sub(r'^(?:el|los?|las?|un|unos?|unas?) ', '',
+                          text, flags=re.IGNORECASE)
+        # TODO https://en.wikipedia.org/wiki/Article_(grammar)#Tables
 
         if len(text) < len_limit or re.fullmatch(r'[\W\d]+', text):
             continue

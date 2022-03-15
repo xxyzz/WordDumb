@@ -106,7 +106,7 @@ class Wikimedia_Commons:
         import requests
 
         if lang == 'zh':
-            maps_json = f'data/zh-{zh_variant}.json'
+            maps_json = f'data/maps_zh-{zh_variant}.json'
         else:
             maps_json = f'data/maps_{lang}.json'
         self.map_url = load_json_or_pickle(plugin_path, maps_json)

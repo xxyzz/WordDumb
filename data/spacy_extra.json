@@ -9,16 +9,6 @@
       "version": "0.6.3"
     }
   },
-  "zh": {
-    "Cython": {
-      "compiled": true,
-      "version": "0.29.28"
-    },
-    "spacy-pkuseg": {
-      "compiled": true,
-      "version": "0.0.28"
-    }
-  },
   "mac_arm": {
     "thinc-apple-ops": {
       "compiled": true,
@@ -29,6 +19,16 @@
     "lxml": {
       "compiled": true,
       "version": "4.8.0"
+    }
+  },
+  "zh": {
+    "Cython": {
+      "compiled": true,
+      "version": "0.29.28"
+    },
+    "spacy-pkuseg": {
+      "compiled": true,
+      "version": "0.0.28"
     }
   }
 }

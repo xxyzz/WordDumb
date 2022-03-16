@@ -59,4 +59,4 @@ if updated_count > 0:
 print(f"lemmas.json has {current_count} lemmas")
 ww_klld_conn.close()
 with open('lemmas.json', 'w') as f:
-    json.dump(lemmas, f, indent=2, sort_keys=True)
+    json.dump(lemmas, f, indent=2, sort_keys=True, ensure_ascii=False)

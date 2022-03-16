@@ -1,4 +1,12 @@
 {
+  "Jinja2": {
+    "compiled": false,
+    "version": "3.0.3"
+  },
+  "MarkupSafe": {
+    "compiled": true,
+    "version": "2.1.0"
+  },
   "blis": {
     "compiled": true,
     "version": "0.7.6"
@@ -110,13 +118,5 @@
   "wasabi": {
     "compiled": false,
     "version": "0.9.0"
-  },
-  "Jinja2": {
-    "compiled": false,
-    "version": "3.0.3"
-  },
-  "MarkupSafe": {
-    "compiled": true,
-    "version": "2.1.0"
   }
 }

@@ -109,27 +109,33 @@ class Wikimedia_Commons:
             maps_json = f'data/maps_zh-{zh_variant}.json'
         else:
             maps_json = f'data/maps_{lang}.json'
-        self.map_url = load_json_or_pickle(plugin_path, maps_json)
+        self.maps_local = load_json_or_pickle(plugin_path, maps_json)
         self.cache_folder = Path(plugin_path).parent.joinpath(
             'worddumb-wikipedia')
         self.source_url = 'https://commons.wikimedia.org/wiki/File:'
-        if self.map_url is not None:
+        self.download_url = 'https://upload.wikimedia.org/wikipedia/commons/'
+        if self.maps_local is not None:
             self.session = requests.Session()
             self.session.headers.update({
                 'user-agent': f'WordDumb/{plugin_version} '
                 '(https://github.com/xxyzz/WordDumb)'
             })
+            if lang == 'en':
+                self.maps_en = self.maps_local
+            else:
+                self.maps_en = load_json_or_pickle(
+                    plugin_path, 'data/maps_en.json')
 
     def get_image(self, location):
-        if self.map_url is None:
+        if self.maps_local is None:
             return None
-
-        if location in self.map_url:
-            url = self.map_url[location]
+        if (url := self.maps_local.get(location)):
+            if not url.endswith('.svg'):
+                url = self.maps_en[url]
             filename = url.split('/')[-1]
             file_path = self.cache_folder.joinpath(filename)
             if not file_path.exists():
-                self.download_image(url, file_path)
+                self.download_image(self.download_url + url, file_path)
             return filename, file_path
         return None
 
@@ -139,5 +145,5 @@ class Wikimedia_Commons:
             f.write(r.text)
 
     def close_session(self):
-        if self.map_url is not None:
+        if self.maps_local is not None:
             self.session.close()

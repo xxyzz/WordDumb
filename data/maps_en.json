@@ -1,9 +1,11 @@
 {
-  "Africa": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Africa_on_the_globe_(red).svg",
-  "Antarctica": "https://upload.wikimedia.org/wikipedia/commons/3/38/Antarctica_on_the_globe_(red).svg",
-  "Asia": "https://upload.wikimedia.org/wikipedia/commons/2/24/Asia_on_the_globe_(red).svg",
-  "Europe": "https://upload.wikimedia.org/wikipedia/commons/a/a0/Europe_on_the_globe_(red).svg",
-  "North America": "https://upload.wikimedia.org/wikipedia/commons/d/d4/North_America_on_the_globe_(red).svg",
-  "Oceania": "https://upload.wikimedia.org/wikipedia/commons/d/d2/Oceania_on_the_globe_(red).svg",
-  "South America": "https://upload.wikimedia.org/wikipedia/commons/5/55/South_America_on_the_globe_(red).svg"
+  "Africa": "a/a4/Africa_on_the_globe_(red).svg",
+  "Algeria": "b/b4/Algeria_on_the_globe_(Africa_centered).svg",
+  "Antarctica": "3/38/Antarctica_on_the_globe_(red).svg",
+  "Asia": "2/24/Asia_on_the_globe_(red).svg",
+  "Europe": "a/a0/Europe_on_the_globe_(red).svg",
+  "North America": "d/d4/North_America_on_the_globe_(red).svg",
+  "Oceania": "d/d2/Oceania_on_the_globe_(red).svg",
+  "People's Democratic Republic of Algeria": "Algeria",
+  "South America": "5/55/South_America_on_the_globe_(red).svg"
 }

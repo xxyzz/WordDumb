@@ -31,11 +31,11 @@ class SendFile:
                 return
 
         [has_book, _, _, _, paths] = self.gui.book_on_device(self.book_id)
-        # /Volumes/Kindle
-        device_prefix = self.device_manager.device._main_prefix
         if has_book and self.book_fmt != 'EPUB':
             if job is None:
                 get_asin_etc(self.book_path, self.book_fmt, self.mi, self.asin)
+            # /Volumes/Kindle
+            device_prefix = self.device_manager.device._main_prefix
             device_book_path = Path(device_prefix).joinpath(next(iter(paths)))
             self.move_file_to_device(self.ll_path, device_book_path)
             self.move_file_to_device(self.x_ray_path, device_book_path)

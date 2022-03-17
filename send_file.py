@@ -69,6 +69,6 @@ def device_connected(gui, book_fmt):
     if not gui.device_manager.is_device_present:
         return False
     if book_fmt != 'EPUB' and \
-       gui.device_manager.device.VENDOR_NAME != 'KINDLE':
+       getattr(gui.device_manager.device, 'VENDOR_NAME', None) != 'KINDLE':
         return False
     return True

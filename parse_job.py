@@ -178,9 +178,11 @@ def find_lemma(start, text, kw_processor, ll_conn, mobi_codec):
 
 # https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L318
 NER_LABELS = {
-    'EVENT', 'FAC', 'GPE', 'LANGUAGE', 'LAW', 'LOC', 'NORP', 'ORG',
-    'PERSON', 'PRODUCT', 'WORK_OF_ART', 'MISC', 'PER', 'FACILITY',
-    'ORGANIZATION', 'NAT_REL_POL',  # Romanian
+    'EVENT', 'FAC', 'GPE', 'LAW', 'LOC', 'ORG',
+    'PERSON', 'PRODUCT', 'WORK_OF_ART',
+    'MISC', 'PER',  # Catalan
+    'ORGANIZATION',  # Romanian
+    "EVT", "GPE_LOC", "GPE_ORG", "PROD",  # Norwegian Bokmål
     'geogName', 'orgName', 'persName', 'placeName'  # Polish
 }
 PERSON_LABELS = ['PERSON', 'PER', 'persName']

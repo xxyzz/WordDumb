@@ -163,3 +163,74 @@ class Wikimedia_Commons:
     def close_session(self):
         if self.maps_local is not None:
             self.session.close()
+
+
+class Wikidata:
+    def __init__(self, plugin_path, plugin_version):
+        import requests
+
+        self.cache_path = Path(plugin_path).parent.joinpath(
+            "worddumb-wikimedia/wikidata.json")
+        self.cache = load_cache(self.cache_path)
+
+        self.session = requests.Session()
+        self.session.headers.update(
+            {
+                "user-agent": f"WordDumb/{plugin_version} "
+                "(https://github.com/xxyzz/WordDumb)"
+            }
+        )
+
+    def has_cache(self, item_id):
+        return item_id in self.cache
+
+    def get_cache(self, item_id):
+        return self.cache.get(item_id)
+
+    def query(self, items):
+        items = " ".join(map(lambda x: f"wd:{x}", items))
+        query = f"""
+        SELECT ?item ?democracy_index (SAMPLE(?locator_map_image) AS ?map_url) WHERE {{
+        VALUES ?item {{ {items} }}
+        OPTIONAL {{ ?item wdt:P242 ?locator_map_image. }}
+        OPTIONAL {{ ?item wdt:P8328 ?democracy_index. }}
+        }}
+        GROUP BY ?item ?democracy_index
+        """
+        result = self.session.get(
+            "https://query.wikidata.org/sparql",
+            params={"query": query, "format": "json"},
+        )
+        result = result.json()
+        for binding in result.get("results", {}).get("bindings"):
+            item_id = binding["item"]["value"].split("/")[-1]
+            democracy_index = None
+            map_url = None
+            if (data := binding.get("democracy_index")):
+                democracy_index = data.get("value")
+            if (data := binding.get("map_url")):
+                map_url = data.get("value")
+            if democracy_index or map_url:
+                self.cache[item_id] = {
+                    "democracy_index": democracy_index,
+                    "map_url": map_url
+                }
+            else:
+                self.cache[item_id] = None
+
+    def save_cache(self):
+        save_cache(self.cache, self.cache_path)
+        self.session.close()
+
+
+def regime_type(democracy_index_score):
+    if democracy_index_score > 8:
+        regime_type = "full democracy"
+    elif democracy_index_score > 6:
+        regime_type = "flawed democracy"
+    elif democracy_index_score > 4:
+        regime_type = "hybrid regime"
+    else:
+        regime_type = "authoritarian regime"
+
+    return f"Democracy Index: {democracy_index_score} {regime_type}"

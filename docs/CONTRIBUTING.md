@@ -76,6 +76,8 @@ $ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
 
 - https://pip.pypa.io/en/stable/user_guide
 
+- https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/Wikidata_Query_Help
+
 ## Kindle firmware
 
 - https://www.amazon.com/gp/help/customer/display.html?nodeId=GKMQC26VQQMM8XSW

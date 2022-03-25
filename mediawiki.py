@@ -35,12 +35,13 @@ class MediaWiki:
         self.session.params = {
             'format': 'json',
             'action': 'query',
-            'prop': 'extracts',
+            "prop": "extracts|pageprops",
             'exintro': 1,
             'explaintext': 1,
             'redirects': 1,
             'exsentences': 7,
-            'formatversion': 2
+            'formatversion': 2,
+            "ppprop": "wikibase_item"
         }
         self.session.headers.update({
             'user-agent': f'WordDumb/{plugin_version} '

@@ -8,16 +8,16 @@ from pathlib import Path
 try:
     from .database import (create_lang_layer, create_x_ray_db, get_ll_path,
                            get_x_ray_path, insert_lemma, save_db)
-    from .mediawiki import MediaWiki, Wikimedia_Commons
+    from .mediawiki import MediaWiki, Wikimedia_Commons, Wikidata
     from .unzip import load_json_or_pickle
-    from .x_ray import X_Ray
+    from .x_ray import X_Ray, NER_LABELS
     from .x_ray_epub import X_Ray_EPUB
 except ImportError:
     from database import (create_lang_layer, create_x_ray_db, get_ll_path,
                           get_x_ray_path, insert_lemma, save_db)
-    from mediawiki import MediaWiki, Wikimedia_Commons
+    from mediawiki import MediaWiki, Wikimedia_Commons, Wikidata
     from unzip import load_json_or_pickle
-    from x_ray import X_Ray
+    from x_ray import X_Ray, NER_LABELS
     from x_ray_epub import X_Ray_EPUB
 
 
@@ -116,8 +116,11 @@ def create_files(create_ww, create_x, asin, book_path, acr, revision, model,
         nlp.enable_pipe("senter")
         mediawiki = MediaWiki(
             wiki_lang, plugin_version, plugin_path, zh_wiki, fandom_url)
+        wikidata = None
+        if not fandom_url:
+            wikidata = Wikidata(plugin_path, plugin_version)
 
-        if not kfx_json and not mobi_codec:
+        if not kfx_json and not mobi_codec:  # EPUB
             commons = Wikimedia_Commons(
                 wiki_lang, plugin_path, plugin_version, zh_wiki)
             x_ray = X_Ray_EPUB(book_path, search_people, mediawiki, commons)
@@ -130,7 +133,7 @@ def create_files(create_ww, create_x, asin, book_path, acr, revision, model,
         x_ray_conn, x_ray_path = create_x_ray_db(
             asin, book_path, wiki_lang, plugin_path, zh_wiki, fandom_url)
         x_ray = X_Ray(x_ray_conn, kfx_json, mobi_html, mobi_codec,
-                      search_people, mediawiki)
+                      search_people, mediawiki, wikidata)
         for doc, start in nlp.pipe(
                 parse_book(kfx_json, mobi_html, mobi_codec), as_tuples=True):
             find_named_entity(start, x_ray, doc, mobi_codec, wiki_lang)
@@ -176,18 +179,6 @@ def find_lemma(start, text, kw_processor, ll_conn, mobi_codec):
         insert_lemma(ll_conn, (index, end) + tuple(data))
 
 
-# https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L318
-NER_LABELS = {
-    'EVENT', 'FAC', 'GPE', 'LAW', 'LOC', 'ORG',
-    'PERSON', 'PRODUCT', 'WORK_OF_ART',
-    'MISC', 'PER',  # Catalan
-    'ORGANIZATION',  # Romanian
-    "EVT", "GPE_LOC", "GPE_ORG", "PROD",  # Norwegian Bokmål
-    'geogName', 'orgName', 'persName', 'placeName'  # Polish
-}
-PERSON_LABELS = ['PERSON', 'PER', 'persName']
-
-
 def find_named_entity(start, x_ray, doc, mobi_codec, lang, xhtml_path=None):
     len_limit = 3 if lang == 'en' else 2
 
@@ -213,7 +204,7 @@ def find_named_entity(start, x_ray, doc, mobi_codec, lang, xhtml_path=None):
 
         new_start_char = ent.start_char + ent.text.index(text)
         if xhtml_path:  # EPUB
-            x_ray.search(text, ent.label_ in PERSON_LABELS,
+            x_ray.search(text, ent.label_,
                          ent.sent.text, start + new_start_char,
                          start + new_start_char + len(text), xhtml_path)
             continue
@@ -229,5 +220,4 @@ def find_named_entity(start, x_ray, doc, mobi_codec, lang, xhtml_path=None):
             ent_start = start + len(doc.text[:new_start_char])
             ent_len = len(selectable_text)
 
-        x_ray.search(text, ent.label_ in PERSON_LABELS,
-                     ent_start, ent.sent.text, ent_len)
+        x_ray.add_entity(text, ent.label_, ent_start, ent.sent.text, ent_len)

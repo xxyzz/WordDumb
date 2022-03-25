@@ -9,8 +9,23 @@ try:
 except ImportError:
     from unzip import load_json_or_pickle
 
-MAX_EXLIMIT = 20
-SCORE_THRESHOLD = 85.7
+MEDIAWIKI_API_EXLIMIT = 20
+FUZZ_THRESHOLD = 85.7
+
+
+def load_cache(cache_path):
+    if cache_path.exists():
+        with cache_path.open() as f:
+            return json.load(f)
+    else:
+        return defaultdict(dict)
+
+
+def save_cache(cache, cache_path):
+    if not cache_path.parent.exists():
+        cache_path.parent.mkdir()
+    with cache_path.open("w") as f:
+        json.dump(cache, f)
 
 
 class MediaWiki:
@@ -28,8 +43,8 @@ class MediaWiki:
             self.source_link = f'https://{lang}.wikipedia.org/wiki/'
             self.wiki_api = f'https://{lang}.wikipedia.org/w/api.php'
             self.cache_path = Path(plugin_path).parent.joinpath(
-                f'worddumb-wikipedia/{lang}.json')
-        self.cache_dic = self.load_cache()
+                f"worddumb-wikimedia/{lang}.json")
+        self.cache = load_cache(self.cache_path)
 
         self.session = requests.Session()
         self.session.params = {
@@ -51,23 +66,23 @@ class MediaWiki:
             self.session.params['variant'] = f'zh-{zh_wiki}'
             self.source_link = f'https://zh.wikipedia.org/zh-{zh_wiki}/'
 
-    def load_cache(self):
-        if self.cache_path.exists():
-            with self.cache_path.open() as f:
-                return json.load(f)
-        else:
-            return {}
-
     def save_cache(self):
-        self.cache_path.parent.mkdir(exist_ok=True)
-        with self.cache_path.open('w') as f:
-            json.dump(self.cache_dic, f)
+        save_cache(self.cache, self.cache_path)
         self.session.close()
 
-    def query(self, title_dic, callback):
+    def has_cache(self, entity):
+        return entity in self.cache
+
+    def get_cache(self, title):
+        data = self.cache.get(title)
+        if isinstance(data, str):
+            return self.cache.get(data)
+        return data
+
+    def query(self, titles):
         result = self.session.get(
             self.wiki_api,
-            params={'titles': '|'.join(title_dic.keys())})
+            params={'titles': '|'.join(titles)})
         data = result.json()
         converts = defaultdict(list)
         for convert_type in ['normalized', 'redirects']:
@@ -83,23 +98,23 @@ class MediaWiki:
             summary = v['extract']
             if not any(period in summary for period in ['.', '。']):
                 continue  # very likely a disambiguation page
-            self.cache_dic[title] = summary
-            if title in title_dic:
-                callback(title, summary)
-                del title_dic[title]
+            self.cache[title] = {
+                "intro": summary,
+                "item_id": v.get("pageprops", {}).get("wikibase_item")
+            }
+            if title in titles:
+                titles.remove(title)
             for key in converts.get(title, []):
-                if key in title_dic:
-                    callback(key, summary)
-                    del title_dic[key]
-                    self.cache_dic[key] = summary
+                self.cache[key] = title
+                if key in titles:
+                    titles.remove(key)
                 for k in converts.get(key, []):
-                    if k in title_dic:  # normalize then redirect
-                        callback(k, summary)
-                        del title_dic[k]
-                        self.cache_dic[k] = summary
+                    self.cache[k] = title
+                    if k in titles:  # normalize then redirect
+                        titles.remove(k)
 
-        for title in title_dic:  # use quote next time
-            self.cache_dic[title] = None
+        for title in titles:  # use quote next time
+            self.cache[title] = None
 
 
 class Wikimedia_Commons:

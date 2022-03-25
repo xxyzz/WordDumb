@@ -8,9 +8,9 @@ from html import escape
 from pathlib import Path
 
 try:
-    from .mediawiki import MAX_EXLIMIT, SCORE_THRESHOLD
+    from .mediawiki import MEDIAWIKI_API_EXLIMIT, FUZZ_THRESHOLD
 except ImportError:
-    from mediawiki import MAX_EXLIMIT, SCORE_THRESHOLD
+    from mediawiki import MEDIAWIKI_API_EXLIMIT, FUZZ_THRESHOLD
 
 
 NAMESPACES = {
@@ -93,7 +93,7 @@ class X_Ray_EPUB:
         from rapidfuzz.process import extractOne
 
         if (r := extractOne(
-                name, self.entities.keys(), score_cutoff=SCORE_THRESHOLD)):
+                name, self.entities.keys(), score_cutoff=FUZZ_THRESHOLD)):
             ent_id = self.entities[r[0]]['id']
         else:
             ent_id = self.num_ents
@@ -106,7 +106,7 @@ class X_Ray_EPUB:
                         self.update_summary(name, cached_summary)
                 else:
                     self.pending_dic[name] = None
-                    if len(self.pending_dic) == MAX_EXLIMIT:
+                    if len(self.pending_dic) == MEDIAWIKI_API_EXLIMIT:
                         self.mediawiki.query(
                             self.pending_dic, self.update_summary)
                         self.pending_dic.clear()

@@ -154,8 +154,8 @@ class Wikimedia_Commons:
         r = self.session.get(
             f"https://commons.wikimedia.org/wiki/Special:FilePath/{filename}"
         )
-        with file_path.open("w") as f:
-            f.write(r.text)
+        with file_path.open("wb") as f:
+            f.write(r.content)
 
     def close_session(self):
         self.session.close()

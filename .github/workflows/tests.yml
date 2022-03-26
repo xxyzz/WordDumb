@@ -77,29 +77,29 @@ jobs:
 
       - name: Restore dependencies and Wikipedia cache(Ubuntu)
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.config/calibre/plugins/worddumb-libs-py${{ env.CALIBRE_PY }}
-            ~/.config/calibre/plugins/worddumb-wikipedia
+            ~/.config/calibre/plugins/worddumb-wikimedia
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Restore dependencies and Wikipedia cache(macOS)
         if: matrix.os == 'macos-latest'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/Library/Preferences/calibre/plugins/worddumb-libs-py${{ env.MACOS_PY }}
-            ~/Library/Preferences/calibre/plugins/worddumb-wikipedia
+            ~/Library/Preferences/calibre/plugins/worddumb-wikimedia
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.MACOS_PY }}
 
       - name: Restore dependencies and Wikipedia cache(Windows)
         if: matrix.os == 'windows-latest'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/AppData/Roaming/calibre/plugins/worddumb-libs-py${{ env.CALIBRE_PY }}
-            ~/AppData/Roaming/calibre/plugins/worddumb-wikipedia
+            ~/AppData/Roaming/calibre/plugins/worddumb-wikimedia
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Run test

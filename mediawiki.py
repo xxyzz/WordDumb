@@ -8,6 +8,7 @@ try:
     from .unzip import load_json_or_pickle
 except ImportError:
     from unzip import load_json_or_pickle
+from urllib.parse import unquote
 
 MEDIAWIKI_API_EXLIMIT = 20
 FUZZ_THRESHOLD = 85.7
@@ -216,15 +217,15 @@ class Wikidata:
         for binding in result.get("results", {}).get("bindings"):
             item_id = binding["item"]["value"].split("/")[-1]
             democracy_index = None
-            map_url = None
-            if (data := binding.get("democracy_index")):
-                democracy_index = data.get("value")
-            if (data := binding.get("map_url")):
-                map_url = data.get("value")
-            if democracy_index or map_url:
+            map_filename = None
+            if democracy_index_data := binding.get("democracy_index"):
+                democracy_index = democracy_index_data.get("value")
+            if map_data := binding.get("map_url"):
+                map_filename = unquote(map_data.get("value")).split("/")[-1]
+            if democracy_index or map_filename:
                 self.cache[item_id] = {
                     "democracy_index": democracy_index,
-                    "map_url": map_url
+                    "map_filename": map_filename,
                 }
             else:
                 self.cache[item_id] = None

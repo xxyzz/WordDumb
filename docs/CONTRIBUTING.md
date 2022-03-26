@@ -18,10 +18,6 @@ $ python3 add_lemmas.py path-of-klld path-of-kll
 $ cd .. && ./data/dump_lemmas.sh
 ```
 
-## Add more maps
-
-Add original file URL of [Wikimedia Commons SVG locator maps](https://commons.wikimedia.org/wiki/Category:SVG_locator_maps_(location_map_scheme)) to `data/maps_*.json`. Use globe, centered, zoomed, claim hatched map.
-
 ## Create zip file
 
 ```

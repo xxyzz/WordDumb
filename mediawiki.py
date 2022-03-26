@@ -3,11 +3,6 @@
 import json
 from collections import defaultdict
 from pathlib import Path
-
-try:
-    from .unzip import load_json_or_pickle
-except ImportError:
-    from unzip import load_json_or_pickle
 from urllib.parse import unquote
 
 MEDIAWIKI_API_EXLIMIT = 20
@@ -56,7 +51,7 @@ def save_cache(cache, cache_path):
 
 
 class MediaWiki:
-    def __init__(self, lang, plugin_version, plugin_path, zh_wiki, fandom_url):
+    def __init__(self, lang, useragent, plugin_path, zh_wiki, fandom_url):
         import requests
 
         if fandom_url:
@@ -85,13 +80,10 @@ class MediaWiki:
             'formatversion': 2,
             "ppprop": "wikibase_item"
         }
-        self.session.headers.update({
-            'user-agent': f'WordDumb/{plugin_version} '
-            '(https://github.com/xxyzz/WordDumb)'
-        })
-        if lang == 'zh' and not fandom_url:
-            self.session.params['variant'] = f'zh-{zh_wiki}'
-            self.source_link = f'https://zh.wikipedia.org/zh-{zh_wiki}/'
+        self.session.headers.update({"user-agent": useragent})
+        if lang == "zh" and not fandom_url:
+            self.session.params["variant"] = f"zh-{zh_wiki}"
+            self.source_link = f"https://zh.wikipedia.org/zh-{zh_wiki}/"
 
     def save_cache(self):
         save_cache(self.cache, self.cache_path)
@@ -145,68 +137,41 @@ class MediaWiki:
 
 
 class Wikimedia_Commons:
-    def __init__(self, lang, plugin_path, plugin_version, zh_variant):
+    def __init__(self, plugin_path, useragent):
         import requests
 
-        if lang == 'zh':
-            maps_json = f'data/maps_zh-{zh_variant}.json'
-        else:
-            maps_json = f'data/maps_{lang}.json'
-        self.maps_local = load_json_or_pickle(plugin_path, maps_json)
-        self.cache_folder = Path(plugin_path).parent.joinpath(
-            'worddumb-wikipedia')
-        self.source_url = 'https://commons.wikimedia.org/wiki/File:'
-        self.download_url = 'https://upload.wikimedia.org/wikipedia/commons/'
-        if self.maps_local is not None:
-            self.session = requests.Session()
-            self.session.headers.update({
-                'user-agent': f'WordDumb/{plugin_version} '
-                '(https://github.com/xxyzz/WordDumb)'
-            })
-            if lang == 'en':
-                self.maps_en = self.maps_local
-            else:
-                self.maps_en = load_json_or_pickle(
-                    plugin_path, 'data/maps_en.json')
+        self.session = requests.Session()
+        self.session.headers.update({"user-agent": useragent})
+        self.cache_folder = Path(plugin_path).parent.joinpath("worddumb-wikimedia")
 
-    def get_image(self, location):
-        if self.maps_local is None:
-            return None
-        if (url := self.maps_local.get(location)):
-            if not url.endswith('.svg'):
-                url = self.maps_en[url]
-            filename = url.split('/')[-1]
-            file_path = self.cache_folder.joinpath(filename)
-            if not file_path.exists():
-                self.download_image(self.download_url + url, file_path)
-            return filename, file_path
-        return None
+    def get_image(self, filename):
+        file_path = self.cache_folder.joinpath(filename)
+        if not file_path.exists():
+            self.download_image(filename, file_path)
+        return file_path
 
-    def download_image(self, url, file_path):
-        r = self.session.get(url)
-        with file_path.open('w') as f:
+    def download_image(self, filename, file_path):
+        r = self.session.get(
+            f"https://commons.wikimedia.org/wiki/Special:FilePath/{filename}"
+        )
+        with file_path.open("w") as f:
             f.write(r.text)
 
     def close_session(self):
-        if self.maps_local is not None:
-            self.session.close()
+        self.session.close()
 
 
 class Wikidata:
-    def __init__(self, plugin_path, plugin_version):
+    def __init__(self, plugin_path, useragent):
         import requests
 
         self.cache_path = Path(plugin_path).parent.joinpath(
-            "worddumb-wikimedia/wikidata.json")
+            "worddumb-wikimedia/wikidata.json"
+        )
         self.cache = load_cache(self.cache_path)
 
         self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "user-agent": f"WordDumb/{plugin_version} "
-                "(https://github.com/xxyzz/WordDumb)"
-            }
-        )
+        self.session.headers.update({"user-agent": useragent})
 
     def has_cache(self, item_id):
         return item_id in self.cache

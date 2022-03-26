@@ -55,30 +55,32 @@ class MediaWiki:
         import requests
 
         if fandom_url:
-            self.source_name = 'Fandom'
-            self.source_link = f'{fandom_url}/wiki/'
-            self.wiki_api = f'{fandom_url}/api.php'
+            self.source_name = "Fandom"
+            self.source_link = f"{fandom_url}/wiki/"
+            self.wiki_api = f"{fandom_url}/api.php"
             self.cache_path = Path(plugin_path).parent.joinpath(
-                f'worddumb-fandom/{fandom_url[8:]}.json')
+                f"worddumb-fandom/{fandom_url[8:]}.json"
+            )
         else:
-            self.source_name = 'Wikipedia'
-            self.source_link = f'https://{lang}.wikipedia.org/wiki/'
-            self.wiki_api = f'https://{lang}.wikipedia.org/w/api.php'
+            self.source_name = "Wikipedia"
+            self.source_link = f"https://{lang}.wikipedia.org/wiki/"
+            self.wiki_api = f"https://{lang}.wikipedia.org/w/api.php"
             self.cache_path = Path(plugin_path).parent.joinpath(
-                f"worddumb-wikimedia/{lang}.json")
+                f"worddumb-wikimedia/{lang}.json"
+            )
         self.cache = load_cache(self.cache_path)
 
         self.session = requests.Session()
         self.session.params = {
-            'format': 'json',
-            'action': 'query',
+            "format": "json",
+            "action": "query",
             "prop": "extracts|pageprops",
-            'exintro': 1,
-            'explaintext': 1,
-            'redirects': 1,
-            'exsentences': 7,
-            'formatversion': 2,
-            "ppprop": "wikibase_item"
+            "exintro": 1,
+            "explaintext": 1,
+            "redirects": 1,
+            "exsentences": 7,
+            "formatversion": 2,
+            "ppprop": "wikibase_item",
         }
         self.session.headers.update({"user-agent": useragent})
         if lang == "zh" and not fandom_url:
@@ -99,27 +101,25 @@ class MediaWiki:
         return data
 
     def query(self, titles):
-        result = self.session.get(
-            self.wiki_api,
-            params={'titles': '|'.join(titles)})
+        result = self.session.get(self.wiki_api, params={"titles": "|".join(titles)})
         data = result.json()
         converts = defaultdict(list)
-        for convert_type in ['normalized', 'redirects']:
-            for d in data['query'].get(convert_type, []):
+        for convert_type in ["normalized", "redirects"]:
+            for d in data["query"].get(convert_type, []):
                 # different titles can be redirected to the same page
-                converts[d['to']].append(d['from'])
+                converts[d["to"]].append(d["from"])
 
-        for v in data['query']['pages']:
-            if 'extract' not in v:  # missing or invalid
+        for v in data["query"]["pages"]:
+            if "extract" not in v:  # missing or invalid
                 continue
             # they are ordered by pageid, ehh
-            title = v['title']
-            summary = v['extract']
-            if not any(period in summary for period in ['.', '。']):
+            title = v["title"]
+            summary = v["extract"]
+            if not any(period in summary for period in [".", "。"]):
                 continue  # very likely a disambiguation page
             self.cache[title] = {
                 "intro": summary,
-                "item_id": v.get("pageprops", {}).get("wikibase_item")
+                "item_id": v.get("pageprops", {}).get("wikibase_item"),
             }
             if title in titles:
                 titles.remove(title)

@@ -9,32 +9,43 @@ from .main import ParseBook
 
 
 class WordDumb(InterfaceAction):
-    name = 'WordDumb'
-    action_spec = ('WordDumb', None, 'Good morning Krusty Crew!', None)
-    action_type = 'current'
+    name = "WordDumb"
+    action_spec = ("WordDumb", None, "Good morning Krusty Crew!", None)
+    action_type = "current"
     action_add_menu = True
-    action_menu_clone_qaction = 'Create Word Wise and X-Ray'
+    action_menu_clone_qaction = "Create Word Wise and X-Ray"
 
     def genesis(self):
-        icon = get_icons('starfish.svg')  # noqa: F821
+        icon = get_icons("starfish.svg")
         self.qaction.setIcon(icon)
         self.menu = self.qaction.menu()
 
         self.qaction.triggered.connect(partial(run, self.gui, True, True))
         self.create_menu_action(
-            self.menu, 'Word Wise', 'Create Word Wise',
-            triggered=partial(run, self.gui, True, False))
+            self.menu,
+            "Word Wise",
+            "Create Word Wise",
+            triggered=partial(run, self.gui, True, False),
+        )
         self.create_menu_action(
-            self.menu, 'X-Ray', 'Create X-Ray',
-            triggered=partial(run, self.gui, False, True))
+            self.menu,
+            "X-Ray",
+            "Create X-Ray",
+            triggered=partial(run, self.gui, False, True),
+        )
 
         self.menu.addSeparator()
-        self.create_menu_action(self.menu, 'Preferences', 'Preferences',
-                                triggered=self.config)
+        self.create_menu_action(
+            self.menu, "Preferences", "Preferences", triggered=self.config
+        )
         self.menu.addSeparator()
-        self.create_menu_action(self.menu, 'Donate', 'Donate',
-                                description='I need about tree-fiddy.',
-                                triggered=ConfigWidget.donate)
+        self.create_menu_action(
+            self.menu,
+            "Donate",
+            "Donate",
+            description="I need about tree-fiddy.",
+            triggered=ConfigWidget.donate,
+        )
         self.qaction.setMenu(self.menu)
 
     def config(self):

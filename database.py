@@ -9,13 +9,14 @@ except ImportError:
 
 
 def get_ll_path(asin, book_path):
-    return Path(book_path).parent.joinpath(f'LanguageLayer.en.{asin}.kll')
+    return Path(book_path).parent.joinpath(f"LanguageLayer.en.{asin}.kll")
 
 
 def create_lang_layer(asin, book_path, acr, revision):
     db_path = get_ll_path(asin, book_path)
-    ll_conn = sqlite3.connect(':memory:')
-    ll_conn.executescript('''
+    ll_conn = sqlite3.connect(":memory:")
+    ll_conn.executescript(
+        """
         CREATE TABLE metadata (
             key TEXT,
             value TEXT
@@ -28,36 +29,40 @@ def create_lang_layer(asin, book_path, acr, revision):
             sense_id INTEGER,
             low_confidence BOOLEAN
         );
-    ''')
+        """
+    )
 
-    metadata = [('acr', acr),
-                ('targetLanguages', 'en'),
-                ('sidecarRevision', '9'),
-                ('bookRevision', revision),
-                ('sourceLanguage', 'en'),
-                ('enDictionaryVersion', '2016-09-14'),
-                ('enDictionaryRevision', '57'),
-                ('enDictionaryId', 'kll.en.en'),
-                ('sidecarFormat', '1.0')]
-    ll_conn.executemany('INSERT INTO metadata VALUES (?, ?)', metadata)
+    metadata = [
+        ("acr", acr),
+        ("targetLanguages", "en"),
+        ("sidecarRevision", "9"),
+        ("bookRevision", revision),
+        ("sourceLanguage", "en"),
+        ("enDictionaryVersion", "2016-09-14"),
+        ("enDictionaryRevision", "57"),
+        ("enDictionaryId", "kll.en.en"),
+        ("sidecarFormat", "1.0"),
+    ]
+    ll_conn.executemany("INSERT INTO metadata VALUES (?, ?)", metadata)
     return ll_conn, db_path
 
 
 def insert_lemma(ll_conn, data):
-    ll_conn.execute('''
-    INSERT INTO glosses (start, end, difficulty, sense_id, low_confidence)
-    VALUES (?, ?, ?, ?, 0)
-    ''', data)
+    ll_conn.execute(
+        "INSERT INTO glosses (start, end, difficulty, sense_id, low_confidence) VALUES (?, ?, ?, ?, 0)",
+        data,
+    )
 
 
 def get_x_ray_path(asin, book_path):
-    return Path(book_path).parent.joinpath(f'XRAY.entities.{asin}.asc')
+    return Path(book_path).parent.joinpath(f"XRAY.entities.{asin}.asc")
 
 
 def create_x_ray_db(asin, book_path, lang, plugin_path, zh_wiki, fandom_url):
     db_path = get_x_ray_path(asin, book_path)
-    x_ray_conn = sqlite3.connect(':memory:')
-    x_ray_conn.executescript('''
+    x_ray_conn = sqlite3.connect(":memory:")
+    x_ray_conn.executescript(
+        """
     PRAGMA user_version = 1;
 
     CREATE TABLE book_metadata (
@@ -140,57 +145,62 @@ def create_x_ray_db(asin, book_path, lang, plugin_path, zh_wiki, fandom_url):
     INSERT INTO source (id, label, url) VALUES(0, 5, 20);
     INSERT INTO source VALUES(1, 6, 21, 7, 8);
     INSERT INTO source (id, label, url) VALUES(2, 4, 22);
-    ''')
+    """
+    )
 
-    str_list = load_json_or_pickle(plugin_path, 'data/x_ray_strings.json')
+    str_list = load_json_or_pickle(plugin_path, "data/x_ray_strings.json")
     if fandom_url:
-        str_list[-2][-1] = f'{fandom_url}/wiki/%s'
+        str_list[-2][-1] = f"{fandom_url}/wiki/%s"
         for d in str_list:
             if d[0] == 6:
-                d[-1] = 'Fandom'
-    elif lang == 'zh':
-        str_list[-2][-1] = f'https://zh.wikipedia.org/zh-{zh_wiki}/%s'
-    elif lang != 'en':
-        str_list[-2][-1] = f'https://{lang}.wikipedia.org/wiki/%s'
-    x_ray_conn.executemany('INSERT INTO string VALUES(?, ?, ?)', str_list)
+                d[-1] = "Fandom"
+    elif lang == "zh":
+        str_list[-2][-1] = f"https://zh.wikipedia.org/zh-{zh_wiki}/%s"
+    elif lang != "en":
+        str_list[-2][-1] = f"https://{lang}.wikipedia.org/wiki/%s"
+    x_ray_conn.executemany("INSERT INTO string VALUES(?, ?, ?)", str_list)
 
     return x_ray_conn, db_path
 
 
 def create_x_indices(conn):
-    conn.executescript('''
-    CREATE INDEX idx_entity_type ON entity(type ASC);
-    CREATE INDEX idx_entity_excerpt ON entity_excerpt(entity ASC);
-    CREATE INDEX idx_occurrence_start ON occurrence(start ASC);''')
+    conn.executescript(
+        """
+        CREATE INDEX idx_entity_type ON entity(type ASC);
+        CREATE INDEX idx_entity_excerpt ON entity_excerpt(entity ASC);
+        CREATE INDEX idx_occurrence_start ON occurrence(start ASC);
+        """
+    )
 
 
 def insert_x_book_metadata(conn, data):
-    conn.execute(
-        'INSERT INTO book_metadata VALUES(0, ?, ?, 0, 0, ?, ?, ?, ?)', data)
+    conn.execute("INSERT INTO book_metadata VALUES(0, ?, ?, 0, 0, ?, ?, ?, ?)", data)
 
 
 def insert_x_entity(conn, data):
-    conn.executemany('''
-    INSERT INTO entity (id, label, type, count, has_info_card)
-    VALUES(?, ?, ?, ?, 1)''', data)
+    conn.executemany(
+        "INSERT INTO entity (id, label, type, count, has_info_card) VALUES(?, ?, ?, ?, 1)",
+        data,
+    )
 
 
 def insert_x_entity_description(conn, data):
-    conn.execute('INSERT INTO entity_description VALUES(?, ?, ?, ?)', data)
+    conn.execute("INSERT INTO entity_description VALUES(?, ?, ?, ?)", data)
 
 
 def insert_x_occurrence(conn, data):
-    conn.execute('INSERT INTO occurrence VALUES(?, ?, ?)', data)
+    conn.execute("INSERT INTO occurrence VALUES(?, ?, ?)", data)
 
 
 def insert_x_type(conn, data):
-    conn.execute('INSERT INTO type VALUES(?, ?, ?, ?, ?)', data)
+    conn.execute("INSERT INTO type VALUES(?, ?, ?, ?, ?)", data)
 
 
 def insert_x_excerpt_image(conn, data):
-    conn.execute('''
-    INSERT INTO excerpt (id, start, length, image, goto)
-    VALUES(?, ?, 0, ?, ?)''', data)
+    conn.execute(
+        "INSERT INTO excerpt (id, start, length, image, goto) VALUES(?, ?, 0, ?, ?)",
+        data,
+    )
 
 
 def save_db(source, dest_path):

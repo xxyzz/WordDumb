@@ -4,19 +4,41 @@ import re
 from collections import Counter
 
 try:
-    from .database import (create_x_indices, insert_x_book_metadata,
-                           insert_x_entity, insert_x_entity_description,
-                           insert_x_excerpt_image, insert_x_occurrence,
-                           insert_x_type, save_db)
-    from .mediawiki import (FUZZ_THRESHOLD, PERSON_LABELS, query_mediawiki,
-                            query_wikidata, regime_type)
+    from .database import (
+        create_x_indices,
+        insert_x_book_metadata,
+        insert_x_entity,
+        insert_x_entity_description,
+        insert_x_excerpt_image,
+        insert_x_occurrence,
+        insert_x_type,
+        save_db,
+    )
+    from .mediawiki import (
+        FUZZ_THRESHOLD,
+        PERSON_LABELS,
+        query_mediawiki,
+        query_wikidata,
+        regime_type,
+    )
 except ImportError:
-    from database import (create_x_indices, insert_x_book_metadata,
-                          insert_x_entity, insert_x_entity_description,
-                          insert_x_excerpt_image, insert_x_occurrence,
-                          insert_x_type, save_db)
-    from mediawiki import (FUZZ_THRESHOLD, PERSON_LABELS, query_mediawiki,
-                           query_wikidata, regime_type)
+    from database import (
+        create_x_indices,
+        insert_x_book_metadata,
+        insert_x_entity,
+        insert_x_entity_description,
+        insert_x_excerpt_image,
+        insert_x_occurrence,
+        insert_x_type,
+        save_db,
+    )
+    from mediawiki import (
+        FUZZ_THRESHOLD,
+        PERSON_LABELS,
+        query_mediawiki,
+        query_wikidata,
+        regime_type,
+    )
 
 
 class X_Ray:

@@ -8,9 +8,11 @@ from html import escape
 from pathlib import Path
 
 try:
-    from .mediawiki import MEDIAWIKI_API_EXLIMIT, FUZZ_THRESHOLD
+    from .mediawiki import (FUZZ_THRESHOLD, PERSON_LABELS, query_mediawiki,
+                            query_wikidata, regime_type)
 except ImportError:
-    from mediawiki import MEDIAWIKI_API_EXLIMIT, FUZZ_THRESHOLD
+    from mediawiki import (FUZZ_THRESHOLD, PERSON_LABELS, query_mediawiki,
+                           query_wikidata, regime_type)
 
 
 NAMESPACES = {
@@ -22,20 +24,20 @@ NAMESPACES = {
 
 
 class X_Ray_EPUB:
-    def __init__(self, book_path, search_people, mediawiki, wiki_commons):
+    def __init__(self, book_path, search_people, mediawiki, wiki_commons, wikidata):
         self.book_path = book_path
         self.search_people = search_people
         self.mediawiki = mediawiki
-        self.num_ents = 0
-        self.ent_dic = defaultdict(list)
+        self.wiki_commons = wiki_commons
+        self.wikidata = wikidata
+        self.entity_id = 0
         self.entities = {}
-        self.pending_dic = {}
-        self.extract_folder = Path(book_path).with_name('extract')
+        self.entity_occurrences = defaultdict(list)
+        self.extract_folder = Path(book_path).with_name("extract")
         if self.extract_folder.exists():
             shutil.rmtree(self.extract_folder)
         self.xhtml_folder = self.extract_folder
         self.xhtml_href_has_folder = False
-        self.wikimedia_commons = wiki_commons
         self.image_folder = self.extract_folder
         self.image_href_has_folder = False
 
@@ -89,43 +91,33 @@ class X_Ray_EPUB:
                     for m in re.finditer(r'>[^<]+<', body_str):
                         yield (m.group(0)[1:-1], (m.start() + 1, xhtml_path))
 
-    def search(self, name, is_person, sent, start, end, xhtml_path):
+    def add_entity(self, entity, ner_label, quote, start, end, xhtml_path):
         from rapidfuzz.process import extractOne
 
-        if (r := extractOne(
-                name, self.entities.keys(), score_cutoff=FUZZ_THRESHOLD)):
-            ent_id = self.entities[r[0]]['id']
+        if r := extractOne(entity, self.entities.keys(), score_cutoff=FUZZ_THRESHOLD):
+            entity_id = self.entities[r[0]]["id"]
         else:
-            ent_id = self.num_ents
-            self.num_ents += 1
-            self.entities[name] = {
-                'id': ent_id, 'summary': sent, 'quote': True}
-            if not is_person or self.search_people:
-                if name in self.mediawiki.cache_dic:
-                    if (cached_summary := self.mediawiki.cache_dic[name]):
-                        self.update_summary(name, cached_summary)
-                else:
-                    self.pending_dic[name] = None
-                    if len(self.pending_dic) == MEDIAWIKI_API_EXLIMIT:
-                        self.mediawiki.query(
-                            self.pending_dic, self.update_summary)
-                        self.pending_dic.clear()
+            entity_id = self.entity_id
+            self.entities[entity] = {
+                "id": self.entity_id,
+                "label": ner_label,
+                "quote": quote,
+            }
+            self.entity_id += 1
 
-        self.ent_dic[xhtml_path].append((start, end, name, ent_id))
-
-    def update_summary(self, key, summary):
-        self.entities[key]['summary'] = summary
-        self.entities[key]['quote'] = False
+        self.entity_occurrences[xhtml_path].append((start, end, entity, entity_id))
 
     def modify_epub(self):
-        if len(self.pending_dic):
-            self.mediawiki.query(self.pending_dic, self.update_summary)
+        query_mediawiki(self.entities, self.mediawiki, self.search_people)
+        if self.wikidata:
+            query_wikidata(self.entities, self.mediawiki, self.wikidata)
         self.insert_anchor_elements()
-        self.create_x_ray_page()
-        self.mediawiki.save_cache()
+        self.create_footnotes()
+        self.modify_opf()
+        self.zip_extract_folder()
 
     def insert_anchor_elements(self):
-        for xhtml_path, ent_list in self.ent_dic.items():
+        for xhtml_path, entity_list in self.entity_occurrences.items():
             with xhtml_path.open() as f:
                 xhtml_str = f.read()
                 body_start = xhtml_str.index('<body')
@@ -133,11 +125,10 @@ class X_Ray_EPUB:
                 body_str = xhtml_str[body_start:body_end]
             s = ''
             last_end = 0
-            for data in ent_list:
-                start, end, name, ent_id = data
+            for data in entity_list:
+                start, end, entity, entity_id = data
                 s += body_str[last_end:start]
-                s += f'<a epub:type="noteref" href="x_ray.xhtml#{ent_id}">'
-                s += f'{name}</a>'
+                s += f'<a epub:type="noteref" href="x_ray.xhtml#{entity_id}">{entity}</a>'
                 last_end = end
             s += body_str[last_end:]
             new_xhtml_str = xhtml_str[:body_start] + s + xhtml_str[body_end:]
@@ -151,11 +142,9 @@ class X_Ray_EPUB:
                         f'xmlns:epub="{NAMESPACES["ops"]}"')
                 f.write(new_xhtml_str)
 
-    def create_x_ray_page(self):
-        from lxml import etree
-
-        images = set()
-        image_prefix = ''
+    def create_footnotes(self):
+        self.image_filenames = set()
+        image_prefix = ""
         if self.xhtml_href_has_folder:
             image_prefix += '../'
         if self.image_href_has_folder:
@@ -168,30 +157,40 @@ class X_Ray_EPUB:
         <body>
         '''
         for entity, data in self.entities.items():
-            s += f'''
-            <aside id="{data["id"]}" epub:type="footnote">
-            {escape(data["summary"])}
-            '''
-            if not data['quote']:
-                s += f'''
+            if (self.search_people or data["label"] not in PERSON_LABELS) and (
+                intro_cache := self.mediawiki.get_cache(entity)
+            ):
+                s += f"""
+                <aside id="{data["id"]}" epub:type="footnote">
+                {escape(intro_cache["intro"])}
                 <a href="{self.mediawiki.source_link}{entity}">
-                {self.mediawiki.source_name}</a>
-                '''
-            if not data['quote'] and (
-                    result := self.wikimedia_commons.get_image(entity)):
-                filename, file_path = result
-                s += f'''
-                <img style="max-width:100%" src="{image_prefix}{filename}" />
-                <a href="{self.wikimedia_commons.source_url}{filename}">
-                Wikimedia Commons</a>
-                '''
-                shutil.copy(file_path, self.image_folder.joinpath(filename))
-                images.add(filename)
-            s += '</aside>'
-        s += '</body></html>'
-        self.wikimedia_commons.close_session()
-        with self.xhtml_folder.joinpath('x_ray.xhtml').open('w') as f:
+                {self.mediawiki.source_name}
+                </a>
+                """
+                if self.wikidata and (
+                    wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])
+                ):
+                    if democracy_index := wikidata_cache.get("democracy_index"):
+                        s += f"<p>{regime_type(float(democracy_index))}</p>"
+                    if filename := wikidata_cache.get("map_filename"):
+                        file_path = self.wiki_commons.get_image(filename)
+                        s += f'<img style="max-width:100%" src="{image_prefix}{filename}" />'
+                        shutil.copy(file_path, self.image_folder.joinpath(filename))
+                        self.image_filenames.add(filename)
+                    s += f'<a href="https://www.wikidata.org/wiki/{intro_cache["item_id"]}">Wikidata</a>'
+            else:
+                s += f'<aside id="{data["id"]}" epub:type="footnote">{escape(data["quote"])}'
+            s += "</aside>"
+        s += "</body></html>"
+        with self.xhtml_folder.joinpath("x_ray.xhtml").open("w") as f:
             f.write(s)
+        self.mediawiki.save_cache()
+        if self.wikidata:
+            self.wikidata.save_cache()
+            self.wiki_commons.close_session()
+
+    def modify_opf(self):
+        from lxml import etree
 
         xhtml_prefix = ''
         image_prefix = ''
@@ -203,9 +202,16 @@ class X_Ray_EPUB:
             'media-type="application/xhtml+xml"/>'
         manifest = self.opf_root.find('opf:manifest', NAMESPACES)
         manifest.append(etree.fromstring(s))
-        for image_name in images:
-            s = f'<item href="{image_prefix}{image_name}" id="{image_name}" '\
-                'media-type="image/svg+xml"/>'
+        for filename in self.image_filenames:
+            if filename.endswith(".svg"):
+                media_type = "svg+xml"
+            elif filename.endswith(".png"):
+                media_type = "png"
+            elif filename.endswith(".jpg"):
+                media_type = "jpeg"
+            elif filename.endswith(".webp"):
+                media_type = "webp"
+            s = f'<item href="{image_prefix}{filename}" id="{filename}" media-type="image/{media_type}"/>'
             manifest.append(etree.fromstring(s))
         spine = self.opf_root.find('opf:spine', NAMESPACES)
         s = '<itemref idref="x_ray.xhtml"/>'
@@ -213,6 +219,7 @@ class X_Ray_EPUB:
         with self.opf_path.open('w') as f:
             f.write(etree.tostring(self.opf_root, encoding=str))
 
+    def zip_extract_folder(self):
         self.book_path = Path(self.book_path)
         shutil.make_archive(self.extract_folder, 'zip', self.extract_folder)
         shutil.move(

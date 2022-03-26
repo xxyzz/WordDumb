@@ -15,6 +15,8 @@ FUZZ_THRESHOLD = 85.7
 
 
 def load_cache(cache_path):
+    if not cache_path.parent.exists():
+        cache_path.parent.mkdir()
     if cache_path.exists():
         with cache_path.open() as f:
             return json.load(f)
@@ -23,8 +25,6 @@ def load_cache(cache_path):
 
 
 def save_cache(cache, cache_path):
-    if not cache_path.parent.exists():
-        cache_path.parent.mkdir()
     with cache_path.open("w") as f:
         json.dump(cache, f)
 

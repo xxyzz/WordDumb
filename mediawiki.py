@@ -13,6 +13,32 @@ from urllib.parse import unquote
 MEDIAWIKI_API_EXLIMIT = 20
 FUZZ_THRESHOLD = 85.7
 
+# https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L318
+NER_LABELS = [
+    "EVENT",  # OntoNotes 5: English, Chinese
+    "FAC",
+    "GPE",
+    "LAW",
+    "LOC",
+    "ORG",
+    "PERSON",
+    "PRODUCT",
+    "WORK_OF_ART",
+    "MISC",  # Catalan
+    "PER",
+    "EVT",  # Norwegian Bokmål: https://github.com/ltgoslo/norne#entity-types
+    "GPE_LOC",
+    "GPE_ORG",
+    "PROD",
+    "geogName",  # Polish: https://arxiv.org/pdf/1811.10418.pdf#subsection.2.1
+    "orgName",
+    "persName",
+    "placeName",
+    "ORGANIZATION",  # Romanian: https://arxiv.org/pdf/1909.01247.pdf#section.4
+]
+PERSON_LABELS = ["PERSON", "PER", "persName"]
+GPE_LABELS = ["GPE", "GPE_LOC", "GPE_ORG", "placeName"]
+
 
 def load_cache(cache_path):
     if not cache_path.parent.exists():
@@ -246,3 +272,36 @@ def regime_type(democracy_index_score):
         regime_type = "authoritarian regime"
 
     return f"Democracy Index: {democracy_index_score} {regime_type}"
+
+
+def query_mediawiki(entities, mediawiki, search_people):
+    pending_entities = []
+    for entity, data in entities.items():
+        if len(pending_entities) == MEDIAWIKI_API_EXLIMIT:
+            mediawiki.query(pending_entities)
+            pending_entities.clear()
+        elif not mediawiki.has_cache(entity) and (
+            search_people or data["label"] not in PERSON_LABELS
+        ):
+            pending_entities.append(entity)
+    if len(pending_entities):
+        mediawiki.query(pending_entities)
+
+
+def query_wikidata(entities, mediawiki, wikidata):
+    pending_item_ids = []
+    for item_id in filter(
+        lambda x: x and not wikidata.has_cache(x),
+        (
+            mediawiki.get_cache(entity).get("item_id")
+            for entity, data in entities.items()
+            if data["label"] in GPE_LABELS and mediawiki.get_cache(entity)
+        ),
+    ):
+        if len(pending_item_ids) == MEDIAWIKI_API_EXLIMIT:
+            wikidata.query(pending_item_ids)
+            pending_item_ids.clear()
+        else:
+            pending_item_ids.append(item_id)
+    if len(pending_item_ids):
+        wikidata.query(pending_item_ids)

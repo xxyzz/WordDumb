@@ -8,39 +8,15 @@ try:
                            insert_x_entity, insert_x_entity_description,
                            insert_x_excerpt_image, insert_x_occurrence,
                            insert_x_type, save_db)
-    from .mediawiki import FUZZ_THRESHOLD, MEDIAWIKI_API_EXLIMIT, regime_type
+    from .mediawiki import (FUZZ_THRESHOLD, PERSON_LABELS, query_mediawiki,
+                            query_wikidata, regime_type)
 except ImportError:
     from database import (create_x_indices, insert_x_book_metadata,
                           insert_x_entity, insert_x_entity_description,
                           insert_x_excerpt_image, insert_x_occurrence,
                           insert_x_type, save_db)
-    from mediawiki import FUZZ_THRESHOLD, MEDIAWIKI_API_EXLIMIT, regime_type
-
-# https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L318
-NER_LABELS = [
-    "EVENT",  # OntoNotes 5: English, Chinese
-    "FAC",
-    "GPE",
-    "LAW",
-    "LOC",
-    "ORG",
-    "PERSON",
-    "PRODUCT",
-    "WORK_OF_ART",
-    "MISC",  # Catalan
-    "PER",
-    "EVT",  # Norwegian Bokmål: https://github.com/ltgoslo/norne#entity-types
-    "GPE_LOC",
-    "GPE_ORG",
-    "PROD",
-    "geogName",  # Polish: https://arxiv.org/pdf/1811.10418.pdf#subsection.2.1
-    "orgName",
-    "persName",
-    "placeName",
-    "ORGANIZATION",  # Romanian: https://arxiv.org/pdf/1909.01247.pdf#section.4
-]
-PERSON_LABELS = ["PERSON", "PER", "persName"]
-GPE_LABELS = ["GPE", "GPE_LOC", "GPE_ORG", "placeName"]
+    from mediawiki import (FUZZ_THRESHOLD, PERSON_LABELS, query_mediawiki,
+                           query_wikidata, regime_type)
 
 
 class X_Ray:
@@ -76,8 +52,8 @@ class X_Ray:
                 wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])
             ):
                 summary = intro_cache["intro"]
-                if democracy_index_score := wikidata_cache["democracy_index"]:
-                    summary += "\n" + regime_type(float(democracy_index_score))
+                if democracy_index := wikidata_cache["democracy_index"]:
+                    summary += "\n" + regime_type(float(democracy_index))
                 insert_x_entity_description(self.conn, (summary, entity, 1, data["id"]))
             else:
                 insert_x_entity_description(
@@ -114,37 +90,6 @@ class X_Ray:
             self.entity_id += 1
         self.insert_occurrence(entity_id, entity_label, start, entity_len)
 
-    def query_wiki_intro(self):
-        pending_entities = []
-        for entity, data in self.entities.items():
-            if len(pending_entities) == MEDIAWIKI_API_EXLIMIT:
-                self.mediawiki.query(pending_entities)
-                pending_entities.clear()
-            elif not self.mediawiki.has_cache(entity) and (
-                self.search_people or data["label"] not in PERSON_LABELS
-            ):
-                pending_entities.append(entity)
-        if len(pending_entities):
-            self.mediawiki.query(pending_entities)
-
-    def query_wikidata(self):
-        pending_item_ids = []
-        for item_id in filter(
-            lambda x: x and not self.wikidata.has_cache(x),
-            (
-                self.mediawiki.get_cache(entity).get("item_id")
-                for entity, data in self.entities.items()
-                if data["label"] in GPE_LABELS and self.mediawiki.get_cache(entity)
-            ),
-        ):
-            if len(pending_item_ids) == MEDIAWIKI_API_EXLIMIT:
-                self.wikidata.query(pending_item_ids)
-                pending_item_ids.clear()
-            else:
-                pending_item_ids.append(item_id)
-        if len(pending_item_ids):
-            self.wikidata.query(pending_item_ids)
-
     def finish(self, db_path):
         def top_mentioned(counter):
             return ",".join(map(str, [e[0] for e in counter.most_common(10)]))
@@ -164,9 +109,9 @@ class X_Ray:
             ),
         )
 
-        self.query_wiki_intro()
+        query_mediawiki(self.entities, self.mediawiki, self.search_people)
         if self.wikidata:
-            self.query_wikidata()
+            query_wikidata(self.entities, self.mediawiki, self.wikidata)
         self.insert_descriptions()
 
         if self.kfx_json:

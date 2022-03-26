@@ -191,9 +191,20 @@ class Wikidata:
         items = " ".join(map(lambda x: f"wd:{x}", items))
         query = f"""
         SELECT ?item ?democracy_index (SAMPLE(?locator_map_image) AS ?map_url) WHERE {{
-        VALUES ?item {{ {items} }}
-        OPTIONAL {{ ?item wdt:P242 ?locator_map_image. }}
-        OPTIONAL {{ ?item wdt:P8328 ?democracy_index. }}
+          VALUES ?item {{ {items} }}
+          OPTIONAL {{ ?item wdt:P242 ?locator_map_image. }}
+          OPTIONAL {{
+            ?item wdt:P8328 ?statment.
+            ?statment ps:P8328 ?democracy_index;
+              pq:P585 ?most_recent.
+            {{
+              SELECT ?item (MAX(?point_in_time) AS ?most_recent) WHERE {{
+                VALUES ?item {{ {items} }}
+                ?item (p:P8328/pq:P585) ?point_in_time.
+              }}
+              GROUP BY ?item
+            }}
+          }}
         }}
         GROUP BY ?item ?democracy_index
         """

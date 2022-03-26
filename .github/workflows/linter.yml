@@ -17,11 +17,5 @@ jobs:
     name: Lint Code Base
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install flake8
-        run: python3 -m pip install flake8
-
-      - name: Lint Code Base
-        run: flake8 .
+      - uses: actions/checkout@v3
+      - uses: psf/black@stable

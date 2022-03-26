@@ -186,8 +186,8 @@ class Wikidata:
           VALUES ?item {{ {items} }}
           OPTIONAL {{ ?item wdt:P242 ?locator_map_image. }}
           OPTIONAL {{
-            ?item wdt:P8328 ?statment.
-            ?statment ps:P8328 ?democracy_index;
+            ?item p:P8328 ?statement.
+            ?statement ps:P8328 ?democracy_index;
               pq:P585 ?most_recent.
             {{
               SELECT ?item (MAX(?point_in_time) AS ?most_recent) WHERE {{
@@ -207,12 +207,10 @@ class Wikidata:
         result = result.json()
         for binding in result.get("results", {}).get("bindings"):
             item_id = binding["item"]["value"].split("/")[-1]
-            democracy_index = None
+            democracy_index = binding.get("democracy_index", {}).get("value")
             map_filename = None
-            if democracy_index_data := binding.get("democracy_index"):
-                democracy_index = democracy_index_data.get("value")
-            if map_data := binding.get("map_url"):
-                map_filename = unquote(map_data.get("value")).split("/")[-1]
+            if map_url := binding.get("map_url", {}).get("value"):
+                map_filename = unquote(map_url).split("/")[-1]
             if democracy_index or map_filename:
                 self.cache[item_id] = {
                     "democracy_index": democracy_index,

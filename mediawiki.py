@@ -182,7 +182,7 @@ class Wikidata:
     def query(self, items):
         items = " ".join(map(lambda x: f"wd:{x}", items))
         query = f"""
-        SELECT ?item ?democracy_index (SAMPLE(?locator_map_image) AS ?map_url) WHERE {{
+        SELECT ?item ?democracy_index (GROUP_CONCAT(?locator_map_image; SEPARATOR = "|") AS ?maps) WHERE {{
           VALUES ?item {{ {items} }}
           OPTIONAL {{ ?item wdt:P242 ?locator_map_image. }}
           OPTIONAL {{
@@ -208,13 +208,25 @@ class Wikidata:
         for binding in result.get("results", {}).get("bindings"):
             item_id = binding["item"]["value"].split("/")[-1]
             democracy_index = binding.get("democracy_index", {}).get("value")
-            map_filename = None
-            if map_url := binding.get("map_url", {}).get("value"):
-                map_filename = unquote(map_url).split("/")[-1]
-            if democracy_index or map_filename:
+            map_url = None
+            # use orthographic projection map if it exists, don't know how to do this in SPARQL
+            if map_urls := binding.get("maps", {}).get("value"):
+                if "orthographic" in map_urls.lower():
+                    map_url = next(
+                        filter(
+                            lambda x: "orthographic" in x.lower(), map_urls.split("|")
+                        )
+                    )
+                elif "globe" in map_urls.lower():
+                    map_url = next(
+                        filter(lambda x: "globe" in x.lower(), map_urls.split("|"))
+                    )
+                else:
+                    map_url = map_urls.split("|")[0]
+            if democracy_index or map_url:
                 self.cache[item_id] = {
                     "democracy_index": democracy_index,
-                    "map_filename": map_filename,
+                    "map_filename": unquote(map_url).split("/")[-1],
                 }
             else:
                 self.cache[item_id] = None

@@ -74,6 +74,8 @@ $ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
 
 - https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/Wikidata_Query_Help
 
+- https://en.wikibooks.org/wiki/SPARQL
+
 ## Kindle firmware
 
 - https://www.amazon.com/gp/help/customer/display.html?nodeId=GKMQC26VQQMM8XSW

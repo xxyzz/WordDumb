@@ -184,7 +184,7 @@ class Wikidata:
         query = f"""
         SELECT ?item ?democracy_index (GROUP_CONCAT(?locator_map_image; SEPARATOR = "|") AS ?maps) WHERE {{
           VALUES ?item {{ {items} }}
-          OPTIONAL {{ ?item wdt:P242 ?locator_map_image. }}
+          OPTIONAL {{ ?item (p:P242/ps:P242) ?locator_map_image. }}
           OPTIONAL {{
             ?item p:P8328 ?statement.
             ?statement ps:P8328 ?democracy_index;

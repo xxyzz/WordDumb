@@ -41,13 +41,13 @@ class TestDumbCode(unittest.TestCase):
         prefs["model_size"] = origin_model_size
 
     def check_db(self, test_json_path, created_db_path, table, sql):
-        with open(test_json_path) as test_json, sqlite3.connect(
+        with open(test_json_path, encoding="utf-8") as test_json, sqlite3.connect(
             created_db_path
         ) as created_db:
-            for a, b in zip_longest(
+            for expected_value, value_in_db in zip_longest(
                 json.load(test_json)[table], created_db.execute(sql)
             ):
-                self.assertEqual(tuple(a), b)
+                self.assertEqual(tuple(expected_value), value_in_db)
 
     def test_asin(self):
         self.assertEqual(

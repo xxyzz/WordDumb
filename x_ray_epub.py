@@ -92,7 +92,7 @@ class X_Ray_EPUB:
                     self.xhtml_folder = xhtml_path.parent
                 if "/" in xhtml:
                     self.xhtml_href_has_folder = True
-                with xhtml_path.open() as f:
+                with xhtml_path.open(encoding="utf-8") as f:
                     xhtml_str = f.read()
                     body_start = xhtml_str.index("<body")
                     body_end = xhtml_str.index("</body>") + len("</body>")
@@ -127,7 +127,7 @@ class X_Ray_EPUB:
 
     def insert_anchor_elements(self):
         for xhtml_path, entity_list in self.entity_occurrences.items():
-            with xhtml_path.open() as f:
+            with xhtml_path.open(encoding="utf-8") as f:
                 xhtml_str = f.read()
                 body_start = xhtml_str.index("<body")
                 body_end = xhtml_str.index("</body>") + len("</body>")
@@ -142,7 +142,7 @@ class X_Ray_EPUB:
             s += body_str[last_end:]
             new_xhtml_str = xhtml_str[:body_start] + s + xhtml_str[body_end:]
 
-            with xhtml_path.open("w") as f:
+            with xhtml_path.open("w", encoding="utf-8") as f:
                 if NAMESPACES["ops"] not in new_xhtml_str:
                     # add epub namespace
                     new_xhtml_str = new_xhtml_str.replace(
@@ -192,7 +192,7 @@ class X_Ray_EPUB:
                 s += f'<aside id="{data["id"]}" epub:type="footnote">{escape(data["quote"])}'
             s += "</aside>"
         s += "</body></html>"
-        with self.xhtml_folder.joinpath("x_ray.xhtml").open("w") as f:
+        with self.xhtml_folder.joinpath("x_ray.xhtml").open("w", encoding="utf-8") as f:
             f.write(s)
         self.mediawiki.save_cache()
         if self.wikidata:
@@ -225,7 +225,7 @@ class X_Ray_EPUB:
         spine = self.opf_root.find("opf:spine", NAMESPACES)
         s = '<itemref idref="x_ray.xhtml"/>'
         spine.append(etree.fromstring(s))
-        with self.opf_path.open("w") as f:
+        with self.opf_path.open("w", encoding="utf-8") as f:
             f.write(etree.tostring(self.opf_root, encoding=str))
 
     def zip_extract_folder(self):

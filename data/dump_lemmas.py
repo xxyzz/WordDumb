@@ -7,7 +7,7 @@ from itertools import chain, product
 from flashtext import KeywordProcessor
 from lemminflect import getAllInflections
 
-with open("data/lemmas.json") as f:
+with open("data/lemmas.json", encoding="utf-8") as f:
     lemmas = json.load(f)
 
 keyword_processor = KeywordProcessor()

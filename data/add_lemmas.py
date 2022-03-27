@@ -27,7 +27,7 @@ for (count,) in ww_klld_conn.execute("SELECT COUNT(*) FROM lemmas"):
     ww_klld_lemmas = count
 
 lemmas = {}
-with open("lemmas.json") as f:
+with open("lemmas.json", encoding="utf-8") as f:
     lemmas = json.load(f)
 origin_count = len(lemmas)
 updated_count = 0
@@ -64,5 +64,5 @@ if updated_count > 0:
     print(f"updated {updated_count} lemmas")
 print(f"lemmas.json has {current_count} lemmas")
 ww_klld_conn.close()
-with open("lemmas.json", "w") as f:
+with open("lemmas.json", "w", encoding="utf-8") as f:
     json.dump(lemmas, f, indent=2, sort_keys=True, ensure_ascii=False)

@@ -226,7 +226,9 @@ class Wikidata:
             if democracy_index or map_url:
                 self.cache[item_id] = {
                     "democracy_index": democracy_index,
-                    "map_filename": unquote(map_url).split("/")[-1],
+                    "map_filename": unquote(map_url).split("/")[-1]
+                    if map_url
+                    else None,
                 }
             else:
                 self.cache[item_id] = None

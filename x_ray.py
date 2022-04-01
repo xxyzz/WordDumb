@@ -92,10 +92,16 @@ class X_Ray:
 
     def add_entity(self, entity, ner_label, start, quote, entity_len):
         from rapidfuzz.process import extractOne
+        from rapidfuzz.fuzz import token_set_ratio
 
         entity_id = self.entity_id
         entity_label = ner_label
-        if r := extractOne(entity, self.entities.keys(), score_cutoff=FUZZ_THRESHOLD):
+        if r := extractOne(
+            entity,
+            self.entities.keys(),
+            score_cutoff=FUZZ_THRESHOLD,
+            scorer=token_set_ratio,
+        ):
             entity_data = self.entities[r[0]]
             entity_id = entity_data["id"]
             entity_label = entity_data["label"]

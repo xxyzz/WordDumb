@@ -102,8 +102,14 @@ class X_Ray_EPUB:
 
     def add_entity(self, entity, ner_label, quote, start, end, xhtml_path):
         from rapidfuzz.process import extractOne
+        from rapidfuzz.fuzz import token_set_ratio
 
-        if r := extractOne(entity, self.entities.keys(), score_cutoff=FUZZ_THRESHOLD):
+        if r := extractOne(
+            entity,
+            self.entities.keys(),
+            score_cutoff=FUZZ_THRESHOLD,
+            scorer=token_set_ratio,
+        ):
             entity_id = self.entities[r[0]]["id"]
         else:
             entity_id = self.entity_id

@@ -246,10 +246,10 @@ def parse_book(kfx_json, mobi_html, mobi_codec):
         return ((e["content"], e["position"]) for e in kfx_json if e["type"] == 1)
     else:
         # match text inside HTML tags
-        for m in re.finditer(b">[^<]{2,}<", mobi_html):
-            text = m.group(0)[1:-1].decode(mobi_codec)
-            yield unescape(text), (m.start() + 1, text)
-
+        for match_body in re.finditer(b"<body.{3,}?</body>", mobi_html, re.DOTALL):
+            for m in re.finditer(b">[^<]{2,}<", match_body.group(0)):
+                text = m.group(0)[1:-1].decode(mobi_codec)
+                yield unescape(text), (match_body.start() + m.start() + 1, text)
 
 
 def find_lemma(start, text, kw_processor, ll_conn, mobi_codec):

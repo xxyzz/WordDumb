@@ -93,13 +93,16 @@ class X_Ray_EPUB:
                 if "/" in xhtml:
                     self.xhtml_href_has_folder = True
                 with xhtml_path.open(encoding="utf-8") as f:
-                    xhtml_str = f.read()
-                    body_start = xhtml_str.index("<body")
-                    body_end = xhtml_str.index("</body>") + len("</body>")
-                    body_str = xhtml_str[body_start:body_end]
-                    for m in re.finditer(r">[^<]{2,}<", body_str):
-                        text = m.group(0)[1:-1]
-                        yield unescape(text), (m.start() + 1, text, xhtml_path)
+                    for match_body in re.finditer(
+                        r"<body.{3,}?</body>", f.read(), re.DOTALL
+                    ):
+                        for m in re.finditer(r">[^<]{2,}<", match_body.group(0)):
+                            text = m.group(0)[1:-1]
+                            yield unescape(text), (
+                                match_body.start() + m.start() + 1,
+                                text,
+                                xhtml_path,
+                            )
 
     def add_entity(self, entity, ner_label, quote, start, end, xhtml_path):
         from rapidfuzz.process import extractOne
@@ -136,18 +139,14 @@ class X_Ray_EPUB:
         for xhtml_path, entity_list in self.entity_occurrences.items():
             with xhtml_path.open(encoding="utf-8") as f:
                 xhtml_str = f.read()
-                body_start = xhtml_str.index("<body")
-                body_end = xhtml_str.index("</body>") + len("</body>")
-                body_str = xhtml_str[body_start:body_end]
-            s = ""
+            new_xhtml_str = ""
             last_end = 0
             for data in entity_list:
                 start, end, entity, entity_id = data
-                s += body_str[last_end:start]
-                s += f'<a epub:type="noteref" href="x_ray.xhtml#{entity_id}">{entity}</a>'
+                new_xhtml_str += xhtml_str[last_end:start]
+                new_xhtml_str += f'<a epub:type="noteref" href="x_ray.xhtml#{entity_id}">{entity}</a>'
                 last_end = end
-            s += body_str[last_end:]
-            new_xhtml_str = xhtml_str[:body_start] + s + xhtml_str[body_end:]
+            new_xhtml_str += xhtml_str[last_end:]
 
             with xhtml_path.open("w", encoding="utf-8") as f:
                 if NAMESPACES["ops"] not in new_xhtml_str:

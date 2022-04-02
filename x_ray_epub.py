@@ -4,7 +4,7 @@ import re
 import shutil
 import zipfile
 from collections import defaultdict
-from html import escape
+from html import escape, unescape
 from pathlib import Path
 
 try:
@@ -97,8 +97,9 @@ class X_Ray_EPUB:
                     body_start = xhtml_str.index("<body")
                     body_end = xhtml_str.index("</body>") + len("</body>")
                     body_str = xhtml_str[body_start:body_end]
-                    for m in re.finditer(r">[^<]+<", body_str):
-                        yield (m.group(0)[1:-1], (m.start() + 1, xhtml_path))
+                    for m in re.finditer(r">[^<]{2,}<", body_str):
+                        text = m.group(0)[1:-1]
+                        yield unescape(text), (m.start() + 1, text, xhtml_path)
 
     def add_entity(self, entity, ner_label, quote, start, end, xhtml_path):
         from rapidfuzz.process import extractOne

@@ -4,6 +4,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from html import unescape
 
 try:
     from .database import (
@@ -193,7 +194,9 @@ def create_files(
                 book_path, search_people, mediawiki, wiki_commons, wikidata
             )
             for doc, data in nlp.pipe(x_ray.extract_epub(), as_tuples=True):
-                find_named_entity(data[0], x_ray, doc, None, wiki_lang, data[1])
+                find_named_entity(
+                    data[0], x_ray, doc, None, wiki_lang, data[1], data[2]
+                )
             x_ray.modify_epub()
             return
 
@@ -209,10 +212,15 @@ def create_files(
             mediawiki,
             wikidata,
         )
-        for doc, start in nlp.pipe(
+        for doc, context in nlp.pipe(
             parse_book(kfx_json, mobi_html, mobi_codec), as_tuples=True
         ):
-            find_named_entity(start, x_ray, doc, mobi_codec, wiki_lang)
+            if kfx_json:
+                start = context
+                escaped_text = None
+            else:
+                start, escaped_text = context
+            find_named_entity(start, x_ray, doc, mobi_codec, wiki_lang, escaped_text)
             if create_ww:
                 find_lemma(start, doc.text, kw_processor, ll_conn, mobi_codec)
             if notif:
@@ -220,8 +228,14 @@ def create_files(
 
         x_ray.finish(x_ray_path)
     elif create_ww:
-        for text, start in parse_book(kfx_json, mobi_html, mobi_codec):
-            find_lemma(start, text, kw_processor, ll_conn, mobi_codec)
+        for text, context in parse_book(kfx_json, mobi_html, mobi_codec):
+            find_lemma(
+                context if kfx_json else context[0],
+                text,
+                kw_processor,
+                ll_conn,
+                mobi_codec,
+            )
 
     if create_ww:
         save_db(ll_conn, ll_path)
@@ -232,10 +246,10 @@ def parse_book(kfx_json, mobi_html, mobi_codec):
         return ((e["content"], e["position"]) for e in kfx_json if e["type"] == 1)
     else:
         # match text inside HTML tags
-        return (
-            (m.group(0)[1:-1].decode(mobi_codec), m.start() + 1)
-            for m in re.finditer(b">[^<>]+<", mobi_html)
-        )
+        for m in re.finditer(b">[^<]{2,}<", mobi_html):
+            text = m.group(0)[1:-1].decode(mobi_codec)
+            yield unescape(text), (m.start() + 1, text)
+
 
 
 def find_lemma(start, text, kw_processor, ll_conn, mobi_codec):
@@ -256,7 +270,9 @@ def find_lemma(start, text, kw_processor, ll_conn, mobi_codec):
         insert_lemma(ll_conn, (index, end) + tuple(data))
 
 
-def find_named_entity(start, x_ray, doc, mobi_codec, lang, xhtml_path=None):
+def find_named_entity(
+    start, x_ray, doc, mobi_codec, lang, escaped_text, xhtml_path=None
+):
     len_limit = 3 if lang == "en" else 2
 
     for ent in doc.ents:
@@ -280,26 +296,33 @@ def find_named_entity(start, x_ray, doc, mobi_codec, lang, xhtml_path=None):
         if len(text) < len_limit or re.fullmatch(r"[\W\d]+", text):
             continue
 
-        new_start_char = ent.start_char + ent.text.index(text)
+        if escaped_text:
+            if text not in escaped_text[ent.start_char :]:
+                continue
+            start_char = escaped_text.index(text, ent.start_char)
+        else:
+            start_char = ent.start_char + ent.text.index(text)
         if xhtml_path:  # EPUB
             x_ray.add_entity(
                 text,
                 ent.label_,
                 ent.sent.text,
-                start + new_start_char,
-                start + new_start_char + len(text),
+                start + start_char,
+                start + start_char + len(text),
                 xhtml_path,
             )
             continue
 
         selectable_text = text
-        if lang == "en" and (m := re.search(r"\s", doc.text[ent.end_char :])):
-            selectable_text = doc.text[new_start_char : ent.end_char + m.start()]
+        book_text = escaped_text if escaped_text else doc.text
+        end_char = start_char + len(selectable_text)
+        if m := re.search(r"\s", book_text[end_char:]):
+            selectable_text = book_text[start_char : end_char + m.start()]
         if mobi_codec:
-            ent_start = start + len(doc.text[:new_start_char].encode(mobi_codec))
+            ent_start = start + len(escaped_text[:start_char].encode(mobi_codec))
             ent_len = len(selectable_text.encode(mobi_codec))
         else:
-            ent_start = start + len(doc.text[:new_start_char])
+            ent_start = start + start_char
             ent_len = len(selectable_text)
 
         x_ray.add_entity(text, ent.label_, ent_start, ent.sent.text, ent_len)

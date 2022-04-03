@@ -183,13 +183,12 @@ def create_files(
         nlp.enable_pipe("senter")
         useragent = f"WordDumb/{plugin_version} (https://github.com/xxyzz/WordDumb)"
         mediawiki = MediaWiki(wiki_lang, useragent, plugin_path, zh_wiki, fandom_url)
-        wikidata = None
+        wikidata = None if fandom_url else Wikidata(plugin_path, useragent)
         wiki_commons = None
-        if not fandom_url:
-            wikidata = Wikidata(plugin_path, useragent)
-            wiki_commons = Wikimedia_Commons(plugin_path, useragent)
 
         if not kfx_json and not mobi_codec:  # EPUB
+            if not fandom_url:
+                wiki_commons = Wikimedia_Commons(plugin_path, useragent)
             x_ray = X_Ray_EPUB(
                 book_path, search_people, mediawiki, wiki_commons, wikidata
             )
@@ -243,7 +242,8 @@ def create_files(
 
 def parse_book(kfx_json, mobi_html, mobi_codec):
     if kfx_json:
-        return ((e["content"], e["position"]) for e in kfx_json if e["type"] == 1)
+        for entry in filter(lambda x: x["type"] == 1, kfx_json):
+            yield entry["content"], entry["position"]
     else:
         # match text inside HTML tags
         for match_body in re.finditer(b"<body.{3,}?</body>", mobi_html, re.DOTALL):

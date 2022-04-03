@@ -293,6 +293,7 @@ def find_named_entity(
             )
         # TODO https://en.wikipedia.org/wiki/Article_(grammar)#Tables
 
+        text = re.sub(r"^\W+", "", text)
         if len(text) < len_limit or re.fullmatch(r"[\W\d]+", text):
             continue
 

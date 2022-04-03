@@ -104,19 +104,28 @@ class X_Ray_EPUB:
                                 xhtml_path,
                             )
 
+    def get_entity_data(self, entity):
+        entity_data = self.entities.get(entity)
+        if isinstance(entity_data, str):
+            return self.entities.get(entity_data)
+        return entity_data
+
     def add_entity(self, entity, ner_label, quote, start, end, xhtml_path):
         from rapidfuzz.process import extractOne
         from rapidfuzz.fuzz import token_set_ratio
 
-        if entity in self.entities:
-            entity_id = self.entities[entity]["id"]
+        if entity_data := self.get_entity_data(entity):
+            entity_id = entity_data["id"]
         elif r := extractOne(
             entity,
             self.entities.keys(),
             score_cutoff=FUZZ_THRESHOLD,
             scorer=token_set_ratio,
         ):
-            entity_id = self.entities[r[0]]["id"]
+            matched_name = r[0]
+            entity_id = self.get_entity_data(matched_name)["id"]
+            if " " in entity and " " not in matched_name:
+                self.entities[entity] = matched_name
         else:
             entity_id = self.entity_id
             self.entities[entity] = {
@@ -175,6 +184,8 @@ class X_Ray_EPUB:
         <body>
         """
         for entity, data in self.entities.items():
+            if isinstance(data, str):
+                continue
             if (self.search_people or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)
             ):

@@ -247,6 +247,8 @@ def regime_type(democracy_index_score):
 def query_mediawiki(entities, mediawiki, search_people):
     pending_entities = []
     for entity, data in entities.items():
+        if isinstance(data, str):
+            continue
         if len(pending_entities) == MEDIAWIKI_API_EXLIMIT:
             mediawiki.query(pending_entities)
             pending_entities.clear()
@@ -265,7 +267,9 @@ def query_wikidata(entities, mediawiki, wikidata):
         (
             mediawiki.get_cache(entity).get("item_id")
             for entity, data in entities.items()
-            if data["label"] in GPE_LABELS and mediawiki.get_cache(entity)
+            if not isinstance(data, str)
+            and data["label"] in GPE_LABELS
+            and mediawiki.get_cache(entity)
         ),
     ):
         if len(pending_item_ids) == MEDIAWIKI_API_EXLIMIT:

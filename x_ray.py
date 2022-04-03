@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 
 try:
     from .database import (
         create_x_indices,
         insert_x_book_metadata,
-        insert_x_entity,
+        insert_x_entities,
         insert_x_entity_description,
         insert_x_excerpt_image,
-        insert_x_occurrence,
+        insert_x_occurrences,
         insert_x_type,
         save_db,
     )
@@ -25,10 +25,10 @@ except ImportError:
     from database import (
         create_x_indices,
         insert_x_book_metadata,
-        insert_x_entity,
+        insert_x_entities,
         insert_x_entity_description,
         insert_x_excerpt_image,
-        insert_x_occurrence,
+        insert_x_occurrences,
         insert_x_type,
         save_db,
     )
@@ -60,6 +60,7 @@ class X_Ray:
         self.search_people = search_people
         self.mediawiki = mediawiki
         self.wikidata = wikidata
+        self.entity_occurrences = defaultdict(list)
 
     def insert_descriptions(self):
         for entity, data in self.entities.items():
@@ -82,47 +83,73 @@ class X_Ray:
                     self.conn, (intro_cache["intro"], entity, 1, data["id"])
                 )
 
-    def insert_occurrence(self, entity_id, ner_label, start, entity_len):
-        if ner_label in PERSON_LABELS:
-            self.people_counter[entity_id] += 1
-        else:
-            self.terms_counter[entity_id] += 1
-        insert_x_occurrence(self.conn, (entity_id, start, entity_len))
-        self.erl = start + entity_len - 1
-
     def add_entity(self, entity, ner_label, start, quote, entity_len):
         from rapidfuzz.process import extractOne
         from rapidfuzz.fuzz import token_set_ratio
 
-        entity_id = self.entity_id
-        entity_label = ner_label
-        if r := extractOne(
+        if entity in self.entities:
+            entity_id = self.entities[entity]["id"]
+            ner_label = self.entities[entity]["label"]
+        elif r := extractOne(
             entity,
             self.entities.keys(),
             score_cutoff=FUZZ_THRESHOLD,
             scorer=token_set_ratio,
         ):
-            entity_data = self.entities[r[0]]
-            entity_id = entity_data["id"]
-            entity_label = entity_data["label"]
+            entity_id = self.entities[r[0]]["id"]
+            ner_label = self.entities[r[0]]["label"]
         else:
+            entity_id = self.entity_id
             self.entities[entity] = {
-                "id": self.entity_id,
+                "id": entity_id,
                 "label": ner_label,
                 "quote": quote,
             }
-            if ner_label in PERSON_LABELS:
+            self.entity_id += 1
+
+        if ner_label in PERSON_LABELS:
+            self.people_counter[entity_id] += 1
+        else:
+            self.terms_counter[entity_id] += 1
+        self.erl = start + entity_len - 1
+        self.entity_occurrences[entity_id].append((start, entity_len))
+
+    def merge_entities(self):
+        for src_name, src_entity in self.entities.copy().items():
+            dest_name = self.mediawiki.get_direct_cache(src_name)
+            if isinstance(dest_name, str) and dest_name in self.entities:
+                src_counter = self.get_entity_counter(src_entity["label"])
+                src_count = src_counter[src_entity["id"]]
+                del src_counter[src_entity["id"]]
+                dest_entity = self.entities[dest_name]
+                self.get_entity_counter(dest_entity["label"])[
+                    dest_entity["id"]
+                ] += src_count
+                self.entity_occurrences[dest_entity["id"]].extend(
+                    self.entity_occurrences[src_entity["id"]]
+                )
+                del self.entity_occurrences[src_entity["id"]]
+                del self.entities[src_name]
+            elif src_entity["label"] in PERSON_LABELS:
                 self.num_people += 1
             else:
                 self.num_terms += 1
-            self.entity_id += 1
-        self.insert_occurrence(entity_id, entity_label, start, entity_len)
+
+    def get_entity_counter(self, entity_label):
+        return (
+            self.people_counter if entity_label in PERSON_LABELS else self.terms_counter
+        )
 
     def finish(self, db_path):
         def top_mentioned(counter):
             return ",".join(map(str, [e[0] for e in counter.most_common(10)]))
 
-        insert_x_entity(
+        query_mediawiki(self.entities, self.mediawiki, self.search_people)
+        if self.wikidata:
+            query_wikidata(self.entities, self.mediawiki, self.wikidata)
+        self.merge_entities()
+
+        insert_x_entities(
             self.conn,
             (
                 (
@@ -136,10 +163,14 @@ class X_Ray:
                 for entity, data in self.entities.items()
             ),
         )
-
-        query_mediawiki(self.entities, self.mediawiki, self.search_people)
-        if self.wikidata:
-            query_wikidata(self.entities, self.mediawiki, self.wikidata)
+        insert_x_occurrences(
+            self.conn,
+            (
+                (entity_id, start, entity_length)
+                for entity_id, occurrence_list in self.entity_occurrences.items()
+                for start, entity_length in occurrence_list
+            ),
+        )
         self.insert_descriptions()
 
         if self.kfx_json:

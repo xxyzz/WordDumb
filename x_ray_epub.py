@@ -108,7 +108,9 @@ class X_Ray_EPUB:
         from rapidfuzz.process import extractOne
         from rapidfuzz.fuzz import token_set_ratio
 
-        if r := extractOne(
+        if entity in self.entities:
+            entity_id = self.entities[entity]["id"]
+        elif r := extractOne(
             entity,
             self.entities.keys(),
             score_cutoff=FUZZ_THRESHOLD,

@@ -177,7 +177,7 @@ def insert_x_book_metadata(conn, data):
     conn.execute("INSERT INTO book_metadata VALUES(0, ?, ?, 0, 0, ?, ?, ?, ?)", data)
 
 
-def insert_x_entity(conn, data):
+def insert_x_entities(conn, data):
     conn.executemany(
         "INSERT INTO entity (id, label, type, count, has_info_card) VALUES(?, ?, ?, ?, 1)",
         data,
@@ -188,8 +188,8 @@ def insert_x_entity_description(conn, data):
     conn.execute("INSERT INTO entity_description VALUES(?, ?, ?, ?)", data)
 
 
-def insert_x_occurrence(conn, data):
-    conn.execute("INSERT INTO occurrence VALUES(?, ?, ?)", data)
+def insert_x_occurrences(conn, data):
+    conn.executemany("INSERT INTO occurrence VALUES(?, ?, ?)", data)
 
 
 def insert_x_type(conn, data):

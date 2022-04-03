@@ -100,6 +100,9 @@ class MediaWiki:
             return self.cache.get(data)
         return data
 
+    def get_direct_cache(self, title):
+        return self.cache.get(title)
+
     def query(self, titles):
         result = self.session.get(self.wiki_api, params={"titles": "|".join(titles)})
         data = result.json()

@@ -6,6 +6,7 @@ import zipfile
 from collections import defaultdict
 from html import escape, unescape
 from pathlib import Path
+from urllib.parse import quote
 
 try:
     from .mediawiki import (
@@ -133,7 +134,7 @@ class X_Ray_EPUB:
             self.entities[entity] = {
                 "id": self.entity_id,
                 "label": ner_label,
-                "quote": quote,
+                "quote": book_quote,
             }
             self.entity_id += 1
 
@@ -195,7 +196,7 @@ class X_Ray_EPUB:
                 s += f"""
                 <aside id="{data["id"]}" epub:type="footnote">
                 {escape(intro_cache["intro"])}
-                <a href="{self.mediawiki.source_link}{entity}">
+                <a href="{self.mediawiki.source_link}{quote(entity)}">
                 {self.mediawiki.source_name}
                 </a>
                 """

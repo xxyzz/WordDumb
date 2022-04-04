@@ -221,7 +221,9 @@ def create_files(
                 start, escaped_text = context
             find_named_entity(start, x_ray, doc, mobi_codec, wiki_lang, escaped_text)
             if create_ww:
-                find_lemma(start, doc.text, kw_processor, ll_conn, mobi_codec)
+                find_lemma(
+                    start, doc.text, kw_processor, ll_conn, mobi_codec, escaped_text
+                )
             if notif:
                 notif.put((start / last_start, "Creating files"))
 
@@ -234,6 +236,7 @@ def create_files(
                 kw_processor,
                 ll_conn,
                 mobi_codec,
+                None if kfx_json else context[1],
             )
 
     if create_ww:
@@ -252,19 +255,40 @@ def parse_book(kfx_json, mobi_html, mobi_codec):
                 yield unescape(text), (match_body.start() + m.start() + 1, text)
 
 
-def find_lemma(start, text, kw_processor, ll_conn, mobi_codec):
+def index_in_escaped_text(token, escaped_text, start_offset):
+    if token in escaped_text[start_offset:]:
+        token_start = escaped_text.index(token, start_offset)
+        return token_start, token_start + len(token)
+    else:
+        words = list(filter(None, re.split(r"\W+", token)))
+        token_start = escaped_text.index(words[0], start_offset)
+        token_end = escaped_text.index(words[-1], token_start) + len(words[-1])
+        return token_start, token_end
+
+
+def find_lemma(start, text, kw_processor, ll_conn, mobi_codec, escaped_text):
+    starts = set()
     for data, token_start, token_end in kw_processor.extract_keywords(
         text, span_info=True
     ):
         end = None
         lemma = text[token_start:token_end]
         if mobi_codec:
-            index = start + len(text[:token_start].encode(mobi_codec))
+            lemma_start, lemma_end = index_in_escaped_text(
+                lemma, escaped_text, token_start
+            )
+            index = start + len(escaped_text[:lemma_start].encode(mobi_codec))
         else:
             index = start + token_start
+        if index in starts:
+            continue
+        else:
+            starts.add(index)
         if " " in lemma:
             if mobi_codec:
-                end = index + len(lemma.encode(mobi_codec))
+                end = index + len(
+                    escaped_text[lemma_start:lemma_end].encode(mobi_codec)
+                )
             else:
                 end = index + len(lemma)
         insert_lemma(ll_conn, (index, end) + tuple(data))
@@ -274,7 +298,7 @@ def find_named_entity(
     start, x_ray, doc, mobi_codec, lang, escaped_text, xhtml_path=None
 ):
     len_limit = 3 if lang == "en" else 2
-
+    starts = set()
     for ent in doc.ents:
         if ent.label_ not in NER_LABELS:
             continue
@@ -298,25 +322,31 @@ def find_named_entity(
             continue
 
         if escaped_text:
-            if text not in escaped_text[ent.start_char :]:
-                continue
-            start_char = escaped_text.index(text, ent.start_char)
+            start_char, end_char = index_in_escaped_text(
+                text, escaped_text, ent.start_char
+            )
         else:
             start_char = ent.start_char + ent.text.index(text)
+            end_char = start_char + len(text)
+        book_text = escaped_text if escaped_text else doc.text
+        selectable_text = book_text[start_char:end_char]
+        if start_char in starts:
+            continue
+        else:
+            starts.add(start_char)
+
         if xhtml_path:  # EPUB
             x_ray.add_entity(
                 text,
                 ent.label_,
                 ent.sent.text,
                 start + start_char,
-                start + start_char + len(text),
+                start + end_char,
                 xhtml_path,
+                selectable_text,
             )
             continue
 
-        selectable_text = text
-        book_text = escaped_text if escaped_text else doc.text
-        end_char = start_char + len(selectable_text)
         if m := re.search(r"\s", book_text[end_char:]):
             selectable_text = book_text[start_char : end_char + m.start()]
         if mobi_codec:

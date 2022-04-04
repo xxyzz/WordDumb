@@ -110,7 +110,9 @@ class X_Ray_EPUB:
             return self.entities.get(entity_data)
         return entity_data
 
-    def add_entity(self, entity, ner_label, quote, start, end, xhtml_path):
+    def add_entity(
+        self, entity, ner_label, book_quote, start, end, xhtml_path, origin_entity
+    ):
         from rapidfuzz.process import extractOne
         from rapidfuzz.fuzz import token_set_ratio
 
@@ -135,7 +137,9 @@ class X_Ray_EPUB:
             }
             self.entity_id += 1
 
-        self.entity_occurrences[xhtml_path].append((start, end, entity, entity_id))
+        self.entity_occurrences[xhtml_path].append(
+            (start, end, origin_entity, entity_id)
+        )
 
     def modify_epub(self):
         query_mediawiki(self.entities, self.mediawiki, self.search_people)
@@ -152,8 +156,7 @@ class X_Ray_EPUB:
                 xhtml_str = f.read()
             new_xhtml_str = ""
             last_end = 0
-            for data in entity_list:
-                start, end, entity, entity_id = data
+            for start, end, entity, entity_id in entity_list:
                 new_xhtml_str += xhtml_str[last_end:start]
                 new_xhtml_str += f'<a epub:type="noteref" href="x_ray.xhtml#{entity_id}">{entity}</a>'
                 last_end = end

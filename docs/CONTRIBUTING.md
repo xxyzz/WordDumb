@@ -30,7 +30,7 @@ $ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
 // run these commands on Linux
 // use fdisk or df to find Kindle device
 # fdisk -l
-// run fsck
+# umount /dev/sdb1
 # fsck /dev/sdb1
 ```
 

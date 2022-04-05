@@ -188,8 +188,6 @@ class X_Ray_EPUB:
         <body>
         """
         for entity, data in self.entities.items():
-            if isinstance(data, str):
-                continue
             if (self.search_people or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)
             ):

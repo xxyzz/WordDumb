@@ -126,15 +126,8 @@ class X_Ray:
 
     def merge_entities(self):
         for src_name, src_entity in self.entities.copy().items():
-            if isinstance(src_entity, str):
-                del self.entities[src_name]
-                continue
             dest_name = self.mediawiki.get_direct_cache(src_name)
-            if (
-                isinstance(dest_name, str)
-                and dest_name in self.entities
-                and not isinstance(self.entities[dest_name], str)
-            ):
+            if isinstance(dest_name, str) and dest_name in self.entities:
                 src_counter = self.get_entity_counter(src_entity["label"])
                 src_count = src_counter[src_entity["id"]]
                 del src_counter[src_entity["id"]]

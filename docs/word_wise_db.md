@@ -4,8 +4,6 @@ Find in Kindle device at path `/system/kll/`
 
 or install Kindle Android app and extract Word Wise file at: `/data/data/com.amazon.kindle/databases/wordwise/WordWise.kll.en.en.db`
 
-Get the file in TWRP File Manager or ROOT your phone.
-
 ## android_metadata
 
 | locale |
@@ -143,6 +141,8 @@ Same as en.
 # LanguageLayer.en.ASIN.kll
 
 Kindle device path: `/documents/book_name.sdr`
+
+Android app path: `/data/user/0/com.amazon.kindle/databases/WordWise.en.ASIN.acr.db`
 
 ## metadata
 

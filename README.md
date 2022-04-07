@@ -17,7 +17,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   - Arch Linux
 
   ```
-  # pacman -Syu --needed calibre
+  $ sudo pacman -Syu --needed calibre
   ```
 
   - Other Linux distros
@@ -43,7 +43,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   - Arch Linux
 
   ```
-  # pacman -Syu --needed python-pip
+  $ sudo pacman -Syu --needed python-pip
   ```
 
   - Debian based distro
@@ -92,6 +92,40 @@ https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-
 - This plugin requires access to https://files.pythonhosted.org (download X-Ray dependencies), https://raw.githubusercontent.com (download spaCy model), and https://wikipedia.org (X-Ray descriptions). These domains might be blocked in some countries([Censorship of Wikipedia](https://en.wikipedia.org/wiki/Censorship_of_Wikipedia), [Censorship of GitHub](https://en.wikipedia.org/wiki/Censorship_of_GitHub)).
 
 - [Display Word Wise in other languages](./klld)
+
+- For Android users:
+
+  Currently, only KFX is supported.
+
+  - Install Android platform tools
+
+    - Arch Linux
+
+    ```
+    $ sudo pacman -Syu --needed android-tools
+    ```
+
+    - Debian
+
+    ```
+    $ sudo apt install android-tools-adb
+    ```
+
+    - macOS
+
+    ```
+    $ brew install android-platform-tools
+    ```
+
+    - Windows
+
+    Download from https://developer.android.com/studio/releases/platform-tools
+
+  - Enable Android Developer options, USB debugging, and Rooted debugging(only send Word Wise file requires this option)
+
+  - Allow USB debugging
+
+  - Disable Developer options and USB debugging when the job is done
 
 ## I need about tree-fiddy
 

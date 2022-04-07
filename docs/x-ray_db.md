@@ -1,5 +1,7 @@
 # XRAY.entities.ASIN.asc
 
+Android app path: `/sdcard/Android/data/com.amazon.kindle/files/ASIN/XRAY.ASIN.acr.db`
+
 ## book_metadata
 
 |   srl |    erl | has\_images | has\_excerpts | show\_spoilers\_default | num\_people | num\_terms | num\_images | preview\_images |

@@ -115,6 +115,7 @@ class SendFile:
                     f"{device_book_folder}/{self.asin}/XRAY.{self.asin}.{self.acr}.db",
                 ]
             )
+            self.x_ray_path.unlink()
         if self.ll_path.exists():
             run_adb(["root"])
             run_adb(
@@ -124,6 +125,7 @@ class SendFile:
                     f"/data/user/0/{package_name}/databases/WordWise.en.{self.asin}.{self.acr.replace('!', '_')}.db",
                 ]
             )
+            self.ll_path.unlink()
 
 
 def device_connected(gui, book_fmt):

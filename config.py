@@ -34,8 +34,7 @@ class ConfigWidget(QWidget):
             "Fetch X-Ray people descriptions from Wikipedia or Fandom"
         )
         self.search_people_box.setToolTip(
-            "Enable this option for nonfiction books and novels that "
-            "have character pages on Wikipedia/Fandom"
+            "Enable this option for nonfiction books and novels that have character pages on Wikipedia/Fandom"
         )
         self.search_people_box.setChecked(prefs["search_people"])
         vl.addWidget(self.search_people_box)

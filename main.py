@@ -68,13 +68,15 @@ class ParseBook:
         if self.job_failed(job):
             return
 
-        book_id, _, _, mi, update_asin, book_fmt = job.result
+        book_id, _, _, mi, update_asin, book_fmt, _ = job.result
         if update_asin:
             self.gui.current_db.new_api.set_metadata(book_id, mi)
 
         # send files to device
-        if device_connected(self.gui, book_fmt):
-            SendFile(self.gui, job.result, notif).send_files(None)
+        if connected := device_connected(self.gui, book_fmt):
+            SendFile(self.gui, job.result, connected == "android", notif).send_files(
+                None
+            )
         else:
             self.gui.status_bar.show_message(notif)
 
@@ -83,33 +85,27 @@ class ParseBook:
             if "FileNotFoundError" in job.details and "subprocess.py" in job.details:
                 self.error_dialog(
                     "We want... a shrubbery!",
-                    f"Please read the <a href='{self.github_url}#how-to-use'>document</a> of how to install Python.",
+                    f"Please read the friendly <a href='{self.github_url}#how-to-use'>manual</a> of how to install Python.",
                     job.details,
                 )
             elif "CalledProcessError" in job.details:
                 self.subprocess_error(job)
             elif "JointMOBI" in job.details:
-                url = "https://github.com/kevinhendricks/KindleUnpack"
                 self.error_dialog(
                     "Joint MOBI",
-                    f"Please use <a href='{url}'>KindleUnpack</a>'s '-s' option to split the book.",
+                    "Please use <a href='https://github.com/kevinhendricks/KindleUnpack'>KindleUnpack</a>'s '-s' option to split the book.",
                     job.details,
                 )
             elif "DLL load failed" in job.details:
-                url = (
-                    "https://support.microsoft.com/en-us/help/2977003/"
-                    "the-latest-supported-visual-c-downloads"
-                )
                 self.error_dialog(
                     "Welcome to DLL Hell",
-                    f"Install <a href='{url}'>Visual C++ 2019 redistributable</a>",
+                    "Install <a href='https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads'>Visual C++ 2019 redistributable</a>",
                     job.datails,
                 )
             elif "32BIT_CALIBRE" in job.details:
-                url = "https://calibre-ebook.com/download_windows64"
                 self.error_dialog(
                     "Seriously, 32bit?!",
-                    f"Install <a href='{url}'>64bit calibre</a>, 32bit calibre is not supported.",
+                    "Install <a href='https://calibre-ebook.com/download_windows64'>64bit calibre</a>, 32bit calibre is not supported.",
                     job.details,
                 )
             elif (
@@ -128,8 +124,7 @@ class ParseBook:
         exception = job.exception.stderr
         if "No module named pip" in exception:
             self.error_dialog(
-                "Hello, my name is Philip, but everyone calls me Pip, "
-                "because they hate me.",
+                "Hello, my name is Philip, but everyone calls me Pip, because they hate me.",
                 """
                 Run the command "sudo apt install python3-pip" to install
                 pip module if you are using Debian based distro.
@@ -158,26 +153,19 @@ class ParseBook:
                 <code>$ export HTTP_PROXY="http://host:port"</code><br>
                 <code>$ export HTTPS_PROXY="http://host:port"</code><br>
                 <br>
-                If you're allergic to terminal, close your proxy and
-                use a VPN.
+                If you're allergic to terminal, close your proxy and use a VPN.
                 """,
                 error,
             )
         elif "ConnectionError" in error or "Timeout" in error:
             self.error_dialog(
                 "It was a pleasure to burn",
-                """
-                Is GitHub/Wikipedia/Fandom blocked by your ISP?
-                You might need tools to bypass internet censorship.
-                """,
+                "Is GitHub/Wikipedia/Fandom blocked by your ISP? You might need tools to bypass internet censorship.",
                 error,
             )
         else:
             self.error_dialog(
                 "Tonnerre de Brest!",
-                f"""
-                An error occurred, please copy error message then report bug at
-                <a href="{self.github_url}/issues">GitHub</a>.
-                """,
+                f'An error occurred, please copy error message then report bug at <a href="{self.github_url}/issues">GitHub</a>.',
                 error,
             )

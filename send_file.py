@@ -1,24 +1,49 @@
 #!/usr/bin/env python3
 import shutil
 from pathlib import Path
+import subprocess
+import traceback
 
 from calibre.gui2 import FunctionDispatcher
+from calibre.constants import ismacos, iswindows
+from calibre.gui2.dialogs.message_box import JobError
 
 from .database import get_ll_path, get_x_ray_path
 from .metadata import get_asin_etc
 
 
 class SendFile:
-    def __init__(self, gui, data, notif):
+    def __init__(self, gui, data, is_android, notif):
         self.gui = gui
         self.device_manager = gui.device_manager
         self.notif = notif
-        (self.book_id, self.asin, self.book_path, self.mi, _, self.book_fmt) = data
+        (
+            self.book_id,
+            self.asin,
+            self.book_path,
+            self.mi,
+            _,
+            self.book_fmt,
+            self.acr,
+        ) = data
         self.ll_path = get_ll_path(self.asin, self.book_path)
         self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
+        self.is_android = is_android
+        if self.acr is None:
+            self.acr = "_"
 
     # use some code from calibre.gui2.device:DeviceMixin.upload_books
     def send_files(self, job):
+        if self.is_android:
+            try:
+                self.push_files_to_android()
+            except subprocess.CalledProcessError as e:
+                JobError(self.gui).show_error(
+                    "adb failed", e.stderr, det_msg=traceback.format_exc() + e.stderr
+                )
+            self.gui.status_bar.show_message(self.notif)
+            return
+
         if job is not None:
             if job.failed:
                 self.gui.job_exception(job, dialog_title="Upload book failed")
@@ -67,13 +92,75 @@ class SendFile:
         # Python 3.9 accepts path-like object, calibre uses 3.8
         shutil.move(str(file_path), str(dst_path), shutil.copy)
 
+    def push_files_to_android(self):
+        r = run_adb(["shell", "pm", "list", "packages", "com.amazon.kindle"])
+        result = r.stdout.strip()
+        if len(result.split(":")) > 1:
+            package_name = result.split(":")[1]
+        else:
+            return
+        device_book_folder = f"/sdcard/Android/data/{package_name}/files/"
+        run_adb(
+            [
+                "push",
+                self.book_path,
+                f"{device_book_folder}/{self.acr}.{self.book_fmt.lower()}",
+            ]
+        )
+        if self.x_ray_path.exists():
+            run_adb(
+                [
+                    "push",
+                    self.x_ray_path,
+                    f"{device_book_folder}/{self.asin}/XRAY.{self.asin}.{self.acr}.db",
+                ]
+            )
+        if self.ll_path.exists():
+            run_adb(["root"])
+            run_adb(
+                [
+                    "push",
+                    self.ll_path,
+                    f"/data/user/0/{package_name}/databases/WordWise.en.{self.asin}.{self.acr.replace('!', '_')}.db",
+                ]
+            )
+
 
 def device_connected(gui, book_fmt):
+    if book_fmt == "KFX" and has_adb() and android_connected():
+        return "android"
     if not gui.device_manager.is_device_present:
         return False
-    if (
-        book_fmt != "EPUB"
-        and getattr(gui.device_manager.device, "VENDOR_NAME", None) != "KINDLE"
-    ):
-        return False
+    if book_fmt != "EPUB":
+        if getattr(gui.device_manager.device, "VENDOR_NAME", None) == "KINDLE":
+            return True
+        else:
+            return False
     return True
+
+
+def has_adb():
+    if ismacos:
+        return shutil.which("/usr/local/bin/adb")
+    else:
+        return shutil.which("adb")
+
+
+def android_connected():
+    r = run_adb(["devices"])
+    return len(r.stdout.strip().split("\n")) > 1
+
+
+def run_adb(args):
+    adb = "/usr/local/bin/adb" if ismacos else "adb"
+    args.insert(0, adb)
+    if iswindows:
+        return subprocess.run(
+            args,
+            check=True,
+            capture_output=True,
+            text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        )
+    else:
+        return subprocess.run(args, check=True, capture_output=True, text=True)

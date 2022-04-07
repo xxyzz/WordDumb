@@ -121,7 +121,7 @@ def do_job(
 
     if book_fmt == "EPUB":
         book_path = new_epub_path
-    return book_id, asin, book_path, mi, update_asin, book_fmt
+    return book_id, asin, book_path, mi, update_asin, book_fmt, acr
 
 
 def insert_lib_path(path):

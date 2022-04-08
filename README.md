@@ -111,21 +111,19 @@ https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-
     $ sudo apt install android-tools-adb
     ```
 
-    - macOS
+    - macOS: use Homebrew or download from https://developer.android.com/studio/releases/platform-tools
 
     ```
     $ brew install android-platform-tools
     ```
 
-    - Windows
+    - Windows: Download from https://developer.android.com/studio/releases/platform-tools
 
-    Download from https://developer.android.com/studio/releases/platform-tools
-
-  - Enable Android Developer options, USB debugging, and Rooted debugging(only send Word Wise file requires this option)
+  - Enable USB debugging, and Rooted debugging(only send Word Wise file requires this option). For more information, please read [Android Debug Bridge user guide](https://developer.android.com/studio/command-line/adb#Enabling)
 
   - Allow USB debugging
 
-  - Disable Developer options and USB debugging when the job is done
+  - Disable USB debugging when the job is done
 
 ## I need about tree-fiddy
 

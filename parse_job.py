@@ -299,10 +299,7 @@ def find_named_entity(
 ):
     len_limit = 3 if lang == "en" else 2
     starts = set()
-    for ent in doc.ents:
-        if ent.label_ not in NER_LABELS:
-            continue
-
+    for ent in filter(lambda x: x.label_ in NER_LABELS, doc.ents):
         text = re.sub(r"^\W+", "", ent.text)
         text = re.sub(r"\W+$", "", text)
         if lang == "en":
@@ -318,6 +315,17 @@ def find_named_entity(
         # TODO https://en.wikipedia.org/wiki/Article_(grammar)#Tables
 
         text = re.sub(r"^\W+", "", text)
+        if lang == "en" and text.lower() in [
+            "north",
+            "east",
+            "south",
+            "west",
+            "northeast",
+            "southeast",
+            "southwest",
+            "northwest",
+        ]:
+            continue
         if len(text) < len_limit or re.fullmatch(r"[\W\d]+", text):
             continue
 

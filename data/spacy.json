@@ -25,7 +25,7 @@
   },
   "click": {
     "compiled": false,
-    "version": "8.0.4"
+    "version": "8.1.2"
   },
   "cymem": {
     "compiled": true,
@@ -73,7 +73,7 @@
   },
   "rapidfuzz": {
     "compiled": true,
-    "version": "2.0.7"
+    "version": "2.0.8"
   },
   "requests": {
     "compiled": false,
@@ -85,7 +85,7 @@
   },
   "spacy": {
     "compiled": true,
-    "version": "3.2.3"
+    "version": "3.2.4"
   },
   "spacy-legacy": {
     "compiled": false,
@@ -93,7 +93,7 @@
   },
   "spacy-loggers": {
     "compiled": false,
-    "version": "1.0.1"
+    "version": "1.0.2"
   },
   "srsly": {
     "compiled": true,
@@ -105,11 +105,11 @@
   },
   "tqdm": {
     "compiled": false,
-    "version": "4.63.1"
+    "version": "4.64.0"
   },
   "typer": {
     "compiled": false,
-    "version": "0.4.0"
+    "version": "0.4.1"
   },
   "typing-extensions": {
     "compiled": false,
@@ -121,6 +121,6 @@
   },
   "wasabi": {
     "compiled": false,
-    "version": "0.9.0"
+    "version": "0.9.1"
   }
 }

@@ -18,7 +18,6 @@ NER_LABELS = [
     "ORG",
     "PERSON",
     "PRODUCT",
-    "WORK_OF_ART",
     "MISC",  # Catalan
     "PER",
     "EVT",  # Norwegian Bokmål: https://github.com/ltgoslo/norne#entity-types

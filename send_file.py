@@ -129,32 +129,25 @@ class SendFile:
 
 
 def device_connected(gui, book_fmt):
-    if book_fmt == "KFX" and has_adb() and android_connected():
+    if gui.device_manager.is_device_present and (
+        book_fmt == "EPUB"
+        or getattr(gui.device_manager.device, "VENDOR_NAME", None) == "KINDLE"
+    ):
+        return True
+    if book_fmt == "KFX" and adb_connected():
         return "android"
-    if not gui.device_manager.is_device_present:
-        return False
-    if book_fmt != "EPUB":
-        if getattr(gui.device_manager.device, "VENDOR_NAME", None) == "KINDLE":
-            return True
-        else:
-            return False
-    return True
+    return False
 
 
-def has_adb():
-    if ismacos:
-        return shutil.which("/usr/local/bin/adb")
-    else:
-        return shutil.which("adb")
-
-
-def android_connected():
+def adb_connected():
     r = run_adb(["devices"])
-    return len(r.stdout.strip().split("\n")) > 1
+    return r.stdout.strip().endswith("device") if r else False
 
 
 def run_adb(args):
     adb = "/usr/local/bin/adb" if ismacos else "adb"
+    if not shutil.which(adb):
+        return
     args.insert(0, adb)
     if iswindows:
         return subprocess.run(

@@ -104,7 +104,7 @@ class SendFile:
             [
                 "push",
                 self.book_path,
-                f"{device_book_folder}/{self.acr}.{self.book_fmt.lower()}",
+                f"{device_book_folder}/{Path(self.book_path).name}",
             ]
         )
         if self.x_ray_path.exists():

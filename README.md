@@ -111,7 +111,7 @@ https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-
     $ sudo apt install android-tools-adb
     ```
 
-    - macOS: use Homebrew or download from https://developer.android.com/studio/releases/platform-tools
+    - macOS
 
     ```
     $ brew install android-platform-tools
@@ -119,7 +119,7 @@ https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-
 
     - Windows: Download from https://developer.android.com/studio/releases/platform-tools
 
-  - Enable USB debugging, and Rooted debugging(only send Word Wise file requires this option). For more information, please read [Android Debug Bridge user guide](https://developer.android.com/studio/command-line/adb#Enabling)
+  - Enable USB debugging, and Rooted debugging(only send Word Wise file requires this option). For more information, please read [Android Debug Bridge user guide](https://developer.android.com/studio/command-line/adb#Enabling).
 
   - Allow USB debugging
 

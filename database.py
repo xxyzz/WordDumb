@@ -76,21 +76,6 @@ def create_x_ray_db(asin, book_path, lang, plugin_path, zh_wiki, fandom_url):
     num_images INTEGER,
     preview_images TEXT);
 
-    CREATE TABLE bookmentions_entity (
-    id INTEGER PRIMARY KEY,
-    asin TEXT,
-    title TEXT,
-    authors TEXT,
-    description TEXT,
-    ratings INTEGER,
-    totalRatings INTEGER,
-    type TEXT);
-
-    CREATE TABLE bookmentions_occurrence (
-    entity INTEGER,
-    start INTEGER,
-    length INTEGER);
-
     CREATE TABLE entity (
     id INTEGER PRIMARY KEY,
     label TEXT,

@@ -1,8 +1,10 @@
 # WordDumb
 
-A calibre plugin that generates Word Wise and X-Ray files then sends them to Kindle. Supports KFX, AZW3, AZW, MOBI and EPUB eBooks.
+A calibre plugin that generates Kindle Word Wise and X-Ray files and EPUB footnotes then send them to e-reader. Supports KFX, AZW3, AZW, MOBI and EPUB eBooks.
 
-Languages supported by X-Ray: Català, Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Norsk bokmål, Polski, Português, Română, Ελληνικά, Македонски, Русский, 中文, 日本語.
+Book languages supported by X-Ray: Català, Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Norsk bokmål, Polski, Português, Română, Ελληνικά, Македонски, Русский, 中文, 日本語.
+
+Test plugin will be uploaded to [GitHub Actions Artifacts](https://github.com/xxyzz/WordDumb/actions/workflows/tests.yml) at each git push automatically.
 
 ![screenshot](https://user-images.githubusercontent.com/21101839/130245435-b874f19a-7785-4093-9975-81596efc42bb.png)
 
@@ -12,7 +14,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
 ## How to use
 
-- Install 64bit calibre
+- Install 64bit calibre, X-Ray dependency spaCy only supports 64bit Python
 
   - Arch Linux
 
@@ -38,7 +40,9 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   # choco install calibre
   ```
 
-- Install Python(pip) for X-Ray(optional if you only create Word Wise)
+- Install Python/pip(optional if you only create Word Wise)
+
+  pip is required for downloading X-ray dependencies, Python is required for bypassing macOS library validation.
 
   - Arch Linux
 
@@ -71,7 +75,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
 https://user-images.githubusercontent.com/21101839/124686751-39f3aa00-df06-11eb-9b07-8c8f98544683.mov
 
-- Install [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books(optional if you don't use this format).
+- Install [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books(optional if you don't use this format). The installation steps are similar to the above video.
 
 - Set preferences
 

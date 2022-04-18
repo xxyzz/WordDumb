@@ -96,7 +96,7 @@ class SendFile:
         r = run_adb(["shell", "pm", "list", "packages", "com.amazon.kindle"])
         result = r.stdout.strip()
         if len(result.split(":")) > 1:
-            package_name = result.split(":")[1]
+            package_name = result.split(":")[1]  # China version: com.amazon.kindlefc
         else:
             return
         device_book_folder = f"/sdcard/Android/data/{package_name}/files/"

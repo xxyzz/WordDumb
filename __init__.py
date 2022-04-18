@@ -6,7 +6,7 @@ VERSION = (3, 20, 0)
 
 class WordDumbDumb(InterfaceActionBase):
     name = "WordDumb"
-    description = "Create Kindle Word Wise and X-Ray file then send to device."
+    description = "Create Kindle Word Wise and X-Ray file and EPUB footnotes then send to e-reader."
     supported_platforms = ["linux", "osx", "windows"]
     author = "xxyzz"
     version = VERSION

@@ -347,7 +347,7 @@ def find_named_entity(
             x_ray.add_entity(
                 text,
                 ent.label_,
-                ent.sent.text,
+                ent.sent.text.strip(),
                 start + start_char,
                 start + end_char,
                 xhtml_path,
@@ -364,4 +364,4 @@ def find_named_entity(
             ent_start = start + start_char
             ent_len = len(selectable_text)
 
-        x_ray.add_entity(text, ent.label_, ent_start, ent.sent.text, ent_len)
+        x_ray.add_entity(text, ent.label_, ent_start, ent.sent.text.strip(), ent_len)

@@ -37,11 +37,11 @@ class SendFile:
         if self.is_android:
             try:
                 self.push_files_to_android()
+                self.gui.status_bar.show_message(self.notif)
             except subprocess.CalledProcessError as e:
                 JobError(self.gui).show_error(
                     "adb failed", e.stderr, det_msg=traceback.format_exc() + e.stderr
                 )
-            self.gui.status_bar.show_message(self.notif)
             return
 
         if job is not None:
@@ -56,11 +56,13 @@ class SendFile:
 
         [has_book, _, _, _, paths] = self.gui.book_on_device(self.book_id)
         if has_book and self.book_fmt != "EPUB":
+            # _main_prefix: Kindle mount point, /Volumes/Kindle
+            device_book_path = Path(self.device_manager.device._main_prefix).joinpath(
+                paths.pop()
+            )
             if job is None:
-                get_asin_etc(self.book_path, self.book_fmt, self.mi, self.asin)
-            # /Volumes/Kindle
-            device_prefix = self.device_manager.device._main_prefix
-            device_book_path = Path(device_prefix).joinpath(next(iter(paths)))
+                # update device book ASIN if it doesn't have the same ASIN
+                get_asin_etc(str(device_book_path), self.book_fmt, self.mi, self.asin)
             self.move_file_to_device(self.ll_path, device_book_path)
             self.move_file_to_device(self.x_ray_path, device_book_path)
             self.gui.status_bar.show_message(self.notif)

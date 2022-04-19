@@ -35,9 +35,8 @@ NAMESPACES = {
 
 
 class X_Ray_EPUB:
-    def __init__(self, book_path, search_people, mediawiki, wiki_commons, wikidata):
+    def __init__(self, book_path, mediawiki, wiki_commons, wikidata):
         self.book_path = book_path
-        self.search_people = search_people
         self.mediawiki = mediawiki
         self.wiki_commons = wiki_commons
         self.wikidata = wikidata
@@ -142,12 +141,12 @@ class X_Ray_EPUB:
             (start, end, origin_entity, entity_id)
         )
 
-    def modify_epub(self):
-        query_mediawiki(self.entities, self.mediawiki, self.search_people)
+    def modify_epub(self, search_people):
+        query_mediawiki(self.entities, self.mediawiki, search_people)
         if self.wikidata:
             query_wikidata(self.entities, self.mediawiki, self.wikidata)
         self.insert_anchor_elements()
-        self.create_footnotes()
+        self.create_footnotes(search_people)
         self.modify_opf()
         self.zip_extract_folder()
 
@@ -173,7 +172,7 @@ class X_Ray_EPUB:
                     )
                 f.write(new_xhtml_str)
 
-    def create_footnotes(self):
+    def create_footnotes(self, search_people):
         self.image_filenames = set()
         image_prefix = ""
         if self.xhtml_href_has_folder:
@@ -188,7 +187,7 @@ class X_Ray_EPUB:
         <body>
         """
         for entity, data in self.entities.items():
-            if (self.search_people or data["label"] not in PERSON_LABELS) and (
+            if (search_people or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)
             ):
                 s += f"""

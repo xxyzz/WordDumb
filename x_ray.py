@@ -42,31 +42,24 @@ except ImportError:
 
 
 class X_Ray:
-    def __init__(
-        self, conn, kfx_json, mobi_html, mobi_codec, search_people, mediawiki, wikidata
-    ):
+    def __init__(self, conn, mediawiki, wikidata):
         self.conn = conn
         self.entity_id = 1
         self.num_people = 0
         self.num_terms = 0
-        self.erl = 0
         self.entities = {}
         self.people_counter = Counter()
         self.terms_counter = Counter()
         self.num_images = 0
-        self.kfx_json = kfx_json
-        self.mobi_html = mobi_html
-        self.mobi_codec = mobi_codec
-        self.search_people = search_people
         self.mediawiki = mediawiki
         self.wikidata = wikidata
         self.entity_occurrences = defaultdict(list)
 
-    def insert_descriptions(self):
+    def insert_descriptions(self, search_people):
         for entity, data in self.entities.items():
             intro_cache = self.mediawiki.get_cache(entity)
             if (
-                not self.search_people and data["label"] in PERSON_LABELS
+                not search_people and data["label"] in PERSON_LABELS
             ) or intro_cache is None:
                 insert_x_entity_description(
                     self.conn, (data["quote"], entity, None, data["id"])
@@ -121,7 +114,6 @@ class X_Ray:
             self.people_counter[entity_id] += 1
         else:
             self.terms_counter[entity_id] += 1
-        self.erl = start + entity_len - 1
         self.entity_occurrences[entity_id].append((start, entity_len))
 
     def merge_entities(self):
@@ -150,11 +142,11 @@ class X_Ray:
             self.people_counter if entity_label in PERSON_LABELS else self.terms_counter
         )
 
-    def finish(self, db_path):
+    def finish(self, db_path, erl, kfx_json, mobi_html, mobi_codec, search_people):
         def top_mentioned(counter):
             return ",".join(map(str, [e[0] for e in counter.most_common(10)]))
 
-        query_mediawiki(self.entities, self.mediawiki, self.search_people)
+        query_mediawiki(self.entities, self.mediawiki, search_people)
         if self.wikidata:
             query_wikidata(self.entities, self.mediawiki, self.wikidata)
         self.merge_entities()
@@ -181,12 +173,12 @@ class X_Ray:
                 for start, entity_length in occurrence_list
             ),
         )
-        self.insert_descriptions()
+        self.insert_descriptions(search_people)
 
-        if self.kfx_json:
-            self.find_kfx_images()
+        if kfx_json:
+            self.find_kfx_images(kfx_json)
         else:
-            self.find_mobi_images()
+            self.find_mobi_images(mobi_html, mobi_codec)
         if self.num_images:
             preview_images = ",".join(map(str, range(self.num_images)))
         else:
@@ -194,7 +186,7 @@ class X_Ray:
         insert_x_book_metadata(
             self.conn,
             (
-                self.erl,
+                erl,
                 1 if self.num_images else 0,
                 self.num_people,
                 self.num_terms,
@@ -211,9 +203,9 @@ class X_Ray:
         if self.wikidata:
             self.wikidata.save_cache()
 
-    def find_kfx_images(self):
+    def find_kfx_images(self, kfx_json):
         images = set()
-        for entry in filter(lambda x: x["type"] == 2, self.kfx_json):
+        for entry in filter(lambda x: x["type"] == 2, kfx_json):
             if entry["content"] in images:
                 continue
             images.add(entry["content"])
@@ -228,11 +220,11 @@ class X_Ray:
             )
             self.num_images += 1
 
-    def find_mobi_images(self):
+    def find_mobi_images(self, mobi_html, mobi_codec):
         images = set()
-        for match_tag in re.finditer(b"<img [^>]+/>", self.mobi_html):
+        for match_tag in re.finditer(b"<img [^>]+/>", mobi_html):
             if match_src := re.search(
-                r'src="([^"]+)"', match_tag.group(0).decode(self.mobi_codec)
+                r'src="([^"]+)"', match_tag.group(0).decode(mobi_codec)
             ):
                 image = match_src.group(1)
                 if image in images:

@@ -129,12 +129,11 @@ def insert_lib_path(path):
         sys.path.insert(0, path)
 
 
-def calulate_last_start(notif, kfx_json, mobi_html):
-    if notif:
-        if kfx_json:
-            return max(d["position"] for d in kfx_json if d["type"] == 1)
-        elif mobi_html:
-            return len(mobi_html)
+def calulate_final_start(kfx_json, mobi_html):
+    if kfx_json:
+        return kfx_json[-1]["position"] + len(kfx_json[-1]["content"])
+    elif mobi_html:
+        return len(mobi_html)
     return 0
 
 
@@ -157,7 +156,7 @@ def create_files(
     fandom_url,
     notif,
 ):
-    last_start = calulate_last_start(notif, kfx_json, mobi_html)
+    final_start = calulate_final_start(kfx_json, mobi_html)
 
     if create_ww:
         ll_conn, ll_path = create_lang_layer(asin, book_path, acr, revision)
@@ -189,28 +188,18 @@ def create_files(
         if not kfx_json and not mobi_codec:  # EPUB
             if not fandom_url:
                 wiki_commons = Wikimedia_Commons(plugin_path, useragent)
-            x_ray = X_Ray_EPUB(
-                book_path, search_people, mediawiki, wiki_commons, wikidata
-            )
+            x_ray = X_Ray_EPUB(book_path, mediawiki, wiki_commons, wikidata)
             for doc, data in nlp.pipe(x_ray.extract_epub(), as_tuples=True):
                 find_named_entity(
                     data[0], x_ray, doc, None, wiki_lang, data[1], data[2]
                 )
-            x_ray.modify_epub()
+            x_ray.modify_epub(search_people)
             return
 
         x_ray_conn, x_ray_path = create_x_ray_db(
             asin, book_path, wiki_lang, plugin_path, zh_wiki, fandom_url
         )
-        x_ray = X_Ray(
-            x_ray_conn,
-            kfx_json,
-            mobi_html,
-            mobi_codec,
-            search_people,
-            mediawiki,
-            wikidata,
-        )
+        x_ray = X_Ray(x_ray_conn, mediawiki, wikidata)
         for doc, context in nlp.pipe(
             parse_book(kfx_json, mobi_html, mobi_codec), as_tuples=True
         ):
@@ -225,9 +214,11 @@ def create_files(
                     start, doc.text, kw_processor, ll_conn, mobi_codec, escaped_text
                 )
             if notif:
-                notif.put((start / last_start, "Creating files"))
+                notif.put((start / final_start, "Creating files"))
 
-        x_ray.finish(x_ray_path)
+        x_ray.finish(
+            x_ray_path, final_start, kfx_json, mobi_html, mobi_codec, search_people
+        )
     elif create_ww:
         for text, context in parse_book(kfx_json, mobi_html, mobi_codec):
             find_lemma(

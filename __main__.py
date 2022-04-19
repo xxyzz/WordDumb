@@ -14,6 +14,7 @@ from parse_job import create_files
 parser = argparse.ArgumentParser()
 parser.add_argument("-l", help="create word wise", action="store_true")
 parser.add_argument("-s", help="search people", action="store_true")
+parser.add_argument("-m", help="add locator map", action="store_true")
 parser.add_argument("asin")
 parser.add_argument("book_path")
 parser.add_argument("acr")
@@ -49,8 +50,11 @@ create_files(
     args.mobi_codec,
     args.plugin_path,
     args.version,
-    args.zh_wiki,
-    args.s,
-    args.fandom,
+    {
+        "search_people": args.s,
+        "zh_wiki_variant": args.zh_wiki,
+        "fandom": args.fandom,
+        "add_locator_map": args.m,
+    },
     None,
 )

@@ -58,7 +58,7 @@ def get_x_ray_path(asin, book_path):
     return Path(book_path).parent.joinpath(f"XRAY.entities.{asin}.asc")
 
 
-def create_x_ray_db(asin, book_path, lang, plugin_path, zh_wiki, fandom_url):
+def create_x_ray_db(asin, book_path, lang, plugin_path, prefs):
     db_path = get_x_ray_path(asin, book_path)
     x_ray_conn = sqlite3.connect(":memory:")
     x_ray_conn.executescript(
@@ -134,13 +134,13 @@ def create_x_ray_db(asin, book_path, lang, plugin_path, zh_wiki, fandom_url):
     )
 
     str_list = load_json_or_pickle(plugin_path, "data/x_ray_strings.json")
-    if fandom_url:
-        str_list[-2][-1] = f"{fandom_url}/wiki/%s"
+    if prefs["fandom"]:
+        str_list[-2][-1] = f"{prefs['fandom']}/wiki/%s"
         for d in str_list:
             if d[0] == 6:
                 d[-1] = "Fandom"
     elif lang == "zh":
-        str_list[-2][-1] = f"https://zh.wikipedia.org/zh-{zh_wiki}/%s"
+        str_list[-2][-1] = f"https://zh.wikipedia.org/zh-{prefs['zh_wiki_variant']}/%s"
     elif lang != "en":
         str_list[-2][-1] = f"https://{lang}.wikipedia.org/wiki/%s"
     x_ray_conn.executemany("INSERT INTO string VALUES(?, ?, ?)", str_list)

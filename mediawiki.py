@@ -50,15 +50,15 @@ def save_cache(cache, cache_path):
 
 
 class MediaWiki:
-    def __init__(self, lang, useragent, plugin_path, zh_wiki, fandom_url):
+    def __init__(self, lang, useragent, plugin_path, prefs):
         import requests
 
-        if fandom_url:
+        if prefs["fandom"]:
             self.source_name = "Fandom"
-            self.source_link = f"{fandom_url}/wiki/"
-            self.wiki_api = f"{fandom_url}/api.php"
+            self.source_link = f"{prefs['fandom']}/wiki/"
+            self.wiki_api = f"{prefs['fandom']}/api.php"
             self.cache_path = Path(plugin_path).parent.joinpath(
-                f"worddumb-fandom/{fandom_url[8:]}.json"
+                f"worddumb-fandom/{prefs['fandom'][8:]}.json"
             )
         else:
             self.source_name = "Wikipedia"
@@ -82,9 +82,11 @@ class MediaWiki:
             "ppprop": "wikibase_item",
         }
         self.session.headers.update({"user-agent": useragent})
-        if lang == "zh" and not fandom_url:
-            self.session.params["variant"] = f"zh-{zh_wiki}"
-            self.source_link = f"https://zh.wikipedia.org/zh-{zh_wiki}/"
+        if lang == "zh" and not prefs["fandom"]:
+            self.session.params["variant"] = f"zh-{prefs['zh_wiki_variant']}"
+            self.source_link = (
+                f"https://zh.wikipedia.org/zh-{prefs['zh_wiki_variant']}/"
+            )
 
     def save_cache(self):
         save_cache(self.cache, self.cache_path)

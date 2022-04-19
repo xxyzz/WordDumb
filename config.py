@@ -21,6 +21,7 @@ prefs.defaults["search_people"] = False
 prefs.defaults["model_size"] = "md"
 prefs.defaults["zh_wiki_variant"] = "cn"
 prefs.defaults["fandom"] = ""
+prefs.defaults["add_locator_map"] = False
 
 
 class ConfigWidget(QWidget):
@@ -84,6 +85,13 @@ class ConfigWidget(QWidget):
         fandom_hl.addWidget(self.fandom_url)
         vl.addLayout(fandom_hl)
 
+        self.locator_map_box = QCheckBox("Add locator map to EPUB footnotes")
+        self.locator_map_box.setToolTip(
+            "Enable this option if your e-reader supports image in footnotes"
+        )
+        self.locator_map_box.setChecked(prefs["add_locator_map"])
+        vl.addWidget(self.locator_map_box)
+
         donate_button = QPushButton("Tree-fiddy?")
         donate_button.clicked.connect(self.donate)
         vl.addWidget(donate_button)
@@ -104,3 +112,4 @@ class ConfigWidget(QWidget):
         prefs["model_size"] = self.model_size_box.currentData()
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
         prefs["fandom"] = self.fandom_url.text()
+        prefs["add_locator_map"] = self.locator_map_box.isChecked()

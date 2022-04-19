@@ -202,7 +202,9 @@ class X_Ray_EPUB:
                 ):
                     if democracy_index := wikidata_cache.get("democracy_index"):
                         s += f"<p>{regime_type(float(democracy_index))}</p>"
-                    if filename := wikidata_cache.get("map_filename"):
+                    if self.wiki_commons and (
+                        filename := wikidata_cache.get("map_filename")
+                    ):
                         file_path = self.wiki_commons.get_image(filename)
                         s += f'<img style="max-width:100%" src="{image_prefix}{filename}" />'
                         shutil.copy(file_path, self.image_folder.joinpath(filename))
@@ -217,6 +219,7 @@ class X_Ray_EPUB:
         self.mediawiki.save_cache()
         if self.wikidata:
             self.wikidata.save_cache()
+        if self.wiki_commons:
             self.wiki_commons.close_session()
 
     def modify_opf(self):

@@ -88,6 +88,8 @@ def do_job(
             args.append("-l")
         if prefs["search_people"]:
             args.append("-s")
+        if prefs["add_locator_map"]:
+            args.append("-m")
         if book_fmt == "KFX":
             input_str = json.dumps(kfx_json)
         elif book_fmt == "EPUB":
@@ -113,9 +115,7 @@ def do_job(
             mobi_codec,
             plugin_path,
             version,
-            prefs["zh_wiki_variant"],
-            prefs["search_people"],
-            prefs["fandom"],
+            prefs,
             notifications,
         )
 
@@ -151,9 +151,7 @@ def create_files(
     mobi_codec,
     plugin_path,
     plugin_version,
-    zh_wiki,
-    search_people,
-    fandom_url,
+    prefs,
     notif,
 ):
     final_start = calulate_final_start(kfx_json, mobi_html)
@@ -181,23 +179,23 @@ def create_files(
         )
         nlp.enable_pipe("senter")
         useragent = f"WordDumb/{plugin_version} (https://github.com/xxyzz/WordDumb)"
-        mediawiki = MediaWiki(wiki_lang, useragent, plugin_path, zh_wiki, fandom_url)
-        wikidata = None if fandom_url else Wikidata(plugin_path, useragent)
+        mediawiki = MediaWiki(wiki_lang, useragent, plugin_path, prefs)
+        wikidata = None if prefs["fandom"] else Wikidata(plugin_path, useragent)
         wiki_commons = None
 
         if not kfx_json and not mobi_codec:  # EPUB
-            if not fandom_url:
+            if not prefs["fandom"] and prefs["add_locator_map"]:
                 wiki_commons = Wikimedia_Commons(plugin_path, useragent)
             x_ray = X_Ray_EPUB(book_path, mediawiki, wiki_commons, wikidata)
             for doc, data in nlp.pipe(x_ray.extract_epub(), as_tuples=True):
                 find_named_entity(
                     data[0], x_ray, doc, None, wiki_lang, data[1], data[2]
                 )
-            x_ray.modify_epub(search_people)
+            x_ray.modify_epub(prefs["search_people"])
             return
 
         x_ray_conn, x_ray_path = create_x_ray_db(
-            asin, book_path, wiki_lang, plugin_path, zh_wiki, fandom_url
+            asin, book_path, wiki_lang, plugin_path, prefs
         )
         x_ray = X_Ray(x_ray_conn, mediawiki, wikidata)
         for doc, context in nlp.pipe(
@@ -217,7 +215,12 @@ def create_files(
                 notif.put((start / final_start, "Creating files"))
 
         x_ray.finish(
-            x_ray_path, final_start, kfx_json, mobi_html, mobi_codec, search_people
+            x_ray_path,
+            final_start,
+            kfx_json,
+            mobi_html,
+            mobi_codec,
+            prefs["search_people"],
         )
     elif create_ww:
         for text, context in parse_book(kfx_json, mobi_html, mobi_codec):

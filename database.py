@@ -183,7 +183,7 @@ def insert_x_type(conn, data):
 
 def insert_x_excerpt_image(conn, data):
     conn.execute(
-        "INSERT INTO excerpt (id, start, length, image, goto) VALUES(?, ?, 0, ?, ?)",
+        "INSERT INTO excerpt (id, start, length, image, goto) VALUES(?, ?, ?, ?, ?)",
         data,
     )
 

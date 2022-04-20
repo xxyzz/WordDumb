@@ -205,33 +205,73 @@ class X_Ray:
 
     def find_kfx_images(self, kfx_json):
         images = set()
-        for entry in filter(lambda x: x["type"] == 2, kfx_json):
-            if entry["content"] in images:
+        for index, image in filter(lambda x: x[1]["type"] == 2, enumerate(kfx_json)):
+            if image["content"] in images:
                 continue
-            images.add(entry["content"])
+            images.add(image["content"])
+            caption_start = image["position"]
+            caption_length = 0
+            if (
+                index + 1 < len(kfx_json)
+                and kfx_json[index + 1]["type"] == 1
+                and len(kfx_json[index + 1]["content"]) < 150
+            ):
+                caption = kfx_json[index + 1]
+                caption_start = caption["position"]
+                caption_length = len(caption["content"])
             insert_x_excerpt_image(
                 self.conn,
                 (
                     self.num_images,
-                    entry["position"],
-                    entry["content"],
-                    entry["position"],
+                    caption_start,
+                    caption_length,
+                    image["content"],
+                    image["position"],
                 ),
             )
             self.num_images += 1
 
     def find_mobi_images(self, mobi_html, mobi_codec):
         images = set()
-        for match_tag in re.finditer(b"<img [^>]+/>", mobi_html):
+        for match_img in re.finditer(b"<img [^>]+/>", mobi_html):
             if match_src := re.search(
-                r'src="([^"]+)"', match_tag.group(0).decode(mobi_codec)
+                r'src="([^"]+)"', match_img.group(0).decode(mobi_codec)
             ):
-                image = match_src.group(1)
-                if image in images:
+                image_src = match_src.group(1)
+                if image_src in images:
                     continue
-                images.add(image)
+                images.add(image_src)
+                caption_start = match_img.start()
+                caption_length = 0
+                previous_match_end = match_img.end()
+                for _ in range(2):
+                    match_caption = re.search(
+                        b">[^<]{2,}<", mobi_html[previous_match_end:]
+                    )
+                    if not match_caption:
+                        break
+                    if not match_caption.group(0)[1:-1].strip():
+                        previous_match_end += match_caption.end()
+                        continue
+                    if not re.match(
+                        b"<html|<img",
+                        mobi_html[
+                            previous_match_end : previous_match_end
+                            + match_caption.start()
+                        ],
+                    ):
+                        caption_start = previous_match_end + match_caption.start() + 1
+                        caption_length = match_caption.end() - match_caption.start() - 2
+                    break
+
                 insert_x_excerpt_image(
                     self.conn,
-                    (self.num_images, match_tag.start(), image, match_tag.start()),
+                    (
+                        self.num_images,
+                        caption_start,
+                        caption_length,
+                        image_src,
+                        match_img.start(),
+                    ),
                 )
                 self.num_images += 1

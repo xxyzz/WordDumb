@@ -301,25 +301,26 @@ def find_named_entity(
                 continue
             text = re.sub(r"['’][sd]$", "", text)
             text = re.sub(r"^(?:the|an?) ", "", text, flags=re.IGNORECASE)
+            text = re.sub(r"^\W+", "", text)
+            if text.lower() in [
+                "north",
+                "east",
+                "south",
+                "west",
+                "northeast",
+                "southeast",
+                "southwest",
+                "northwest",
+            ]:
+                continue
         if lang == "es":
             # https://en.wikipedia.org/wiki/Spanish_determiners#Articles
             text = re.sub(
                 r"^(?:el|los?|las?|un|unos?|unas?) ", "", text, flags=re.IGNORECASE
             )
+            text = re.sub(r"^\W+", "", text)
         # TODO https://en.wikipedia.org/wiki/Article_(grammar)#Tables
 
-        text = re.sub(r"^\W+", "", text)
-        if lang == "en" and text.lower() in [
-            "north",
-            "east",
-            "south",
-            "west",
-            "northeast",
-            "southeast",
-            "southwest",
-            "northwest",
-        ]:
-            continue
         if len(text) < len_limit or re.fullmatch(r"[\W\d]+", text):
             continue
 

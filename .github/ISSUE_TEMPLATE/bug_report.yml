@@ -1,0 +1,42 @@
+name: Bug report
+description: File a bug
+body:
+  - type: textarea
+    attributes:
+      label: Describe the bug
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: System Information
+      value: |
+        OS: [e.g. Windows 10, 64bit]
+        calibre version: [e.g. 5.24.0, 64bit]
+        Python version: [e.g. 3.9.6, 64bit]
+        Plugin version [e.g. 3.10.4]
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Error message
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Reproduce steps
+      value: |
+        1. Go to ...
+        2. Click on ...
+        3. Scroll down to ...
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Screenshots or videos
+      description: If applicable, drag and drop screenshot or video files to help explain your problem.

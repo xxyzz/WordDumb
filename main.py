@@ -11,7 +11,7 @@ from calibre.utils.config import config_dir
 from .metadata import check_metadata
 from .parse_job import do_job
 from .send_file import SendFile, device_connected
-from .unzip import load_json_or_pickle
+from .utils import load_json_or_pickle
 
 
 class ParseBook:
@@ -102,18 +102,12 @@ class ParseBook:
                     "Install <a href='https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads'>Visual C++ 2019 redistributable</a>",
                     job.datails,
                 )
-            elif "32BIT_CALIBRE" in job.details:
+            elif "32BIT_CALIBRE" in job.details or "32BIT_PYTHON" in job.details:
+                program = "calibre" if "32BIT_CALIBRE" in job.details else "Python"
                 self.error_dialog(
-                    "Seriously, 32bit?!",
-                    "Install <a href='https://calibre-ebook.com/download_windows64'>64bit calibre</a>, 32bit calibre is not supported.",
+                    "The wrist game!",
+                    f"You're using 32bit {program}, please install the 64bit version.",
                     job.details,
-                )
-            elif (
-                "ModuleNotFoundError" in job.details
-                and "calibre_plugins.kfx_input" in job.details
-            ):
-                self.error_dialog(
-                    "Requires KFX Input", "Install the KFX Input plugin.", job.details
                 )
             else:
                 self.check_network_error(job.details)

@@ -2,13 +2,12 @@
 
 import platform
 import shutil
-import subprocess
 from pathlib import Path
 
 from calibre.constants import is64bit, ismacos, iswindows
 from calibre.utils.config import config_dir
 
-from .unzip import load_json_or_pickle
+from .utils import load_json_or_pickle, run_subprocess
 
 
 class InstallDeps:
@@ -27,6 +26,11 @@ class InstallDeps:
         self.py_v = ".".join(platform.python_version_tuple()[:2])
         if iswindows:
             self.py = "py" if shutil.which("py") else "python"
+            r = run_subprocess(
+                [self.py, "-c", "import sys; print(sys.maxsize > 2**32)"]
+            )
+            if r.stdout.strip() != "True":
+                raise Exception("32BIT_PYTHON")
         elif ismacos:
             # stupid macOS loses PATH when calibre is not launched in terminal
             if self.machine == "arm64":
@@ -36,11 +40,12 @@ class InstallDeps:
             if not shutil.which(self.py):
                 self.py = "/usr/bin/python3"  # Command Line Tools
                 self.upgrade_mac_pip()
-            command = (
-                'import platform; print(".".join(platform.python_version_tuple()[:2]))'
-            )
-            r = subprocess.run(
-                [self.py, "-c", command], check=True, capture_output=True, text=True
+            r = run_subprocess(
+                [
+                    self.py,
+                    "-c",
+                    'import platform; print(".".join(platform.python_version_tuple()[:2]))',
+                ]
             )
             self.py_v = r.stdout.strip()
 
@@ -70,17 +75,7 @@ class InstallDeps:
         if not any(self.libs_path.glob(pattern)) or (reinstall and compiled):
             if self.notif:
                 self.notif.put((0, f"Installing {pkg}"))
-            args = self.pip_args(pkg, pkg_version, compiled, url)
-            if iswindows:
-                subprocess.run(
-                    args,
-                    check=True,
-                    capture_output=True,
-                    text=True,
-                    creationflags=subprocess.CREATE_NO_WINDOW,
-                )
-            else:
-                subprocess.run(args, check=True, capture_output=True, text=True)
+            run_subprocess(self.pip_args(pkg, pkg_version, compiled, url))
 
     def pip_args(self, pkg, pkg_version, compiled, url):
         args = [
@@ -96,12 +91,8 @@ class InstallDeps:
         ]
         if compiled:
             args.extend(["--python-version", self.py_v])
-            if iswindows:
-                args.append("--platform")
-                if is64bit:  # in case someone installed 32bit python
-                    args.append("win_amd64")
-                else:
-                    raise Exception("32BIT_CALIBRE")
+            if not is64bit:
+                raise Exception("32BIT_CALIBRE")
         if url:
             args.append(url)
         elif pkg_version:
@@ -128,17 +119,7 @@ class InstallDeps:
     def upgrade_mac_pip(self):
         import re
 
-        r = subprocess.run(
-            [self.py, "-m", "pip", "--version"],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
+        r = run_subprocess([self.py, "-m", "pip", "--version"])
         m = re.match(r"pip (\d+)\.", r.stdout)
         if m and int(m.group(1)) < 22:
-            subprocess.run(
-                [self.py, "-m", "pip", "install", "--user", "-U", "pip"],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
+            run_subprocess([self.py, "-m", "pip", "install", "--user", "-U", "pip"])

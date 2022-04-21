@@ -16,7 +16,7 @@ try:
         save_db,
     )
     from .mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
-    from .unzip import load_json_or_pickle
+    from .utils import load_json_or_pickle
     from .x_ray import X_Ray
     from .x_ray_epub import X_Ray_EPUB
 except ImportError:
@@ -29,7 +29,7 @@ except ImportError:
         save_db,
     )
     from mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
-    from unzip import load_json_or_pickle
+    from utils import load_json_or_pickle
     from x_ray import X_Ray
     from x_ray_epub import X_Ray_EPUB
 

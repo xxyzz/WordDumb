@@ -5,11 +5,12 @@ import subprocess
 import traceback
 
 from calibre.gui2 import FunctionDispatcher
-from calibre.constants import ismacos, iswindows
+from calibre.constants import ismacos
 from calibre.gui2.dialogs.message_box import JobError
 
 from .database import get_ll_path, get_x_ray_path
 from .metadata import get_asin_etc
+from .utils import run_subprocess
 
 
 class SendFile:
@@ -151,13 +152,4 @@ def run_adb(args):
     if not shutil.which(adb):
         return
     args.insert(0, adb)
-    if iswindows:
-        return subprocess.run(
-            args,
-            check=True,
-            capture_output=True,
-            text=True,
-            creationflags=subprocess.CREATE_NO_WINDOW,
-        )
-    else:
-        return subprocess.run(args, check=True, capture_output=True, text=True)
+    return run_subprocess(args)

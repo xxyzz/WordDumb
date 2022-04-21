@@ -14,7 +14,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
 ## How to use
 
-- Install 64bit calibre, X-Ray dependency spaCy only supports 64bit Python
+- Install 64bit calibre
 
   - Arch Linux
 
@@ -40,9 +40,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   # choco install calibre
   ```
 
-- Install Python/pip(optional if you only create Word Wise)
-
-  pip is required for downloading X-ray dependencies, Python is required for bypassing macOS library validation.
+- Install 64bit Python(optional if you only create Word Wise file)
 
   - Arch Linux
 

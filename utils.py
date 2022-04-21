@@ -3,6 +3,8 @@
 import json
 import pickle
 import zipfile
+import subprocess
+import platform
 
 
 def load_json_or_pickle(plugin_path, filepath):
@@ -15,3 +17,16 @@ def load_json_or_pickle(plugin_path, filepath):
             return None
         with zf.open(filepath) as f:
             return pickle.load(f)
+
+
+def run_subprocess(args):
+    if platform.system() == "Windows":
+        return subprocess.run(
+            args,
+            check=True,
+            capture_output=True,
+            text=True,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        )
+    else:
+        return subprocess.run(args, check=True, capture_output=True, text=True)

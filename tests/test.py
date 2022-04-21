@@ -13,7 +13,7 @@ from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 from calibre_plugins.worddumb.metadata import check_metadata, get_asin_etc
 from calibre_plugins.worddumb.parse_job import do_job
-from calibre_plugins.worddumb.unzip import load_json_or_pickle
+from calibre_plugins.worddumb.utils import load_json_or_pickle
 from convert import LIMIT
 
 

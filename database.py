@@ -3,9 +3,9 @@ import sqlite3
 from pathlib import Path
 
 try:
-    from .unzip import load_json_or_pickle
+    from .utils import load_json_or_pickle
 except ImportError:
-    from unzip import load_json_or_pickle
+    from utils import load_json_or_pickle
 
 
 def get_ll_path(asin, book_path):

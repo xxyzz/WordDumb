@@ -10,25 +10,25 @@ body:
   - type: textarea
     attributes:
       label: System Information
-      value: |
-        OS: [e.g. Windows 10, 64bit]
-        calibre version: [e.g. 5.24.0, 64bit]
-        Python version: [e.g. 3.9.6, 64bit]
-        Plugin version [e.g. 3.10.4]
+      placeholder: |
+        OS: Arch Linux, x86_64
+        calibre version: 5.40.0, 64bit
+        Python version: 3.10.4, 64bit
+        Plugin version: 3.19.0
     validations:
       required: true
 
   - type: textarea
     attributes:
       label: Error message
-      render: shell
+      render: text
     validations:
       required: true
 
   - type: textarea
     attributes:
       label: Reproduce steps
-      value: |
+      placeholder: |
         1. Go to ...
         2. Click on ...
         3. Scroll down to ...

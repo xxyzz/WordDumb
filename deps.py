@@ -92,6 +92,7 @@ class InstallDeps:
             "-t",
             self.libs_path,
             "--no-deps",
+            "--no-cache-dir",
         ]
         if compiled:
             args.extend(["--python-version", self.py_v])

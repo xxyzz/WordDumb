@@ -31,7 +31,7 @@ for lemma, values in lemmas.items():
     else:
         keyword_processor.add_keyword(lemma, values)
         for inflection in filter(
-            lambda x: x != lemma and x not in lemma,
+            lambda x: x != lemma and x not in lemmas,
             chain(*getAllInflections(lemma).values()),
         ):
             keyword_processor.add_keyword(inflection, values)

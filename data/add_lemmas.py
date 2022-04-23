@@ -39,13 +39,10 @@ for language_layer in args.language_layers:
 
     print(f"Processing {Path(language_layer).name}")
     for difficulty, sense_id in ll_conn.execute(
-        """
-    SELECT difficulty, sense_id FROM glosses GROUP by sense_id"""
+        "SELECT difficulty, sense_id FROM glosses GROUP by sense_id"
     ):
         for (lemma,) in ww_klld_conn.execute(
-            """
-        SELECT l.lemma FROM senses s JOIN lemmas l ON s.display_lemma_id = l.id
-        WHERE s.id = ?""",
+            "SELECT l.lemma FROM senses s JOIN lemmas l ON s.display_lemma_id = l.id WHERE s.id = ?",
             (sense_id,),
         ):
             if lemma.startswith("-"):

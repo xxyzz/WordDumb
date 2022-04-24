@@ -10,7 +10,7 @@ from calibre.gui2.dialogs.message_box import JobError
 
 from .database import get_ll_path, get_x_ray_path
 from .metadata import get_asin_etc
-from .utils import run_subprocess
+from .utils import run_subprocess, homebrew_mac_bin_path
 
 
 class SendFile:
@@ -37,7 +37,10 @@ class SendFile:
     def send_files(self, job):
         if self.is_android:
             try:
-                self.push_files_to_android()
+                adb_path = which_adb()
+                if adb_path is None:
+                    return
+                self.push_files_to_android(adb_path)
                 self.gui.status_bar.show_message(self.notif)
             except subprocess.CalledProcessError as e:
                 JobError(self.gui).show_error(
@@ -95,24 +98,28 @@ class SendFile:
         # Python 3.9 accepts path-like object, calibre uses 3.8
         shutil.move(str(file_path), str(dst_path), shutil.copy)
 
-    def push_files_to_android(self):
-        r = run_adb(["shell", "pm", "list", "packages", "com.amazon.kindle"])
+    def push_files_to_android(self, adb_path):
+        r = run_subprocess(
+            [adb_path, "shell", "pm", "list", "packages", "com.amazon.kindle"]
+        )
         result = r.stdout.strip()
         if len(result.split(":")) > 1:
             package_name = result.split(":")[1]  # China version: com.amazon.kindlefc
         else:
             return
         device_book_folder = f"/sdcard/Android/data/{package_name}/files/"
-        run_adb(
+        run_subprocess(
             [
+                adb_path,
                 "push",
                 self.book_path,
                 f"{device_book_folder}/{Path(self.book_path).name}",
             ]
         )
         if self.x_ray_path.exists():
-            run_adb(
+            run_subprocess(
                 [
+                    adb_path,
                     "push",
                     self.x_ray_path,
                     f"{device_book_folder}/{self.asin}/XRAY.{self.asin}.{self.acr}.db",
@@ -120,9 +127,10 @@ class SendFile:
             )
             self.x_ray_path.unlink()
         if self.ll_path.exists():
-            run_adb(["root"])
-            run_adb(
+            run_subprocess([adb_path, "root"])
+            run_subprocess(
                 [
+                    adb_path,
                     "push",
                     self.ll_path,
                     f"/data/user/0/{package_name}/databases/WordWise.en.{self.asin}.{self.acr.replace('!', '_')}.db",
@@ -143,13 +151,12 @@ def device_connected(gui, book_fmt):
 
 
 def adb_connected():
-    r = run_adb(["devices"])
+    adb_path = which_adb()
+    if adb_path is None:
+        return False
+    r = run_subprocess([adb_path, "devices"])
     return r.stdout.strip().endswith("device") if r else False
 
 
-def run_adb(args):
-    adb = "/usr/local/bin/adb" if ismacos else "adb"
-    if not shutil.which(adb):
-        return
-    args.insert(0, adb)
-    return run_subprocess(args)
+def which_adb():
+    return shutil.which(homebrew_mac_bin_path("adb") if ismacos else "adb")

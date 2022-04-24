@@ -30,3 +30,11 @@ def run_subprocess(args):
         )
     else:
         return subprocess.run(args, check=True, capture_output=True, text=True)
+
+
+def homebrew_mac_bin_path(package):
+    # stupid macOS loses PATH when calibre is not launched in terminal
+    if platform.machine() == "arm64":
+        return f"/opt/homebrew/bin/{package}"
+    else:
+        return f"/usr/local/bin/{package}"

@@ -7,7 +7,7 @@ from pathlib import Path
 from calibre.constants import is64bit, ismacos, iswindows
 from calibre.utils.config import config_dir
 
-from .utils import load_json_or_pickle, run_subprocess
+from .utils import load_json_or_pickle, run_subprocess, homebrew_mac_bin_path
 
 
 class InstallDeps:
@@ -32,11 +32,7 @@ class InstallDeps:
             if r.stdout.strip() != "True":
                 raise Exception("32BIT_PYTHON")
         elif ismacos:
-            # stupid macOS loses PATH when calibre is not launched in terminal
-            if self.machine == "arm64":
-                self.py = "/opt/homebrew/bin/python3"
-            else:
-                self.py = "/usr/local/bin/python3"
+            self.py = homebrew_mac_bin_path("python3")
             if not shutil.which(self.py):
                 self.py = "/usr/bin/python3"  # Command Line Tools
                 self.upgrade_mac_pip()
@@ -122,4 +118,15 @@ class InstallDeps:
         r = run_subprocess([self.py, "-m", "pip", "--version"])
         m = re.match(r"pip (\d+)\.", r.stdout)
         if m and int(m.group(1)) < 22:
-            run_subprocess([self.py, "-m", "pip", "install", "--user", "-U", "pip"])
+            run_subprocess(
+                [
+                    self.py,
+                    "-m",
+                    "pip",
+                    "install",
+                    "--user",
+                    "-U",
+                    "--no-cache-dir",
+                    "pip",
+                ]
+            )

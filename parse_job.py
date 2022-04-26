@@ -16,7 +16,7 @@ try:
         save_db,
     )
     from .mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
-    from .utils import load_json_or_pickle
+    from .utils import insert_lib_path, load_lemmas_dump
     from .x_ray import X_Ray
     from .x_ray_epub import X_Ray_EPUB
 except ImportError:
@@ -29,7 +29,7 @@ except ImportError:
         save_db,
     )
     from mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
-    from utils import load_json_or_pickle
+    from utils import insert_lib_path, load_lemmas_dump
     from x_ray import X_Ray
     from x_ray_epub import X_Ray_EPUB
 
@@ -124,11 +124,6 @@ def do_job(
     return book_id, asin, book_path, mi, update_asin, book_fmt, acr
 
 
-def insert_lib_path(path):
-    if path not in sys.path:
-        sys.path.insert(0, path)
-
-
 def calulate_final_start(kfx_json, mobi_html):
     if kfx_json:
         return kfx_json[-1]["position"] + len(kfx_json[-1]["content"])
@@ -158,8 +153,7 @@ def create_files(
 
     if create_ww:
         ll_conn, ll_path = create_lang_layer(asin, book_path, acr, revision)
-        insert_lib_path(str(Path(plugin_path).joinpath("libs")))  # flashtext
-        kw_processor = load_json_or_pickle(plugin_path, "lemmas_dump")
+        kw_processor = load_lemmas_dump(plugin_path)
 
     if create_x:
         for path in Path(plugin_path).parent.glob("worddumb-libs-py*"):

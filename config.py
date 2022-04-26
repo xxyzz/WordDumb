@@ -16,6 +16,8 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from .custom_lemmas import CustomLemmasDialog
+
 prefs = JSONConfig("plugins/worddumb")
 prefs.defaults["search_people"] = False
 prefs.defaults["model_size"] = "md"
@@ -30,6 +32,10 @@ class ConfigWidget(QWidget):
 
         vl = QVBoxLayout()
         self.setLayout(vl)
+
+        customize_ww_button = QPushButton("Customize Word Wise lemmas")
+        customize_ww_button.clicked.connect(self.open_custom_lemmas_dialog)
+        vl.addWidget(customize_ww_button)
 
         self.search_people_box = QCheckBox(
             "Fetch X-Ray people descriptions from Wikipedia or Fandom"
@@ -113,3 +119,7 @@ class ConfigWidget(QWidget):
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
         prefs["fandom"] = self.fandom_url.text()
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
+
+    def open_custom_lemmas_dialog(self):
+        custom_lemmas_dlg = CustomLemmasDialog(self)
+        custom_lemmas_dlg.exec()

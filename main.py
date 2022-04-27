@@ -16,7 +16,6 @@ class ParseBook:
     def __init__(self, gui):
         self.gui = gui
         self.languages = load_json_or_pickle(get_plugin_path(), "data/languages.json")
-        self.github_url = "https://github.com/xxyzz/WordDumb"
 
     def parse(self, create_ww=True, create_x=True):
         # get currently selected books
@@ -70,9 +69,7 @@ class ParseBook:
             self.gui.current_db.new_api.set_metadata(book_id, mi)
 
         # send files to device
-        if connected := device_connected(self.gui, book_fmt):
-            SendFile(self.gui, job.result, connected == "android", notif).send_files(
-                None
-            )
+        if package_name := device_connected(self.gui, book_fmt):
+            SendFile(self.gui, job.result, package_name, notif).send_files(None)
         else:
             self.gui.status_bar.show_message(notif)

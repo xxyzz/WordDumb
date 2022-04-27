@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (
     QLineEdit,
 )
 from PyQt5.QtCore import QAbstractTableModel, Qt
-from .utils import load_lemmas_dump, get_plugin_path, custom_lemmas_folder
+from .utils import load_lemmas_dump, get_plugin_path, get_klld_path
 
 
 class CustomLemmasDialog(QDialog):
@@ -59,9 +59,7 @@ class LemmasTableModle(QAbstractTableModel):
         plugin_path = get_plugin_path()
         kw_processor = load_lemmas_dump(plugin_path)
         self.lemmas = []
-        klld_conn = sqlite3.connect(
-            custom_lemmas_folder(plugin_path).joinpath("kll.en.en.klld")
-        )
+        klld_conn = sqlite3.connect(get_klld_path(plugin_path))
         sense_ids = {}
         for _, (difficulty, sense_id) in kw_processor.get_all_keywords().items():
             sense_ids[sense_id] = difficulty

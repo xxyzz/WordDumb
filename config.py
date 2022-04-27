@@ -30,8 +30,11 @@ from .utils import (
     insert_installed_libs,
     run_subprocess,
     custom_lemmas_dump_path,
+    custom_lemmas_folder,
+    get_klld_path,
 )
-from .error_dialogs import job_failed
+from .error_dialogs import job_failed, error_dialog
+from .send_file import device_connected, copy_klld_from_android, copy_klld_from_kindle
 
 prefs = JSONConfig("plugins/worddumb")
 prefs.defaults["search_people"] = False
@@ -44,6 +47,7 @@ prefs.defaults["add_locator_map"] = False
 class ConfigWidget(QWidget):
     def __init__(self):
         super().__init__()
+        self.plugin_path = get_plugin_path()
 
         vl = QVBoxLayout()
         self.setLayout(vl)
@@ -136,9 +140,28 @@ class ConfigWidget(QWidget):
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
 
     def open_custom_lemmas_dialog(self):
+        klld_path = get_klld_path(self.plugin_path)
+        gui = self.parent().parent()
+        if klld_path is None:
+            package_name = device_connected(gui, "KFX")
+            if not package_name:
+                error_dialog(
+                    "Device not found",
+                    "Please connect your Kindle or Android device then try again.",
+                    "",
+                    self,
+                )
+                return
+            custom_folder = custom_lemmas_folder(self.plugin_path)
+            if not custom_folder.exists():
+                custom_folder.mkdir()
+            if isinstance(package_name, str):
+                copy_klld_from_android(package_name, custom_folder)
+            else:
+                copy_klld_from_kindle(gui, custom_folder)
+
         custom_lemmas_dlg = CustomLemmasDialog(self)
         if custom_lemmas_dlg.exec():
-            gui = self.parent().parent()
             job = ThreadedJob(
                 "WordDumb's dumb job",
                 "Saving customized lemmas",
@@ -157,16 +180,15 @@ class ConfigWidget(QWidget):
             gui.job_manager.run_threaded_job(job)
 
     def save_lemmas(self, lemmas, abort=None, log=None, notifications=None):
-        plugin_path = get_plugin_path()
-        installdeps = InstallDeps(None, plugin_path, None, notifications)
+        installdeps = InstallDeps(None, self.plugin_path, None, notifications)
         notifications.put((0, "Saving customized lemmas"))
-        custom_path = custom_lemmas_dump_path(plugin_path)
+        custom_path = custom_lemmas_dump_path(self.plugin_path)
         if ismacos:
-            plugin_path = str(plugin_path)
+            plugin_path = str(self.plugin_path)
             args = [installdeps.py, plugin_path]
             args.extend([""] * 11 + [plugin_path, str(custom_path)])
             run_subprocess(args, json.dumps(lemmas))
         else:
-            insert_flashtext_path(plugin_path)
-            insert_installed_libs(plugin_path)
+            insert_flashtext_path(self.plugin_path)
+            insert_installed_libs(self.plugin_path)
             dump_lemmas(lemmas, custom_path)

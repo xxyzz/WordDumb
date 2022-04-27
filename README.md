@@ -40,7 +40,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   # choco install calibre
   ```
 
-- Install 64bit Python and pip(optional if you only create Word Wise file)
+- Install 64bit Python and pip
 
   - Arch Linux
 
@@ -48,7 +48,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   $ sudo pacman -Syu --needed python-pip
   ```
 
-  - Debian based distro
+  - Debian
 
   ```
   $ sudo apt install python3-pip

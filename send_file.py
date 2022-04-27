@@ -14,7 +14,7 @@ from .utils import run_subprocess, homebrew_mac_bin_path
 
 
 class SendFile:
-    def __init__(self, gui, data, is_android, notif):
+    def __init__(self, gui, data, package_name, notif):
         self.gui = gui
         self.device_manager = gui.device_manager
         self.notif = notif
@@ -29,13 +29,13 @@ class SendFile:
         ) = data
         self.ll_path = get_ll_path(self.asin, self.book_path)
         self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
-        self.is_android = is_android
+        self.package_name = package_name
         if self.acr is None:
             self.acr = "_"
 
     # use some code from calibre.gui2.device:DeviceMixin.upload_books
     def send_files(self, job):
-        if self.is_android:
+        if isinstance(self.package_name, str):
             try:
                 adb_path = which_adb()
                 if adb_path is None:
@@ -98,15 +98,7 @@ class SendFile:
         # Python 3.9 accepts path-like object, calibre uses 3.8
         shutil.move(str(file_path), str(dst_path), shutil.copy)
 
-    def push_files_to_android(self, adb_path):
-        r = run_subprocess(
-            [adb_path, "shell", "pm", "list", "packages", "com.amazon.kindle"]
-        )
-        result = r.stdout.strip()
-        if len(result.split(":")) > 1:
-            package_name = result.split(":")[1]  # China version: com.amazon.kindlefc
-        else:
-            return
+    def push_files_to_android(self, adb_path, package_name):
         device_book_folder = f"/sdcard/Android/data/{package_name}/files/"
         run_subprocess(
             [
@@ -133,7 +125,7 @@ class SendFile:
                     adb_path,
                     "push",
                     self.ll_path,
-                    f"/data/user/0/{package_name}/databases/WordWise.en.{self.asin}.{self.acr.replace('!', '_')}.db",
+                    f"/data/data/{package_name}/databases/WordWise.en.{self.asin}.{self.acr.replace('!', '_')}.db",
                 ]
             )
             self.ll_path.unlink()
@@ -145,18 +137,53 @@ def device_connected(gui, book_fmt):
         or getattr(gui.device_manager.device, "VENDOR_NAME", None) == "KINDLE"
     ):
         return True
-    if book_fmt == "KFX" and adb_connected():
-        return "android"
+    if book_fmt == "KFX":
+        adb_path = which_adb()
+        if adb_path is None:
+            return False
+        if adb_connected(adb_path):
+            package_name = get_package_name(adb_path)
+            return package_name if package_name else False
     return False
 
 
-def adb_connected():
-    adb_path = which_adb()
-    if adb_path is None:
-        return False
+def adb_connected(adb_path):
     r = run_subprocess([adb_path, "devices"])
     return r.stdout.strip().endswith("device") if r else False
 
 
 def which_adb():
     return shutil.which(homebrew_mac_bin_path("adb") if ismacos else "adb")
+
+
+def get_package_name(adb_path):
+    r = run_subprocess(
+        [adb_path, "shell", "pm", "list", "packages", "com.amazon.kindle"]
+    )
+    result = r.stdout.strip()
+    if len(result.split(":")) > 1:
+        return result.split(":")[1]  # China version: com.amazon.kindlefc
+    return None
+
+
+def copy_klld_from_android(package_name, dest_path):
+    adb_path = which_adb()
+    run_subprocess([adb_path, "root"])
+    run_subprocess(
+        [
+            adb_path,
+            "pull",
+            f"/data/data/{package_name}/databases/wordwise",
+            dest_path,
+        ]
+    )
+    for path in dest_path.joinpath("wordwise").iterdir():
+        shutil.move(str(path), str(dest_path))  # Python 3.9
+    dest_path.joinpath("wordwise").rmdir()
+
+
+def copy_klld_from_kindle(gui, dest_path):
+    for klld_path in Path(f"{gui.device_manager.device._main_prefix}/system/kll").glob(
+        "*.klld"
+    ):
+        shutil.copy(klld_path, dest_path)

@@ -9,6 +9,16 @@
       "version": "0.6.3"
     }
   },
+  "lemminflect": {
+    "lemminflect": {
+      "compiled": false,
+      "version": "0.2.2"
+    },
+    "numpy": {
+      "compiled": true,
+      "version": "1.22.3"
+    }
+  },
   "mac_arm": {
     "thinc-apple-ops": {
       "compiled": true,

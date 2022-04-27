@@ -2,10 +2,8 @@
 
 import platform
 import shutil
-from pathlib import Path
 
 from calibre.constants import is64bit, ismacos, iswindows
-from calibre.utils.config import config_dir
 
 from .utils import load_json_or_pickle, run_subprocess, homebrew_mac_bin_path
 
@@ -19,7 +17,10 @@ class InstallDeps:
         self.book_fmt = book_fmt
         self.machine = platform.machine()
         self.which_python()
-        self.install_x_ray_deps()
+        if model:
+            self.install_x_ray_deps()
+        else:
+            self.install_lemminflect()
 
     def which_python(self):
         self.py = "python3"
@@ -45,8 +46,8 @@ class InstallDeps:
             )
             self.py_v = r.stdout.strip()
 
-        self.libs_path = Path(config_dir).joinpath(
-            f"plugins/worddumb-libs-py{self.py_v}"
+        self.libs_path = self.plugin_path.parent.joinpath(
+            f"worddumb-libs-py{self.py_v}"
         )
 
     def install_x_ray_deps(self):
@@ -130,3 +131,8 @@ class InstallDeps:
                     "pip",
                 ]
             )
+
+    def install_lemminflect(self):
+        data = load_json_or_pickle(self.plugin_path, "data/spacy_extra.json")
+        for pkg, value in data["lemminflect"].items():
+            self.pip_install(pkg, value["version"], value["compiled"])

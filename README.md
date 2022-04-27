@@ -77,6 +77,8 @@ https://user-images.githubusercontent.com/21101839/124686751-39f3aa00-df06-11eb-
 
 - Set preferences
 
+    - Customize Word Wise requires Kindle or Android(use adb) device connected for the first time use.
+
     - Enable "Fetch X-Ray people descriptions from Wikipedia or Fandom" option for nonfiction books and novels that have character pages on Wikipedia or Fandom. A quote from the book will be used if it's disabled or the page is not found.
 
     - Larger spaCy model has higher [Named-entity recognition](https://en.wikipedia.org/wiki/Named-entity_recognition) precision therefore improves X-Ray quality, more details at https://spacy.io/models/en
@@ -87,7 +89,7 @@ https://user-images.githubusercontent.com/21101839/124686751-39f3aa00-df06-11eb-
 
 https://user-images.githubusercontent.com/21101839/124685798-90f87f80-df04-11eb-8eb6-dee012de6cab.mov
 
-- Connect Kindle to calibre, select one book or multiple books then click the plugin icon or menu.
+- Connect Kindle or Android device, select one book or multiple books then click the plugin icon or menu.
 
 https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-93c6-0dea4ee60e04.mov
 

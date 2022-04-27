@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
     QStyledItemDelegate,
     QAbstractItemView,
     QLineEdit,
+    QHeaderView,
 )
 from PyQt5.QtCore import QAbstractTableModel, Qt
 from .utils import load_lemmas_dump, get_plugin_path, get_klld_path
@@ -30,6 +31,8 @@ class CustomLemmasDialog(QDialog):
         self.lemmas_table.setItemDelegateForColumn(
             4, ComboBoxDelegate(self.lemmas_table, list(map(str, range(1, 6))))
         )
+        self.lemmas_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.lemmas_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
         vl.addWidget(self.lemmas_table)
 
         search_line = QLineEdit()
@@ -44,6 +47,8 @@ class CustomLemmasDialog(QDialog):
         save_button_box.accepted.connect(self.accept)
         save_button_box.rejected.connect(self.reject)
         vl.addWidget(save_button_box)
+        table_size = self.lemmas_table.viewport().size()
+        self.resize(table_size.width(), table_size.height())
 
     def search_lemma(self, text):
         if matches := self.lemmas_model.match(

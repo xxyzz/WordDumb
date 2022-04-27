@@ -139,18 +139,17 @@ class ConfigWidget(QWidget):
         custom_lemmas_dlg = CustomLemmasDialog(self)
         if custom_lemmas_dlg.exec():
             gui = self.parent().parent()
-            lemmas = {}
-            for _, lemma, sense_id, _, difficulty in filter(
-                lambda x: x[0],
-                custom_lemmas_dlg.lemmas_model.lemmas,
-            ):
-                if lemma not in lemmas:
-                    lemmas[lemma] = (difficulty, sense_id)
             job = ThreadedJob(
                 "WordDumb's dumb job",
                 "Saving customized lemmas",
                 self.save_lemmas,
-                (lemmas,),
+                (
+                    {
+                        lemma: (difficulty, sense_id)
+                        for enabled, lemma, sense_id, _, difficulty in custom_lemmas_dlg.lemmas_model.lemmas
+                        if enabled
+                    },
+                ),
                 {},
                 Dispatcher(partial(job_failed, parent=gui)),
                 killable=False,

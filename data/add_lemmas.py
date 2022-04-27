@@ -42,7 +42,7 @@ for language_layer in args.language_layers:
         "SELECT difficulty, sense_id FROM glosses GROUP by sense_id"
     ):
         for (lemma,) in ww_klld_conn.execute(
-            'SELECT lemma FROM senses JOIN lemmas ON display_lemma_id = lemmas.id WHERE senses.id = ? AND length(short_def) > 0 AND lemma NOT LIKE "\'%" AND lemma NOT like "-%"',
+            'SELECT lemma FROM senses JOIN lemmas ON display_lemma_id = lemmas.id WHERE senses.id = ? AND (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like "-%"',
             (sense_id,),
         ):
             if lemma.startswith("-"):

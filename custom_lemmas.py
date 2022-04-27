@@ -54,7 +54,7 @@ class LemmasTableModle(QAbstractTableModel):
             sense_ids[sense_id] = difficulty
 
         for (lemma, sense_id, short_def) in klld_conn.execute(
-            'SELECT lemma, senses.id, short_def FROM lemmas JOIN senses ON lemmas.id = senses.display_lemma_id WHERE length(short_def) > 0 AND lemma NOT LIKE "\'%" AND lemma NOT like "-%" ORDER BY lemma'
+            'SELECT lemma, senses.id, short_def FROM lemmas JOIN senses ON lemmas.id = senses.display_lemma_id WHERE (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like "-%" ORDER BY lemma'
         ):
             enabled = False
             difficulty = 1
@@ -66,7 +66,7 @@ class LemmasTableModle(QAbstractTableModel):
                     enabled,
                     lemma,
                     sense_id,
-                    base64.b64decode(short_def).decode("utf-8"),
+                    base64.b64decode(short_def).decode("utf-8") if short_def else "",
                     difficulty,
                 ]
             )

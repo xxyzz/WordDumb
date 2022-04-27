@@ -137,6 +137,8 @@ class ComboBoxDelegate(QStyledItemDelegate):
     def createEditor(self, parent, option, index):
         comboBox = QComboBox(parent)
         comboBox.addItems(self.options)
+        comboBox.setItemData(0, "Fewer Hints", Qt.ToolTipRole)
+        comboBox.setItemData(4, "More Hints", Qt.ToolTipRole)
         comboBox.currentIndexChanged.connect(self.commit_editor)
         return comboBox
 

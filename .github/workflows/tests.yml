@@ -117,7 +117,7 @@ jobs:
             .
             !.*
             !data/lemmas.json
-            !data/*.py
+            !data/add_lemmas.py
             !data/*.sh
             !docs/*
             !tests/*

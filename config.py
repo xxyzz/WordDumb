@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 
 import webbrowser
+import json
+from functools import partial
 
 from calibre.utils.config import JSONConfig
+from calibre.gui2 import Dispatcher
+from calibre.gui2.threaded_jobs import ThreadedJob
+from calibre.constants import ismacos
 from PyQt5.QtCore import QRegularExpression
 from PyQt5.QtGui import QRegularExpressionValidator
 from PyQt5.QtWidgets import (
@@ -17,6 +22,16 @@ from PyQt5.QtWidgets import (
 )
 
 from .custom_lemmas import CustomLemmasDialog
+from .data.dump_lemmas import dump_lemmas
+from .deps import InstallDeps
+from .utils import (
+    get_plugin_path,
+    insert_flashtext_path,
+    insert_installed_libs,
+    run_subprocess,
+    custom_lemmas_dump_path,
+)
+from .error_dialogs import job_failed
 
 prefs = JSONConfig("plugins/worddumb")
 prefs.defaults["search_people"] = False
@@ -122,4 +137,37 @@ class ConfigWidget(QWidget):
 
     def open_custom_lemmas_dialog(self):
         custom_lemmas_dlg = CustomLemmasDialog(self)
-        custom_lemmas_dlg.exec()
+        if custom_lemmas_dlg.exec():
+            gui = self.parent().parent()
+            lemmas = {}
+            for _, lemma, sense_id, _, difficulty in filter(
+                lambda x: x[0],
+                custom_lemmas_dlg.lemmas_model.lemmas,
+            ):
+                if lemma not in lemmas:
+                    lemmas[lemma] = (difficulty, sense_id)
+            job = ThreadedJob(
+                "WordDumb's dumb job",
+                "Saving customized lemmas",
+                self.save_lemmas,
+                (lemmas,),
+                {},
+                Dispatcher(partial(job_failed, parent=gui)),
+                killable=False,
+            )
+            gui.job_manager.run_threaded_job(job)
+
+    def save_lemmas(self, lemmas, abort=None, log=None, notifications=None):
+        plugin_path = get_plugin_path()
+        installdeps = InstallDeps(None, plugin_path, None, notifications)
+        notifications.put((0, "Saving customized lemmas"))
+        custom_path = custom_lemmas_dump_path(plugin_path)
+        if ismacos:
+            plugin_path = str(plugin_path)
+            args = [installdeps.py, plugin_path]
+            args.extend([""] * 11 + [plugin_path, str(custom_path)])
+            run_subprocess(args, json.dumps(lemmas))
+        else:
+            insert_flashtext_path(plugin_path)
+            insert_installed_libs(plugin_path)
+            dump_lemmas(lemmas, custom_path)

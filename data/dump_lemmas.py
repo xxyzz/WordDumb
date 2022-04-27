@@ -5,16 +5,10 @@ import pickle
 import re
 from itertools import chain, product
 
-from flashtext import KeywordProcessor
-from lemminflect import getAllInflections
 
-with open("data/lemmas.json", encoding="utf-8") as f:
-    lemmas = json.load(f)
+def add_lemma(lemma, data, lemmas, keyword_processor):
+    from lemminflect import getAllInflections
 
-keyword_processor = KeywordProcessor()
-
-
-def add_lemma(lemma, data):
     if " " in lemma:  # phrase, for example: 'slick back/down'
         list_of_inflections_list = []
         for word in lemma.split(" "):
@@ -40,14 +34,25 @@ def add_lemma(lemma, data):
         keyword_processor.add_keyword(lemma.replace("-", " "), data)
 
 
-for lemma, data in lemmas.items():
-    if "(" in lemma:  # "(as) good as new"
-        add_lemma(re.sub(r"[()]", "", lemma), data)
-        add_lemma(
-            " ".join(filter(None, re.sub(r"\([^)]+\)", "", lemma).split(" "))), data
-        )
-    else:
-        add_lemma(lemma, data)
+def dump_lemmas(lemmas, dump_path):
+    from flashtext import KeywordProcessor
 
-with open("lemmas_dump", "wb") as f:
-    pickle.dump(keyword_processor, f)
+    keyword_processor = KeywordProcessor()
+    for lemma, data in lemmas.items():
+        if "(" in lemma:  # "(as) good as new"
+            add_lemma(re.sub(r"[()]", "", lemma), data, lemmas, keyword_processor)
+            add_lemma(
+                " ".join(filter(None, re.sub(r"\([^)]+\)", "", lemma).split(" "))),
+                data,
+                lemmas,
+                keyword_processor,
+            )
+        else:
+            add_lemma(lemma, data, lemmas, keyword_processor)
+    with open(dump_path, "wb") as f:
+        pickle.dump(keyword_processor, f)
+
+
+if __name__ == "__main__":
+    with open("data/lemmas.json", encoding="utf-8") as f:
+        dump_lemmas(json.load(f), "lemmas_dump")

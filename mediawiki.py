@@ -2,7 +2,6 @@
 
 import json
 from collections import defaultdict
-from pathlib import Path
 from urllib.parse import unquote
 
 MEDIAWIKI_API_EXLIMIT = 20
@@ -57,14 +56,14 @@ class MediaWiki:
             self.source_name = "Fandom"
             self.source_link = f"{prefs['fandom']}/wiki/"
             self.wiki_api = f"{prefs['fandom']}/api.php"
-            self.cache_path = Path(plugin_path).parent.joinpath(
+            self.cache_path = plugin_path.parent.joinpath(
                 f"worddumb-fandom/{prefs['fandom'][8:]}.json"
             )
         else:
             self.source_name = "Wikipedia"
             self.source_link = f"https://{lang}.wikipedia.org/wiki/"
             self.wiki_api = f"https://{lang}.wikipedia.org/w/api.php"
-            self.cache_path = Path(plugin_path).parent.joinpath(
+            self.cache_path = plugin_path.parent.joinpath(
                 f"worddumb-wikimedia/{lang}.json"
             )
         self.cache = load_cache(self.cache_path)
@@ -146,7 +145,7 @@ class Wikimedia_Commons:
 
         self.session = requests.Session()
         self.session.headers.update({"user-agent": useragent})
-        self.cache_folder = Path(plugin_path).parent.joinpath("worddumb-wikimedia")
+        self.cache_folder = plugin_path.parent.joinpath("worddumb-wikimedia")
 
     def get_image(self, filename):
         file_path = self.cache_folder.joinpath(filename)
@@ -169,7 +168,7 @@ class Wikidata:
     def __init__(self, plugin_path, useragent):
         import requests
 
-        self.cache_path = Path(plugin_path).parent.joinpath(
+        self.cache_path = plugin_path.parent.joinpath(
             "worddumb-wikimedia/wikidata.json"
         )
         self.cache = load_cache(self.cache_path)

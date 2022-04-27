@@ -11,9 +11,9 @@ import sys
 
 def load_json_or_pickle(plugin_path, filepath):
     if not plugin_path:
-        if not Path(filepath).exists():
+        if not filepath.exists():
             return None
-        if filepath.endswith(".json"):
+        if filepath.name.endswith(".json"):
             with open(filepath, encoding="utf-8") as f:
                 return json.load(f)
         else:
@@ -31,17 +31,20 @@ def load_json_or_pickle(plugin_path, filepath):
             return pickle.load(f)
 
 
-def run_subprocess(args):
+def run_subprocess(args, input_str=None):
     if platform.system() == "Windows":
         return subprocess.run(
             args,
+            input=input_str,
             check=True,
             capture_output=True,
             text=True,
             creationflags=subprocess.CREATE_NO_WINDOW,
         )
     else:
-        return subprocess.run(args, check=True, capture_output=True, text=True)
+        return subprocess.run(
+            args, input=input_str, check=True, capture_output=True, text=True
+        )
 
 
 def homebrew_mac_bin_path(package):
@@ -57,14 +60,33 @@ def insert_lib_path(path):
         sys.path.insert(0, path)
 
 
+def insert_installed_libs(plugin_path):
+    for path in plugin_path.parent.glob("worddumb-libs-py*"):
+        insert_lib_path(str(path))
+
+
 def insert_flashtext_path(plugin_path):
-    insert_lib_path(str(Path(plugin_path).joinpath("libs")))
+    insert_lib_path(str(plugin_path.joinpath("libs")))
 
 
 def load_lemmas_dump(plugin_path):
     insert_flashtext_path(plugin_path)
-    lemmas_dump_path = Path(plugin_path).parent.joinpath("worddumb-lemmas/lemmas_dump")
-    if lemmas_dump_path.exists():
-        return load_json_or_pickle(None, lemmas_dump_path)
+    custom_path = custom_lemmas_dump_path(plugin_path)
+    if custom_path.exists():
+        return load_json_or_pickle(None, custom_path)
     else:
         return load_json_or_pickle(plugin_path, "lemmas_dump")
+
+
+def get_plugin_path():
+    from calibre.utils.config import config_dir
+
+    return Path(config_dir).joinpath("plugins/WordDumb.zip")
+
+
+def custom_lemmas_folder(plugin_path):
+    return plugin_path.parent.joinpath("worddumb-lemmas")
+
+
+def custom_lemmas_dump_path(plugin_path):
+    return custom_lemmas_folder(plugin_path).joinpath("lemmas_dump")

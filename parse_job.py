@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import json
 import re
-import subprocess
-import sys
 from pathlib import Path
 from html import unescape
 
@@ -16,7 +14,12 @@ try:
         save_db,
     )
     from .mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
-    from .utils import insert_lib_path, load_lemmas_dump
+    from .utils import (
+        load_lemmas_dump,
+        get_plugin_path,
+        run_subprocess,
+        insert_installed_libs,
+    )
     from .x_ray import X_Ray
     from .x_ray_epub import X_Ray_EPUB
 except ImportError:
@@ -29,7 +32,7 @@ except ImportError:
         save_db,
     )
     from mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
-    from utils import insert_lib_path, load_lemmas_dump
+    from utils import load_lemmas_dump, insert_installed_libs
     from x_ray import X_Ray
     from x_ray_epub import X_Ray_EPUB
 
@@ -38,7 +41,6 @@ def do_job(
     data, create_ww=True, create_x=True, abort=None, log=None, notifications=None
 ):
     from calibre.constants import ismacos
-    from calibre.utils.config import config_dir
     from calibre_plugins.worddumb import VERSION
 
     from .config import prefs
@@ -51,7 +53,7 @@ def do_job(
     )
 
     model = lang["spacy"] + prefs["model_size"]
-    plugin_path = str(Path(config_dir).joinpath("plugins/WordDumb.zip"))
+    plugin_path = get_plugin_path()
     if book_fmt == "EPUB":
         book_path = Path(book_path)
         # Python 3.9, PurePath.with_stem
@@ -68,6 +70,7 @@ def do_job(
 
     version = ".".join(map(str, VERSION))
     if ismacos and create_x:
+        plugin_path = str(plugin_path)
         args = [
             install_deps.py,
             plugin_path,
@@ -78,11 +81,12 @@ def do_job(
             model,
             lang["wiki"],
             mobi_codec,
-            plugin_path,
             version,
             prefs["zh_wiki_variant"],
             prefs["fandom"],
             book_fmt,
+            plugin_path,
+            "",
         ]
         if create_ww:
             args.append("-l")
@@ -97,9 +101,7 @@ def do_job(
         else:
             input_str = mobi_html.decode(mobi_codec)
 
-        subprocess.run(
-            args, input=input_str, check=True, capture_output=True, text=True
-        )
+        run_subprocess(args, input_str)
     else:
         create_files(
             create_ww,
@@ -150,14 +152,14 @@ def create_files(
     notif,
 ):
     final_start = calulate_final_start(kfx_json, mobi_html)
+    plugin_path = Path(plugin_path) if isinstance(plugin_path, str) else plugin_path
 
     if create_ww:
         ll_conn, ll_path = create_lang_layer(asin, book_path, acr, revision)
         kw_processor = load_lemmas_dump(plugin_path)
 
     if create_x:
-        for path in Path(plugin_path).parent.glob("worddumb-libs-py*"):
-            insert_lib_path(str(path))
+        insert_installed_libs(plugin_path)
         import spacy
 
         nlp = spacy.load(

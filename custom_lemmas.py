@@ -2,7 +2,6 @@
 
 import sqlite3
 import base64
-from pathlib import Path
 from PyQt5.QtWidgets import (
     QComboBox,
     QVBoxLayout,
@@ -13,8 +12,7 @@ from PyQt5.QtWidgets import (
     QAbstractItemView,
 )
 from PyQt5.QtCore import QAbstractTableModel, Qt
-from calibre.utils.config import config_dir
-from .utils import load_lemmas_dump
+from .utils import load_lemmas_dump, get_plugin_path, custom_lemmas_folder
 
 
 class CustomLemmasDialog(QDialog):
@@ -25,8 +23,8 @@ class CustomLemmasDialog(QDialog):
         self.setLayout(vl)
 
         lemmas_table = QTableView()
-        lemmas_model = LemmasTableModle()
-        lemmas_table.setModel(lemmas_model)
+        self.lemmas_model = LemmasTableModle()
+        lemmas_table.setModel(self.lemmas_model)
         lemmas_table.hideColumn(2)
         lemmas_table.setItemDelegateForColumn(
             4, ComboBoxDelegate(lemmas_table, list(map(str, range(1, 6))))
@@ -45,22 +43,24 @@ class CustomLemmasDialog(QDialog):
 class LemmasTableModle(QAbstractTableModel):
     def __init__(self):
         super().__init__()
-        lemmas_folder = Path(config_dir).joinpath("plugins/worddumb-lemmas")
-        kw_processor = load_lemmas_dump(
-            str(Path(config_dir).joinpath("plugins/WordDumb.zip"))
-        )
+        plugin_path = get_plugin_path()
+        kw_processor = load_lemmas_dump(plugin_path)
         self.lemmas = []
-        klld_conn = sqlite3.connect(lemmas_folder.joinpath("kll.en.en.klld"))
+        klld_conn = sqlite3.connect(
+            custom_lemmas_folder(plugin_path).joinpath("kll.en.en.klld")
+        )
+        sense_ids = {}
+        for _, (difficulty, sense_id) in kw_processor.get_all_keywords().items():
+            sense_ids[sense_id] = difficulty
+
         for (lemma, sense_id, short_def) in klld_conn.execute(
             'SELECT lemma, senses.id, short_def FROM lemmas JOIN senses ON lemmas.id = senses.display_lemma_id WHERE length(short_def) > 0 AND lemma NOT LIKE "\'%" AND lemma NOT like "-%" ORDER BY lemma'
         ):
             enabled = False
             difficulty = 1
-            if lemma in kw_processor:
-                used_difficulty, used_sense_id = kw_processor[lemma]
-                if used_sense_id == sense_id:
-                    enabled = True
-                    difficulty = used_difficulty
+            if sense_id in sense_ids:
+                enabled = True
+                difficulty = sense_ids[sense_id]
             self.lemmas.append(
                 [
                     enabled,

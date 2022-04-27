@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
     QTableView,
     QStyledItemDelegate,
     QAbstractItemView,
+    QLineEdit,
 )
 from PyQt5.QtCore import QAbstractTableModel, Qt
 from .utils import load_lemmas_dump, get_plugin_path, custom_lemmas_folder
@@ -22,14 +23,19 @@ class CustomLemmasDialog(QDialog):
         vl = QVBoxLayout()
         self.setLayout(vl)
 
-        lemmas_table = QTableView()
+        self.lemmas_table = QTableView()
         self.lemmas_model = LemmasTableModle()
-        lemmas_table.setModel(self.lemmas_model)
-        lemmas_table.hideColumn(2)
-        lemmas_table.setItemDelegateForColumn(
-            4, ComboBoxDelegate(lemmas_table, list(map(str, range(1, 6))))
+        self.lemmas_table.setModel(self.lemmas_model)
+        self.lemmas_table.hideColumn(2)
+        self.lemmas_table.setItemDelegateForColumn(
+            4, ComboBoxDelegate(self.lemmas_table, list(map(str, range(1, 6))))
         )
-        vl.addWidget(lemmas_table)
+        vl.addWidget(self.lemmas_table)
+
+        search_line = QLineEdit()
+        search_line.setPlaceholderText("Search")
+        search_line.textChanged.connect(lambda: self.search_lemma(search_line.text()))
+        vl.addWidget(search_line)
 
         save_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save
@@ -38,6 +44,13 @@ class CustomLemmasDialog(QDialog):
         save_button_box.accepted.connect(self.accept)
         save_button_box.rejected.connect(self.reject)
         vl.addWidget(save_button_box)
+
+    def search_lemma(self, text):
+        if matches := self.lemmas_model.match(
+            self.lemmas_model.index(0, 1), Qt.DisplayRole, text
+        ):
+            self.lemmas_table.setCurrentIndex(matches[0])
+            self.lemmas_table.scrollTo(matches[0])
 
 
 class LemmasTableModle(QAbstractTableModel):

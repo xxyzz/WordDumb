@@ -117,7 +117,7 @@ class LemmasTableModle(QAbstractTableModel):
                 "Lemma",
                 "Sense id",
                 "Definition",
-                "Difficulty level",
+                "Difficulty",
             ][section]
 
     def flags(self, index):

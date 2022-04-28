@@ -2,11 +2,12 @@
 
 import json
 import pickle
-import zipfile
-import subprocess
 import platform
-from pathlib import Path
+import subprocess
 import sys
+import webbrowser
+import zipfile
+from pathlib import Path
 
 
 def load_json_or_pickle(plugin_path, filepath):
@@ -99,3 +100,7 @@ def get_klld_path(plugin_path):
     for path in custom_folder.glob("*.db"):
         return path
     return None
+
+
+def donate():
+    webbrowser.open("https://liberapay.com/xxyzz/donate")

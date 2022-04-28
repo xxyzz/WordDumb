@@ -10,9 +10,9 @@ import json
 import sys
 from pathlib import Path
 
-from parse_job import create_files
-from utils import insert_installed_libs, insert_flashtext_path
 from data.dump_lemmas import dump_lemmas
+from parse_job import create_files
+from utils import insert_flashtext_path, insert_installed_libs
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-l", help="create word wise", action="store_true")

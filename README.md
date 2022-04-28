@@ -89,7 +89,7 @@ https://user-images.githubusercontent.com/21101839/124686751-39f3aa00-df06-11eb-
 
 https://user-images.githubusercontent.com/21101839/124685798-90f87f80-df04-11eb-8eb6-dee012de6cab.mov
 
-- Connect Kindle or Android device, select one book or multiple books then click the plugin icon or menu.
+- Connect your e-reader, select one book or multiple books then click the plugin icon or menu.
 
 https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-93c6-0dea4ee60e04.mov
 

@@ -4,8 +4,8 @@ from functools import partial
 
 from calibre.gui2.actions import InterfaceAction
 
-from .config import ConfigWidget
 from .main import ParseBook
+from .utils import donate
 
 
 class WordDumb(InterfaceAction):
@@ -44,7 +44,7 @@ class WordDumb(InterfaceAction):
             "Donate",
             "Donate",
             description="I need about tree-fiddy.",
-            triggered=ConfigWidget.donate,
+            triggered=donate,
         )
         self.qaction.setMenu(self.menu)
 

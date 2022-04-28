@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 
-import sqlite3
 import base64
+import sqlite3
+
+from PyQt5.QtCore import QAbstractTableModel, Qt
 from PyQt5.QtWidgets import (
+    QAbstractItemView,
     QComboBox,
-    QVBoxLayout,
     QDialog,
     QDialogButtonBox,
-    QTableView,
-    QStyledItemDelegate,
-    QAbstractItemView,
-    QLineEdit,
     QHeaderView,
+    QLineEdit,
+    QStyledItemDelegate,
+    QTableView,
+    QVBoxLayout,
 )
-from PyQt5.QtCore import QAbstractTableModel, Qt
-from .utils import load_lemmas_dump, get_plugin_path, get_klld_path
+
+from .utils import get_klld_path, get_plugin_path, load_lemmas_dump
 
 
 class CustomLemmasDialog(QDialog):
@@ -31,8 +33,12 @@ class CustomLemmasDialog(QDialog):
         self.lemmas_table.setItemDelegateForColumn(
             4, ComboBoxDelegate(self.lemmas_table, list(map(str, range(1, 6))))
         )
-        self.lemmas_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.lemmas_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
+        self.lemmas_table.horizontalHeader().setSectionResizeMode(
+            1, QHeaderView.Stretch
+        )
+        self.lemmas_table.horizontalHeader().setSectionResizeMode(
+            3, QHeaderView.Stretch
+        )
         vl.addWidget(self.lemmas_table)
 
         search_line = QLineEdit()
@@ -70,7 +76,7 @@ class LemmasTableModle(QAbstractTableModel):
             sense_ids[sense_id] = difficulty
 
         for (lemma, sense_id, short_def) in klld_conn.execute(
-            'SELECT lemma, senses.id, short_def FROM lemmas JOIN senses ON lemmas.id = senses.display_lemma_id WHERE (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like "-%" ORDER BY lemma'
+            'SELECT lemma, senses.id, short_def FROM lemmas JOIN senses ON lemmas.id = display_lemma_id WHERE (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like "-%" ORDER BY lemma'
         ):
             enabled = False
             difficulty = 1

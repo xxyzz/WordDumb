@@ -83,8 +83,8 @@ class X_Ray:
         return entity_data
 
     def add_entity(self, entity, ner_label, start, quote, entity_len):
-        from rapidfuzz.process import extractOne
         from rapidfuzz.fuzz import token_set_ratio
+        from rapidfuzz.process import extractOne
 
         if entity_data := self.get_entity_data(entity):
             entity_id = entity_data["id"]

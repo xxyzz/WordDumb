@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import json
 import re
-from pathlib import Path
 from html import unescape
+from pathlib import Path
 
 try:
     from .database import (
@@ -13,12 +13,13 @@ try:
         insert_lemma,
         save_db,
     )
+    from .error_dialogs import GITHUB_URL
     from .mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
     from .utils import (
-        load_lemmas_dump,
         get_plugin_path,
-        run_subprocess,
         insert_installed_libs,
+        load_lemmas_dump,
+        run_subprocess,
     )
     from .x_ray import X_Ray
     from .x_ray_epub import X_Ray_EPUB
@@ -31,8 +32,9 @@ except ImportError:
         insert_lemma,
         save_db,
     )
+    from error_dialogs import GITHUB_URL
     from mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
-    from utils import load_lemmas_dump, insert_installed_libs
+    from utils import insert_installed_libs, load_lemmas_dump
     from x_ray import X_Ray
     from x_ray_epub import X_Ray_EPUB
 
@@ -174,7 +176,7 @@ def create_files(
             ],
         )
         nlp.enable_pipe("senter")
-        useragent = f"WordDumb/{plugin_version} (https://github.com/xxyzz/WordDumb)"
+        useragent = f"WordDumb/{plugin_version} ({GITHUB_URL})"
         mediawiki = MediaWiki(wiki_lang, useragent, plugin_path, prefs)
         wikidata = None if prefs["fandom"] else Wikidata(plugin_path, useragent)
         wiki_commons = None

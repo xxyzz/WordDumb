@@ -5,7 +5,7 @@ import shutil
 
 from calibre.constants import is64bit, ismacos, iswindows
 
-from .utils import load_json_or_pickle, run_subprocess, homebrew_mac_bin_path
+from .utils import homebrew_mac_bin_path, load_json_or_pickle, run_subprocess
 
 
 class InstallDeps:

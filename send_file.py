@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 import shutil
-from pathlib import Path
 import subprocess
 import traceback
+from pathlib import Path
 
-from calibre.gui2 import FunctionDispatcher
 from calibre.constants import ismacos
+from calibre.gui2 import FunctionDispatcher
 from calibre.gui2.dialogs.message_box import JobError
 
 from .database import get_ll_path, get_x_ray_path
 from .metadata import get_asin_etc
-from .utils import run_subprocess, homebrew_mac_bin_path
+from .utils import homebrew_mac_bin_path, run_subprocess
 
 
 class SendFile:

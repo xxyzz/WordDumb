@@ -5,11 +5,11 @@ from functools import partial
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 
+from .error_dialogs import job_failed
 from .metadata import check_metadata
 from .parse_job import do_job
 from .send_file import SendFile, device_connected
-from .utils import load_json_or_pickle, get_plugin_path
-from .error_dialogs import job_failed
+from .utils import get_plugin_path, load_json_or_pickle
 
 
 class ParseBook:

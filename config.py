@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-import webbrowser
 import json
+import webbrowser
 from functools import partial
 
-from calibre.utils.config import JSONConfig
+from calibre.constants import ismacos
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
-from calibre.constants import ismacos
+from calibre.utils.config import JSONConfig
 from PyQt5.QtCore import QRegularExpression
 from PyQt5.QtGui import QRegularExpressionValidator
 from PyQt5.QtWidgets import (
@@ -24,17 +24,18 @@ from PyQt5.QtWidgets import (
 from .custom_lemmas import CustomLemmasDialog
 from .data.dump_lemmas import dump_lemmas
 from .deps import InstallDeps
+from .error_dialogs import GITHUB_URL, error_dialog, job_failed
+from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
 from .utils import (
+    custom_lemmas_dump_path,
+    custom_lemmas_folder,
+    donate,
+    get_klld_path,
     get_plugin_path,
     insert_flashtext_path,
     insert_installed_libs,
     run_subprocess,
-    custom_lemmas_dump_path,
-    custom_lemmas_folder,
-    get_klld_path,
 )
-from .error_dialogs import job_failed, error_dialog
-from .send_file import device_connected, copy_klld_from_android, copy_klld_from_kindle
 
 prefs = JSONConfig("plugins/worddumb")
 prefs.defaults["search_people"] = False
@@ -118,19 +119,15 @@ class ConfigWidget(QWidget):
         vl.addWidget(self.locator_map_box)
 
         donate_button = QPushButton("Tree-fiddy?")
-        donate_button.clicked.connect(self.donate)
+        donate_button.clicked.connect(donate)
         vl.addWidget(donate_button)
 
         github_button = QPushButton("Source code and document")
         github_button.clicked.connect(self.github)
         vl.addWidget(github_button)
 
-    @staticmethod
-    def donate():
-        webbrowser.open("https://liberapay.com/xxyzz/donate")
-
     def github(self):
-        webbrowser.open("https://github.com/xxyzz/WordDumb")
+        webbrowser.open(GITHUB_URL)
 
     def save_settings(self):
         prefs["search_people"] = self.search_people_box.isChecked()

@@ -1,7 +1,7 @@
 {
   "Jinja2": {
     "compiled": false,
-    "version": "3.1.1"
+    "version": "3.1.2"
   },
   "MarkupSafe": {
     "compiled": true,
@@ -25,7 +25,7 @@
   },
   "click": {
     "compiled": false,
-    "version": "8.1.2"
+    "version": "8.1.3"
   },
   "cymem": {
     "compiled": true,
@@ -45,7 +45,7 @@
   },
   "murmurhash": {
     "compiled": true,
-    "version": "1.0.6"
+    "version": "1.0.7"
   },
   "numpy": {
     "compiled": true,
@@ -69,11 +69,11 @@
   },
   "pyparsing": {
     "compiled": false,
-    "version": "3.0.7"
+    "version": "3.0.8"
   },
   "rapidfuzz": {
     "compiled": true,
-    "version": "2.0.8"
+    "version": "2.0.11"
   },
   "requests": {
     "compiled": false,
@@ -85,7 +85,7 @@
   },
   "spacy": {
     "compiled": true,
-    "version": "3.2.4"
+    "version": "3.3.0"
   },
   "spacy-legacy": {
     "compiled": false,
@@ -97,7 +97,7 @@
   },
   "srsly": {
     "compiled": true,
-    "version": "2.4.2"
+    "version": "2.4.3"
   },
   "thinc": {
     "compiled": true,
@@ -113,7 +113,7 @@
   },
   "typing-extensions": {
     "compiled": false,
-    "version": "4.1.1"
+    "version": "4.2.0"
   },
   "urllib3": {
     "compiled": false,

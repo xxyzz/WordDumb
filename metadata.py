@@ -9,6 +9,7 @@ import string
 def check_metadata(db, book_id, languages):
     mi = db.get_metadata(book_id, get_cover=True)
 
+    # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     book_language = mi.get("languages")
     if not book_language:
         return None

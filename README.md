@@ -2,7 +2,7 @@
 
 A calibre plugin that generates Kindle Word Wise and X-Ray files and EPUB footnotes then send them to e-reader. Supports KFX, AZW3, AZW, MOBI and EPUB eBooks.
 
-Book languages supported by X-Ray: Català, Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Norsk bokmål, Polski, Português, Română, Ελληνικά, Македонски, Русский, 中文, 日本語.
+Book languages supported by X-Ray: Bokmål, Català, Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Polski, Português, Română, Suomi, Svenska, Ελληνικά, Македонски, Русский, 中文, 日本語, 한국어.
 
 Test plugin will be uploaded to [GitHub Actions Artifacts](https://github.com/xxyzz/WordDumb/actions/workflows/tests.yml) at each git push automatically.
 
@@ -84,7 +84,7 @@ https://user-images.githubusercontent.com/21101839/124686751-39f3aa00-df06-11eb-
     - Larger spaCy model has higher [Named-entity recognition](https://en.wikipedia.org/wiki/Named-entity_recognition) precision therefore improves X-Ray quality, more details at https://spacy.io/models/en
 
     - Enter a Fandom link to get X-Ray descriptions from Fandom, delete the link to search Wikipedia.
-    
+
     - Enable "Add locator map to EPUB footnotes" if your e-reader supports image in footnotes.
 
 https://user-images.githubusercontent.com/21101839/124685798-90f87f80-df04-11eb-8eb6-dee012de6cab.mov

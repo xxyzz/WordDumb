@@ -19,6 +19,10 @@
     "spacy": "en_core_web_",
     "wiki": "en"
   },
+  "fin": {
+    "spacy": "fi_core_news_",
+    "wiki": "fi"
+  },
   "fra": {
     "spacy": "fr_core_news_",
     "wiki": "fr"
@@ -30,6 +34,10 @@
   "jpn": {
     "spacy": "ja_core_news_",
     "wiki": "ja"
+  },
+  "kor": {
+    "spacy": "ko_core_news_",
+    "wiki": "ko"
   },
   "lit": {
     "spacy": "lt_core_news_",
@@ -66,6 +74,10 @@
   "spa": {
     "spacy": "es_core_news_",
     "wiki": "es"
+  },
+  "swe": {
+    "spacy": "sv_core_news_",
+    "wiki": "sv"
   },
   "zho": {
     "spacy": "zh_core_web_",

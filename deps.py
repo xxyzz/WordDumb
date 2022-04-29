@@ -11,7 +11,7 @@ from .utils import homebrew_mac_bin_path, load_json_or_pickle, run_subprocess
 class InstallDeps:
     def __init__(self, model, plugin_path, book_fmt, notif):
         self.model = model
-        self.model_v = "3.2.0"
+        self.model_v = "3.3.0"
         self.plugin_path = plugin_path
         self.notif = notif
         self.book_fmt = book_fmt

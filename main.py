@@ -23,7 +23,6 @@ class ParseBook:
         if not rows or len(rows) == 0:
             return
         ids = map(self.gui.library_view.model().id, rows)
-        show_job_pointer = False
         for data in filter(
             None,
             [
@@ -36,7 +35,6 @@ class ParseBook:
                 create_ww = False
             if not create_ww and not create_x:
                 continue
-            show_job_pointer = True
             if lang["wiki"] != "en":
                 create_ww = False
             title = mi.get("title")
@@ -56,9 +54,6 @@ class ParseBook:
                 killable=False,
             )
             self.gui.job_manager.run_threaded_job(job)
-
-        if show_job_pointer:
-            self.gui.jobs_pointer.start()
 
     def done(self, job, notif=None):
         if job_failed(job, self.gui):

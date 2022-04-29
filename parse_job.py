@@ -252,7 +252,7 @@ def index_in_escaped_text(token, escaped_text, start_offset):
         token_start = escaped_text.index(token, start_offset)
         return token_start, token_start + len(token)
     else:
-        words = list(filter(None, re.split(r"\W+", token)))
+        words = [word for word in re.split(r"\W+", token) if word]
         token_start = escaped_text.index(words[0], start_offset)
         token_end = escaped_text.index(words[-1], token_start) + len(words[-1])
         return token_start, token_end

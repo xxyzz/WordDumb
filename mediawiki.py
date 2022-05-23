@@ -8,29 +8,31 @@ MEDIAWIKI_API_EXLIMIT = 20
 FUZZ_THRESHOLD = 85.7
 
 # https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L318
-NER_LABELS = [
-    "EVENT",  # OntoNotes 5: English, Chinese
-    "FAC",
-    "GPE",
-    "LAW",
-    "LOC",
-    "ORG",
-    "PERSON",
-    "PRODUCT",
-    "MISC",  # Catalan
-    "PER",
-    "EVT",  # Norwegian Bokmål: https://github.com/ltgoslo/norne#entity-types
-    "GPE_LOC",
-    "GPE_ORG",
-    "PROD",
-    "geogName",  # Polish: https://arxiv.org/pdf/1811.10418.pdf#subsection.2.1
-    "orgName",
-    "persName",
-    "placeName",
-    "ORGANIZATION",  # Romanian: https://arxiv.org/pdf/1909.01247.pdf#section.4
-]
-PERSON_LABELS = ["PERSON", "PER", "persName"]
-GPE_LABELS = ["GPE", "GPE_LOC", "GPE_ORG", "placeName"]
+NER_LABELS = frozenset(
+    [
+        "EVENT",  # OntoNotes 5: English, Chinese
+        "FAC",
+        "GPE",
+        "LAW",
+        "LOC",
+        "ORG",
+        "PERSON",
+        "PRODUCT",
+        "MISC",  # Catalan
+        "PER",
+        "EVT",  # Norwegian Bokmål: https://github.com/ltgoslo/norne#entity-types
+        "GPE_LOC",
+        "GPE_ORG",
+        "PROD",
+        "geogName",  # Polish: https://arxiv.org/pdf/1811.10418.pdf#subsection.2.1
+        "orgName",
+        "persName",
+        "placeName",
+        "ORGANIZATION",  # Romanian: https://arxiv.org/pdf/1909.01247.pdf#section.4
+    ]
+)
+PERSON_LABELS = frozenset(["PERSON", "PER", "persName"])
+GPE_LABELS = frozenset(["GPE", "GPE_LOC", "GPE_ORG", "placeName"])
 
 
 def load_cache(cache_path):

@@ -216,11 +216,11 @@ class X_Ray_EPUB:
         s += "</body></html>"
         with self.xhtml_folder.joinpath("x_ray.xhtml").open("w", encoding="utf-8") as f:
             f.write(s)
-        self.mediawiki.save_cache()
+        self.mediawiki.close()
         if self.wikidata:
-            self.wikidata.save_cache()
+            self.wikidata.close()
         if self.wiki_commons:
-            self.wiki_commons.close_session()
+            self.wiki_commons.close()
 
     def modify_opf(self):
         from lxml import etree

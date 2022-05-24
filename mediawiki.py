@@ -4,10 +4,11 @@ import json
 from collections import defaultdict
 from urllib.parse import unquote
 
+# https://www.mediawiki.org/wiki/Special:MyLanguage/Extension:TextExtracts#API
 MEDIAWIKI_API_EXLIMIT = 20
 FUZZ_THRESHOLD = 85.7
 
-# https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L318
+# https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L325
 NER_LABELS = frozenset(
     [
         "EVENT",  # OntoNotes 5: English, Chinese
@@ -35,42 +36,60 @@ PERSON_LABELS = frozenset(["PERSON", "PER", "persName"])
 GPE_LABELS = frozenset(["GPE", "GPE_LOC", "GPE_ORG", "placeName"])
 
 
-def load_cache(cache_path):
-    if not cache_path.parent.exists():
-        cache_path.parent.mkdir()
-    if cache_path.exists():
-        with cache_path.open() as f:
-            return json.load(f)
-    else:
-        return defaultdict(dict)
-
-
-def save_cache(cache, cache_path):
-    with cache_path.open("w") as f:
-        json.dump(cache, f)
-
-
-class MediaWiki:
-    def __init__(self, lang, useragent, plugin_path, prefs):
+class MediaWikiBase:
+    def __init__(self, cache_path, useragent):
         import requests
 
+        self.cache_path = cache_path
+        if not cache_path.parent.exists():
+            cache_path.parent.mkdir()
+        if cache_path.exists():
+            with cache_path.open() as f:
+                self.cache = json.load(f)
+        else:
+            self.cache = {}
+        self.save_cache = False
+        self.session = requests.Session()
+        self.session.headers.update({"user-agent": useragent})
+
+    def get_cache(self, key):
+        data = self.get_direct_cache(key)
+        if isinstance(data, str):
+            return self.get_direct_cache(data)
+        return data
+
+    def get_direct_cache(self, key):
+        return self.cache.get(key)
+
+    def add_cache(self, key, value):
+        self.cache[key] = value
+        self.save_cache = True
+
+    def has_cache(self, key):
+        return key in self.cache
+
+    def close(self):
+        self.session.close()
+        if self.save_cache:
+            with self.cache_path.open("w") as f:
+                json.dump(self.cache, f)
+
+
+class MediaWiki(MediaWikiBase):
+    def __init__(self, lang, useragent, plugin_path, prefs):
         if prefs["fandom"]:
             self.source_name = "Fandom"
             self.source_link = f"{prefs['fandom']}/wiki/"
             self.wiki_api = f"{prefs['fandom']}/api.php"
-            self.cache_path = plugin_path.parent.joinpath(
+            cache_path = plugin_path.parent.joinpath(
                 f"worddumb-fandom/{prefs['fandom'][8:]}.json"
             )
         else:
             self.source_name = "Wikipedia"
             self.source_link = f"https://{lang}.wikipedia.org/wiki/"
             self.wiki_api = f"https://{lang}.wikipedia.org/w/api.php"
-            self.cache_path = plugin_path.parent.joinpath(
-                f"worddumb-wikimedia/{lang}.json"
-            )
-        self.cache = load_cache(self.cache_path)
-
-        self.session = requests.Session()
+            cache_path = plugin_path.parent.joinpath(f"worddumb-wikimedia/{lang}.json")
+        super().__init__(cache_path, useragent)
         self.session.params = {
             "format": "json",
             "action": "query",
@@ -82,28 +101,11 @@ class MediaWiki:
             "formatversion": 2,
             "ppprop": "wikibase_item",
         }
-        self.session.headers.update({"user-agent": useragent})
         if lang == "zh" and not prefs["fandom"]:
             self.session.params["variant"] = f"zh-{prefs['zh_wiki_variant']}"
             self.source_link = (
                 f"https://zh.wikipedia.org/zh-{prefs['zh_wiki_variant']}/"
             )
-
-    def save_cache(self):
-        save_cache(self.cache, self.cache_path)
-        self.session.close()
-
-    def has_cache(self, entity):
-        return entity in self.cache
-
-    def get_cache(self, title):
-        data = self.cache.get(title)
-        if isinstance(data, str):
-            return self.cache.get(data)
-        return data
-
-    def get_direct_cache(self, title):
-        return self.cache.get(title)
 
     def query(self, titles):
         result = self.session.get(self.wiki_api, params={"titles": "|".join(titles)})
@@ -122,23 +124,26 @@ class MediaWiki:
             summary = v["extract"]
             if not any(period in summary for period in [".", "。"]):
                 continue  # very likely a disambiguation page
-            self.cache[title] = {
-                "intro": summary,
-                "item_id": v.get("pageprops", {}).get("wikibase_item"),
-            }
+            self.add_cache(
+                title,
+                {
+                    "intro": summary,
+                    "item_id": v.get("pageprops", {}).get("wikibase_item"),
+                },
+            )
             if title in titles:
                 titles.remove(title)
             for key in converts.get(title, []):
-                self.cache[key] = title
+                self.add_cache(key, title)
                 if key in titles:
                     titles.remove(key)
                 for k in converts.get(key, []):
-                    self.cache[k] = title
+                    self.add_cache(k, title)
                     if k in titles:  # normalize then redirect
                         titles.remove(k)
 
         for title in titles:  # use quote next time
-            self.cache[title] = None
+            self.add_cache(title, None)
 
 
 class Wikimedia_Commons:
@@ -162,27 +167,15 @@ class Wikimedia_Commons:
         with file_path.open("wb") as f:
             f.write(r.content)
 
-    def close_session(self):
+    def close(self):
         self.session.close()
 
 
-class Wikidata:
+class Wikidata(MediaWikiBase):
     def __init__(self, plugin_path, useragent):
-        import requests
-
-        self.cache_path = plugin_path.parent.joinpath(
-            "worddumb-wikimedia/wikidata.json"
+        super().__init__(
+            plugin_path.parent.joinpath("worddumb-wikimedia/wikidata.json"), useragent
         )
-        self.cache = load_cache(self.cache_path)
-
-        self.session = requests.Session()
-        self.session.headers.update({"user-agent": useragent})
-
-    def has_cache(self, item_id):
-        return item_id in self.cache
-
-    def get_cache(self, item_id):
-        return self.cache.get(item_id)
 
     def query(self, items):
         items = " ".join(map(lambda x: f"wd:{x}", items))
@@ -219,18 +212,17 @@ class Wikidata:
             democracy_index = binding.get("democracy_index", {}).get("value")
             map_url = binding.get("map", {}).get("value")
             if democracy_index or map_url:
-                self.cache[item_id] = {
-                    "democracy_index": democracy_index,
-                    "map_filename": unquote(map_url).split("/")[-1]
-                    if map_url
-                    else None,
-                }
+                self.add_cache(
+                    item_id,
+                    {
+                        "democracy_index": democracy_index,
+                        "map_filename": unquote(map_url).split("/")[-1]
+                        if map_url
+                        else None,
+                    },
+                )
             else:
-                self.cache[item_id] = None
-
-    def save_cache(self):
-        save_cache(self.cache, self.cache_path)
-        self.session.close()
+                self.add_cache(item_id, None)
 
 
 def regime_type(democracy_index_score):

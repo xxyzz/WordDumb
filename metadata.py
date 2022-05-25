@@ -5,16 +5,18 @@ import random
 import re
 import string
 
+from .utils import get_plugin_path, load_json_or_pickle
 
-def check_metadata(db, book_id, languages):
+
+def check_metadata(db, book_id):
+    supported_languages = load_json_or_pickle(get_plugin_path(), "data/languages.json")
     mi = db.get_metadata(book_id, get_cover=True)
-
     # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     book_language = mi.get("languages")
     if not book_language:
         return None
     book_language = book_language[0]
-    if book_language not in languages:
+    if book_language not in supported_languages:
         return None
 
     book_fmts = db.formats(book_id)
@@ -30,7 +32,7 @@ def check_metadata(db, book_id, languages):
         chosen_fmt,
         db.format_abspath(book_id, chosen_fmt),
         mi,
-        languages[book_language],
+        supported_languages[book_language],
     )
 
 

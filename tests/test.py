@@ -5,15 +5,12 @@ import sqlite3
 import sys
 import unittest
 from itertools import zip_longest
-from pathlib import Path
 
 from calibre.library import db
-from calibre.utils.config import config_dir
 from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.database import get_ll_path, get_x_ray_path
 from calibre_plugins.worddumb.metadata import check_metadata, get_asin_etc
 from calibre_plugins.worddumb.parse_job import do_job
-from calibre_plugins.worddumb.utils import load_json_or_pickle
 from convert import LIMIT
 
 
@@ -28,12 +25,7 @@ class TestDumbCode(unittest.TestCase):
                 book_1984_id = book_id
                 break
 
-        plugin_path = Path(config_dir).joinpath("plugins/WordDumb.zip")
-        data = check_metadata(
-            lib_db,
-            book_1984_id,
-            load_json_or_pickle(plugin_path, "data/languages.json"),
-        )
+        data = check_metadata(lib_db, book_1984_id)
         (_, cls.fmt, cls.book_path, cls.mi, _) = data
         origin_model_size = prefs["model_size"]
         prefs["model_size"] = "sm"

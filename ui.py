@@ -2,9 +2,14 @@
 
 from functools import partial
 
+from calibre.gui2 import Dispatcher
 from calibre.gui2.actions import InterfaceAction
+from calibre.gui2.threaded_jobs import ThreadedJob
 
-from .main import ParseBook
+from .error_dialogs import job_failed
+from .metadata import check_metadata
+from .parse_job import do_job
+from .send_file import SendFile, device_connected
 from .utils import donate
 
 
@@ -53,4 +58,48 @@ class WordDumb(InterfaceAction):
 
 
 def run(gui, create_ww, create_x):
-    ParseBook(gui).parse(create_ww, create_x)
+    rows = gui.library_view.selectionModel().selectedRows()
+    if not rows or len(rows) == 0:
+        return
+    ids = map(gui.library_view.model().id, rows)
+    for data in filter(
+        None,
+        [check_metadata(gui.current_db.new_api, book_id) for book_id in ids],
+    ):
+        _, book_fmt, _, mi, lang = data
+        if book_fmt == "EPUB":
+            create_ww = False
+        if not create_ww and not create_x:
+            continue
+        if lang["wiki"] != "en":
+            create_ww = False
+        title = mi.get("title")
+        notif = []
+        if create_ww:
+            notif.append("Word Wise")
+        if create_x:
+            notif.append("X-Ray")
+        notif = " and ".join(notif)
+        job = ThreadedJob(
+            "WordDumb's dumb job",
+            f"Generating {notif} for {title}",
+            do_job,
+            (data, create_ww, create_x),
+            {},
+            Dispatcher(partial(done, gui=gui, notif=f"{notif} generated for {title}")),
+            killable=False,
+        )
+        gui.job_manager.run_threaded_job(job)
+
+
+def done(job, gui=None, notif=None):
+    if job_failed(job, gui):
+        return
+    book_id, _, _, mi, update_asin, book_fmt, _ = job.result
+    if update_asin:
+        gui.current_db.new_api.set_metadata(book_id, mi)
+
+    if package_name := device_connected(gui, book_fmt):
+        SendFile(gui, job.result, package_name, notif).send_files(None)
+    else:
+        gui.status_bar.show_message(notif)

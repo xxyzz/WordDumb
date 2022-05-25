@@ -46,7 +46,7 @@ def do_job(
     from calibre_plugins.worddumb import VERSION
 
     from .config import prefs
-    from .deps import InstallDeps
+    from .deps import install_deps, mac_python
     from .metadata import get_asin_etc
 
     (book_id, book_fmt, book_path, mi, lang) = data
@@ -65,7 +65,7 @@ def do_job(
         create_ww = create_ww and not get_ll_path(asin, book_path).exists()
         create_x = create_x and not get_x_ray_path(asin, book_path).exists()
     if create_x:
-        install_deps = InstallDeps(model, plugin_path, book_fmt, notifications)
+        install_deps(model, book_fmt, notifications)
 
     if notifications:
         notifications.put((0, "Creating files"))
@@ -74,7 +74,7 @@ def do_job(
     if ismacos and create_x:
         plugin_path = str(plugin_path)
         args = [
-            install_deps.py,
+            mac_python(),
             plugin_path,
             asin,
             book_path,

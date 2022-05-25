@@ -23,7 +23,7 @@ from PyQt5.QtWidgets import (
 
 from .custom_lemmas import CustomLemmasDialog
 from .data.dump_lemmas import dump_lemmas
-from .deps import InstallDeps
+from .deps import install_deps, mac_python
 from .error_dialogs import GITHUB_URL, error_dialog, job_failed
 from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
 from .utils import (
@@ -177,12 +177,12 @@ class ConfigWidget(QWidget):
             gui.job_manager.run_threaded_job(job)
 
     def save_lemmas(self, lemmas, abort=None, log=None, notifications=None):
-        installdeps = InstallDeps(None, self.plugin_path, None, notifications)
+        install_deps(None, None, notifications)
         notifications.put((0, "Saving customized lemmas"))
         custom_path = custom_lemmas_dump_path(self.plugin_path)
         if ismacos:
             plugin_path = str(self.plugin_path)
-            args = [installdeps.py, plugin_path]
+            args = [mac_python(), plugin_path]
             args.extend([""] * 11 + [plugin_path, str(custom_path)])
             run_subprocess(args, json.dumps(lemmas))
         else:

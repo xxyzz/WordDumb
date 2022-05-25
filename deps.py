@@ -1,138 +1,141 @@
 #!/usr/bin/env python3
 
 import platform
+import re
 import shutil
 
 from calibre.constants import is64bit, ismacos, iswindows
 
-from .utils import homebrew_mac_bin_path, load_json_or_pickle, run_subprocess
+from .utils import (
+    get_plugin_path,
+    homebrew_mac_bin_path,
+    load_json_or_pickle,
+    run_subprocess,
+)
+
+PLUGINS_PATH = get_plugin_path()
+SPACY_MODEL_VERSION = "3.3.0"
 
 
-class InstallDeps:
-    def __init__(self, model, plugin_path, book_fmt, notif):
-        self.model = model
-        self.model_v = "3.3.0"
-        self.plugin_path = plugin_path
-        self.notif = notif
-        self.book_fmt = book_fmt
-        self.machine = platform.machine()
-        self.which_python()
-        if model:
-            self.install_x_ray_deps()
-        else:
-            self.install_lemminflect()
+def install_deps(model, book_fmt, notif):
+    if not is64bit:
+        raise Exception("32BIT_CALIBRE")
 
-    def which_python(self):
-        self.py = "python3"
-        self.py_v = ".".join(platform.python_version_tuple()[:2])
-        if iswindows:
-            self.py = "py" if shutil.which("py") else "python"
-            r = run_subprocess(
-                [self.py, "-c", "import sys; print(sys.maxsize > 2**32)"]
-            )
-            if r.stdout.strip() != "True":
-                raise Exception("32BIT_PYTHON")
-        elif ismacos:
-            self.py = homebrew_mac_bin_path("python3")
-            if not shutil.which(self.py):
-                self.py = "/usr/bin/python3"  # Command Line Tools
-                self.upgrade_mac_pip()
-            r = run_subprocess(
-                [
-                    self.py,
-                    "-c",
-                    'import platform; print(".".join(platform.python_version_tuple()[:2]))',
-                ]
-            )
-            self.py_v = r.stdout.strip()
+    global PY_PATH, PY_VERSION, LIBS_PATH
+    PY_PATH, PY_VERSION = which_python()
+    LIBS_PATH = PLUGINS_PATH.parent.joinpath(f"worddumb-libs-py{PY_VERSION}")
 
-        self.libs_path = self.plugin_path.parent.joinpath(
-            f"worddumb-libs-py{self.py_v}"
+    if reinstall := False if LIBS_PATH.exists() else True:
+        for old_path in LIBS_PATH.parent.glob("worddumb-libs-py*"):
+            old_path.rename(LIBS_PATH)
+    if model:
+        install_x_ray_deps(model, reinstall, notif)
+        install_extra_deps(model, book_fmt, reinstall, notif)
+    else:
+        install_lemminflect(reinstall, notif)
+
+
+def which_python():
+    py = "python3"
+    py_v = ".".join(platform.python_version_tuple()[:2])
+    if iswindows:
+        py = "py" if shutil.which("py") else "python"
+        r = run_subprocess([py, "-c", "import sys; print(sys.maxsize > 2**32)"])
+        if r.stdout.strip() != "True":
+            raise Exception("32BIT_PYTHON")
+    elif ismacos:
+        py = mac_python(True)
+        r = run_subprocess(
+            [
+                py,
+                "-c",
+                'import platform; print(".".join(platform.python_version_tuple()[:2]))',
+            ]
         )
+        py_v = r.stdout.strip()
+    return py, py_v
 
-    def install_x_ray_deps(self):
-        if reinstall := False if self.libs_path.exists() else True:
-            for old_path in self.libs_path.parent.glob("worddumb-libs-py*"):
-                old_path.rename(self.libs_path)
 
-        for pkg, value in load_json_or_pickle(
-            self.plugin_path, "data/spacy.json"
-        ).items():
-            self.pip_install(
-                pkg, value["version"], value["compiled"], reinstall=reinstall
-            )
-        url = "https://github.com/explosion/spacy-models/releases/download/"
-        url += f"{self.model}-{self.model_v}/"
-        url += f"{self.model}-{self.model_v}-py3-none-any.whl"
-        self.pip_install(self.model, self.model_v, url=url)
-        self.install_extra_deps()
+def mac_python(upgrade_pip=False):
+    py = homebrew_mac_bin_path("python3")
+    if not shutil.which(py):
+        py = "/usr/bin/python3"  # Command Line Tools
+        if upgrade_pip:
+            upgrade_mac_pip()
+    return py
 
-    def pip_install(self, pkg, pkg_version, compiled=False, url=None, reinstall=False):
-        pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
-        if not any(self.libs_path.glob(pattern)) or (reinstall and compiled):
-            if self.notif:
-                self.notif.put((0, f"Installing {pkg}"))
-            run_subprocess(self.pip_args(pkg, pkg_version, compiled, url))
 
-    def pip_args(self, pkg, pkg_version, compiled, url):
+def install_x_ray_deps(model, reinstall, notif):
+    pip_install_pkgs(load_json_or_pickle(PLUGINS_PATH, "data/spacy.json"), reinstall, notif)
+    url = f"https://github.com/explosion/spacy-models/releases/download/{model}-{SPACY_MODEL_VERSION}/{model}-{SPACY_MODEL_VERSION}-py3-none-any.whl"
+    pip_install(model, SPACY_MODEL_VERSION, url=url, notif=notif)
+
+
+def pip_install(
+    pkg, pkg_version, compiled=False, url=None, reinstall=False, notif=None
+):
+    pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
+    if not any(LIBS_PATH.glob(pattern)) or (reinstall and compiled):
+        if notif:
+            notif.put((0, f"Installing {pkg}"))
         args = [
-            self.py,
+            PY_PATH,
             "-m",
             "pip",
             "install",
             "-U",
             "-t",
-            self.libs_path,
+            LIBS_PATH,
             "--no-deps",
             "--no-cache-dir",
         ]
         if compiled:
-            args.extend(["--python-version", self.py_v])
-            if not is64bit:
-                raise Exception("32BIT_CALIBRE")
+            args.extend(["--python-version", PY_VERSION])
         if url:
             args.append(url)
         elif pkg_version:
             args.append(f"{pkg}=={pkg_version}")
         else:
             args.append(pkg)
-        return args
+        run_subprocess(args)
 
-    def install_extra_deps(self):
-        # https://spacy.io/usage/models#languages
-        data = load_json_or_pickle(self.plugin_path, "data/spacy_extra.json")
-        if (lang := self.model[:2]) in data:
-            for pkg, value in data[lang].items():
-                self.pip_install(pkg, value["version"], value["compiled"])
 
-        if ismacos:
-            if self.book_fmt == "EPUB":
-                for pkg, value in data["mac_epub"].items():
-                    self.pip_install(pkg, value["version"], value["compiled"])
-            if self.machine == "arm64":
-                for pkg, value in data["mac_arm"].items():
-                    self.pip_install(pkg, value["version"], value["compiled"])
+def pip_install_pkgs(pkgs, reinstall, notif):
+    for pkg, value in pkgs.items():
+        pip_install(pkg, value["version"], value["compiled"], reinstall=reinstall, notif=notif)
 
-    def upgrade_mac_pip(self):
-        import re
 
-        r = run_subprocess([self.py, "-m", "pip", "--version"])
-        m = re.match(r"pip (\d+)\.", r.stdout)
-        if m and int(m.group(1)) < 22:
-            run_subprocess(
-                [
-                    self.py,
-                    "-m",
-                    "pip",
-                    "install",
-                    "--user",
-                    "-U",
-                    "--no-cache-dir",
-                    "pip",
-                ]
-            )
+def install_extra_deps(model, book_fmt, reinstall, notif):
+    # https://spacy.io/usage/models#languages
+    data = load_json_or_pickle(PLUGINS_PATH, "data/spacy_extra.json")
+    if (lang := model[:2]) in data:
+        pip_install_pkgs(data[lang], reinstall, notif)
 
-    def install_lemminflect(self):
-        data = load_json_or_pickle(self.plugin_path, "data/spacy_extra.json")
-        for pkg, value in data["lemminflect"].items():
-            self.pip_install(pkg, value["version"], value["compiled"])
+    if ismacos:
+        if book_fmt == "EPUB":
+            pip_install_pkgs(data["mac_epub"], reinstall, notif)
+        if platform.machine() == "arm64":
+            pip_install_pkgs(data["mac_arm"], reinstall, notif)
+
+
+def upgrade_mac_pip():
+    r = run_subprocess([PY_PATH, "-m", "pip", "--version"])
+    m = re.match(r"pip (\d+)\.", r.stdout)
+    if m and int(m.group(1)) < 22:
+        run_subprocess(
+            [
+                PY_PATH,
+                "-m",
+                "pip",
+                "install",
+                "--user",
+                "-U",
+                "--no-cache-dir",
+                "pip",
+            ]
+        )
+
+
+def install_lemminflect(reinstall, notif):
+    data = load_json_or_pickle(PLUGINS_PATH, "data/spacy_extra.json")
+    pip_install_pkgs(data["lemminflect"], reinstall, notif)

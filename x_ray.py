@@ -76,17 +76,11 @@ class X_Ray:
                     self.conn, (intro_cache["intro"], entity, 1, data["id"])
                 )
 
-    def get_entity_data(self, entity):
-        entity_data = self.entities.get(entity)
-        if isinstance(entity_data, str):
-            return self.entities.get(entity_data)
-        return entity_data
-
     def add_entity(self, entity, ner_label, start, quote, entity_len):
         from rapidfuzz.fuzz import token_set_ratio
         from rapidfuzz.process import extractOne
 
-        if entity_data := self.get_entity_data(entity):
+        if entity_data := self.entities.get(entity):
             entity_id = entity_data["id"]
             ner_label = entity_data["label"]
         elif r := extractOne(
@@ -96,11 +90,13 @@ class X_Ray:
             scorer=token_set_ratio,
         ):
             matched_name = r[0]
-            matched_entity = self.get_entity_data(matched_name)
+            matched_entity = self.entities[matched_name]
             entity_id = matched_entity["id"]
             ner_label = matched_entity["label"]
             if " " in entity and " " not in matched_name:
-                self.entities[entity] = matched_name
+                # replace partial name with full name
+                self.entities[entity] = self.entities[matched_name]
+                del self.entities[matched_name]
         else:
             entity_id = self.entity_id
             self.entities[entity] = {

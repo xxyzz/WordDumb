@@ -210,7 +210,7 @@ class X_Ray:
             if (
                 index + 1 < len(kfx_json)
                 and kfx_json[index + 1]["type"] == 1
-                and len(kfx_json[index + 1]["content"]) < 150
+                and len(kfx_json[index + 1]["content"]) < 450
             ):
                 caption = kfx_json[index + 1]
                 caption_start = caption["position"]

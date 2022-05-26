@@ -293,6 +293,8 @@ def find_named_entity(
     starts = set()
     for ent in filter(lambda x: x.label_ in NER_LABELS, doc.ents):
         text = re.sub(r"^\W+", "", ent.text)
+        if text.startswith("http"):
+            continue
         text = re.sub(r"\W+$", "", text)
         if lang == "en":
             if re.match(r"c?hapter", text, re.IGNORECASE):

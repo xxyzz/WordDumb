@@ -286,6 +286,20 @@ def find_lemma(start, text, kw_processor, ll_conn, mobi_codec, escaped_text):
         insert_lemma(ll_conn, (index, end) + tuple(data))
 
 
+DIRECTIONS = frozenset(
+    [
+        "north",
+        "east",
+        "south",
+        "west",
+        "northeast",
+        "southeast",
+        "southwest",
+        "northwest",
+    ]
+)
+
+
 def find_named_entity(
     start, x_ray, doc, mobi_codec, lang, escaped_text, xhtml_path=None
 ):
@@ -306,16 +320,7 @@ def find_named_entity(
             text = re.sub(r"['’][sd]$", "", text)
             text = re.sub(r"^(?:the|an?) ", "", text, flags=re.IGNORECASE)
             text = re.sub(r"^\W+", "", text)
-            if text.lower() in [
-                "north",
-                "east",
-                "south",
-                "west",
-                "northeast",
-                "southeast",
-                "southwest",
-                "northwest",
-            ]:
+            if text.lower() in DIRECTIONS:
                 continue
         if lang == "es":
             # https://en.wikipedia.org/wiki/Spanish_determiners#Articles

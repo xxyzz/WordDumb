@@ -306,9 +306,9 @@ def find_named_entity(
     len_limit = 3 if lang == "en" else 2
     starts = set()
     for ent in filter(lambda x: x.label_ in NER_LABELS, doc.ents):
-        text = re.sub(r"^\W+", "", ent.text)
-        if text.startswith("http"):
+        if re.search(r"https?:|www\.", ent.text, re.IGNORECASE):
             continue
+        text = re.sub(r"^\W+", "", ent.text)
         text = re.sub(r"\W+$", "", text)
         # delete footnote number and reference page number(p.1-10)
         if not re.search(r" \d+$", text):

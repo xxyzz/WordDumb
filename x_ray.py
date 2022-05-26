@@ -92,11 +92,16 @@ class X_Ray:
             matched_name = r[0]
             matched_entity = self.entities[matched_name]
             entity_id = matched_entity["id"]
-            ner_label = matched_entity["label"]
-            if " " in entity and " " not in matched_name:
+            if (
+                " " in entity
+                and " " not in matched_name
+                and ner_label in PERSON_LABELS
+                and matched_entity["label"] in PERSON_LABELS
+            ):
                 # replace partial name with full name
                 self.entities[entity] = self.entities[matched_name]
                 del self.entities[matched_name]
+            ner_label = matched_entity["label"]
         else:
             entity_id = self.entity_id
             self.entities[entity] = {

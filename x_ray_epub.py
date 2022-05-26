@@ -119,9 +119,15 @@ class X_Ray_EPUB:
             scorer=token_set_ratio,
         ):
             matched_name = r[0]
-            entity_id = self.entities[matched_name]["id"]
-            if " " in entity and " " not in matched_name:
-                self.entities[entity] = self.entities[matched_name]
+            matched_entity = self.entities[matched_name]
+            entity_id = matched_entity["id"]
+            if (
+                " " in entity
+                and " " not in matched_name
+                and ner_label in PERSON_LABELS
+                and matched_entity["label"] in PERSON_LABELS
+            ):
+                self.entities[entity] = matched_entity
                 del self.entities[matched_name]
         else:
             entity_id = self.entity_id

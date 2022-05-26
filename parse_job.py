@@ -296,6 +296,10 @@ def find_named_entity(
         if text.startswith("http"):
             continue
         text = re.sub(r"\W+$", "", text)
+        # delete footnote number and reference page number(p.1-10)
+        if not re.search(r" \d+$", text):
+            text = re.sub(r"[\W\d]+$", "", text)
+
         if lang == "en":
             if re.match(r"c?hapter", text, re.IGNORECASE):
                 continue

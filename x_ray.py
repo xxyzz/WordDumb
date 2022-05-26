@@ -195,9 +195,6 @@ class X_Ray:
 
         create_x_indices(self.conn)
         save_db(self.conn, db_path)
-        self.mediawiki.close()
-        if self.wikidata:
-            self.wikidata.close()
 
     def find_kfx_images(self, kfx_json):
         images = set()

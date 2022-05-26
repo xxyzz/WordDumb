@@ -66,7 +66,9 @@ def mac_python(upgrade_pip=False):
 
 
 def install_x_ray_deps(model, reinstall, notif):
-    pip_install_pkgs(load_json_or_pickle(PLUGINS_PATH, "data/spacy.json"), reinstall, notif)
+    pip_install_pkgs(
+        load_json_or_pickle(PLUGINS_PATH, "data/spacy.json"), reinstall, notif
+    )
     url = f"https://github.com/explosion/spacy-models/releases/download/{model}-{SPACY_MODEL_VERSION}/{model}-{SPACY_MODEL_VERSION}-py3-none-any.whl"
     pip_install(model, SPACY_MODEL_VERSION, url=url, notif=notif)
 
@@ -102,7 +104,9 @@ def pip_install(
 
 def pip_install_pkgs(pkgs, reinstall, notif):
     for pkg, value in pkgs.items():
-        pip_install(pkg, value["version"], value["compiled"], reinstall=reinstall, notif=notif)
+        pip_install(
+            pkg, value["version"], value["compiled"], reinstall=reinstall, notif=notif
+        )
 
 
 def install_extra_deps(model, book_fmt, reinstall, notif):

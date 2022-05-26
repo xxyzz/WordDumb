@@ -211,9 +211,7 @@ class X_Ray_EPUB:
         s += "</body></html>"
         with self.xhtml_folder.joinpath("x_ray.xhtml").open("w", encoding="utf-8") as f:
             f.write(s)
-        self.mediawiki.close()
-        if self.wikidata:
-            self.wikidata.close()
+
         if self.wiki_commons:
             self.wiki_commons.close()
 

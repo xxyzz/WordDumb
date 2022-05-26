@@ -250,6 +250,7 @@ def query_mediawiki(entities, mediawiki, search_people):
             pending_entities.append(entity)
     if len(pending_entities):
         mediawiki.query(pending_entities)
+    mediawiki.close()
 
 
 def query_wikidata(entities, mediawiki, wikidata):
@@ -269,3 +270,4 @@ def query_wikidata(entities, mediawiki, wikidata):
             pending_item_ids.append(item_id)
     if len(pending_item_ids):
         wikidata.query(pending_item_ids)
+    wikidata.close()

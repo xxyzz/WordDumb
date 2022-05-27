@@ -310,12 +310,10 @@ def find_named_entity(
             continue
         text = re.sub(r"^\W+", "", ent.text)
         text = re.sub(r"\W+$", "", text)
-        # delete footnote number and reference page number(p.1-10)
-        if not re.search(r"\s\d+$", text):
-            text = re.sub(r"[\W\d]+$", "", text)
 
         if lang == "en":
-            if re.match(r"c?hapter", text, re.IGNORECASE):
+            # ignore chapter title(chapter 1) and page number reference(pp. 1-10)
+            if re.match(r"c?hapter|p{1,2}[\W\d]{2,}", text, re.IGNORECASE):
                 continue
             text = re.sub(r"\W+[sd]$|\s+of$", "", text)
             text = re.sub(r"^(?:the|an?)\s", "", text, flags=re.IGNORECASE)

@@ -55,9 +55,8 @@ def subprocess_error(job, parent):
     if "No module named pip" in exception:
         error_dialog(
             "Hello, my name is Philip, but everyone calls me Pip, because they hate me.",
-            """
-            Run the command "sudo apt install python3-pip" to install
-            pip module if you are using Debian based distro.
+            f"""
+            Please read the friendly <a href='{GITHUB_URL}#how-to-use'>manual</a> of how to install pip.
             <br><br>
             If you still have this error, make sure you installed calibre
             with the <a href="https://calibre-ebook.com/download_linux">

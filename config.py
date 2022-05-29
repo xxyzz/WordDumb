@@ -8,14 +8,19 @@ from calibre.constants import ismacos
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig
-from PyQt5.QtCore import QRegularExpression
+from PyQt5.QtCore import QRegularExpression, Qt
 from PyQt5.QtGui import QRegularExpressionValidator
 from PyQt5.QtWidgets import (
+    QAbstractItemView,
     QCheckBox,
     QComboBox,
+    QDialog,
+    QDialogButtonBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QListWidget,
+    QListWidgetItem,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -43,6 +48,7 @@ prefs.defaults["model_size"] = "md"
 prefs.defaults["zh_wiki_variant"] = "cn"
 prefs.defaults["fandom"] = ""
 prefs.defaults["add_locator_map"] = False
+prefs.defaults["preferred_formats"] = ["KFX", "AZW3", "AZW", "MOBI", "EPUB"]
 
 
 class ConfigWidget(QWidget):
@@ -52,6 +58,10 @@ class ConfigWidget(QWidget):
 
         vl = QVBoxLayout()
         self.setLayout(vl)
+
+        format_order_button = QPushButton("Preferred format order")
+        format_order_button.clicked.connect(self.open_format_order_dialog)
+        vl.addWidget(format_order_button)
 
         customize_ww_button = QPushButton("Customize Word Wise lemmas")
         customize_ww_button.clicked.connect(self.open_custom_lemmas_dialog)
@@ -189,3 +199,38 @@ class ConfigWidget(QWidget):
             insert_flashtext_path(self.plugin_path)
             insert_installed_libs(self.plugin_path)
             dump_lemmas(lemmas, custom_path)
+
+    def open_format_order_dialog(self):
+        format_order_dialog = FormatOrderDialog(self)
+        if format_order_dialog.exec():
+            list_widget = format_order_dialog.format_list
+            formats = []
+            for index in range(list_widget.count()):
+                formats.append(list_widget.item(index).text())
+            prefs.defaults["preferred_formats"] = formats
+
+
+class FormatOrderDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Preferred format order")
+        vl = QVBoxLayout()
+        self.setLayout(vl)
+
+        self.format_list = QListWidget()
+        self.format_list.setAlternatingRowColors(True)
+        self.format_list.setDragEnabled(True)
+        self.format_list.viewport().setAcceptDrops(True)
+        self.format_list.setDropIndicatorShown(True)
+        self.format_list.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.format_list.setDragDropMode(QAbstractItemView.InternalMove)
+        self.format_list.addItems(prefs["preferred_formats"])
+        vl.addWidget(self.format_list)
+
+        save_button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save
+            | QDialogButtonBox.StandardButton.Cancel
+        )
+        save_button_box.accepted.connect(self.accept)
+        save_button_box.rejected.connect(self.reject)
+        vl.addWidget(save_button_box)

@@ -27,6 +27,7 @@ class CustomLemmasDialog(QDialog):
         self.setLayout(vl)
 
         self.lemmas_table = QTableView()
+        self.lemmas_table.setAlternatingRowColors(True)
         self.lemmas_model = LemmasTableModle()
         self.lemmas_table.setModel(self.lemmas_model)
         self.lemmas_table.hideColumn(2)

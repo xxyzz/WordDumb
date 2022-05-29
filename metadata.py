@@ -9,6 +9,8 @@ from .utils import get_plugin_path, load_json_or_pickle
 
 
 def check_metadata(db, book_id):
+    from .config import prefs
+
     supported_languages = load_json_or_pickle(get_plugin_path(), "data/languages.json")
     mi = db.get_metadata(book_id, get_cover=True)
     # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
@@ -21,8 +23,7 @@ def check_metadata(db, book_id):
 
     book_fmts = db.formats(book_id)
     chosen_fmt = None
-    supported_fmts = ["KFX", "AZW3", "AZW", "MOBI", "EPUB"]
-    if fmts := [f for f in supported_fmts if f in book_fmts]:
+    if fmts := [f for f in prefs["preferred_formats"] if f in book_fmts]:
         chosen_fmt = fmts[0]
     else:
         return None

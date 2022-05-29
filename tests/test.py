@@ -25,11 +25,12 @@ class TestDumbCode(unittest.TestCase):
                 book_1984_id = book_id
                 break
 
-        data = check_metadata(lib_db, book_1984_id)
-        (_, cls.fmt, cls.book_path, cls.mi, _) = data
+        _, fmts, book_paths, cls.mi, lang = check_metadata(lib_db, book_1984_id)
+        cls.fmt = fmts[0]
+        cls.book_path = book_paths[0]
         origin_model_size = prefs["model_size"]
         prefs["model_size"] = "sm"
-        cls.asin = do_job(data)[1]
+        cls.asin = do_job((book_1984_id, cls.fmt, cls.book_path, cls.mi, lang))[1]
         prefs["model_size"] = origin_model_size
 
     def check_db(self, test_json_path, created_db_path, table, sql):

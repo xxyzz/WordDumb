@@ -8,7 +8,7 @@ from calibre.constants import ismacos
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig
-from PyQt5.QtCore import QRegularExpression, Qt
+from PyQt5.QtCore import QRegularExpression
 from PyQt5.QtGui import QRegularExpressionValidator
 from PyQt5.QtWidgets import (
     QAbstractItemView,
@@ -20,7 +20,6 @@ from PyQt5.QtWidgets import (
     QLabel,
     QLineEdit,
     QListWidget,
-    QListWidgetItem,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -49,6 +48,7 @@ prefs.defaults["zh_wiki_variant"] = "cn"
 prefs.defaults["fandom"] = ""
 prefs.defaults["add_locator_map"] = False
 prefs.defaults["preferred_formats"] = ["KFX", "AZW3", "AZW", "MOBI", "EPUB"]
+prefs.defaults["use_all_formats"] = False
 
 
 class ConfigWidget(QWidget):
@@ -204,10 +204,10 @@ class ConfigWidget(QWidget):
         format_order_dialog = FormatOrderDialog(self)
         if format_order_dialog.exec():
             list_widget = format_order_dialog.format_list
-            formats = []
-            for index in range(list_widget.count()):
-                formats.append(list_widget.item(index).text())
-            prefs.defaults["preferred_formats"] = formats
+            prefs["preferred_formats"] = [
+                list_widget.item(index).text() for index in range(list_widget.count())
+            ]
+            prefs["use_all_formats"] = format_order_dialog.use_all_formats.isChecked()
 
 
 class FormatOrderDialog(QDialog):
@@ -226,6 +226,10 @@ class FormatOrderDialog(QDialog):
         self.format_list.setDragDropMode(QAbstractItemView.InternalMove)
         self.format_list.addItems(prefs["preferred_formats"])
         vl.addWidget(self.format_list)
+
+        self.use_all_formats = QCheckBox("Create files for all available formats")
+        self.use_all_formats.setChecked(prefs["use_all_formats"])
+        vl.addWidget(self.use_all_formats)
 
         save_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save

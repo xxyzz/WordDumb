@@ -22,16 +22,16 @@ def check_metadata(db, book_id):
         return None
 
     book_fmts = db.formats(book_id)
-    chosen_fmt = None
-    if fmts := [f for f in prefs["preferred_formats"] if f in book_fmts]:
-        chosen_fmt = fmts[0]
-    else:
+    chosen_fmts = [f for f in prefs["preferred_formats"] if f in book_fmts]
+    if not chosen_fmts:
         return None
+    if not prefs["use_all_formats"]:
+        chosen_fmts = [chosen_fmts[0]]
 
     return (
         book_id,
-        chosen_fmt,
-        db.format_abspath(book_id, chosen_fmt),
+        chosen_fmts,
+        [db.format_abspath(book_id, fmt) for fmt in chosen_fmts],
         mi,
         supported_languages[book_language],
     )

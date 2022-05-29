@@ -58,38 +58,44 @@ class WordDumb(InterfaceAction):
 
 
 def run(gui, create_ww, create_x):
-    rows = gui.library_view.selectionModel().selectedRows()
-    if not rows or len(rows) == 0:
-        return
-    ids = map(gui.library_view.model().id, rows)
-    for data in filter(
+    for book_id, book_fmts, book_paths, mi, lang in filter(
         None,
-        [check_metadata(gui.current_db.new_api, book_id) for book_id in ids],
+        [
+            check_metadata(gui.current_db.new_api, book_id)
+            for book_id in map(
+                gui.library_view.model().id,
+                gui.library_view.selectionModel().selectedRows(),
+            )
+        ],
     ):
-        _, book_fmt, _, mi, lang = data
-        if book_fmt == "EPUB":
-            create_ww = False
-        if not create_ww and not create_x:
-            continue
-        if lang["wiki"] != "en":
-            create_ww = False
-        title = mi.get("title")
-        notif = []
-        if create_ww:
-            notif.append("Word Wise")
-        if create_x:
-            notif.append("X-Ray")
-        notif = " and ".join(notif)
-        job = ThreadedJob(
-            "WordDumb's dumb job",
-            f"Generating {notif} for {title}",
-            do_job,
-            (data, create_ww, create_x),
-            {},
-            Dispatcher(partial(done, gui=gui, notif=f"{notif} generated for {title}")),
-            killable=False,
-        )
-        gui.job_manager.run_threaded_job(job)
+        for book_fmt, book_path in zip(book_fmts, book_paths):
+            if book_fmt == "EPUB" or lang["wiki"] != "en":
+                create_ww = False
+            if not create_ww and not create_x:
+                continue
+            title = (
+                f'{mi.get("title")}({book_fmt})'
+                if len(book_fmts) > 1
+                else mi.get("title")
+            )
+            notif = []
+            if create_ww:
+                notif.append("Word Wise")
+            if create_x:
+                notif.append("X-Ray")
+            notif = " and ".join(notif)
+            job = ThreadedJob(
+                "WordDumb's dumb job",
+                f"Generating {notif} for {title}",
+                do_job,
+                ((book_id, book_fmt, book_path, mi, lang), create_ww, create_x),
+                {},
+                Dispatcher(
+                    partial(done, gui=gui, notif=f"{notif} generated for {title}")
+                ),
+                killable=False,
+            )
+            gui.job_manager.run_threaded_job(job)
 
 
 def done(job, gui=None, notif=None):

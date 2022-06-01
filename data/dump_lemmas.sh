@@ -2,9 +2,9 @@
 
 pip_install() {
     if [[ $(uname -v) == *"Ubuntu"* ]]; then
-        python -m pip install -U wheel
+        python -m pip install --no-cache-dir --disable-pip-version-check -U wheel
     fi
-    python -m pip install -U git+https://github.com/vi3k6i5/flashtext#egg=flashtext lemminflect
+    python -m pip install --no-cache-dir --disable-pip-version-check -U git+https://github.com/vi3k6i5/flashtext#egg=flashtext lemminflect
     python data/dump_lemmas.py
     deactivate
     mkdir -p libs

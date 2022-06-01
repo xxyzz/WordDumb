@@ -90,6 +90,7 @@ def pip_install(
             LIBS_PATH,
             "--no-deps",
             "--no-cache-dir",
+            "--disable-pip-version-check",
         ]
         if compiled:
             args.extend(["--python-version", PY_VERSION])
@@ -123,7 +124,9 @@ def install_extra_deps(model, book_fmt, reinstall, notif):
 
 
 def upgrade_mac_pip():
-    r = run_subprocess([PY_PATH, "-m", "pip", "--version"])
+    r = run_subprocess(
+        [PY_PATH, "-m", "pip", "--version", "--disable-pip-version-check"]
+    )
     m = re.match(r"pip (\d+)\.", r.stdout)
     if m and int(m.group(1)) < 22:
         run_subprocess(
@@ -135,6 +138,7 @@ def upgrade_mac_pip():
                 "--user",
                 "-U",
                 "--no-cache-dir",
+                "--disable-pip-version-check",
                 "pip",
             ]
         )

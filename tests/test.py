@@ -95,7 +95,7 @@ class TestDumbCode(unittest.TestCase):
             "XRAY.entities.json",
             self.get_db_path(".asc"),
             "book_metadata",
-            "SELECT erl, num_people, num_terms FROM book_metadata",
+            "SELECT * FROM book_metadata",
         )
 
     def test_x_ray_top_mentioned(self):
@@ -104,6 +104,14 @@ class TestDumbCode(unittest.TestCase):
             self.get_db_path(".asc"),
             "type",
             "SELECT top_mentioned_entities FROM type",
+        )
+
+    def test_x_ray_image_excerpt(self):
+        self.check_db(
+            "XRAY.entities.json",
+            self.get_db_path(".asc"),
+            "excerpt",
+            "SELECT * FROM excerpt",
         )
 
 

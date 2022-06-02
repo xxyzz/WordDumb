@@ -1,9 +1,41 @@
 {
   "book_metadata": [
     [
+      0,
       607971,
+      1,
+      0,
+      0,
       208,
-      547
+      547,
+      3,
+      "0,1,2"
+    ]
+  ],
+  "excerpt": [
+    [
+      0,
+      619,
+      0,
+      "kindle:embed:0002?mime=image/png",
+      null,
+      619
+    ],
+    [
+      1,
+      1447,
+      77,
+      "kindle:embed:0005?mime=image/png",
+      null,
+      1283
+    ],
+    [
+      2,
+      561087,
+      0,
+      "kindle:embed:0001?mime=image/png",
+      null,
+      561087
     ]
   ],
   "occurrence": [

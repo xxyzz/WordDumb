@@ -61,7 +61,7 @@ def mac_python(upgrade_pip=False):
     if not shutil.which(py):
         py = "/usr/bin/python3"  # Command Line Tools
         if upgrade_pip:
-            upgrade_mac_pip()
+            upgrade_mac_pip(py)
     return py
 
 
@@ -123,15 +123,15 @@ def install_extra_deps(model, book_fmt, reinstall, notif):
             pip_install_pkgs(data["mac_arm"], reinstall, notif)
 
 
-def upgrade_mac_pip():
+def upgrade_mac_pip(py_path):
     r = run_subprocess(
-        [PY_PATH, "-m", "pip", "--version", "--disable-pip-version-check"]
+        [py_path, "-m", "pip", "--version", "--disable-pip-version-check"]
     )
     m = re.match(r"pip (\d+)\.", r.stdout)
     if m and int(m.group(1)) < 22:
         run_subprocess(
             [
-                PY_PATH,
+                py_path,
                 "-m",
                 "pip",
                 "install",

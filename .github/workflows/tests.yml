@@ -41,14 +41,16 @@ jobs:
           choco install calibre wget
           echo "/C/Program Files/Calibre2" >> $GITHUB_PATH
 
-      - name: Download 1984 ebook
-        run: wget https://www.planetebook.com/free-ebooks/1984.mobi
+      - name: Download books
+        run: |
+          wget https://github.com/xxyzz/WordDumb/files/8822548/books.zip
+          unzip books.zip
 
-      - name: Add 1984 to library
+      - name: Add books to library
         run: |
           mkdir ~/Calibre\ Library
-          calibredb add 1984.mobi --with-library ~/Calibre\ Library
-          rm 1984.mobi
+          calibredb add -m ignore --with-library ~/Calibre\ Library *.azw3 *.epub
+          rm *.azw3 *.epub books.zip
 
       - name: Build plugin(Unix)
         if: matrix.os != 'windows-latest'

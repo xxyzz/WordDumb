@@ -41,16 +41,22 @@ jobs:
           choco install calibre wget
           echo "/C/Program Files/Calibre2" >> $GITHUB_PATH
 
+      - name: Install KFX Input plugin
+        run: |
+          wget -O KFX_Input.zip "https://www.mobileread.com/forums/attachment.php?attachmentid=194039&d=1653920104"
+          calibre-customize -a KFX_Input.zip
+          rm KFX_Input.zip
+
       - name: Download books
         run: |
-          wget https://github.com/xxyzz/WordDumb/files/8822548/books.zip
+          wget https://github.com/xxyzz/WordDumb/files/8831564/books.zip
           unzip books.zip
 
       - name: Add books to library
         run: |
           mkdir ~/Calibre\ Library
-          calibredb add -m ignore --with-library ~/Calibre\ Library *.azw3 *.epub
-          rm *.azw3 *.epub books.zip
+          calibredb add -m ignore --with-library ~/Calibre\ Library *.kfx *.azw3 *.epub
+          rm *.kfx *.azw3 *.epub books.zip
 
       - name: Build plugin(Unix)
         if: matrix.os != 'windows-latest'

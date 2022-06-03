@@ -42,11 +42,16 @@ class TestDumbCode(unittest.TestCase):
                 ),
                 create_ww=False if fmt == "EPUB" else True,
             )
+            if fmt != "EPUB":
+                kll_path = cls.get_db_path(cls, ".kll")
+                kll_path.rename(kll_path.with_suffix(f".kll_{fmt}"))
+                asc_path = cls.get_db_path(cls, ".asc")
+                asc_path.rename(asc_path.with_suffix(f".asc_{fmt}"))
 
     def get_db_path(self, suffix):
-        for f in self.book_folder.iterdir():
-            if f.suffix == suffix:
-                return f
+        for path in self.book_folder.iterdir():
+            if path.suffix == suffix:
+                return path
 
     def check_db(self, test_json_path, created_db_path, table, sql):
         with open(test_json_path, encoding="utf-8") as test_json, sqlite3.connect(
@@ -58,61 +63,68 @@ class TestDumbCode(unittest.TestCase):
                 self.assertEqual(tuple(expected_value), value_in_db)
 
     def test_word_wise_glosses(self):
-        self.check_db(
-            "LanguageLayer.en.json",
-            self.get_db_path(".kll"),
-            "glosses",
-            "SELECT start, difficulty, sense_id FROM glosses "
-            f"ORDER BY start LIMIT {LIMIT}",
-        )
+        for fmt in ["KFX", "AZW3"]:
+            self.check_db(
+                f"LanguageLayer.en.{fmt}.json",
+                self.get_db_path(f".kll_{fmt}"),
+                "glosses",
+                "SELECT start, difficulty, sense_id FROM glosses "
+                f"ORDER BY start LIMIT {LIMIT}",
+            )
 
     def test_word_wise_glosses_count(self):
-        self.check_db(
-            "LanguageLayer.en.json",
-            self.get_db_path(".kll"),
-            "count",
-            "SELECT count(*) FROM glosses",
-        )
+        for fmt in ["KFX", "AZW3"]:
+            self.check_db(
+                f"LanguageLayer.en.{fmt}.json",
+                self.get_db_path(f".kll_{fmt}"),
+                "count",
+                "SELECT count(*) FROM glosses",
+            )
 
     def test_word_wise_metadata(self):
-        self.check_db(
-            "LanguageLayer.en.json",
-            self.get_db_path(".kll"),
-            "metadata",
-            "SELECT * FROM metadata",
-        )
+        for fmt in ["KFX", "AZW3"]:
+            self.check_db(
+                f"LanguageLayer.en.{fmt}.json",
+                self.get_db_path(f".kll_{fmt}"),
+                "metadata",
+                "SELECT * FROM metadata",
+            )
 
     def test_x_ray_occurrence(self):
-        self.check_db(
-            "XRAY.entities.json",
-            self.get_db_path(".asc"),
-            "occurrence",
-            f"SELECT * FROM occurrence ORDER BY start LIMIT {LIMIT}",
-        )
+        for fmt in ["KFX", "AZW3"]:
+            self.check_db(
+                f"XRAY.entities.{fmt}.json",
+                self.get_db_path(f".asc_{fmt}"),
+                "occurrence",
+                f"SELECT * FROM occurrence ORDER BY start LIMIT {LIMIT}",
+            )
 
     def test_x_ray_book_metadata(self):
-        self.check_db(
-            "XRAY.entities.json",
-            self.get_db_path(".asc"),
-            "book_metadata",
-            "SELECT * FROM book_metadata",
-        )
+        for fmt in ["KFX", "AZW3"]:
+            self.check_db(
+                f"XRAY.entities.{fmt}.json",
+                self.get_db_path(f".asc_{fmt}"),
+                "book_metadata",
+                "SELECT * FROM book_metadata",
+            )
 
     def test_x_ray_top_mentioned(self):
-        self.check_db(
-            "XRAY.entities.json",
-            self.get_db_path(".asc"),
-            "type",
-            "SELECT top_mentioned_entities FROM type",
-        )
+        for fmt in ["KFX", "AZW3"]:
+            self.check_db(
+                f"XRAY.entities.{fmt}.json",
+                self.get_db_path(f".asc_{fmt}"),
+                "type",
+                "SELECT top_mentioned_entities FROM type",
+            )
 
     def test_x_ray_image_excerpt(self):
-        self.check_db(
-            "XRAY.entities.json",
-            self.get_db_path(".asc"),
-            "excerpt",
-            "SELECT * FROM excerpt",
-        )
+        for fmt in ["KFX", "AZW3"]:
+            self.check_db(
+                f"XRAY.entities.{fmt}.json",
+                self.get_db_path(f".asc_{fmt}"),
+                "excerpt",
+                "SELECT * FROM excerpt",
+            )
 
 
 if __name__ == "__main__":

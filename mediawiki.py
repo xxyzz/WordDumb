@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import re
 from collections import defaultdict
 from urllib.parse import unquote
 
@@ -271,3 +272,16 @@ def query_wikidata(entities, mediawiki, wikidata):
     if len(pending_item_ids):
         wikidata.query(pending_item_ids)
     wikidata.close()
+
+
+# https://en.wikipedia.org/wiki/Interpunct
+NAME_DIVISION_REG = r"\s|\u00B7|\u2027|\u30FB|\uFF65"
+
+
+def is_full_name(partial_name, partial_label, full_name, full_label):
+    return (
+        not re.search(NAME_DIVISION_REG, partial_name)
+        and re.search(NAME_DIVISION_REG, full_name)
+        and partial_label in PERSON_LABELS
+        and full_label in PERSON_LABELS
+    )

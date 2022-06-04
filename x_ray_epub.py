@@ -12,6 +12,7 @@ try:
     from .mediawiki import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
+        is_full_name,
         query_mediawiki,
         query_wikidata,
         regime_type,
@@ -20,6 +21,7 @@ except ImportError:
     from mediawiki import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
+        is_full_name,
         query_mediawiki,
         query_wikidata,
         regime_type,
@@ -121,12 +123,7 @@ class X_Ray_EPUB:
             matched_name = r[0]
             matched_entity = self.entities[matched_name]
             entity_id = matched_entity["id"]
-            if (
-                " " in entity
-                and " " not in matched_name
-                and ner_label in PERSON_LABELS
-                and matched_entity["label"] in PERSON_LABELS
-            ):
+            if is_full_name(matched_name, matched_entity["label"], entity, ner_label):
                 self.entities[entity] = matched_entity
                 del self.entities[matched_name]
         else:

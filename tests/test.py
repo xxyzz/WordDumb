@@ -10,7 +10,6 @@ from pathlib import Path
 from calibre.library import db
 from calibre_plugins.worddumb.config import prefs
 from calibre_plugins.worddumb.parse_job import do_job
-
 from convert import LIMIT
 
 

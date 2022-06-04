@@ -231,6 +231,7 @@ class X_Ray_EPUB:
         manifest = self.opf_root.find("opf:manifest", NAMESPACES)
         manifest.append(etree.fromstring(s))
         for filename in self.image_filenames:
+            filename = filename.lower()
             if filename.endswith(".svg"):
                 media_type = "svg+xml"
             elif filename.endswith(".png"):
@@ -239,6 +240,8 @@ class X_Ray_EPUB:
                 media_type = "jpeg"
             elif filename.endswith(".webp"):
                 media_type = "webp"
+            else:
+                media_type = Path(filename).suffix.replace(".", "")
             s = f'<item href="{image_prefix}{filename}" id="{filename}" media-type="image/{media_type}"/>'
             manifest.append(etree.fromstring(s))
         spine = self.opf_root.find("opf:spine", NAMESPACES)

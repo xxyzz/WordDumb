@@ -357,8 +357,9 @@ def find_named_entity(
             )
             continue
 
-        if m := re.search(r"\s", book_text[end_char:]):
-            selectable_text = book_text[start_char : end_char + m.start()]
+        # Include the next punctuation so the word can be selected on Kindle
+        if re.match(r"[^\w\s]", book_text[end_char : end_char + 1]):
+            selectable_text = book_text[start_char : end_char + 1]
         if mobi_codec:
             ent_start = start + len(escaped_text[:start_char].encode(mobi_codec))
             ent_len = len(selectable_text.encode(mobi_codec))

@@ -83,7 +83,7 @@ class MediaWiki(MediaWikiBase):
             self.source_link = f"{prefs['fandom']}/wiki/"
             self.wiki_api = f"{prefs['fandom']}/api.php"
             cache_path = plugin_path.parent.joinpath(
-                f"worddumb-fandom/{prefs['fandom'][8:]}.json"
+                f"worddumb-fandom/{prefs['fandom'][8:].replace('/', '')}.json"
             )
         else:
             self.source_name = "Wikipedia"

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
 import re
-from html import unescape
+from html import unescape, escape
 from pathlib import Path
 
 try:
@@ -248,14 +248,15 @@ def parse_book(kfx_json, mobi_html, mobi_codec):
 
 
 def index_in_escaped_text(token, escaped_text, start_offset):
+    if token not in escaped_text[start_offset:]:
+        # replace Unicode character to numeric character reference
+        token = escape(token, False).encode("ascii", "xmlcharrefreplace").decode()
+
     if token in escaped_text[start_offset:]:
         token_start = escaped_text.index(token, start_offset)
         return token_start, token_start + len(token)
     else:
-        words = [word for word in re.split(r"\W+", token) if word]
-        token_start = escaped_text.index(words[0], start_offset)
-        token_end = escaped_text.index(words[-1], token_start) + len(words[-1])
-        return token_start, token_end
+        return None, None
 
 
 def find_lemma(start, text, kw_processor, ll_conn, mobi_codec, escaped_text):
@@ -269,6 +270,8 @@ def find_lemma(start, text, kw_processor, ll_conn, mobi_codec, escaped_text):
             lemma_start, lemma_end = index_in_escaped_text(
                 lemma, escaped_text, token_start
             )
+            if lemma_start is None:
+                continue
             index = start + len(escaped_text[:lemma_start].encode(mobi_codec))
         else:
             index = start + token_start
@@ -335,6 +338,8 @@ def find_named_entity(
             start_char, end_char = index_in_escaped_text(
                 text, escaped_text, ent.start_char
             )
+            if start_char is None:
+                continue
         else:
             start_char = ent.start_char + ent.text.index(text)
             end_char = start_char + len(text)

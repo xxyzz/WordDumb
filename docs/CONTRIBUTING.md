@@ -82,7 +82,7 @@ $ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
 
 - https://github.com/NiLuJe/KindleTool
 
-- https://github.com/AdoptOpenJDK/homebrew-openjdk
+- https://adoptium.net
 
 - https://github.com/java-decompiler/jd-gui
 

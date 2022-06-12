@@ -154,7 +154,7 @@ class ConfigWidget(QWidget):
             if not package_name:
                 error_dialog(
                     "Device not found",
-                    "Please connect your Kindle or Android device then try again.",
+                    "Please connect your Kindle or Android(requires adb) device then try again.",
                     "",
                     self,
                 )

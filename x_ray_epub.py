@@ -231,14 +231,14 @@ class X_Ray_EPUB:
         manifest = self.opf_root.find("opf:manifest", NAMESPACES)
         manifest.append(etree.fromstring(s))
         for filename in self.image_filenames:
-            filename = filename.lower()
-            if filename.endswith(".svg"):
+            filename_lower = filename.lower()
+            if filename_lower.endswith(".svg"):
                 media_type = "svg+xml"
-            elif filename.endswith(".png"):
+            elif filename_lower.endswith(".png"):
                 media_type = "png"
-            elif filename.endswith(".jpg"):
+            elif filename_lower.endswith(".jpg"):
                 media_type = "jpeg"
-            elif filename.endswith(".webp"):
+            elif filename_lower.endswith(".webp"):
                 media_type = "webp"
             else:
                 media_type = Path(filename).suffix.replace(".", "")

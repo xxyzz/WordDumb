@@ -95,9 +95,9 @@ def custom_lemmas_dump_path(plugin_path):
 
 def get_klld_path(plugin_path):
     custom_folder = custom_lemmas_folder(plugin_path)
-    for path in custom_folder.glob("*.klld"):
+    for path in custom_folder.glob("*.en.klld"):
         return path
-    for path in custom_folder.glob("*.db"):
+    for path in custom_folder.glob("*.en.db"):
         return path
     return None
 

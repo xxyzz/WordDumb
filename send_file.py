@@ -184,6 +184,6 @@ def copy_klld_from_android(package_name, dest_path):
 
 def copy_klld_from_kindle(gui, dest_path):
     for klld_path in Path(f"{gui.device_manager.device._main_prefix}/system/kll").glob(
-        "*.klld"
+        "*.en.klld"
     ):
         shutil.copy(klld_path, dest_path)

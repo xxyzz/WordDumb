@@ -77,7 +77,9 @@ class X_Ray:
                 ):
                     if democracy_index := wikidata_cache["democracy_index"]:
                         summary += "\n" + regime_type(float(democracy_index))
-                insert_x_entity_description(self.conn, (summary, entity, 1, data["id"]))
+                insert_x_entity_description(
+                    self.conn, (summary, entity, self.mediawiki.source_id, data["id"])
+                )
             else:
                 insert_x_entity_description(
                     self.conn, (data["quote"], entity, None, data["id"])

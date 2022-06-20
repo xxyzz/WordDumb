@@ -129,22 +129,26 @@ def create_x_ray_db(asin, book_path, lang, plugin_path, prefs):
     INSERT INTO entity (id, loc_label, has_info_card) VALUES(0, 1, 0);
     INSERT INTO source (id, label, url) VALUES(0, 5, 20);
     INSERT INTO source VALUES(1, 6, 21, 7, 8);
-    INSERT INTO source (id, label, url) VALUES(2, 4, 22);
     """
     )
 
     str_list = load_json_or_pickle(plugin_path, "data/x_ray_strings.json")
+    str_list.append(
+        [
+            21,
+            "en",
+            f"https://zh.wikipedia.org/zh-{prefs['zh_wiki_variant']}/%s"
+            if lang == "zh"
+            else f"https://{lang}.wikipedia.org/wiki/%s",
+        ]
+    )
     if prefs["fandom"]:
-        str_list[-2][-1] = f"{prefs['fandom']}/wiki/%s"
-        for d in str_list:
-            if d[0] == 6:
-                d[-1] = "Fandom"
-    elif lang == "zh":
-        str_list[-2][-1] = f"https://zh.wikipedia.org/zh-{prefs['zh_wiki_variant']}/%s"
-    elif lang != "en":
-        str_list[-2][-1] = f"https://{lang}.wikipedia.org/wiki/%s"
-    x_ray_conn.executemany("INSERT INTO string VALUES(?, ?, ?)", str_list)
+        str_list.append([22, "en", f"{prefs['fandom']}/wiki/%s"])
+        x_ray_conn.execute(
+            "INSERT INTO source (id, label, url, license_label, license_url) VALUES(2, 4, 22, 7, 8)"
+        )
 
+    x_ray_conn.executemany("INSERT INTO string VALUES(?, ?, ?)", str_list)
     return x_ray_conn, db_path
 
 

@@ -80,6 +80,7 @@ class MediaWiki(MediaWikiBase):
     def __init__(self, lang, useragent, plugin_path, prefs):
         if prefs["fandom"]:
             self.source_name = "Fandom"
+            self.source_id = 2
             self.source_link = f"{prefs['fandom']}/wiki/"
             self.wiki_api = f"{prefs['fandom']}/api.php"
             cache_path = plugin_path.parent.joinpath(
@@ -87,6 +88,7 @@ class MediaWiki(MediaWikiBase):
             )
         else:
             self.source_name = "Wikipedia"
+            self.source_id = 1
             self.source_link = f"https://{lang}.wikipedia.org/wiki/"
             self.wiki_api = f"https://{lang}.wikipedia.org/w/api.php"
             cache_path = plugin_path.parent.joinpath(f"worddumb-wikimedia/{lang}.json")

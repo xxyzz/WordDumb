@@ -402,102 +402,102 @@
   [
     4,
     "de",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "en",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "en-AU",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "en-CA",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "en-IN",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "en-US",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "es",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "es-MX",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "es-US",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "fr",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "fr-CA",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "hi-IN",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "it",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "ja",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "nl",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "pt-BR",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "ru",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "zh-CN",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "zh-HK",
-    "Shelfari"
+    "Fandom"
   ],
   [
     4,
     "zh-TW",
-    "Shelfari"
+    "Fandom"
   ],
   [
     5,
@@ -2013,15 +2013,5 @@
     20,
     "en",
     "store://%s"
-  ],
-  [
-    21,
-    "en",
-    "https://en.wikipedia.org/wiki/%s"
-  ],
-  [
-    22,
-    "en",
-    ""
   ]
 ]

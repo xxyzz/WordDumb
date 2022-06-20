@@ -7,7 +7,6 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QAbstractScrollArea,
     QCheckBox,
-    QComboBox,
     QDialog,
     QDialogButtonBox,
     QFormLayout,
@@ -19,10 +18,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from .custom_lemmas import ComboBoxDelegate
 from .utils import custom_x_ray_path
-
-SOURCE_OPTIONS = {None: "None", 1: "Wikipedia", 2: "Fandom"}
 
 
 class CustomXRayDialog(QDialog):
@@ -36,10 +32,6 @@ class CustomXRayDialog(QDialog):
         self.x_ray_table.setAlternatingRowColors(True)
         self.x_ray_model = XRayTableModle()
         self.x_ray_table.setModel(self.x_ray_model)
-        self.x_ray_table.setItemDelegateForColumn(
-            3,
-            ComboBoxDelegate(self.x_ray_table, SOURCE_OPTIONS),
-        )
         self.x_ray_table.horizontalHeader().setMaximumSectionSize(400)
         self.x_ray_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.x_ray_table.resizeColumnsToContents()
@@ -85,7 +77,6 @@ class CustomXRayDialog(QDialog):
                         name,
                         add_x_dlg.person_checkbox.isChecked(),
                         desc,
-                        add_x_dlg.source_type.currentData(),
                     ]
                 )
 
@@ -102,7 +93,7 @@ class XRayTableModle(QAbstractTableModel):
                 self.x_ray_data = json.load(f)
         else:
             self.x_ray_data = []
-        self.headers = ["Name", "Is person", "Description", "Data source"]
+        self.headers = ["Name", "Is person", "Description"]
 
     def data(self, index, role=Qt.DisplayRole):
         row = index.row()
@@ -181,11 +172,6 @@ class AddXRayDialog(QDialog):
 
         self.description = QPlainTextEdit()
         form_layout.addRow("Description", self.description)
-
-        self.source_type = QComboBox()
-        for value, text in SOURCE_OPTIONS.items():
-            self.source_type.addItem(text, value)
-        form_layout.addRow("Source", self.source_type)
 
         confirm_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel

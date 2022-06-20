@@ -6,6 +6,7 @@ import sqlite3
 from PyQt5.QtCore import QAbstractTableModel, Qt
 from PyQt5.QtWidgets import (
     QAbstractItemView,
+    QAbstractScrollArea,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -32,14 +33,18 @@ class CustomLemmasDialog(QDialog):
         self.lemmas_table.setModel(self.lemmas_model)
         self.lemmas_table.hideColumn(2)
         self.lemmas_table.setItemDelegateForColumn(
-            4, ComboBoxDelegate(self.lemmas_table, list(map(str, range(1, 6))))
+            4,
+            ComboBoxDelegate(
+                self.lemmas_table,
+                list(range(1, 6)),
+                {0: "Fewer Hints", 4: "More Hints"},
+            ),
         )
-        self.lemmas_table.horizontalHeader().setSectionResizeMode(
-            1, QHeaderView.Stretch
+        self.lemmas_table.horizontalHeader().setMaximumSectionSize(400)
+        self.lemmas_table.setSizeAdjustPolicy(
+            QAbstractScrollArea.AdjustToContentsOnFirstShow
         )
-        self.lemmas_table.horizontalHeader().setSectionResizeMode(
-            3, QHeaderView.Stretch
-        )
+        self.lemmas_table.resizeColumnsToContents()
         vl.addWidget(self.lemmas_table)
 
         search_line = QLineEdit()
@@ -54,8 +59,6 @@ class CustomLemmasDialog(QDialog):
         save_button_box.accepted.connect(self.accept)
         save_button_box.rejected.connect(self.reject)
         vl.addWidget(save_button_box)
-        table_size = self.lemmas_table.viewport().size()
-        self.resize(table_size.width(), table_size.height())
 
     def search_lemma(self, text):
         if matches := self.lemmas_model.match(
@@ -96,30 +99,27 @@ class LemmasTableModle(QAbstractTableModel):
                 ]
             )
         klld_conn.close()
+        self.headers = ["Enabled", "Lemma", "Sense id", "Definition", "Difficulty"]
 
     def data(self, index, role=Qt.DisplayRole):
         column = index.column()
         value = self.lemmas[index.row()][column]
         if role == Qt.CheckStateRole and column == 0:
             return Qt.Checked if value else Qt.Unchecked
-        elif role == Qt.DisplayRole or role == Qt.ItemIsEditable:
+        elif role == Qt.DisplayRole or role == Qt.EditRole:
+            return value
+        elif role == Qt.ToolTipRole and column == 3:
             return value
 
     def rowCount(self, index):
         return len(self.lemmas)
 
     def columnCount(self, index):
-        return len(self.lemmas[0])
+        return len(self.headers)
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
-            return [
-                "Enabled",
-                "Lemma",
-                "Sense id",
-                "Definition",
-                "Difficulty",
-            ][section]
+            return self.headers[section]
 
     def flags(self, index):
         flag = QAbstractTableModel.flags(self, index)
@@ -133,7 +133,7 @@ class LemmasTableModle(QAbstractTableModel):
     def setData(self, index, value, role):
         column = index.column()
         if role == Qt.CheckStateRole and column == 0:
-            self.lemmas[index.row()][0] = True if value == Qt.Checked else False
+            self.lemmas[index.row()][0] = value == Qt.Checked
             return True
         elif role == Qt.EditRole and column == 4:
             self.lemmas[index.row()][4] = int(value)
@@ -142,16 +142,25 @@ class LemmasTableModle(QAbstractTableModel):
 
 
 class ComboBoxDelegate(QStyledItemDelegate):
-    def __init__(self, parent, options):
+    def __init__(self, parent, options, tooltips={}):
         super().__init__(parent)
         self.options = options
+        self.tooltips = tooltips
 
     def createEditor(self, parent, option, index):
         comboBox = QComboBox(parent)
-        comboBox.addItems(self.options)
-        comboBox.setItemData(0, "Fewer Hints", Qt.ToolTipRole)
-        comboBox.setItemData(4, "More Hints", Qt.ToolTipRole)
+        if isinstance(self.options, list):
+            for value in self.options:
+                comboBox.addItem(str(value), value)
+        elif isinstance(self.options, dict):
+            for value, text in self.options.items():
+                comboBox.addItem(text, value)
+
+        for index, text in self.tooltips.items():
+            comboBox.setItemData(index, text, Qt.ToolTipRole)
         comboBox.currentIndexChanged.connect(self.commit_editor)
+        if isinstance(self.options, dict):
+            comboBox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         return comboBox
 
     def commit_editor(self):
@@ -160,11 +169,13 @@ class ComboBoxDelegate(QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         value = index.data(Qt.DisplayRole)
-        num = self.options.index(str(value))
-        editor.setCurrentIndex(num)
+        if isinstance(self.options, list):
+            editor.setCurrentText(str(value))
+        else:
+            editor.setCurrentText(self.options[value])
 
     def setModelData(self, editor, model, index):
-        value = editor.currentText()
+        value = editor.currentData()
         model.setData(index, value, Qt.EditRole)
 
     def paint(self, painter, option, index):

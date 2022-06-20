@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
 import re
-from html import unescape, escape
+from html import escape, unescape
 from pathlib import Path
 
 try:

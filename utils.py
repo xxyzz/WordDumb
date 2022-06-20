@@ -104,3 +104,7 @@ def get_klld_path(plugin_path):
 
 def donate():
     webbrowser.open("https://liberapay.com/xxyzz/donate")
+
+
+def custom_x_ray_path():
+    return get_plugin_path().parent.joinpath("worddumb-custom-x-ray.json")

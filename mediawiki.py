@@ -241,7 +241,7 @@ def regime_type(democracy_index_score):
 
 def query_mediawiki(entities, mediawiki, search_people):
     pending_entities = []
-    for entity, data in entities.copy().items():
+    for entity, data in entities.items():
         if len(pending_entities) == MEDIAWIKI_API_EXLIMIT:
             mediawiki.query(pending_entities)
             pending_entities.clear()

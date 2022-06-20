@@ -5,6 +5,7 @@ from functools import partial
 from calibre.gui2 import Dispatcher
 from calibre.gui2.actions import InterfaceAction
 from calibre.gui2.threaded_jobs import ThreadedJob
+from PyQt5.QtGui import QIcon
 
 from .error_dialogs import job_failed
 from .metadata import check_metadata
@@ -41,13 +42,18 @@ class WordDumb(InterfaceAction):
 
         self.menu.addSeparator()
         self.create_menu_action(
-            self.menu, "Preferences", "Preferences", triggered=self.config
+            self.menu,
+            "Preferences",
+            "Preferences",
+            icon=QIcon(I("config.png")),
+            triggered=self.config,
         )
         self.menu.addSeparator()
         self.create_menu_action(
             self.menu,
             "Donate",
             "Donate",
+            icon=QIcon(I("donate.png")),
             description="I need about tree-fiddy.",
             triggered=donate,
         )

@@ -9,7 +9,7 @@ from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig
 from PyQt5.QtCore import QRegularExpression
-from PyQt5.QtGui import QRegularExpressionValidator
+from PyQt5.QtGui import QIcon, QRegularExpressionValidator
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -128,7 +128,7 @@ class ConfigWidget(QWidget):
         self.locator_map_box.setChecked(prefs["add_locator_map"])
         vl.addWidget(self.locator_map_box)
 
-        donate_button = QPushButton("Tree-fiddy?")
+        donate_button = QPushButton(QIcon(I("donate.png")), "Tree-fiddy?")
         donate_button.clicked.connect(donate)
         vl.addWidget(donate_button)
 

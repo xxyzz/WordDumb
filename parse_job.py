@@ -20,6 +20,7 @@ try:
         insert_installed_libs,
         load_lemmas_dump,
         run_subprocess,
+        load_custom_x_ray
     )
     from .x_ray import X_Ray
     from .x_ray_epub import X_Ray_EPUB
@@ -34,7 +35,7 @@ except ImportError:
     )
     from error_dialogs import GITHUB_URL
     from mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
-    from utils import insert_installed_libs, load_lemmas_dump
+    from utils import insert_installed_libs, load_lemmas_dump, load_custom_x_ray
     from x_ray import X_Ray
     from x_ray_epub import X_Ray_EPUB
 
@@ -180,11 +181,12 @@ def create_files(
         mediawiki = MediaWiki(wiki_lang, useragent, plugin_path, prefs)
         wikidata = None if prefs["fandom"] else Wikidata(plugin_path, useragent)
         wiki_commons = None
+        custom_x_ray = load_custom_x_ray(plugin_path)
 
         if not kfx_json and not mobi_codec:  # EPUB
             if not prefs["fandom"] and prefs["add_locator_map"]:
                 wiki_commons = Wikimedia_Commons(plugin_path, useragent)
-            x_ray = X_Ray_EPUB(book_path, mediawiki, wiki_commons, wikidata)
+            x_ray = X_Ray_EPUB(book_path, mediawiki, wiki_commons, wikidata, custom_x_ray)
             for doc, data in nlp.pipe(x_ray.extract_epub(), as_tuples=True):
                 find_named_entity(
                     data[0], x_ray, doc, None, wiki_lang, data[1], data[2]
@@ -195,7 +197,7 @@ def create_files(
         x_ray_conn, x_ray_path = create_x_ray_db(
             asin, book_path, wiki_lang, plugin_path, prefs
         )
-        x_ray = X_Ray(x_ray_conn, mediawiki, wikidata)
+        x_ray = X_Ray(x_ray_conn, mediawiki, wikidata, custom_x_ray)
         for doc, context in nlp.pipe(
             parse_book(kfx_json, mobi_html, mobi_codec), as_tuples=True
         ):

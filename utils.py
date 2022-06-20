@@ -106,5 +106,14 @@ def donate():
     webbrowser.open("https://liberapay.com/xxyzz/donate")
 
 
-def custom_x_ray_path():
-    return get_plugin_path().parent.joinpath("worddumb-custom-x-ray.json")
+def custom_x_ray_path(plugin_path):
+    return plugin_path.parent.joinpath("worddumb-custom-x-ray.json")
+
+
+def load_custom_x_ray(plugin_path):
+    custom_path = custom_x_ray_path(plugin_path)
+    if custom_path.exists():
+        with custom_path.open(encoding="utf-8") as f:
+            return {name: (is_person, desc) for name, is_person, desc in json.load(f)}
+    else:
+        return {}

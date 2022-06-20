@@ -37,7 +37,7 @@ NAMESPACES = {
 
 
 class X_Ray_EPUB:
-    def __init__(self, book_path, mediawiki, wiki_commons, wikidata):
+    def __init__(self, book_path, mediawiki, wiki_commons, wikidata, custom_x_ray):
         self.book_path = book_path
         self.mediawiki = mediawiki
         self.wiki_commons = wiki_commons
@@ -52,6 +52,7 @@ class X_Ray_EPUB:
         self.xhtml_href_has_folder = False
         self.image_folder = self.extract_folder
         self.image_href_has_folder = False
+        self.custom_x_ray = custom_x_ray
 
     def extract_epub(self):
         from lxml import etree
@@ -185,7 +186,10 @@ class X_Ray_EPUB:
         <body>
         """
         for entity, data in self.entities.items():
-            if (search_people or data["label"] not in PERSON_LABELS) and (
+            if entity in self.custom_x_ray:
+                _, custom_desc = self.custom_x_ray[entity]
+                s += f'<aside id="{data["id"]}" epub:type="footnote">{escape(custom_desc)}'
+            elif (search_people or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)
             ):
                 s += f"""

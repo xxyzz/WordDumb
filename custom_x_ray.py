@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from .utils import custom_x_ray_path
+from .utils import custom_x_ray_path, get_plugin_path
 
 
 class CustomXRayDialog(QDialog):
@@ -87,7 +87,7 @@ class CustomXRayDialog(QDialog):
 class XRayTableModle(QAbstractTableModel):
     def __init__(self):
         super().__init__()
-        self.custom_path = custom_x_ray_path()
+        self.custom_path = custom_x_ray_path(get_plugin_path())
         if self.custom_path.exists():
             with open(self.custom_path, encoding="utf-8") as f:
                 self.x_ray_data = json.load(f)

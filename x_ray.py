@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import re
 from collections import Counter, defaultdict
 
@@ -44,7 +45,7 @@ except ImportError:
 
 
 class X_Ray:
-    def __init__(self, conn, mediawiki, wikidata):
+    def __init__(self, conn, mediawiki, wikidata, custom_x_ray):
         self.conn = conn
         self.entity_id = 1
         self.num_people = 0
@@ -56,27 +57,36 @@ class X_Ray:
         self.mediawiki = mediawiki
         self.wikidata = wikidata
         self.entity_occurrences = defaultdict(list)
+        self.custom_x_ray = custom_x_ray
 
     def insert_descriptions(self, search_people):
         for entity, data in self.entities.items():
-            intro_cache = self.mediawiki.get_cache(entity)
-            if (
-                not search_people and data["label"] in PERSON_LABELS
-            ) or intro_cache is None:
+            if entity in self.custom_x_ray:
+                is_person, custom_desc = self.custom_x_ray[entity]
+                if is_person:
+                    data["label"] = "PERSON"
                 insert_x_entity_description(
-                    self.conn, (data["quote"], entity, None, data["id"])
+                    self.conn, (custom_desc, entity, None, data["id"])
                 )
-            elif self.wikidata and (
-                wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])
+            elif (search_people or data["label"] not in PERSON_LABELS) and (
+                intro_cache := self.mediawiki.get_cache(entity)
             ):
                 summary = intro_cache["intro"]
-                if democracy_index := wikidata_cache["democracy_index"]:
-                    summary += "\n" + regime_type(float(democracy_index))
+                if self.wikidata and (
+                    wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])
+                ):
+                    if democracy_index := wikidata_cache["democracy_index"]:
+                        summary += "\n" + regime_type(float(democracy_index))
                 insert_x_entity_description(self.conn, (summary, entity, 1, data["id"]))
             else:
                 insert_x_entity_description(
-                    self.conn, (intro_cache["intro"], entity, 1, data["id"])
+                    self.conn, (data["quote"], entity, None, data["id"])
                 )
+
+            if data["label"] in PERSON_LABELS:
+                self.num_people += 1
+            else:
+                self.num_terms += 1
 
     def add_entity(self, entity, ner_label, start, quote, entity_len):
         from rapidfuzz.fuzz import token_set_ratio
@@ -131,10 +141,6 @@ class X_Ray:
                 )
                 del self.entity_occurrences[src_entity["id"]]
                 del self.entities[src_name]
-            elif src_entity["label"] in PERSON_LABELS:
-                self.num_people += 1
-            else:
-                self.num_terms += 1
 
     def get_entity_counter(self, entity_label):
         return (
@@ -150,6 +156,7 @@ class X_Ray:
             query_wikidata(self.entities, self.mediawiki, self.wikidata)
         self.merge_entities()
 
+        self.insert_descriptions(search_people)
         insert_x_entities(
             self.conn,
             (
@@ -172,7 +179,6 @@ class X_Ray:
                 for start, entity_length in occurrence_list
             ),
         )
-        self.insert_descriptions(search_people)
 
         if kfx_json:
             self.find_kfx_images(kfx_json)

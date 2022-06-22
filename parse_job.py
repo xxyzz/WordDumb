@@ -16,11 +16,12 @@ try:
     from .error_dialogs import GITHUB_URL
     from .mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
     from .utils import (
+        get_custom_x_path,
         get_plugin_path,
         insert_installed_libs,
+        load_custom_x_desc,
         load_lemmas_dump,
         run_subprocess,
-        load_custom_x_ray
     )
     from .x_ray import X_Ray
     from .x_ray_epub import X_Ray_EPUB
@@ -35,7 +36,12 @@ except ImportError:
     )
     from error_dialogs import GITHUB_URL
     from mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
-    from utils import insert_installed_libs, load_lemmas_dump, load_custom_x_ray
+    from utils import (
+        get_custom_x_path,
+        insert_installed_libs,
+        load_custom_x_desc,
+        load_lemmas_dump,
+    )
     from x_ray import X_Ray
     from x_ray_epub import X_Ray_EPUB
 
@@ -163,30 +169,19 @@ def create_files(
 
     if create_x:
         insert_installed_libs(plugin_path)
-        import spacy
-
-        nlp = spacy.load(
-            model,
-            exclude=[
-                "tok2vec",
-                "morphologizer",
-                "tagger",
-                "parser",
-                "attribute_ruler",
-                "lemmatizer",
-            ],
-        )
-        nlp.enable_pipe("senter")
+        nlp = load_spacy(model, book_path)
         useragent = f"WordDumb/{plugin_version} ({GITHUB_URL})"
         mediawiki = MediaWiki(wiki_lang, useragent, plugin_path, prefs)
         wikidata = None if prefs["fandom"] else Wikidata(plugin_path, useragent)
         wiki_commons = None
-        custom_x_ray = load_custom_x_ray(plugin_path)
+        custom_x_ray = load_custom_x_desc(book_path)
 
         if not kfx_json and not mobi_codec:  # EPUB
             if not prefs["fandom"] and prefs["add_locator_map"]:
                 wiki_commons = Wikimedia_Commons(plugin_path, useragent)
-            x_ray = X_Ray_EPUB(book_path, mediawiki, wiki_commons, wikidata, custom_x_ray)
+            x_ray = X_Ray_EPUB(
+                book_path, mediawiki, wiki_commons, wikidata, custom_x_ray
+            )
             for doc, data in nlp.pipe(x_ray.extract_epub(), as_tuples=True):
                 find_named_entity(
                     data[0], x_ray, doc, None, wiki_lang, data[1], data[2]
@@ -305,46 +300,62 @@ DIRECTIONS = frozenset(
 )
 
 
+def process_entity(text, lang, len_limit):
+    if re.search(r"https?:|www\.", text, re.IGNORECASE):
+        return None
+    text = re.sub(r"^\W+", "", text)
+    text = re.sub(r"\W+$", "", text)
+
+    if lang == "en":
+        # ignore chapter title(chapter 1) and page number reference(pp. 1-10)
+        if re.match(r"c?hapter|p{1,2}[\W\d]{2,}", text, re.IGNORECASE):
+            return None
+        text = re.sub(r"\W+[sd]$|\s+of$", "", text)
+        text = re.sub(r"^(?:the|an?)\s", "", text, flags=re.IGNORECASE)
+        text = re.sub(r"^\W+", "", text)
+        if text.lower() in DIRECTIONS:
+            return None
+    elif lang == "es":
+        # https://en.wikipedia.org/wiki/Spanish_determiners#Articles
+        text = re.sub(
+            r"^(?:el|los?|las?|un|unos?|unas?)\s", "", text, flags=re.IGNORECASE
+        )
+        text = re.sub(r"^\W+", "", text)
+    # TODO https://en.wikipedia.org/wiki/Article_(grammar)#Tables
+
+    if len(text) < len_limit or re.fullmatch(r"[\W\d]+", text):
+        return None
+
+    return text
+
+
 def find_named_entity(
     start, x_ray, doc, mobi_codec, lang, escaped_text, xhtml_path=None
 ):
     len_limit = 3 if lang == "en" else 2
     starts = set()
     for ent in filter(lambda x: x.label_ in NER_LABELS, doc.ents):
-        if re.search(r"https?:|www\.", ent.text, re.IGNORECASE):
-            continue
-        text = re.sub(r"^\W+", "", ent.text)
-        text = re.sub(r"\W+$", "", text)
-
-        if lang == "en":
-            # ignore chapter title(chapter 1) and page number reference(pp. 1-10)
-            if re.match(r"c?hapter|p{1,2}[\W\d]{2,}", text, re.IGNORECASE):
-                continue
-            text = re.sub(r"\W+[sd]$|\s+of$", "", text)
-            text = re.sub(r"^(?:the|an?)\s", "", text, flags=re.IGNORECASE)
-            text = re.sub(r"^\W+", "", text)
-            if text.lower() in DIRECTIONS:
-                continue
-        if lang == "es":
-            # https://en.wikipedia.org/wiki/Spanish_determiners#Articles
-            text = re.sub(
-                r"^(?:el|los?|las?|un|unos?|unas?)\s", "", text, flags=re.IGNORECASE
-            )
-            text = re.sub(r"^\W+", "", text)
-        # TODO https://en.wikipedia.org/wiki/Article_(grammar)#Tables
-
-        if len(text) < len_limit or re.fullmatch(r"[\W\d]+", text):
+        text = (
+            ent.ent_id_  # customized X-Ray
+            if ent.ent_id_
+            else process_entity(ent.text, lang, len_limit)
+        )
+        if text is None:
             continue
 
+        ent_text = ent.text if ent.ent_id_ else text
         if escaped_text:
             start_char, end_char = index_in_escaped_text(
-                text, escaped_text, ent.start_char
+                ent_text, escaped_text, ent.start_char
             )
             if start_char is None:
                 continue
+        elif not ent.ent_id_:
+            start_char = ent.start_char + ent.text.index(ent_text)
+            end_char = start_char + len(ent_text)
         else:
-            start_char = ent.start_char + ent.text.index(text)
-            end_char = start_char + len(text)
+            start_char = ent.start_char
+            end_char = ent.end_char
         book_text = escaped_text if escaped_text else doc.text
         selectable_text = book_text[start_char:end_char]
         if start_char in starts:
@@ -375,3 +386,33 @@ def find_named_entity(
             ent_len = len(selectable_text)
 
         x_ray.add_entity(text, ent.label_, ent_start, ent.sent.text.strip(), ent_len)
+
+
+def load_spacy(model, book_path):
+    import spacy
+
+    nlp = spacy.load(
+        model,
+        exclude=[
+            "tok2vec",
+            "morphologizer",
+            "tagger",
+            "parser",
+            "attribute_ruler",
+            "lemmatizer",
+        ],
+    )
+    # simpler and faster https://spacy.io/usage/linguistic-features#sbd
+    nlp.enable_pipe("senter")
+
+    custom_x_path = get_custom_x_path(book_path)
+    if custom_x_path.exists():
+        ruler = nlp.add_pipe("entity_ruler", before="ner")
+        patterns = []
+        with custom_x_path.open(encoding="utf-8") as f:
+            for name, label, aliases, _ in json.load(f):
+                patterns.append({"label": label, "pattern": name, "id": name})
+                for alias in [x.strip() for x in aliases.split(",")]:
+                    patterns.append({"label": label, "pattern": alias, "id": name})
+        ruler.add_patterns(patterns)
+    return nlp

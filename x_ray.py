@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import json
 import re
 from collections import Counter, defaultdict
 
@@ -61,10 +60,7 @@ class X_Ray:
 
     def insert_descriptions(self, search_people):
         for entity, data in self.entities.items():
-            if entity in self.custom_x_ray:
-                is_person, custom_desc = self.custom_x_ray[entity]
-                if is_person:
-                    data["label"] = "PERSON"
+            if custom_desc := self.custom_x_ray.get(entity):
                 insert_x_entity_description(
                     self.conn, (custom_desc, entity, None, data["id"])
                 )
@@ -84,11 +80,6 @@ class X_Ray:
                 insert_x_entity_description(
                     self.conn, (data["quote"], entity, None, data["id"])
                 )
-
-            if data["label"] in PERSON_LABELS:
-                self.num_people += 1
-            else:
-                self.num_terms += 1
 
     def add_entity(self, entity, ner_label, start, quote, entity_len):
         from rapidfuzz.fuzz import token_set_ratio
@@ -143,6 +134,10 @@ class X_Ray:
                 )
                 del self.entity_occurrences[src_entity["id"]]
                 del self.entities[src_name]
+            elif src_entity["label"] in PERSON_LABELS:
+                self.num_people += 1
+            else:
+                self.num_terms += 1
 
     def get_entity_counter(self, entity_label):
         return (
@@ -158,7 +153,6 @@ class X_Ray:
             query_wikidata(self.entities, self.mediawiki, self.wikidata)
         self.merge_entities()
 
-        self.insert_descriptions(search_people)
         insert_x_entities(
             self.conn,
             (
@@ -181,6 +175,7 @@ class X_Ray:
                 for start, entity_length in occurrence_list
             ),
         )
+        self.insert_descriptions(search_people)
 
         if kfx_json:
             self.find_kfx_images(kfx_json)

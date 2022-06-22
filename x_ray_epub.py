@@ -186,8 +186,7 @@ class X_Ray_EPUB:
         <body>
         """
         for entity, data in self.entities.items():
-            if entity in self.custom_x_ray:
-                _, custom_desc = self.custom_x_ray[entity]
+            if custom_desc := self.custom_x_ray.get(entity):
                 s += f'<aside id="{data["id"]}" epub:type="footnote">{escape(custom_desc)}'
             elif (search_people or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)

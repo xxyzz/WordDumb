@@ -10,7 +10,6 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
-    QHeaderView,
     QLineEdit,
     QStyledItemDelegate,
     QTableView,
@@ -159,8 +158,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
         for index, text in self.tooltips.items():
             comboBox.setItemData(index, text, Qt.ToolTipRole)
         comboBox.currentIndexChanged.connect(self.commit_editor)
-        if isinstance(self.options, dict):
-            comboBox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+
         return comboBox
 
     def commit_editor(self):

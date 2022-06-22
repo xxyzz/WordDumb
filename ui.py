@@ -7,6 +7,7 @@ from calibre.gui2.actions import InterfaceAction
 from calibre.gui2.threaded_jobs import ThreadedJob
 from PyQt5.QtGui import QIcon
 
+from .custom_x_ray import CustomXRayDialog
 from .error_dialogs import job_failed
 from .metadata import check_metadata
 from .parse_job import do_job
@@ -43,11 +44,19 @@ class WordDumb(InterfaceAction):
         self.menu.addSeparator()
         self.create_menu_action(
             self.menu,
+            "Customize X-Ray",
+            "Customize X-Ray",
+            icon=QIcon(I("polish.png")),
+            triggered=self.open_custom_x_ray_dialog,
+        )
+        self.create_menu_action(
+            self.menu,
             "Preferences",
             "Preferences",
             icon=QIcon(I("config.png")),
             triggered=self.config,
         )
+
         self.menu.addSeparator()
         self.create_menu_action(
             self.menu,
@@ -62,9 +71,15 @@ class WordDumb(InterfaceAction):
     def config(self):
         self.interface_action_base_plugin.do_user_config(self.gui)
 
+    def open_custom_x_ray_dialog(self):
+        for _, _, book_paths, mi, _ in get_metadata_of_selected_books(self.gui):
+            custom_x_dlg = CustomXRayDialog(book_paths[0], mi.get("title"), self.gui)
+            if custom_x_dlg.exec():
+                custom_x_dlg.x_ray_model.save_data()
 
-def run(gui, create_ww, create_x):
-    for book_id, book_fmts, book_paths, mi, lang in filter(
+
+def get_metadata_of_selected_books(gui):
+    return filter(
         None,
         [
             check_metadata(gui.current_db.new_api, book_id)
@@ -73,7 +88,11 @@ def run(gui, create_ww, create_x):
                 gui.library_view.selectionModel().selectedRows(),
             )
         ],
-    ):
+    )
+
+
+def run(gui, create_ww, create_x):
+    for book_id, book_fmts, book_paths, mi, lang in get_metadata_of_selected_books(gui):
         for book_fmt, book_path in zip(book_fmts, book_paths):
             if book_fmt == "EPUB" or lang["wiki"] != "en":
                 create_ww = False

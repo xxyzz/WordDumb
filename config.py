@@ -26,7 +26,6 @@ from PyQt5.QtWidgets import (
 )
 
 from .custom_lemmas import CustomLemmasDialog
-from .custom_x_ray import CustomXRayDialog
 from .data.dump_lemmas import dump_lemmas
 from .deps import install_deps, mac_python
 from .error_dialogs import GITHUB_URL, error_dialog, job_failed
@@ -67,10 +66,6 @@ class ConfigWidget(QWidget):
         customize_ww_button = QPushButton("Customize Word Wise")
         customize_ww_button.clicked.connect(self.open_custom_lemmas_dialog)
         vl.addWidget(customize_ww_button)
-
-        customize_x_button = QPushButton("Customize X-Ray")
-        customize_x_button.clicked.connect(self.open_custom_x_ray_dialog)
-        vl.addWidget(customize_x_button)
 
         self.search_people_box = QCheckBox(
             "Fetch X-Ray people descriptions from Wikipedia or Fandom"
@@ -213,11 +208,6 @@ class ConfigWidget(QWidget):
                 list_widget.item(index).text() for index in range(list_widget.count())
             ]
             prefs["use_all_formats"] = format_order_dialog.use_all_formats.isChecked()
-
-    def open_custom_x_ray_dialog(self):
-        custom_x_dlg = CustomXRayDialog(self)
-        if custom_x_dlg.exec():
-            custom_x_dlg.x_ray_model.save_data()
 
 
 class FormatOrderDialog(QDialog):

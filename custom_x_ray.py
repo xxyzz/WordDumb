@@ -6,7 +6,7 @@ from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QAbstractScrollArea,
-    QCheckBox,
+    QComboBox,
     QDialog,
     QDialogButtonBox,
     QFormLayout,
@@ -18,20 +18,46 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from .utils import custom_x_ray_path, get_plugin_path
+from .custom_lemmas import ComboBoxDelegate
+from .utils import get_custom_x_path
+
+NER_LABEL_EXPLANATIONS = {
+    "EVENT": "Named hurricanes, battles, wars, sports events, etc.",
+    "FAC": "Buildings, airports, highways, bridges, etc.",
+    "GPE": "Countries, cities, states",
+    "LAW": "Named documents made into laws",
+    "LOC": "Non-GPE locations, mountain ranges, bodies of water",
+    "ORG": "Companies, agencies, institutions, etc.",
+    "PERSON": "People, including fictional",
+    "PRODUCT": "Objects, vehicles, foods, etc. (not services)",
+}
 
 
 class CustomXRayDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, book_path, title, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Customize X-Ray")
+        self.setWindowTitle(f"Customize X-Ray for {title}")
         vl = QVBoxLayout()
         self.setLayout(vl)
 
         self.x_ray_table = QTableView()
         self.x_ray_table.setAlternatingRowColors(True)
-        self.x_ray_model = XRayTableModle()
+        self.x_ray_model = XRayTableModle(book_path)
         self.x_ray_table.setModel(self.x_ray_model)
+        self.x_ray_table.setItemDelegateForColumn(
+            1,
+            ComboBoxDelegate(
+                self.x_ray_table,
+                list(NER_LABEL_EXPLANATIONS.keys()),
+                {
+                    i: exp
+                    for i, exp in zip(
+                        range(len(NER_LABEL_EXPLANATIONS)),
+                        NER_LABEL_EXPLANATIONS.values(),
+                    )
+                },
+            ),
+        )
         self.x_ray_table.horizontalHeader().setMaximumSectionSize(400)
         self.x_ray_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.x_ray_table.resizeColumnsToContents()
@@ -68,32 +94,30 @@ class CustomXRayDialog(QDialog):
 
     def add_x_ray(self):
         add_x_dlg = AddXRayDialog(self)
-        if add_x_dlg.exec():
-            name = add_x_dlg.name_line.text()
-            desc = add_x_dlg.description.toPlainText()
-            if name and desc:
-                self.x_ray_model.insert_data(
-                    [
-                        name,
-                        add_x_dlg.person_checkbox.isChecked(),
-                        desc,
-                    ]
-                )
+        if add_x_dlg.exec() and (name := add_x_dlg.name_line.text()):
+            self.x_ray_model.insert_data(
+                [
+                    name,
+                    add_x_dlg.ner_label.currentData(),
+                    add_x_dlg.aliases.text(),
+                    add_x_dlg.description.toPlainText(),
+                ]
+            )
 
     def delete_x_ray(self):
         self.x_ray_model.delete_data(self.x_ray_table.selectedIndexes())
 
 
 class XRayTableModle(QAbstractTableModel):
-    def __init__(self):
+    def __init__(self, book_path):
         super().__init__()
-        self.custom_path = custom_x_ray_path(get_plugin_path())
+        self.custom_path = get_custom_x_path(book_path)
         if self.custom_path.exists():
             with open(self.custom_path, encoding="utf-8") as f:
                 self.x_ray_data = json.load(f)
         else:
             self.x_ray_data = []
-        self.headers = ["Name", "Is person", "Description"]
+        self.headers = ["Name", "NER label", "Aliases", "Description"]
 
     def data(self, index, role=Qt.DisplayRole):
         row = index.row()
@@ -101,11 +125,9 @@ class XRayTableModle(QAbstractTableModel):
         if row < 0 or column < 0:
             return None
         value = self.x_ray_data[row][column]
-        if role == Qt.CheckStateRole and column == 1:
-            return Qt.Checked if value else Qt.Unchecked
-        elif role == Qt.DisplayRole or role == Qt.EditRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
             return value
-        elif role == Qt.ToolTipRole and column == 2:
+        elif role == Qt.ToolTipRole and column == 3:
             return value
 
     def rowCount(self, index):
@@ -119,20 +141,12 @@ class XRayTableModle(QAbstractTableModel):
             return self.headers[section]
 
     def flags(self, index):
-        flag = QAbstractTableModel.flags(self, index)
-        if index.column() == 1:
-            flag |= Qt.ItemIsUserCheckable
-        else:
-            flag |= Qt.ItemIsEditable
-        return flag
+        return QAbstractTableModel.flags(self, index) | Qt.ItemIsEditable
 
     def setData(self, index, value, role):
         row = index.row()
         column = index.column()
-        if role == Qt.CheckStateRole:
-            self.x_ray_data[row][column] = value == Qt.Checked
-            return True
-        elif role == Qt.EditRole:
+        if role == Qt.EditRole:
             self.x_ray_data[row][column] = value
             return True
         return False
@@ -167,11 +181,23 @@ class AddXRayDialog(QDialog):
         self.name_line = QLineEdit()
         form_layout.addRow("Name", self.name_line)
 
-        self.person_checkbox = QCheckBox()
-        form_layout.addRow("Is person", self.person_checkbox)
+        self.ner_label = QComboBox()
+        for index, (label, exp) in zip(
+            range(len(NER_LABEL_EXPLANATIONS)), NER_LABEL_EXPLANATIONS.items()
+        ):
+            self.ner_label.addItem(label, label)
+            self.ner_label.setItemData(index, exp, Qt.ToolTipRole)
+        form_layout.addRow("NER label", self.ner_label)
+
+        self.aliases = QLineEdit()
+        self.aliases.setPlaceholderText('Separate by ","')
+        form_layout.addRow("Aliases", self.aliases)
 
         self.description = QPlainTextEdit()
         form_layout.addRow("Description", self.description)
+        self.description.setPlaceholderText(
+            "Leave this empty to use description from Wikipedia or Fandom"
+        )
 
         confirm_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel

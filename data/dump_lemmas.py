@@ -11,7 +11,7 @@ def add_lemma(lemma, data, lemmas, keyword_processor):
 
     if " " in lemma:  # phrase, for example: 'slick back/down'
         list_of_inflections_list = []
-        for word in lemma.split(" "):
+        for word in lemma.split():
             inflections_list = []
             for w in word.split("/"):
                 inflections_list.append(w)
@@ -42,7 +42,7 @@ def dump_lemmas(lemmas, dump_path):
         if "(" in lemma:  # "(as) good as new"
             add_lemma(re.sub(r"[()]", "", lemma), data, lemmas, keyword_processor)
             add_lemma(
-                " ".join(filter(None, re.sub(r"\([^)]+\)", "", lemma).split(" "))),
+                " ".join(re.sub(r"\([^)]+\)", "", lemma).split()),
                 data,
                 lemmas,
                 keyword_processor,

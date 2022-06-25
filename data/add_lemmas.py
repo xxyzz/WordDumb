@@ -41,16 +41,16 @@ for language_layer in args.language_layers:
     for difficulty, sense_id in ll_conn.execute(
         "SELECT difficulty, sense_id FROM glosses GROUP by sense_id"
     ):
-        for (lemma,) in ww_klld_conn.execute(
-            'SELECT lemma FROM senses JOIN lemmas ON display_lemma_id = lemmas.id WHERE senses.id = ? AND (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like "-%"',
+        for lemma, pos_type in ww_klld_conn.execute(
+            'SELECT lemma, pos_type FROM senses JOIN lemmas ON display_lemma_id = lemmas.id WHERE senses.id = ? AND (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like "-%"',
             (sense_id,),
         ):
             if lemma.startswith("-"):
                 break
             if lemma not in lemmas:
-                lemmas[lemma] = [difficulty, sense_id]
+                lemmas[lemma] = [difficulty, sense_id, pos_type]
             elif lemmas[lemma][0] < difficulty:
-                lemmas[lemma] = [difficulty, sense_id]
+                lemmas[lemma] = [difficulty, sense_id, pos_type]
                 updated_count += 1
     ll_conn.close()
 

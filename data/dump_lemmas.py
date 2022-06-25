@@ -5,50 +5,57 @@ import pickle
 import re
 from itertools import chain, product
 
+# https://lemminflect.readthedocs.io/en/latest/tags
+POS_TYPE = {0: "NOUN", 1: "VERB", 2: "ADJ", 3: "ADV", 9: "PROPN"}
 
-def add_lemma(lemma, data, lemmas, keyword_processor):
-    from lemminflect import getAllInflections
 
-    if " " in lemma:  # phrase, for example: 'slick back/down'
-        list_of_inflections_list = []
-        for word in lemma.split():
-            inflections_list = []
-            for w in word.split("/"):
-                inflections_list.append(w)
-                inflections_list.extend(
-                    filter(lambda x: x != w, chain(*getAllInflections(w).values()))
-                )
-            list_of_inflections_list.append(inflections_list)
+def get_inflections(lemma, pos):
+    from lemminflect import getAllInflections, getAllInflectionsOOV
 
-        for phrase in map(" ".join, product(*list_of_inflections_list)):
-            keyword_processor.add_keyword(phrase, data)
-    else:
+    inflections = set(chain(*getAllInflections(lemma, pos).values()))
+    if not inflections and pos:
+        inflections = set(chain(*getAllInflectionsOOV(lemma, pos).values()))
+    return inflections
+
+
+def add_lemma(lemma, pos, data, keyword_processor):
+    if " " in lemma:
+        if "/" in lemma:  # "be/get togged up/out"
+            words = [word.split("/") for word in lemma.split()]
+            for phrase in map(" ".join, product(*words)):
+                add_lemma(phrase, pos, data, keyword_processor)
+        elif pos == "VERB":
+            # inflect the first word of the phrase verb
+            first_word, rest_words = lemma.split(maxsplit=1)
+            for inflation in {first_word}.union(get_inflections(first_word, "VERB")):
+                keyword_processor.add_keyword(f"{inflation} {rest_words}", data)
+        else:
+            keyword_processor.add_keyword(lemma, data)
+    elif "-" in lemma:
         keyword_processor.add_keyword(lemma, data)
-        for inflection in filter(
-            lambda x: x != lemma and x not in lemmas,
-            chain(*getAllInflections(lemma).values()),
-        ):
+    else:
+        for inflection in {lemma}.union(get_inflections(lemma, pos)):
             keyword_processor.add_keyword(inflection, data)
-
-    if "-" in lemma:
-        keyword_processor.add_keyword(lemma.replace("-", " "), data)
 
 
 def dump_lemmas(lemmas, dump_path):
     from flashtext import KeywordProcessor
 
     keyword_processor = KeywordProcessor()
-    for lemma, data in lemmas.items():
+    for lemma, (difficulty, sense_id, pos) in lemmas.items():
+        pos = POS_TYPE.get(pos)
+        data = (difficulty, sense_id)
         if "(" in lemma:  # "(as) good as new"
-            add_lemma(re.sub(r"[()]", "", lemma), data, lemmas, keyword_processor)
+            add_lemma(re.sub(r"[()]", "", lemma), pos, data, keyword_processor)
             add_lemma(
                 " ".join(re.sub(r"\([^)]+\)", "", lemma).split()),
+                pos,
                 data,
-                lemmas,
                 keyword_processor,
             )
         else:
-            add_lemma(lemma, data, lemmas, keyword_processor)
+            add_lemma(lemma, pos, data, keyword_processor)
+
     with open(dump_path, "wb") as f:
         pickle.dump(keyword_processor, f)
 

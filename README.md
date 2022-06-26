@@ -95,7 +95,11 @@ https://user-images.githubusercontent.com/21101839/124685798-90f87f80-df04-11eb-
 
   Add X-Ray entities that can't be recognized by spaCy model to improve NER accuracy for each selected book.
 
-- Connect your e-reader, select one book or multiple books then click the plugin icon or menu.
+- Connect your e-reader, select one book or multiple books then click the plugin icon or menu. You can also run the plugin in terminal:
+
+  ```
+  $ calibre-debug -r WordDumb -- -h
+  ```
 
 https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-93c6-0dea4ee60e04.mov
 

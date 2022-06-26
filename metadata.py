@@ -4,6 +4,7 @@ import json
 import random
 import re
 import string
+from pathlib import Path
 
 from .utils import get_plugin_path, load_json_or_pickle
 
@@ -14,10 +15,7 @@ def check_metadata(db, book_id):
     supported_languages = load_json_or_pickle(get_plugin_path(), "data/languages.json")
     mi = db.get_metadata(book_id, get_cover=True)
     # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    book_language = mi.get("languages")
-    if not book_language:
-        return None
-    book_language = book_language[0]
+    book_language = mi.get("language")
     if book_language not in supported_languages:
         return None
 
@@ -35,6 +33,42 @@ def check_metadata(db, book_id):
         mi,
         supported_languages[book_language],
     )
+
+
+def cli_check_metadata(book_path):
+    supported_languages = load_json_or_pickle(get_plugin_path(), "data/languages.json")
+    book_path = Path(book_path)
+    book_fmt = book_path.suffix.upper()[1:]
+    mi = None
+    if book_fmt == "KFX":
+        from calibre.ebooks.metadata.book.base import Metadata
+        from calibre.utils.localization import canonicalize_lang
+        from calibre_plugins.kfx_input.kfxlib import YJ_Book
+
+        yj_book = YJ_Book(str(book_path))
+        yj_md = yj_book.get_metadata()
+        title = getattr(yj_md, "title", None)
+        language = getattr(yj_md, "language", None)
+        mi = Metadata(title)
+        mi.language = canonicalize_lang(language)
+    elif book_fmt == "EPUB":
+        from calibre.ebooks.metadata.epub import get_metadata
+
+        with book_path.open("rb") as f:
+            mi = get_metadata(f, False)
+    elif book_fmt in ["AZW3", "AZW", "MOBI"]:
+        from calibre.ebooks.metadata.mobi import get_metadata
+
+        with book_path.open("rb") as f:
+            mi = get_metadata(f)
+
+    if mi:
+        book_language = mi.get("language")
+        if book_language not in supported_languages:
+            return None
+        return book_fmt, mi, supported_languages[book_language]
+
+    return None
 
 
 def random_asin():

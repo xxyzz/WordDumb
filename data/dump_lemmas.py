@@ -27,8 +27,8 @@ def add_lemma(lemma, pos, data, keyword_processor):
         elif pos == "VERB":
             # inflect the first word of the phrase verb
             first_word, rest_words = lemma.split(maxsplit=1)
-            for inflation in {first_word}.union(get_inflections(first_word, "VERB")):
-                keyword_processor.add_keyword(f"{inflation} {rest_words}", data)
+            for inflection in {first_word}.union(get_inflections(first_word, "VERB")):
+                keyword_processor.add_keyword(f"{inflection} {rest_words}", data)
         else:
             keyword_processor.add_keyword(lemma, data)
     elif "-" in lemma:

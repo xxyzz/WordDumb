@@ -332,7 +332,7 @@ def process_entity(text, lang, len_limit):
 def find_named_entity(
     start, x_ray, doc, mobi_codec, lang, escaped_text, xhtml_path=None
 ):
-    len_limit = 3 if lang == "en" else 2
+    len_limit = 2 if lang in ["zh", "ja", "ko"] else 3
     starts = set()
     for ent in filter(lambda x: x.label_ in NER_LABELS, doc.ents):
         text = (

@@ -78,18 +78,18 @@ class MediaWikiBase:
 
 class MediaWiki(MediaWikiBase):
     def __init__(self, lang, useragent, plugin_path, prefs):
+        self.lang = lang
+        self.prefs = prefs
         if prefs["fandom"]:
-            self.source_name = "Fandom"
             self.source_id = 2
-            self.source_link = f"{prefs['fandom']}/wiki/"
+            self.source_name, self.source_link = self.get_source(2)
             self.wiki_api = f"{prefs['fandom']}/api.php"
             cache_path = plugin_path.parent.joinpath(
                 f"worddumb-fandom/{prefs['fandom'][8:].replace('/', '')}.json"
             )
         else:
-            self.source_name = "Wikipedia"
             self.source_id = 1
-            self.source_link = f"https://{lang}.wikipedia.org/wiki/"
+            self.source_name, self.source_link = self.get_source(1)
             self.wiki_api = f"https://{lang}.wikipedia.org/w/api.php"
             cache_path = plugin_path.parent.joinpath(f"worddumb-wikimedia/{lang}.json")
         super().__init__(cache_path, useragent)
@@ -106,9 +106,22 @@ class MediaWiki(MediaWikiBase):
         }
         if lang == "zh" and not prefs["fandom"]:
             self.session.params["variant"] = f"zh-{prefs['zh_wiki_variant']}"
-            self.source_link = (
-                f"https://zh.wikipedia.org/zh-{prefs['zh_wiki_variant']}/"
+
+    def get_source(self, source_id):
+        if source_id == 1:
+            return (
+                "Wikipedia",
+                f"https://{self.lang}.wikipedia.org/wiki/"
+                if self.lang != "zh"
+                else f"https://zh.wikipedia.org/zh-{self.prefs['zh_wiki_variant']}/",
             )
+        elif source_id == 2:
+            return (
+                "Fandom",
+                f"{self.prefs['fandom']}/wiki/" if self.prefs["fandom"] else None,
+            )
+
+        return None
 
     def query(self, titles):
         result = self.session.get(self.wiki_api, params={"titles": "|".join(titles)})

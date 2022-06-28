@@ -186,14 +186,22 @@ class X_Ray_EPUB:
         <body>
         """
         for entity, data in self.entities.items():
-            if custom_desc := self.custom_x_ray.get(entity):
-                s += f'<aside id="{data["id"]}" epub:type="footnote">{escape(custom_desc)}'
+            if custom_data := self.custom_x_ray.get(entity):
+                custom_desc, custom_source = custom_data
+                s += f'<aside id="{data["id"]}" epub:type="footnote"><p>{escape(custom_desc)}</p>'
+                if source_data := self.mediawiki.get_source(custom_source):
+                    source_name, source_link = source_data
+                    if source_link:
+                        s += f'<a href="{source_link}{quote(entity)}">{source_name}</a>'
+                    else:
+                        s += source_name
+                s += "</aside>"
             elif (search_people or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)
             ):
                 s += f"""
                 <aside id="{data["id"]}" epub:type="footnote">
-                {escape(intro_cache["intro"])}
+                <p>{escape(intro_cache["intro"])}</p>
                 <a href="{self.mediawiki.source_link}{quote(entity)}">
                 {self.mediawiki.source_name}
                 </a>
@@ -211,9 +219,10 @@ class X_Ray_EPUB:
                         shutil.copy(file_path, self.image_folder.joinpath(filename))
                         self.image_filenames.add(filename)
                     s += f'<a href="https://www.wikidata.org/wiki/{intro_cache["item_id"]}">Wikidata</a>'
+                s += "</aside>"
             else:
-                s += f'<aside id="{data["id"]}" epub:type="footnote">{escape(data["quote"])}'
-            s += "</aside>"
+                s += f'<aside id="{data["id"]}" epub:type="footnote"><p>{escape(data["quote"])}</p></aside>'
+
         s += "</body></html>"
         with self.xhtml_folder.joinpath("x_ray.xhtml").open("w", encoding="utf-8") as f:
             f.write(s)

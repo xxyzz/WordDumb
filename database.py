@@ -142,12 +142,11 @@ def create_x_ray_db(asin, book_path, lang, plugin_path, prefs):
             else f"https://{lang}.wikipedia.org/wiki/%s",
         ]
     )
-    if prefs["fandom"]:
-        str_list.append([22, "en", f"{prefs['fandom']}/wiki/%s"])
-        x_ray_conn.execute(
-            "INSERT INTO source (id, label, url, license_label, license_url) VALUES(2, 4, 22, 7, 8)"
-        )
 
+    str_list.append([22, "en", f"{prefs['fandom']}/wiki/%s" if prefs["fandom"] else ""])
+    x_ray_conn.execute(
+        "INSERT INTO source (id, label, url, license_label, license_url) VALUES(2, 4, 22, 7, 8)"
+    )
     x_ray_conn.executemany("INSERT INTO string VALUES(?, ?, ?)", str_list)
     return x_ray_conn, db_path
 

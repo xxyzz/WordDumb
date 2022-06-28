@@ -32,6 +32,8 @@ NER_LABEL_EXPLANATIONS = {
     "PRODUCT": "Objects, vehicles, foods, etc. (not services)",
 }
 
+DESC_SOURCES = {None: "None", 1: "Wikipedia", 2: "Fandom"}
+
 
 class CustomXRayDialog(QDialog):
     def __init__(self, book_path, title, parent=None):
@@ -57,6 +59,9 @@ class CustomXRayDialog(QDialog):
                     )
                 },
             ),
+        )
+        self.x_ray_table.setItemDelegateForColumn(
+            4, ComboBoxDelegate(self.x_ray_table, DESC_SOURCES)
         )
         self.x_ray_table.horizontalHeader().setMaximumSectionSize(400)
         self.x_ray_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
@@ -101,11 +106,14 @@ class CustomXRayDialog(QDialog):
                     add_x_dlg.ner_label.currentData(),
                     add_x_dlg.aliases.text(),
                     add_x_dlg.description.toPlainText(),
+                    add_x_dlg.source.currentData(),
                 ]
             )
+            self.x_ray_table.resizeColumnsToContents()
 
     def delete_x_ray(self):
         self.x_ray_model.delete_data(self.x_ray_table.selectedIndexes())
+        self.x_ray_table.resizeColumnsToContents()
 
 
 class XRayTableModle(QAbstractTableModel):
@@ -117,7 +125,13 @@ class XRayTableModle(QAbstractTableModel):
                 self.x_ray_data = json.load(f)
         else:
             self.x_ray_data = []
-        self.headers = ["Name", "NER label", "Aliases", "Description"]
+        self.headers = [
+            "Name",
+            "Named entity label",
+            "Aliases",
+            "Description",
+            "Description source",
+        ]
 
     def data(self, index, role=Qt.DisplayRole):
         row = index.row()
@@ -198,6 +212,11 @@ class AddXRayDialog(QDialog):
         self.description.setPlaceholderText(
             "Leave this empty to use description from Wikipedia or Fandom"
         )
+
+        self.source = QComboBox()
+        for value, text in DESC_SOURCES.items():
+            self.source.addItem(text, value)
+        form_layout.addRow("Description source", self.source)
 
         confirm_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel

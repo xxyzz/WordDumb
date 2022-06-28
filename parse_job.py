@@ -410,7 +410,7 @@ def load_spacy(model, book_path):
         ruler = nlp.add_pipe("entity_ruler", before="ner")
         patterns = []
         with custom_x_path.open(encoding="utf-8") as f:
-            for name, label, aliases, _ in json.load(f):
+            for name, label, aliases, *_ in json.load(f):
                 patterns.append({"label": label, "pattern": name, "id": name})
                 for alias in [x.strip() for x in aliases.split(",")]:
                     patterns.append({"label": label, "pattern": alias, "id": name})

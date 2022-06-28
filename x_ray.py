@@ -60,9 +60,10 @@ class X_Ray:
 
     def insert_descriptions(self, search_people):
         for entity, data in self.entities.items():
-            if custom_desc := self.custom_x_ray.get(entity):
+            if custom_data := self.custom_x_ray.get(entity):
+                custom_desc, custom_source = custom_data
                 insert_x_entity_description(
-                    self.conn, (custom_desc, entity, None, data["id"])
+                    self.conn, (custom_desc, entity, custom_source, data["id"])
                 )
             elif (search_people or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)

@@ -3,6 +3,7 @@
 import json
 import re
 from collections import defaultdict
+from datetime import datetime
 from urllib.parse import unquote
 
 # https://www.mediawiki.org/wiki/Special:MyLanguage/Extension:TextExtracts#API
@@ -196,7 +197,7 @@ class Wikidata(MediaWikiBase):
     def query(self, items):
         items = " ".join(map(lambda x: f"wd:{x}", items))
         query = f"""
-        SELECT ?item ?democracy_index (SAMPLE(?maps) AS ?map) WHERE {{
+        SELECT ?item ?democracy_index (SAMPLE(?maps) AS ?map) (MAX(?inceptions) AS ?inception) WHERE {{
           VALUES ?item {{ {items} }}
           OPTIONAL {{
             ?item (p:P242/ps:P242) ?maps.
@@ -215,6 +216,7 @@ class Wikidata(MediaWikiBase):
               GROUP BY ?item
             }}
           }}
+          OPTIONAL {{ ?item wdt:P571 ?inceptions. }}
         }}
         GROUP BY ?item ?democracy_index
         """
@@ -227,7 +229,8 @@ class Wikidata(MediaWikiBase):
             item_id = binding["item"]["value"].split("/")[-1]
             democracy_index = binding.get("democracy_index", {}).get("value")
             map_url = binding.get("map", {}).get("value")
-            if democracy_index or map_url:
+            inception = binding.get("inception", {}).get("value")
+            if democracy_index or map_url or inception:
                 self.add_cache(
                     item_id,
                     {
@@ -235,10 +238,24 @@ class Wikidata(MediaWikiBase):
                         "map_filename": unquote(map_url).split("/")[-1]
                         if map_url
                         else None,
+                        "inception": inception,
                     },
                 )
             else:
                 self.add_cache(item_id, None)
+
+
+def inception_text(inception):
+    if inception.startswith("-"):
+        bc = int(inception[1:5]) + 1  # 2BC: -0001, 1BC: +0000, 1AD: 0001
+        years = datetime.now().year + bc
+        return f"Inception: {bc} BC({years} years ago)"
+    else:
+        # don't need to remove the last "Z" in Python 3.11
+        inception = datetime.fromisoformat(inception[:-1])
+        # Python 3.11: datetime.now(timezone.utc) - inception
+        years = (datetime.now() - inception).days // 365
+        return f"Inception: {inception.strftime('%d %B %Y').lstrip('0')}({years} years ago)"
 
 
 def regime_type(democracy_index_score):

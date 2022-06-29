@@ -17,6 +17,7 @@ try:
     from .mediawiki import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
+        inception_text,
         is_full_name,
         query_mediawiki,
         query_wikidata,
@@ -36,6 +37,7 @@ except ImportError:
     from mediawiki import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
+        inception_text,
         is_full_name,
         query_mediawiki,
         query_wikidata,
@@ -72,8 +74,10 @@ class X_Ray:
                 if self.wikidata and (
                     wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])
                 ):
-                    if democracy_index := wikidata_cache["democracy_index"]:
+                    if democracy_index := wikidata_cache.get("democracy_index"):
                         summary += "\n" + regime_type(float(democracy_index))
+                    if inception := wikidata_cache.get("inception"):
+                        summary += "\n" + inception_text(inception)
                 insert_x_entity_description(
                     self.conn, (summary, entity, self.mediawiki.source_id, data["id"])
                 )

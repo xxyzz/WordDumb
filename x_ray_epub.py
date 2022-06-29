@@ -12,6 +12,7 @@ try:
     from .mediawiki import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
+        inception_text,
         is_full_name,
         query_mediawiki,
         query_wikidata,
@@ -21,6 +22,7 @@ except ImportError:
     from mediawiki import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
+        inception_text,
         is_full_name,
         query_mediawiki,
         query_wikidata,
@@ -211,6 +213,8 @@ class X_Ray_EPUB:
                 ):
                     if democracy_index := wikidata_cache.get("democracy_index"):
                         s += f"<p>{regime_type(float(democracy_index))}</p>"
+                    if inception := wikidata_cache.get("inception"):
+                        s += f"<p>{inception_text(inception)}</p>"
                     if self.wiki_commons and (
                         filename := wikidata_cache.get("map_filename")
                     ):

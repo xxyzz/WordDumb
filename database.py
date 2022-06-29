@@ -193,7 +193,6 @@ def insert_x_excerpt_image(conn, data):
 
 def save_db(source, dest_path):
     source.commit()
-    dest_path.parent.mkdir(exist_ok=True)
     dest = sqlite3.connect(dest_path)
     with dest:
         source.backup(dest)

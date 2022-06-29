@@ -9,7 +9,7 @@
   },
   "blis": {
     "compiled": true,
-    "version": "0.7.7"
+    "version": "0.7.8"
   },
   "catalogue": {
     "compiled": false,
@@ -17,7 +17,7 @@
   },
   "certifi": {
     "compiled": false,
-    "version": "2022.5.18.1"
+    "version": "2022.6.15"
   },
   "charset-normalizer": {
     "compiled": false,
@@ -37,7 +37,7 @@
   },
   "jarowinkler": {
     "compiled": true,
-    "version": "1.0.2"
+    "version": "1.0.4"
   },
   "langcodes": {
     "compiled": false,
@@ -49,7 +49,7 @@
   },
   "numpy": {
     "compiled": true,
-    "version": "1.22.4"
+    "version": "1.23.0"
   },
   "packaging": {
     "compiled": false,
@@ -73,7 +73,7 @@
   },
   "rapidfuzz": {
     "compiled": true,
-    "version": "2.0.11"
+    "version": "2.0.15"
   },
   "requests": {
     "compiled": false,

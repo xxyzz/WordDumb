@@ -83,7 +83,7 @@ class ConfigWidget(QWidget):
         model_size_label.setOpenExternalLinks(True)
         model_size_label.setToolTip("Larger model improves X-Ray quality")
         self.model_size_box = QComboBox()
-        spacy_model_sizes = {"sm": "small", "md": "medium", "lg": "large"}
+        spacy_model_sizes = {"sm": "Small", "md": "Medium", "lg": "Large"}
         for size, text in spacy_model_sizes.items():
             self.model_size_box.addItem(text, size)
         self.model_size_box.setCurrentText(spacy_model_sizes[prefs["model_size"]])

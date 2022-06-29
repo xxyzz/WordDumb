@@ -41,7 +41,7 @@ class CustomLemmasDialog(QDialog):
         )
         self.lemmas_table.horizontalHeader().setMaximumSectionSize(400)
         self.lemmas_table.setSizeAdjustPolicy(
-            QAbstractScrollArea.AdjustToContentsOnFirstShow
+            QAbstractScrollArea.SizeAdjustPolicy.AdjustToContentsOnFirstShow
         )
         self.lemmas_table.resizeColumnsToContents()
         vl.addWidget(self.lemmas_table)
@@ -61,7 +61,7 @@ class CustomLemmasDialog(QDialog):
 
     def search_lemma(self, text):
         if matches := self.lemmas_model.match(
-            self.lemmas_model.index(0, 1), Qt.DisplayRole, text
+            self.lemmas_model.index(0, 1), Qt.ItemDataRole.DisplayRole, text
         ):
             self.lemmas_table.setCurrentIndex(matches[0])
             self.lemmas_table.scrollTo(matches[0])
@@ -100,14 +100,14 @@ class LemmasTableModle(QAbstractTableModel):
         klld_conn.close()
         self.headers = ["Enabled", "Lemma", "Sense id", "Definition", "Difficulty"]
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         column = index.column()
         value = self.lemmas[index.row()][column]
-        if role == Qt.CheckStateRole and column == 0:
-            return Qt.Checked if value else Qt.Unchecked
-        elif role == Qt.DisplayRole or role == Qt.EditRole:
+        if role == Qt.ItemDataRole.CheckStateRole and column == 0:
+            return Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
+        elif role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             return value
-        elif role == Qt.ToolTipRole and column == 3:
+        elif role == Qt.ItemDataRole.ToolTipRole and column == 3:
             return value
 
     def rowCount(self, index):
@@ -117,24 +117,29 @@ class LemmasTableModle(QAbstractTableModel):
         return len(self.headers)
 
     def headerData(self, section, orientation, role):
-        if role == Qt.DisplayRole and orientation == Qt.Horizontal:
+        if (
+            role == Qt.ItemDataRole.DisplayRole
+            and orientation == Qt.Orientation.Horizontal
+        ):
             return self.headers[section]
 
     def flags(self, index):
         flag = QAbstractTableModel.flags(self, index)
         column = index.column()
         if column == 0:
-            flag |= Qt.ItemIsUserCheckable
+            flag |= Qt.ItemFlag.ItemIsUserCheckable
         elif column == 4:
-            flag |= Qt.ItemIsEditable
+            flag |= Qt.ItemFlag.ItemIsEditable
         return flag
 
     def setData(self, index, value, role):
+        if not index.isValid():
+            return False
         column = index.column()
-        if role == Qt.CheckStateRole and column == 0:
-            self.lemmas[index.row()][0] = value == Qt.Checked
+        if role == Qt.ItemDataRole.CheckStateRole and column == 0:
+            self.lemmas[index.row()][0] = value == Qt.CheckState.Checked
             return True
-        elif role == Qt.EditRole and column == 4:
+        elif role == Qt.ItemDataRole.EditRole and column == 4:
             self.lemmas[index.row()][4] = int(value)
             return True
         return False
@@ -156,7 +161,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
                 comboBox.addItem(text, value)
 
         for index, text in self.tooltips.items():
-            comboBox.setItemData(index, text, Qt.ToolTipRole)
+            comboBox.setItemData(index, text, Qt.ItemDataRole.ToolTipRole)
         comboBox.currentIndexChanged.connect(self.commit_editor)
 
         return comboBox
@@ -166,7 +171,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
         self.commitData.emit(editor)
 
     def setEditorData(self, editor, index):
-        value = index.data(Qt.DisplayRole)
+        value = index.data(Qt.ItemDataRole.DisplayRole)
         if isinstance(self.options, list):
             editor.setCurrentText(str(value))
         else:
@@ -174,7 +179,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
 
     def setModelData(self, editor, model, index):
         value = editor.currentData()
-        model.setData(index, value, Qt.EditRole)
+        model.setData(index, value, Qt.ItemDataRole.EditRole)
 
     def paint(self, painter, option, index):
         if isinstance(self.parent(), QAbstractItemView):

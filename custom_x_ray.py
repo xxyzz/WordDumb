@@ -64,7 +64,9 @@ class CustomXRayDialog(QDialog):
             4, ComboBoxDelegate(self.x_ray_table, DESC_SOURCES)
         )
         self.x_ray_table.horizontalHeader().setMaximumSectionSize(400)
-        self.x_ray_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        self.x_ray_table.setSizeAdjustPolicy(
+            QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents
+        )
         self.x_ray_table.resizeColumnsToContents()
         vl.addWidget(self.x_ray_table)
 
@@ -92,7 +94,7 @@ class CustomXRayDialog(QDialog):
 
     def search_x_ray(self, text):
         if matches := self.x_ray_model.match(
-            self.x_ray_model.index(0, 0), Qt.DisplayRole, text
+            self.x_ray_model.index(0, 0), Qt.ItemDataRole.DisplayRole, text
         ):
             self.x_ray_table.setCurrentIndex(matches[0])
             self.x_ray_table.scrollTo(matches[0])
@@ -133,15 +135,15 @@ class XRayTableModle(QAbstractTableModel):
             "Description source",
         ]
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         row = index.row()
         column = index.column()
         if row < 0 or column < 0:
             return None
         value = self.x_ray_data[row][column]
-        if role == Qt.DisplayRole or role == Qt.EditRole:
+        if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             return value
-        elif role == Qt.ToolTipRole and column == 3:
+        elif role == Qt.ItemDataRole.ToolTipRole and column == 3:
             return value
 
     def rowCount(self, index):
@@ -151,16 +153,21 @@ class XRayTableModle(QAbstractTableModel):
         return len(self.headers)
 
     def headerData(self, section, orientation, role):
-        if role == Qt.DisplayRole and orientation == Qt.Horizontal:
+        if (
+            role == Qt.ItemDataRole.DisplayRole
+            and orientation == Qt.Orientation.Horizontal
+        ):
             return self.headers[section]
 
     def flags(self, index):
-        return QAbstractTableModel.flags(self, index) | Qt.ItemIsEditable
+        return QAbstractTableModel.flags(self, index) | Qt.ItemFlag.ItemIsEditable
 
     def setData(self, index, value, role):
+        if not index.isValid():
+            return False
         row = index.row()
         column = index.column()
-        if role == Qt.EditRole:
+        if role == Qt.ItemDataRole.EditRole:
             self.x_ray_data[row][column] = value
             return True
         return False
@@ -200,7 +207,7 @@ class AddXRayDialog(QDialog):
             range(len(NER_LABEL_EXPLANATIONS)), NER_LABEL_EXPLANATIONS.items()
         ):
             self.ner_label.addItem(label, label)
-            self.ner_label.setItemData(index, exp, Qt.ToolTipRole)
+            self.ner_label.setItemData(index, exp, Qt.ItemDataRole.ToolTipRole)
         form_layout.addRow("NER label", self.ner_label)
 
         self.aliases = QLineEdit()

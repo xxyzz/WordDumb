@@ -222,8 +222,10 @@ class FormatOrderDialog(QDialog):
         self.format_list.setDragEnabled(True)
         self.format_list.viewport().setAcceptDrops(True)
         self.format_list.setDropIndicatorShown(True)
-        self.format_list.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.format_list.setDragDropMode(QAbstractItemView.InternalMove)
+        self.format_list.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+        )
+        self.format_list.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         self.format_list.addItems(prefs["preferred_formats"])
         vl.addWidget(self.format_list)
 

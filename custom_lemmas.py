@@ -3,7 +3,7 @@
 import base64
 import sqlite3
 
-from PyQt5.QtCore import QAbstractTableModel, Qt
+from PyQt5.QtCore import QAbstractTableModel, Qt, QVariant
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
@@ -114,11 +114,15 @@ class LemmasTableModle(QAbstractTableModel):
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
-            return None
+            return QVariant()
         column = index.column()
         value = self.lemmas[index.row()][column]
         if role == Qt.ItemDataRole.CheckStateRole and column == 0:
-            return Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
+            new_value = Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
+            if isinstance(new_value, int):  # PyQt5
+                return new_value
+            else:  # PyQt6 Enum
+                return new_value.value
         elif role == Qt.ItemDataRole.DisplayRole and column == 3:
             return self.pos_types[value]
         elif role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
@@ -155,7 +159,12 @@ class LemmasTableModle(QAbstractTableModel):
             return False
         column = index.column()
         if role == Qt.ItemDataRole.CheckStateRole and column == 0:
-            self.lemmas[index.row()][0] = value == Qt.CheckState.Checked
+            checked_value = (
+                Qt.CheckState.Checked
+                if isinstance(Qt.CheckState.Checked, int)
+                else Qt.CheckState.Checked.value
+            )
+            self.lemmas[index.row()][0] = value == checked_value
             self.dataChanged.emit(index, index, [role])
             return True
         elif role == Qt.ItemDataRole.EditRole and column == 5:

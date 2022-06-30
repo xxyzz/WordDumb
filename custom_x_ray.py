@@ -2,7 +2,7 @@
 
 import json
 
-from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QVariant
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QAbstractScrollArea,
@@ -137,7 +137,7 @@ class XRayTableModle(QAbstractTableModel):
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
-            return None
+            return QVariant()
         row = index.row()
         column = index.column()
         value = self.x_ray_data[row][column]

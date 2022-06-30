@@ -21,7 +21,7 @@
   },
   "charset-normalizer": {
     "compiled": false,
-    "version": "2.0.12"
+    "version": "2.1.0"
   },
   "click": {
     "compiled": false,
@@ -37,7 +37,7 @@
   },
   "jarowinkler": {
     "compiled": true,
-    "version": "1.0.4"
+    "version": "1.0.5"
   },
   "langcodes": {
     "compiled": false,
@@ -73,11 +73,11 @@
   },
   "rapidfuzz": {
     "compiled": true,
-    "version": "2.0.15"
+    "version": "2.1.0"
   },
   "requests": {
     "compiled": false,
-    "version": "2.28.0"
+    "version": "2.28.1"
   },
   "smart-open": {
     "compiled": false,

@@ -175,8 +175,8 @@ class ConfigWidget(QWidget):
                 self.save_lemmas,
                 (
                     {
-                        lemma: (difficulty, sense_id)
-                        for enabled, lemma, sense_id, _, difficulty in custom_lemmas_dlg.lemmas_model.lemmas
+                        lemma: (difficulty, sense_id, pos_type)
+                        for enabled, lemma, sense_id, pos_type, _, difficulty in custom_lemmas_dlg.lemmas_model.lemmas
                         if enabled
                     },
                 ),

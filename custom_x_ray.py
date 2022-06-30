@@ -136,10 +136,10 @@ class XRayTableModle(QAbstractTableModel):
         ]
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
+        if not index.isValid():
+            return None
         row = index.row()
         column = index.column()
-        if row < 0 or column < 0:
-            return None
         value = self.x_ray_data[row][column]
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             return value
@@ -160,6 +160,8 @@ class XRayTableModle(QAbstractTableModel):
             return self.headers[section]
 
     def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemFlag.ItemIsEnabled
         return QAbstractTableModel.flags(self, index) | Qt.ItemFlag.ItemIsEditable
 
     def setData(self, index, value, role):
@@ -169,6 +171,7 @@ class XRayTableModle(QAbstractTableModel):
         column = index.column()
         if role == Qt.ItemDataRole.EditRole:
             self.x_ray_data[row][column] = value
+            self.dataChanged.emit(index, index, [role])
             return True
         return False
 

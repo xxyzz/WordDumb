@@ -32,7 +32,7 @@ class CustomLemmasDialog(QDialog):
         self.lemmas_table.setModel(self.lemmas_model)
         self.lemmas_table.hideColumn(2)
         self.lemmas_table.setItemDelegateForColumn(
-            4,
+            5,
             ComboBoxDelegate(
                 self.lemmas_table,
                 list(range(1, 6)),
@@ -78,8 +78,12 @@ class LemmasTableModle(QAbstractTableModel):
         for _, (difficulty, sense_id) in kw_processor.get_all_keywords().items():
             sense_ids[sense_id] = difficulty
 
-        for (lemma, sense_id, short_def, full_def) in klld_conn.execute(
-            'SELECT lemma, senses.id, short_def, full_def FROM lemmas JOIN senses ON lemmas.id = display_lemma_id WHERE (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like "-%" ORDER BY lemma'
+        self.pos_types = {}
+        for pos_type_id, pos_type_lable in klld_conn.execute("SELECT * FROM pos_types"):
+            self.pos_types[pos_type_id] = pos_type_lable
+
+        for lemma, sense_id, short_def, full_def, pos_type in klld_conn.execute(
+            'SELECT lemma, senses.id, short_def, full_def, pos_type FROM lemmas JOIN senses ON lemmas.id = display_lemma_id WHERE (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like "-%" ORDER BY lemma'
         ):
             enabled = False
             difficulty = 1
@@ -91,6 +95,7 @@ class LemmasTableModle(QAbstractTableModel):
                     enabled,
                     lemma,
                     sense_id,
+                    pos_type,
                     base64.b64decode(short_def if short_def else full_def).decode(
                         "utf-8"
                     ),
@@ -98,16 +103,27 @@ class LemmasTableModle(QAbstractTableModel):
                 ]
             )
         klld_conn.close()
-        self.headers = ["Enabled", "Lemma", "Sense id", "Definition", "Difficulty"]
+        self.headers = [
+            "Enabled",
+            "Lemma",
+            "Sense id",
+            "POS type",
+            "Definition",
+            "Difficulty",
+        ]
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
+        if not index.isValid():
+            return None
         column = index.column()
         value = self.lemmas[index.row()][column]
         if role == Qt.ItemDataRole.CheckStateRole and column == 0:
             return Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
+        elif role == Qt.ItemDataRole.DisplayRole and column == 3:
+            return self.pos_types[value]
         elif role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             return value
-        elif role == Qt.ItemDataRole.ToolTipRole and column == 3:
+        elif role == Qt.ItemDataRole.ToolTipRole and column == 4:
             return value
 
     def rowCount(self, index):
@@ -124,11 +140,13 @@ class LemmasTableModle(QAbstractTableModel):
             return self.headers[section]
 
     def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemFlag.ItemIsEnabled
         flag = QAbstractTableModel.flags(self, index)
         column = index.column()
         if column == 0:
             flag |= Qt.ItemFlag.ItemIsUserCheckable
-        elif column == 4:
+        elif column == 5:
             flag |= Qt.ItemFlag.ItemIsEditable
         return flag
 
@@ -138,9 +156,11 @@ class LemmasTableModle(QAbstractTableModel):
         column = index.column()
         if role == Qt.ItemDataRole.CheckStateRole and column == 0:
             self.lemmas[index.row()][0] = value == Qt.CheckState.Checked
+            self.dataChanged.emit(index, index, [role])
             return True
-        elif role == Qt.ItemDataRole.EditRole and column == 4:
-            self.lemmas[index.row()][4] = int(value)
+        elif role == Qt.ItemDataRole.EditRole and column == 5:
+            self.lemmas[index.row()][5] = int(value)
+            self.dataChanged.emit(index, index, [role])
             return True
         return False
 

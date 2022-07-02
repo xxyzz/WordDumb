@@ -16,11 +16,12 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
-    QHBoxLayout,
+    QFormLayout,
     QLabel,
     QLineEdit,
     QListWidget,
     QPushButton,
+    QSpinBox,
     QVBoxLayout,
     QWidget,
 )
@@ -49,6 +50,7 @@ prefs.defaults["fandom"] = ""
 prefs.defaults["add_locator_map"] = False
 prefs.defaults["preferred_formats"] = ["KFX", "AZW3", "AZW", "MOBI", "EPUB"]
 prefs.defaults["use_all_formats"] = False
+prefs.defaults["minimal_x_ray_count"] = 1
 
 
 class ConfigWidget(QWidget):
@@ -68,7 +70,7 @@ class ConfigWidget(QWidget):
         vl.addWidget(customize_ww_button)
 
         self.search_people_box = QCheckBox(
-            "Fetch X-Ray people descriptions from Wikipedia or Fandom"
+            "Fetch X-Ray people descriptions from Wikipedia/Fandom"
         )
         self.search_people_box.setToolTip(
             "Enable this option for nonfiction books and novels that have character pages on Wikipedia/Fandom"
@@ -76,7 +78,11 @@ class ConfigWidget(QWidget):
         self.search_people_box.setChecked(prefs["search_people"])
         vl.addWidget(self.search_people_box)
 
-        model_size_hl = QHBoxLayout()
+        form_layout = QFormLayout()
+        form_layout.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
+
         model_size_label = QLabel(
             '<a href="https://spacy.io/models/en">spaCy model</a> size'
         )
@@ -87,12 +93,17 @@ class ConfigWidget(QWidget):
         for size, text in spacy_model_sizes.items():
             self.model_size_box.addItem(text, size)
         self.model_size_box.setCurrentText(spacy_model_sizes[prefs["model_size"]])
-        model_size_hl.addWidget(model_size_label)
-        model_size_hl.addWidget(self.model_size_box)
-        vl.addLayout(model_size_hl)
+        form_layout.addRow(model_size_label, self.model_size_box)
 
-        zh_wiki_hl = QHBoxLayout()
-        zh_label = QLabel("Chinese Wikipedia variant")
+        self.minimal_x_ray_count = QSpinBox()
+        self.minimal_x_ray_count.setMinimum(1)
+        self.minimal_x_ray_count.setValue(prefs["minimal_x_ray_count"])
+        minimal_x_ray_label = QLabel("Minimal X-Ray occurrences")
+        minimal_x_ray_label.setToolTip(
+            "X-Ray entities that appear less then this number and don't have description from Wikipedia/Fandom will be removed"
+        )
+        form_layout.addRow(minimal_x_ray_label, self.minimal_x_ray_count)
+
         self.zh_wiki_box = QComboBox()
         zh_variants = {
             "cn": "大陆简体",
@@ -105,21 +116,17 @@ class ConfigWidget(QWidget):
         for variant, text in zh_variants.items():
             self.zh_wiki_box.addItem(text, variant)
         self.zh_wiki_box.setCurrentText(zh_variants[prefs["zh_wiki_variant"]])
-        zh_wiki_hl.addWidget(zh_label)
-        zh_wiki_hl.addWidget(self.zh_wiki_box)
-        vl.addLayout(zh_wiki_hl)
+        form_layout.addRow("Chinese Wikipedia variant", self.zh_wiki_box)
 
-        fandom_hl = QHBoxLayout()
-        fandom_label = QLabel("Fandom URL")
-        fandom_hl.addWidget(fandom_label)
         self.fandom_url = QLineEdit()
         self.fandom_url.setText(prefs["fandom"])
         self.fandom_url.setPlaceholderText("https://*.fandom.com[/language]")
         fandom_re = QRegularExpression(r"https:\/\/[\w-]+\.fandom\.com(\/\w{2})?")
         fandom_validator = QRegularExpressionValidator(fandom_re)
         self.fandom_url.setValidator(fandom_validator)
-        fandom_hl.addWidget(self.fandom_url)
-        vl.addLayout(fandom_hl)
+        form_layout.addRow("Fandom URL", self.fandom_url)
+
+        vl.addLayout(form_layout)
 
         self.locator_map_box = QCheckBox("Add locator map to EPUB footnotes")
         self.locator_map_box.setToolTip(
@@ -145,6 +152,7 @@ class ConfigWidget(QWidget):
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
         prefs["fandom"] = self.fandom_url.text()
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
+        prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
 
     def open_custom_lemmas_dialog(self):
         klld_path = get_klld_path(self.plugin_path)

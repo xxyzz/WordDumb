@@ -57,7 +57,7 @@
   },
   "pathy": {
     "compiled": false,
-    "version": "0.6.1"
+    "version": "0.6.2"
   },
   "preshed": {
     "compiled": true,
@@ -73,7 +73,7 @@
   },
   "rapidfuzz": {
     "compiled": true,
-    "version": "2.1.0"
+    "version": "2.1.1"
   },
   "requests": {
     "compiled": false,
@@ -113,7 +113,7 @@
   },
   "typing-extensions": {
     "compiled": false,
-    "version": "4.2.0"
+    "version": "4.3.0"
   },
   "urllib3": {
     "compiled": false,

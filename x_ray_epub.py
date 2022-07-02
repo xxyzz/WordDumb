@@ -47,6 +47,7 @@ class X_Ray_EPUB:
         self.entity_id = 0
         self.entities = {}
         self.entity_occurrences = defaultdict(list)
+        self.removed_entity_ids = set()
         self.extract_folder = Path(book_path).with_name("extract")
         if self.extract_folder.exists():
             shutil.rmtree(self.extract_folder)
@@ -117,6 +118,7 @@ class X_Ray_EPUB:
 
         if entity_data := self.entities.get(entity):
             entity_id = entity_data["id"]
+            entity_data["count"] += 1
         elif r := extractOne(
             entity,
             self.entities.keys(),
@@ -125,6 +127,7 @@ class X_Ray_EPUB:
         ):
             matched_name = r[0]
             matched_entity = self.entities[matched_name]
+            matched_entity["count"] += 1
             entity_id = matched_entity["id"]
             if is_full_name(matched_name, matched_entity["label"], entity, ner_label):
                 self.entities[entity] = matched_entity
@@ -135,6 +138,7 @@ class X_Ray_EPUB:
                 "id": self.entity_id,
                 "label": ner_label,
                 "quote": book_quote,
+                "count": 1,
             }
             self.entity_id += 1
 
@@ -142,12 +146,23 @@ class X_Ray_EPUB:
             (start, end, origin_entity, entity_id)
         )
 
-    def modify_epub(self, search_people):
-        query_mediawiki(self.entities, self.mediawiki, search_people)
+    def remove_entities(self, minimal_count):
+        for entity, data in self.entities.copy().items():
+            if (
+                data["count"] < minimal_count
+                and self.mediawiki.get_cache(entity) is None
+                and entity not in self.custom_x_ray
+            ):
+                del self.entities[entity]
+                self.removed_entity_ids.add(data["id"])
+
+    def modify_epub(self, prefs):
+        query_mediawiki(self.entities, self.mediawiki, prefs["search_people"])
         if self.wikidata:
             query_wikidata(self.entities, self.mediawiki, self.wikidata)
+        self.remove_entities(prefs["minimal_x_ray_count"])
         self.insert_anchor_elements()
-        self.create_footnotes(search_people)
+        self.create_footnotes(prefs["search_people"])
         self.modify_opf()
         self.zip_extract_folder()
 
@@ -158,6 +173,8 @@ class X_Ray_EPUB:
             new_xhtml_str = ""
             last_end = 0
             for start, end, entity, entity_id in entity_list:
+                if entity_id in self.removed_entity_ids:
+                    continue
                 new_xhtml_str += xhtml_str[last_end:start]
                 new_xhtml_str += f'<a epub:type="noteref" href="x_ray.xhtml#{entity_id}">{entity}</a>'
                 last_end = end

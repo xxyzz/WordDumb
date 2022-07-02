@@ -123,12 +123,12 @@ class X_Ray:
             self.terms_counter[entity_id] += 1
         self.entity_occurrences[entity_id].append((start, entity_len))
 
-    def merge_entities(self):
+    def merge_entities(self, minimal_count):
         for src_name, src_entity in self.entities.copy().items():
             dest_name = self.mediawiki.get_direct_cache(src_name)
+            src_counter = self.get_entity_counter(src_entity["label"])
+            src_count = src_counter[src_entity["id"]]
             if isinstance(dest_name, str) and dest_name in self.entities:
-                src_counter = self.get_entity_counter(src_entity["label"])
-                src_count = src_counter[src_entity["id"]]
                 del src_counter[src_entity["id"]]
                 dest_entity = self.entities[dest_name]
                 self.get_entity_counter(dest_entity["label"])[
@@ -137,6 +137,14 @@ class X_Ray:
                 self.entity_occurrences[dest_entity["id"]].extend(
                     self.entity_occurrences[src_entity["id"]]
                 )
+                del self.entity_occurrences[src_entity["id"]]
+                del self.entities[src_name]
+            elif (
+                src_count < minimal_count
+                and dest_name is None
+                and src_name not in self.custom_x_ray
+            ):
+                del src_counter[src_entity["id"]]
                 del self.entity_occurrences[src_entity["id"]]
                 del self.entities[src_name]
             elif src_entity["label"] in PERSON_LABELS:
@@ -149,14 +157,14 @@ class X_Ray:
             self.people_counter if entity_label in PERSON_LABELS else self.terms_counter
         )
 
-    def finish(self, db_path, erl, kfx_json, mobi_html, mobi_codec, search_people):
+    def finish(self, db_path, erl, kfx_json, mobi_html, mobi_codec, prefs):
         def top_mentioned(counter):
             return ",".join(map(str, [e[0] for e in counter.most_common(10)]))
 
-        query_mediawiki(self.entities, self.mediawiki, search_people)
+        query_mediawiki(self.entities, self.mediawiki, prefs["search_people"])
         if self.wikidata:
             query_wikidata(self.entities, self.mediawiki, self.wikidata)
-        self.merge_entities()
+        self.merge_entities(prefs["minimal_x_ray_count"])
 
         insert_x_entities(
             self.conn,
@@ -180,7 +188,7 @@ class X_Ray:
                 for start, entity_length in occurrence_list
             ),
         )
-        self.insert_descriptions(search_people)
+        self.insert_descriptions(prefs["search_people"])
 
         if kfx_json:
             self.find_kfx_images(kfx_json)

@@ -94,6 +94,7 @@ def do_job(
             prefs["zh_wiki_variant"],
             prefs["fandom"],
             book_fmt,
+            str(prefs["minimal_x_ray_count"]),
             plugin_path,
             "",
         ]
@@ -186,7 +187,7 @@ def create_files(
                 find_named_entity(
                     data[0], x_ray, doc, None, wiki_lang, data[1], data[2]
                 )
-            x_ray.modify_epub(prefs["search_people"])
+            x_ray.modify_epub(prefs)
             return
 
         x_ray_conn, x_ray_path = create_x_ray_db(
@@ -215,7 +216,7 @@ def create_files(
             kfx_json,
             mobi_html,
             mobi_codec,
-            prefs["search_people"],
+            prefs,
         )
     elif create_ww:
         for text, context in parse_book(kfx_json, mobi_html, mobi_codec):

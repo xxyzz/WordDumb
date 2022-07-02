@@ -29,6 +29,7 @@ parser.add_argument("version")
 parser.add_argument("zh_wiki")
 parser.add_argument("fandom")
 parser.add_argument("book_fmt")
+parser.add_argument("minimal_x_ray_count", type=int)
 parser.add_argument("plugin_path")
 parser.add_argument("dump_path")
 args = parser.parse_args()
@@ -65,6 +66,7 @@ else:
             "zh_wiki_variant": args.zh_wiki,
             "fandom": args.fandom,
             "add_locator_map": args.m,
+            "minimal_x_ray_count": args.minimal_x_ray_count,
         },
         None,
     )

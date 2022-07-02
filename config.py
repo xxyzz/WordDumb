@@ -201,7 +201,7 @@ class ConfigWidget(QWidget):
         if ismacos:
             plugin_path = str(self.plugin_path)
             args = [mac_python(), plugin_path]
-            args.extend([""] * 11 + [plugin_path, str(custom_path)])
+            args.extend([""] * 12 + [plugin_path, str(custom_path)])
             run_subprocess(args, json.dumps(lemmas))
         else:
             insert_flashtext_path(self.plugin_path)

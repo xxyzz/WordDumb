@@ -119,11 +119,13 @@ class X_Ray_EPUB:
         if entity_data := self.entities.get(entity):
             entity_id = entity_data["id"]
             entity_data["count"] += 1
-        elif r := extractOne(
-            entity,
-            self.entities.keys(),
-            score_cutoff=FUZZ_THRESHOLD,
-            scorer=token_set_ratio,
+        elif entity not in self.custom_x_ray and (
+            r := extractOne(
+                entity,
+                self.entities.keys(),
+                score_cutoff=FUZZ_THRESHOLD,
+                scorer=token_set_ratio,
+            )
         ):
             matched_name = r[0]
             matched_entity = self.entities[matched_name]

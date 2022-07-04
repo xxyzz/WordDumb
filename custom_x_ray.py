@@ -202,6 +202,9 @@ class AddXRayDialog(QDialog):
         self.setLayout(vl)
 
         form_layout = QFormLayout()
+        form_layout.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.name_line = QLineEdit()
         form_layout.addRow("Name", self.name_line)
 

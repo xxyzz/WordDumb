@@ -230,6 +230,8 @@ class Wikidata(MediaWikiBase):
             democracy_index = binding.get("democracy_index", {}).get("value")
             map_url = binding.get("map", {}).get("value")
             inception = binding.get("inception", {}).get("value")
+            if inception and inception.startswith("http"):  # unknown value, Q649
+                inception = None
             if democracy_index or map_url or inception:
                 self.add_cache(
                     item_id,

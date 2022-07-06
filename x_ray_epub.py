@@ -103,7 +103,7 @@ class X_Ray_EPUB:
                         r"<body.{3,}?</body>", f.read(), re.DOTALL
                     ):
                         for m in re.finditer(r">[^<]{2,}<", match_body.group(0)):
-                            text = m.group(0)[1:-1]
+                            text = m.group(0)[1:-1].replace("\n", " ")
                             yield unescape(text), (
                                 match_body.start() + m.start() + 1,
                                 text,

@@ -241,7 +241,7 @@ def parse_book(kfx_json, mobi_html, mobi_codec):
         # match text inside HTML tags
         for match_body in re.finditer(b"<body.{3,}?</body>", mobi_html, re.DOTALL):
             for m in re.finditer(b">[^<]{2,}<", match_body.group(0)):
-                text = m.group(0)[1:-1].decode(mobi_codec)
+                text = m.group(0)[1:-1].decode(mobi_codec).replace("\n", " ")
                 yield unescape(text), (match_body.start() + m.start() + 1, text)
 
 

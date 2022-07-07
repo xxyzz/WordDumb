@@ -31,6 +31,34 @@
       "version": "4.9.1"
     }
   },
+  "wiktionary": {
+    "certifi": {
+      "compiled": false,
+      "version": "2022.6.15"
+    },
+    "charset-normalizer": {
+      "compiled": false,
+      "version": "2.1.0"
+    },
+    "idna": {
+      "compiled": false,
+      "version": "3.3"
+    },
+    "requests": {
+      "compiled": false,
+      "version": "2.28.1"
+    },
+    "urllib3": {
+      "compiled": false,
+      "version": "1.26.9"
+    }
+  },
+  "wiktionary_cjk": {
+    "pyahocorasick": {
+      "compiled": true,
+      "version": "1.4.4"
+    }
+  },
   "zh": {
     "Cython": {
       "compiled": true,

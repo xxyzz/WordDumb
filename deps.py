@@ -28,11 +28,13 @@ def install_deps(model, book_fmt, notif):
     if reinstall := False if LIBS_PATH.exists() else True:
         for old_path in LIBS_PATH.parent.glob("worddumb-libs-py*"):
             old_path.rename(LIBS_PATH)
-    if model:
+    if model == "lemminflect":
+        install_lemminflect(reinstall, notif)
+    elif model.startswith("wiktionary"):
+        install_wiktionary_deps(model, reinstall, notif)
+    else:
         install_x_ray_deps(model, reinstall, notif)
         install_extra_deps(model, book_fmt, reinstall, notif)
-    else:
-        install_lemminflect(reinstall, notif)
 
 
 def which_python():
@@ -147,3 +149,10 @@ def upgrade_mac_pip(py_path):
 def install_lemminflect(reinstall, notif):
     data = load_json_or_pickle(PLUGINS_PATH, "data/spacy_extra.json")
     pip_install_pkgs(data["lemminflect"], reinstall, notif)
+
+
+def install_wiktionary_deps(dep_type, reinstall, notif):
+    data = load_json_or_pickle(PLUGINS_PATH, "data/spacy_extra.json")
+    pip_install_pkgs(data["wiktionary"], reinstall, notif)
+    if dep_type == "wiktionary_cjk":
+        pip_install_pkgs(data["wiktionary_cjk"], reinstall, notif)

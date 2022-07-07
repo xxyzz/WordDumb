@@ -9,6 +9,8 @@ import webbrowser
 import zipfile
 from pathlib import Path
 
+CJK_LANGS = ["zh", "ja", "ko"]
+
 
 def load_json_or_pickle(plugin_path, filepath):
     if not plugin_path:
@@ -70,10 +72,19 @@ def insert_flashtext_path(plugin_path):
     insert_lib_path(str(plugin_path.joinpath("libs")))
 
 
-def load_lemmas_dump(plugin_path):
+def load_lemmas_dump(plugin_path, lang=None):
     insert_flashtext_path(plugin_path)
     custom_path = custom_lemmas_dump_path(plugin_path)
-    if custom_path.exists():
+    if lang:
+        file_path = wiktionary_dump_path(plugin_path, lang)
+        if lang in CJK_LANGS:
+            insert_installed_libs(plugin_path)
+            import ahocorasick
+
+            return ahocorasick.load(str(file_path), pickle.loads)
+        else:
+            return load_json_or_pickle(None, file_path)
+    elif custom_path.exists():
         return load_json_or_pickle(None, custom_path)
     else:
         return load_json_or_pickle(plugin_path, "lemmas_dump")
@@ -91,6 +102,10 @@ def custom_lemmas_folder(plugin_path):
 
 def custom_lemmas_dump_path(plugin_path):
     return custom_lemmas_folder(plugin_path).joinpath("lemmas_dump")
+
+
+def wiktionary_dump_path(plugin_path, lang):
+    return custom_lemmas_folder(plugin_path).joinpath(f"wiktionary_{lang}_dump")
 
 
 def get_klld_path(plugin_path):

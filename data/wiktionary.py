@@ -85,7 +85,9 @@ def dump_wikitionary(words, dump_path, lang):
         import ahocorasick
 
         automaton = ahocorasick.Automaton()
-        for _, word, short_gloss, gloss, example, forms in filter(lambda x: x[0] and not automaton.exists(x[1]), words):
+        for _, word, short_gloss, gloss, example, forms in filter(
+            lambda x: x[0] and not automaton.exists(x[1]), words
+        ):
             automaton.add_word(word, (word, short_gloss, gloss, example))
             for form in filter(lambda x: not automaton.exists(x), forms):
                 automaton.add_word(form, (form, short_gloss, gloss, example))
@@ -96,7 +98,9 @@ def dump_wikitionary(words, dump_path, lang):
         from flashtext import KeywordProcessor
 
         keyword_processor = KeywordProcessor()
-        for _, word, short_gloss, gloss, example, forms in filter(lambda x: x[0] and x[1] not in keyword_processor, words):
+        for _, word, short_gloss, gloss, example, forms in filter(
+            lambda x: x[0] and x[1] not in keyword_processor, words
+        ):
             keyword_processor.add_keyword(word, (short_gloss, gloss, example))
             for form in filter(lambda x: x not in keyword_processor, forms):
                 keyword_processor.add_keyword(form, (short_gloss, gloss, example))
@@ -116,8 +120,13 @@ if __name__ == "__main__":
     )
     lang = "en"
     import zipfile
-    with zipfile.ZipFile("/Users/x/Library/Preferences/calibre/plugins/WordDumb.zip") as zf:
+
+    with zipfile.ZipFile(
+        "/Users/x/Library/Preferences/calibre/plugins/WordDumb.zip"
+    ) as zf:
         with zf.open("lemmas_dump") as f:
             extract_wiktionary(json_path, lang, pickle.load(f))
     with open(json_path.with_name(f"wiktionary_{lang}.json")) as f:
-        dump_wikitionary(json.load(f), json_path.with_name(f"wiktionary_{lang}_dump"), lang)
+        dump_wikitionary(
+            json.load(f), json_path.with_name(f"wiktionary_{lang}_dump"), lang
+        )

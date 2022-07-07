@@ -195,7 +195,7 @@ class ConfigWidget(QWidget):
             gui.job_manager.run_threaded_job(job)
 
     def save_lemmas(self, lemmas, abort=None, log=None, notifications=None):
-        install_deps(None, None, notifications)
+        install_deps("lemminflect", None, notifications)
         notifications.put((0, "Saving customized lemmas"))
         custom_path = custom_lemmas_dump_path(self.plugin_path)
         if ismacos:

@@ -6,17 +6,20 @@ import re
 import string
 from pathlib import Path
 
+from .error_dialogs import unsupported_language_dialog
 from .utils import get_plugin_path, load_json_or_pickle
 
 
-def check_metadata(db, book_id):
+def check_metadata(gui, book_id):
     from .config import prefs
 
+    db = gui.current_db.new_api
     supported_languages = load_json_or_pickle(get_plugin_path(), "data/languages.json")
     mi = db.get_metadata(book_id, get_cover=True)
     # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     book_language = mi.get("language")
     if book_language not in supported_languages:
+        unsupported_language_dialog(mi.get("title"), gui)
         return None
 
     book_fmts = db.formats(book_id)
@@ -35,7 +38,7 @@ def check_metadata(db, book_id):
     )
 
 
-def cli_check_metadata(book_path):
+def cli_check_metadata(book_path, log):
     supported_languages = load_json_or_pickle(get_plugin_path(), "data/languages.json")
     book_path = Path(book_path)
     book_fmt = book_path.suffix.upper()[1:]
@@ -65,6 +68,10 @@ def cli_check_metadata(book_path):
     if mi:
         book_language = mi.get("language")
         if book_language not in supported_languages:
+            log.prints(
+                log.WARN,
+                f"The language of the book {mi.get('title')} is not supported.",
+            )
             return None
         return book_fmt, mi, supported_languages[book_language]
 

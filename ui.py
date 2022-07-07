@@ -8,7 +8,7 @@ from calibre.gui2.threaded_jobs import ThreadedJob
 from PyQt5.QtGui import QIcon
 
 from .custom_x_ray import CustomXRayDialog
-from .error_dialogs import job_failed
+from .error_dialogs import job_failed, non_english_book_dialog
 from .metadata import check_metadata
 from .parse_job import do_job
 from .send_file import SendFile, device_connected
@@ -82,7 +82,7 @@ def get_metadata_of_selected_books(gui):
     return filter(
         None,
         [
-            check_metadata(gui.current_db.new_api, book_id)
+            check_metadata(gui, book_id)
             for book_id in map(
                 gui.library_view.model().id,
                 gui.library_view.selectionModel().selectedRows(),
@@ -95,6 +95,7 @@ def run(gui, create_ww, create_x):
     for book_id, book_fmts, book_paths, mi, lang in get_metadata_of_selected_books(gui):
         for book_fmt, book_path in zip(book_fmts, book_paths):
             if book_fmt == "EPUB" or lang["wiki"] != "en":
+                non_english_book_dialog(gui)
                 create_ww = False
             if not create_ww and not create_x:
                 continue

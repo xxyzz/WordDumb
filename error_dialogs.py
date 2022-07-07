@@ -98,3 +98,21 @@ def check_network_error(error, parent):
             error,
             parent,
         )
+
+
+def unsupported_language_dialog(title, parent):
+    error_dialog(
+        "Unsupported language",
+        f"The language of the book <i>{title}</i> is not supported.",
+        None,
+        parent,
+    )
+
+
+def non_english_book_dialog(parent):
+    error_dialog(
+        "Non-English book",
+        "Word Wise is only available in English books on Kindle.",
+        None,
+        parent,
+    )

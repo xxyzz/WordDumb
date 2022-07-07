@@ -50,11 +50,14 @@ class WordDumbDumb(InterfaceActionBase):
             create_x = True
 
         for file_path in args.book_path:
-            data = cli_check_metadata(file_path)
+            data = cli_check_metadata(file_path, log)
             if data is None:
                 continue
             book_fmt, mi, lang = data
             if book_fmt == "EPUB" or lang["wiki"] != "en":
+                log.prints(
+                    Log.WARN, "Word Wise is only available in English books on Kindle."
+                )
                 create_w = False
             if not create_w and not create_x:
                 continue

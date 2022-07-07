@@ -6,7 +6,7 @@ import re
 import string
 from pathlib import Path
 
-from .error_dialogs import unsupported_language_dialog
+from .error_dialogs import unsupported_format_dialog, unsupported_language_dialog
 from .utils import get_plugin_path, load_json_or_pickle
 
 
@@ -25,6 +25,7 @@ def check_metadata(gui, book_id):
     book_fmts = db.formats(book_id)
     chosen_fmts = [f for f in prefs["preferred_formats"] if f in book_fmts]
     if not chosen_fmts:
+        unsupported_format_dialog(gui)
         return None
     if not prefs["use_all_formats"]:
         chosen_fmts = [chosen_fmts[0]]
@@ -75,6 +76,7 @@ def cli_check_metadata(book_path, log):
             return None
         return book_fmt, mi, supported_languages[book_language]
 
+    log.prints(log.WARN, "The book format is not supported.")
     return None
 
 

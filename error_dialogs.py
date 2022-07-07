@@ -116,3 +116,12 @@ def non_english_book_dialog(parent):
         None,
         parent,
     )
+
+
+def unsupported_format_dialog(parent):
+    error_dialog(
+        "Unsupported book format",
+        "The book format is not supported.",
+        None,
+        parent,
+    )

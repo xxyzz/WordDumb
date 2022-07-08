@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import json
+import random
 import re
 from html import escape, unescape
 from pathlib import Path
 
 try:
+    from .data.wiktionary import download_and_dump_wiktionary
     from .database import (
         create_lang_layer,
         create_x_ray_db,
@@ -13,18 +15,21 @@ try:
         insert_lemma,
         save_db,
     )
+    from .epub import EPUB
     from .error_dialogs import GITHUB_URL
+    from .interval import Interval, IntervalTree
     from .mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
     from .utils import (
+        CJK_LANGS,
         get_custom_x_path,
         get_plugin_path,
         insert_installed_libs,
         load_custom_x_desc,
         load_lemmas_dump,
         run_subprocess,
+        wiktionary_dump_path,
     )
     from .x_ray import X_Ray
-    from .x_ray_epub import X_Ray_EPUB
 except ImportError:
     from database import (
         create_lang_layer,
@@ -34,16 +39,18 @@ except ImportError:
         insert_lemma,
         save_db,
     )
+    from epub import EPUB
     from error_dialogs import GITHUB_URL
+    from interval import Interval, IntervalTree
     from mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
     from utils import (
+        CJK_LANGS,
         get_custom_x_path,
         insert_installed_libs,
         load_custom_x_desc,
         load_lemmas_dump,
     )
     from x_ray import X_Ray
-    from x_ray_epub import X_Ray_EPUB
 
 
 def do_job(
@@ -66,19 +73,52 @@ def do_job(
     if book_fmt == "EPUB":
         book_path = Path(book_path)
         # Python 3.9, PurePath.with_stem
-        new_epub_path = book_path.with_name(f"{book_path.stem}_x_ray.epub")
+        new_file_name = book_path.stem
+        if create_x:
+            new_file_name += "_x_ray"
+        if create_ww:
+            new_file_name += "_word_wise"
+        new_epub_path = book_path.with_name(f"{new_file_name}.epub")
         create_x = create_x and not new_epub_path.exists()
+        create_ww = create_ww and not new_epub_path.exists()
+        if create_ww and not wiktionary_dump_path(plugin_path, lang["wiki"]).exists():
+            if lang["wiki"] == "en":
+                install_deps("wiktionary", book_fmt, notifications)
+                insert_installed_libs(plugin_path)
+                download_and_dump_wiktionary(
+                    wiktionary_dump_path(plugin_path, "en"),
+                    lang["kaikki"],
+                    "en",
+                    load_lemmas_dump(plugin_path, "en"),
+                    notifications,
+                )
+            else:
+                raise Exception("WIKTIONARY_NOT_EXISTS")
     else:
         create_ww = create_ww and not get_ll_path(asin, book_path).exists()
         create_x = create_x and not get_x_ray_path(asin, book_path).exists()
+
+    return_values = (
+        book_id,
+        asin,
+        new_epub_path if book_fmt == "EPUB" else book_path,
+        mi,
+        update_asin,
+        book_fmt,
+        acr,
+    )
+    if not create_ww and not create_x:
+        return return_values
+
     if create_x:
         install_deps(model, book_fmt, notifications)
 
     if notifications:
         notifications.put((0, "Creating files"))
-
     version = ".".join(map(str, VERSION))
-    if ismacos and create_x:
+    if ismacos and (
+        create_x or (book_fmt == "EPUB" and create_ww and lang["wiki"] in CJK_LANGS)
+    ):
         plugin_path = str(plugin_path)
         args = [
             mac_python(),
@@ -100,6 +140,8 @@ def do_job(
         ]
         if create_ww:
             args.append("-l")
+        if create_x:
+            args.append("-x")
         if prefs["search_people"]:
             args.append("-s")
         if prefs["add_locator_map"]:
@@ -131,9 +173,7 @@ def do_job(
             notifications,
         )
 
-    if book_fmt == "EPUB":
-        book_path = new_epub_path
-    return book_id, asin, book_path, mi, update_asin, book_fmt, acr
+    return return_values
 
 
 def calulate_final_start(kfx_json, mobi_html):
@@ -161,35 +201,63 @@ def create_files(
     prefs,
     notif,
 ):
-    final_start = calulate_final_start(kfx_json, mobi_html)
-    plugin_path = Path(plugin_path) if isinstance(plugin_path, str) else plugin_path
-
+    is_epub = not kfx_json and not mobi_codec
+    useragent = f"WordDumb/{plugin_version} ({GITHUB_URL})"
+    if isinstance(plugin_path, str):
+        plugin_path = Path(plugin_path)
+    kw_processor = None
     if create_ww:
-        ll_conn, ll_path = create_lang_layer(asin, book_path, acr, revision)
-        kw_processor = load_lemmas_dump(plugin_path)
+        kw_processor = load_lemmas_dump(plugin_path, wiki_lang if is_epub else None)
 
     if create_x:
         insert_installed_libs(plugin_path)
         nlp = load_spacy(model, book_path)
-        useragent = f"WordDumb/{plugin_version} ({GITHUB_URL})"
         mediawiki = MediaWiki(wiki_lang, useragent, plugin_path, prefs)
         wikidata = None if prefs["fandom"] else Wikidata(plugin_path, useragent)
-        wiki_commons = None
         custom_x_ray = load_custom_x_desc(book_path)
 
-        if not kfx_json and not mobi_codec:  # EPUB
+    if is_epub:
+        if create_x:
+            wiki_commons = None
             if not prefs["fandom"] and prefs["add_locator_map"]:
                 wiki_commons = Wikimedia_Commons(plugin_path, useragent)
-            x_ray = X_Ray_EPUB(
-                book_path, mediawiki, wiki_commons, wikidata, custom_x_ray
+            epub = EPUB(
+                book_path, mediawiki, wiki_commons, wikidata, custom_x_ray, kw_processor
             )
-            for doc, data in nlp.pipe(x_ray.extract_epub(), as_tuples=True):
-                find_named_entity(
-                    data[0], x_ray, doc, None, wiki_lang, data[1], data[2]
+            for doc, (start, escaped_text, xhtml_path) in nlp.pipe(
+                epub.extract_epub(), as_tuples=True
+            ):
+                intervals = find_named_entity(
+                    start, epub, doc, None, wiki_lang, escaped_text, xhtml_path
                 )
-            x_ray.modify_epub(prefs)
-            return
+                if create_ww:
+                    random.shuffle(intervals)
+                    interval_tree = IntervalTree()
+                    interval_tree.insert_intervals(intervals)
+                    epub_find_lemma(
+                        start,
+                        doc.text,
+                        kw_processor,
+                        escaped_text,
+                        xhtml_path,
+                        epub,
+                        interval_tree,
+                    )
+        elif create_ww:
+            epub = EPUB(book_path, None, None, None, None, kw_processor)
+            for text, (start, escaped_text, xhtml_path) in epub.extract_epub():
+                epub_find_lemma(
+                    start, text, kw_processor, escaped_text, xhtml_path, epub
+                )
+        epub.modify_epub(prefs, wiki_lang)
+        return
 
+    # Kindle
+    final_start = calulate_final_start(kfx_json, mobi_html)
+    if create_ww:
+        ll_conn, ll_path = create_lang_layer(asin, book_path, acr, revision)
+
+    if create_x:
         x_ray_conn, x_ray_path = create_x_ray_db(
             asin, book_path, wiki_lang, plugin_path, prefs
         )
@@ -287,6 +355,70 @@ def find_lemma(start, text, kw_processor, ll_conn, mobi_codec, escaped_text):
         insert_lemma(ll_conn, (index, end) + tuple(data))
 
 
+def epub_find_lemma(
+    start, text, kw_processor, escaped_text, xhtml_path, epub, interval_tree=None
+):
+    from flashtext import KeywordProcessor
+
+    starts = set()
+    if isinstance(kw_processor, KeywordProcessor):
+        for data, token_start, token_end in kw_processor.extract_keywords(
+            text, span_info=True
+        ):
+            epub_add_lemma(
+                token_start,
+                token_end,
+                interval_tree,
+                text,
+                escaped_text,
+                start,
+                starts,
+                epub,
+                xhtml_path,
+            )
+    else:
+        for token_end, data in kw_processor.iter_long(text):
+            epub_add_lemma(
+                token_end + 1 - len(data[0]),
+                token_end + 1,
+                interval_tree,
+                text,
+                escaped_text,
+                start,
+                starts,
+                epub,
+                xhtml_path,
+            )
+
+
+def epub_add_lemma(
+    token_start,
+    token_end,
+    interval_tree,
+    text,
+    escaped_text,
+    start,
+    starts,
+    epub,
+    xhtml_path,
+):
+    lemma = text[token_start:token_end]
+    lemma_start, lemma_end = index_in_escaped_text(lemma, escaped_text, token_start)
+    if lemma_start is None or lemma_start in starts:
+        return
+    if interval_tree and interval_tree.is_overlap(Interval(lemma_start, lemma_end - 1)):
+        return
+
+    starts.add(lemma_start)
+    epub.add_lemma(
+        lemma,
+        start + lemma_start,
+        start + lemma_end,
+        xhtml_path,
+        escaped_text[lemma_start:lemma_end],
+    )
+
+
 DIRECTIONS = frozenset(
     [
         "north",
@@ -333,8 +465,9 @@ def process_entity(text, lang, len_limit):
 def find_named_entity(
     start, x_ray, doc, mobi_codec, lang, escaped_text, xhtml_path=None
 ):
-    len_limit = 2 if lang in ["zh", "ja", "ko"] else 3
+    len_limit = 2 if lang in CJK_LANGS else 3
     starts = set()
+    intervals = []
     for ent in filter(lambda x: x.label_ in NER_LABELS, doc.ents):
         text = (
             ent.ent_id_  # customized X-Ray
@@ -374,6 +507,7 @@ def find_named_entity(
                 xhtml_path,
                 selectable_text,
             )
+            intervals.append(Interval(start_char, end_char - 1))
             continue
 
         # Include the next punctuation so the word can be selected on Kindle
@@ -387,6 +521,8 @@ def find_named_entity(
             ent_len = len(selectable_text)
 
         x_ray.add_entity(text, ent.label_, ent_start, ent.sent.text.strip(), ent_len)
+
+    return intervals
 
 
 def load_spacy(model, book_path):

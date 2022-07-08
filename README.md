@@ -2,7 +2,7 @@
 
 A calibre plugin that generates Kindle Word Wise and X-Ray files and EPUB footnotes then send them to e-reader. Supports KFX, AZW3, AZW, MOBI and EPUB eBooks.
 
-Book languages supported by X-Ray: Bokmål, Català, Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Polski, Português, Română, Suomi, Svenska, Ελληνικά, Македонски, Русский, 中文, 日本語, 한국어.
+Supported languages: Bokmål, Català, Dansk, Deutsch, English, Español, Français, Italiano, Lietuvių, Nederlands, Polski, Português, Română, Suomi, Svenska, Ελληνικά, Македонски, Русский, 中文, 日本語, 한국어.
 
 Test plugin will be uploaded to [GitHub Actions Artifacts](https://github.com/xxyzz/WordDumb/actions/workflows/tests.yml) at each git push automatically.
 

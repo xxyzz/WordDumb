@@ -18,6 +18,7 @@ try:
         query_wikidata,
         regime_type,
     )
+    from .utils import CJK_LANGS
 except ImportError:
     from mediawiki import (
         FUZZ_THRESHOLD,
@@ -28,6 +29,7 @@ except ImportError:
         query_wikidata,
         regime_type,
     )
+    from utils import CJK_LANGS
 
 
 NAMESPACES = {
@@ -38,8 +40,10 @@ NAMESPACES = {
 }
 
 
-class X_Ray_EPUB:
-    def __init__(self, book_path, mediawiki, wiki_commons, wikidata, custom_x_ray):
+class EPUB:
+    def __init__(
+        self, book_path, mediawiki, wiki_commons, wikidata, custom_x_ray, lemma_glosses
+    ):
         self.book_path = book_path
         self.mediawiki = mediawiki
         self.wiki_commons = wiki_commons
@@ -55,7 +59,10 @@ class X_Ray_EPUB:
         self.xhtml_href_has_folder = False
         self.image_folder = self.extract_folder
         self.image_href_has_folder = False
+        self.image_filenames = set()
         self.custom_x_ray = custom_x_ray
+        self.lemma_glosses = lemma_glosses
+        self.lemmas = set()
 
     def extract_epub(self):
         from lxml import etree
@@ -148,6 +155,10 @@ class X_Ray_EPUB:
             (start, end, origin_entity, entity_id)
         )
 
+    def add_lemma(self, lemma, start, end, xhtml_path, origin_text):
+        self.entity_occurrences[xhtml_path].append((start, end, origin_text, lemma))
+        self.lemmas.add(lemma)
+
     def remove_entities(self, minimal_count):
         for entity, data in self.entities.copy().items():
             if (
@@ -158,18 +169,25 @@ class X_Ray_EPUB:
                 del self.entities[entity]
                 self.removed_entity_ids.add(data["id"])
 
-    def modify_epub(self, prefs):
-        query_mediawiki(self.entities, self.mediawiki, prefs["search_people"])
-        if self.wikidata:
-            query_wikidata(self.entities, self.mediawiki, self.wikidata)
-        self.remove_entities(prefs["minimal_x_ray_count"])
-        self.insert_anchor_elements()
-        self.create_footnotes(prefs["search_people"])
+    def modify_epub(self, prefs, lang):
+        if self.entities:
+            query_mediawiki(self.entities, self.mediawiki, prefs["search_people"])
+            if self.wikidata:
+                query_wikidata(self.entities, self.mediawiki, self.wikidata)
+            if prefs["minimal_x_ray_count"] > 1:
+                self.remove_entities(prefs["minimal_x_ray_count"])
+            self.create_x_ray_footnotes(prefs["search_people"], lang)
+        self.insert_anchor_elements(lang)
+        if self.lemmas:
+            self.create_word_wise_footnotes(lang)
         self.modify_opf()
         self.zip_extract_folder()
 
-    def insert_anchor_elements(self):
+    def insert_anchor_elements(self, lang):
         for xhtml_path, entity_list in self.entity_occurrences.items():
+            if self.entities and self.lemmas:
+                entity_list = sorted(entity_list, key=lambda x: x[0])
+
             with xhtml_path.open(encoding="utf-8") as f:
                 xhtml_str = f.read()
             new_xhtml_str = ""
@@ -178,31 +196,47 @@ class X_Ray_EPUB:
                 if entity_id in self.removed_entity_ids:
                     continue
                 new_xhtml_str += xhtml_str[last_end:start]
-                new_xhtml_str += f'<a epub:type="noteref" href="x_ray.xhtml#{entity_id}">{entity}</a>'
+                if isinstance(entity_id, int):
+                    new_xhtml_str += f'<a epub:type="noteref" href="x_ray.xhtml#{entity_id}">{entity}</a>'
+                else:
+                    new_xhtml_str += self.build_word_wise_tag(entity_id, entity, lang)
                 last_end = end
             new_xhtml_str += xhtml_str[last_end:]
 
+            # add epub namespace and Word Wise CSS
             with xhtml_path.open("w", encoding="utf-8") as f:
                 if NAMESPACES["ops"] not in new_xhtml_str:
-                    # add epub namespace
                     new_xhtml_str = new_xhtml_str.replace(
                         f'xmlns="{NAMESPACES["xml"]}"',
                         f'xmlns="{NAMESPACES["xml"]}" '
                         f'xmlns:epub="{NAMESPACES["ops"]}"',
                     )
+                if self.lemmas:
+                    new_xhtml_str = new_xhtml_str.replace(
+                        "</head>",
+                        "<style>body {line-height: 2.5;} ruby {text-decoration:overline;} ruby a {text-decoration:none;}</style></head>",
+                    )
                 f.write(new_xhtml_str)
 
-    def create_footnotes(self, search_people):
-        self.image_filenames = set()
+    def build_word_wise_tag(self, word, origin_word, lang):
+        short_def, *_ = self.get_lemma_gloss(word, lang)
+        len_ratio = 10 if lang in CJK_LANGS else 2.5
+        word_id = word.replace(" ", "_")
+        if len(short_def) / len(word) > len_ratio:
+            return f'<a epub:type="noteref" href="word_wise.xhtml#{word_id}">{origin_word}</a>'
+        else:
+            return f'<ruby><a epub:type="noteref" href="word_wise.xhtml#{word_id}">{origin_word}</a><rp>(</rp><rt>{short_def}</rt><rp>)</rp></ruby>'
+
+    def create_x_ray_footnotes(self, search_people, lang):
         image_prefix = ""
         if self.xhtml_href_has_folder:
             image_prefix += "../"
         if self.image_href_has_folder:
             image_prefix += f"{self.image_folder.name}/"
-        s = """
+        s = f"""
         <html xmlns="http://www.w3.org/1999/xhtml"
         xmlns:epub="http://www.idpf.org/2007/ops"
-        lang="en-US" xml:lang="en-US">
+        lang="{lang}" xml:lang="{lang}">
         <head><title>X-Ray</title><meta charset="utf-8"/></head>
         <body>
         """
@@ -213,7 +247,7 @@ class X_Ray_EPUB:
                 if source_data := self.mediawiki.get_source(custom_source):
                     source_name, source_link = source_data
                     if source_link:
-                        s += f'<a href="{source_link}{quote(entity)}">{source_name}</a>'
+                        s += f'<p>Source: <a href="{source_link}{quote(entity)}">{source_name}</a></p>'
                     else:
                         s += source_name
                 s += "</aside>"
@@ -223,9 +257,7 @@ class X_Ray_EPUB:
                 s += f"""
                 <aside id="{data["id"]}" epub:type="footnote">
                 <p>{escape(intro_cache["intro"])}</p>
-                <a href="{self.mediawiki.source_link}{quote(entity)}">
-                {self.mediawiki.source_name}
-                </a>
+                <p>Source: <a href="{self.mediawiki.source_link}{quote(entity)}">{self.mediawiki.source_name}</a></p>
                 """
                 if self.wikidata and (
                     wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])
@@ -241,7 +273,7 @@ class X_Ray_EPUB:
                         s += f'<img style="max-width:100%" src="{image_prefix}{filename}" />'
                         shutil.copy(file_path, self.image_folder.joinpath(filename))
                         self.image_filenames.add(filename)
-                    s += f'<a href="https://www.wikidata.org/wiki/{intro_cache["item_id"]}">Wikidata</a>'
+                    s += f'<p>Source: <a href="https://www.wikidata.org/wiki/{intro_cache["item_id"]}">Wikidata</a></p>'
                 s += "</aside>"
             else:
                 s += f'<aside id="{data["id"]}" epub:type="footnote"><p>{escape(data["quote"])}</p></aside>'
@@ -253,6 +285,28 @@ class X_Ray_EPUB:
         if self.wiki_commons:
             self.wiki_commons.close()
 
+    def create_word_wise_footnotes(self, lang):
+        s = f"""
+        <html xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:epub="http://www.idpf.org/2007/ops"
+        lang="{lang}" xml:lang="{lang}">
+        <head><title>Word Wise</title><meta charset="utf-8"/></head>
+        <body>
+        """
+        for lemma in self.lemmas:
+            s += f'<aside id="{lemma.replace(" ", "_")}" epub:type="footnote">'
+            _, gloss, example = self.get_lemma_gloss(lemma, lang)
+            s += f"<p>{escape(gloss)}</p>"
+            if example:
+                s += f"<p><i>{escape(example)}</i></p>"
+            s += f"<p>Source: <a href='https://en.wiktionary.org/wiki/{quote(lemma)}'>Wiktionary</a></p></aside>"
+
+        s += "</body></html>"
+        with self.xhtml_folder.joinpath("word_wise.xhtml").open(
+            "w", encoding="utf-8"
+        ) as f:
+            f.write(s)
+
     def modify_opf(self):
         from lxml import etree
 
@@ -262,9 +316,13 @@ class X_Ray_EPUB:
             xhtml_prefix = f"{self.xhtml_folder.name}/"
         if self.image_href_has_folder:
             image_prefix = f"{self.image_folder.name}/"
-        s = f'<item href="{xhtml_prefix}x_ray.xhtml" id="x_ray.xhtml" media-type="application/xhtml+xml"/>'
         manifest = self.opf_root.find("opf:manifest", NAMESPACES)
-        manifest.append(etree.fromstring(s))
+        if self.entities:
+            s = f'<item href="{xhtml_prefix}x_ray.xhtml" id="x_ray.xhtml" media-type="application/xhtml+xml"/>'
+            manifest.append(etree.fromstring(s))
+        if self.lemmas:
+            s = f'<item href="{xhtml_prefix}word_wise.xhtml" id="word_wise.xhtml" media-type="application/xhtml+xml"/>'
+            manifest.append(etree.fromstring(s))
         for filename in self.image_filenames:
             filename_lower = filename.lower()
             if filename_lower.endswith(".svg"):
@@ -280,16 +338,30 @@ class X_Ray_EPUB:
             s = f'<item href="{image_prefix}{filename}" id="{filename}" media-type="image/{media_type}"/>'
             manifest.append(etree.fromstring(s))
         spine = self.opf_root.find("opf:spine", NAMESPACES)
-        s = '<itemref idref="x_ray.xhtml"/>'
-        spine.append(etree.fromstring(s))
+        if self.entities:
+            spine.append(etree.fromstring('<itemref idref="x_ray.xhtml"/>'))
+        if self.lemmas:
+            spine.append(etree.fromstring('<itemref idref="word_wise.xhtml"/>'))
         with self.opf_path.open("w", encoding="utf-8") as f:
             f.write(etree.tostring(self.opf_root, encoding=str))
 
     def zip_extract_folder(self):
         self.book_path = Path(self.book_path)
         shutil.make_archive(self.extract_folder, "zip", self.extract_folder)
+        new_filename = self.book_path.stem
+        if self.entities:
+            new_filename += "_x_ray"
+        if self.lemmas:
+            new_filename += "_word_wise"
+        new_filename += ".epub"
         shutil.move(
             self.extract_folder.with_suffix(".zip"),
-            self.book_path.with_name(f"{self.book_path.stem}_x_ray.epub"),
+            self.book_path.with_name(new_filename),
         )
         shutil.rmtree(self.extract_folder)
+
+    def get_lemma_gloss(self, lemma, lang):
+        if lang in CJK_LANGS:  # pyahocorasick
+            return self.lemma_glosses.get(lemma)[1:]
+        else:  # flashtext
+            return self.lemma_glosses.get_keyword(lemma)

@@ -88,8 +88,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/.config/calibre/plugins/worddumb-libs-py${{ env.CALIBRE_PY }}
-            ~/.config/calibre/plugins/worddumb-wikimedia
+            ~/.config/calibre/plugins/worddumb-*
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Restore dependencies and Wikipedia cache(macOS)
@@ -97,8 +96,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/Library/Preferences/calibre/plugins/worddumb-libs-py${{ env.MACOS_PY }}
-            ~/Library/Preferences/calibre/plugins/worddumb-wikimedia
+            ~/Library/Preferences/calibre/plugins/worddumb-*
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.MACOS_PY }}
 
       - name: Restore dependencies and Wikipedia cache(Windows)
@@ -106,8 +104,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/AppData/Roaming/calibre/plugins/worddumb-libs-py${{ env.CALIBRE_PY }}
-            ~/AppData/Roaming/calibre/plugins/worddumb-wikimedia
+            ~/AppData/Roaming/calibre/plugins/worddumb-*
           key: ${{ runner.os }}-${{ hashFiles('data/spacy.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Run test

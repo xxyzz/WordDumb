@@ -220,8 +220,8 @@ class EPUB:
 
     def build_word_wise_tag(self, word, origin_word, lang):
         short_def, *_ = self.get_lemma_gloss(word, lang)
-        len_ratio = 10 if lang in CJK_LANGS else 2.5
-        word_id = word.replace(" ", "_")
+        len_ratio = 5 if lang in CJK_LANGS else 2.5
+        word_id = quote(word)
         if len(short_def) / len(word) > len_ratio:
             return f'<a epub:type="noteref" href="word_wise.xhtml#{word_id}">{origin_word}</a>'
         else:
@@ -294,7 +294,7 @@ class EPUB:
         <body>
         """
         for lemma in self.lemmas:
-            s += f'<aside id="{lemma.replace(" ", "_")}" epub:type="footnote">'
+            s += f'<aside id="{quote(lemma)}" epub:type="footnote">'
             _, gloss, example = self.get_lemma_gloss(lemma, lang)
             s += f"<p>{escape(gloss)}</p>"
             if example:

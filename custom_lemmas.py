@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import base64
+import json
 import sqlite3
 
 from PyQt5.QtCore import QAbstractTableModel, Qt, QVariant
@@ -16,29 +17,35 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from .utils import get_klld_path, get_plugin_path, load_lemmas_dump
+from .utils import (
+    get_klld_path,
+    get_plugin_path,
+    load_lemmas_dump,
+    wiktionary_json_path,
+)
 
 
 class CustomLemmasDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent, lang=None):
         super().__init__(parent)
-        self.setWindowTitle("Customize Word Wise lemmas")
+        self.setWindowTitle(f"Customize {'Wiktionary' if lang else 'Word Wise'} lemmas")
         vl = QVBoxLayout()
         self.setLayout(vl)
 
         self.lemmas_table = QTableView()
         self.lemmas_table.setAlternatingRowColors(True)
-        self.lemmas_model = LemmasTableModle()
+        self.lemmas_model = WiktionaryTableModle(lang) if lang else LemmasTableModle()
         self.lemmas_table.setModel(self.lemmas_model)
-        self.lemmas_table.hideColumn(2)
-        self.lemmas_table.setItemDelegateForColumn(
-            5,
-            ComboBoxDelegate(
-                self.lemmas_table,
-                list(range(1, 6)),
-                {0: "Fewer Hints", 4: "More Hints"},
-            ),
-        )
+        self.lemmas_table.hideColumn(4 if lang else 2)
+        if lang is None:
+            self.lemmas_table.setItemDelegateForColumn(
+                5,
+                ComboBoxDelegate(
+                    self.lemmas_table,
+                    list(range(1, 6)),
+                    {0: "Fewer Hints", 4: "More Hints"},
+                ),
+            )
         self.lemmas_table.horizontalHeader().setMaximumSectionSize(400)
         self.lemmas_table.setSizeAdjustPolicy(
             QAbstractScrollArea.SizeAdjustPolicy.AdjustToContentsOnFirstShow
@@ -214,3 +221,71 @@ class ComboBoxDelegate(QStyledItemDelegate):
         if isinstance(self.parent(), QAbstractItemView):
             self.parent().openPersistentEditor(index)
         super().paint(painter, option, index)
+
+
+class WiktionaryTableModle(QAbstractTableModel):
+    def __init__(self, lang):
+        super().__init__()
+        self.headers = ["Enabled", "Lemma", "Short gloss", "Gloss", "Example", "Forms"]
+        self.editable_columns = [2, 5]
+        with open(wiktionary_json_path(get_plugin_path(), lang)) as f:
+            self.lemmas = json.load(f)
+
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
+        if not index.isValid():
+            return QVariant()
+        column = index.column()
+        value = self.lemmas[index.row()][column]
+        if role == Qt.ItemDataRole.CheckStateRole and column == 0:
+            new_value = Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
+            if isinstance(new_value, int):  # PyQt5
+                return new_value
+            else:  # PyQt6 Enum
+                return new_value.value
+        elif role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
+            return value
+        elif role == Qt.ItemDataRole.ToolTipRole and column == 3:
+            return value
+
+    def rowCount(self, index):
+        return len(self.lemmas)
+
+    def columnCount(self, index):
+        return len(self.headers)
+
+    def headerData(self, section, orientation, role):
+        if (
+            role == Qt.ItemDataRole.DisplayRole
+            and orientation == Qt.Orientation.Horizontal
+        ):
+            return self.headers[section]
+
+    def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemFlag.ItemIsEnabled
+        flag = QAbstractTableModel.flags(self, index)
+        column = index.column()
+        if column == 0:
+            flag |= Qt.ItemFlag.ItemIsUserCheckable
+        elif column in self.editable_columns:
+            flag |= Qt.ItemFlag.ItemIsEditable
+        return flag
+
+    def setData(self, index, value, role):
+        if not index.isValid():
+            return False
+        column = index.column()
+        if role == Qt.ItemDataRole.CheckStateRole and column == 0:
+            checked_value = (
+                Qt.CheckState.Checked
+                if isinstance(Qt.CheckState.Checked, int)
+                else Qt.CheckState.Checked.value
+            )
+            self.lemmas[index.row()][0] = value == checked_value
+            self.dataChanged.emit(index, index, [role])
+            return True
+        elif role == Qt.ItemDataRole.EditRole and column in self.editable_columns:
+            self.lemmas[index.row()][column] = value
+            self.dataChanged.emit(index, index, [role])
+            return True
+        return False

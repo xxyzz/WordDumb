@@ -6,6 +6,8 @@ from html import escape, unescape
 from pathlib import Path
 
 try:
+    from calibre.constants import ismacos
+
     from .data.wiktionary import download_and_dump_wiktionary
     from .database import (
         create_lang_layer,
@@ -15,6 +17,7 @@ try:
         insert_lemma,
         save_db,
     )
+    from .deps import install_deps, mac_python
     from .epub import EPUB
     from .error_dialogs import GITHUB_URL
     from .interval import Interval, IntervalTree
@@ -58,11 +61,9 @@ except ImportError:
 def do_job(
     data, create_ww=True, create_x=True, abort=None, log=None, notifications=None
 ):
-    from calibre.constants import ismacos
     from calibre_plugins.worddumb import VERSION
 
     from .config import prefs
-    from .deps import install_deps, mac_python
     from .metadata import get_asin_etc
 
     (book_id, book_fmt, book_path, mi, lang) = data
@@ -84,39 +85,7 @@ def do_job(
         create_x = create_x and not new_epub_path.exists()
         create_ww = create_ww and not new_epub_path.exists()
         if create_ww and not wiktionary_dump_path(plugin_path, lang["wiki"]).exists():
-            install_deps(
-                "wiktionary_cjk" if lang["wiki"] in CJK_LANGS else "wiktionary",
-                None,
-                notifications,
-            )
-            insert_flashtext_path(plugin_path)
-            insert_installed_libs(plugin_path)
-            download_and_dump_wiktionary(
-                wiktionary_dump_path(plugin_path, lang["wiki"]),
-                lang,
-                load_lemmas_dump(plugin_path, "en") if lang["wiki"] == "en" else None,
-                notifications,
-                False if ismacos and lang["wiki"] in CJK_LANGS else True,
-            )
-            if ismacos and lang["wiki"] in CJK_LANGS:
-                args = [
-                    mac_python(),
-                    str(plugin_path),
-                    "",
-                    str(wiktionary_json_path(plugin_path, lang["wiki"])),
-                    "",
-                    "",
-                    "",
-                    lang["wiki"],
-                ]
-                args.extend([""] * 6)
-                args.extend(
-                    [
-                        str(plugin_path),
-                        str(wiktionary_dump_path(plugin_path, lang["wiki"])),
-                    ]
-                )
-                run_subprocess(args)
+            dump_wiktionary_job(plugin_path, lang, True)
     else:
         create_ww = create_ww and not get_ll_path(asin, book_path).exists()
         create_x = create_x and not get_x_ray_path(asin, book_path).exists()
@@ -205,6 +174,47 @@ def calulate_final_start(kfx_json, mobi_html):
     elif mobi_html:
         return len(mobi_html)
     return 0
+
+
+def dump_wiktionary_job(
+    plugin_path, lang, enable_extract, abort=None, log=None, notifications=None
+):
+    install_deps(
+        "wiktionary_cjk" if lang["wiki"] in CJK_LANGS else "wiktionary",
+        None,
+        notifications,
+    )
+    insert_flashtext_path(plugin_path)
+    insert_installed_libs(plugin_path)
+    download_and_dump_wiktionary(
+        wiktionary_json_path(plugin_path, lang["wiki"]),
+        None
+        if ismacos and lang["wiki"] in CJK_LANGS
+        else wiktionary_dump_path(plugin_path, lang["wiki"]),
+        lang,
+        load_lemmas_dump(plugin_path, "en") if lang["wiki"] == "en" else None,
+        notifications,
+        enable_extract,
+    )
+    if ismacos and lang["wiki"] in CJK_LANGS:
+        args = [
+            mac_python(),
+            str(plugin_path),
+            "",
+            str(wiktionary_json_path(plugin_path, lang["wiki"])),
+            "",
+            "",
+            "",
+            lang["wiki"],
+        ]
+        args.extend([""] * 6)
+        args.extend(
+            [
+                str(plugin_path),
+                str(wiktionary_dump_path(plugin_path, lang["wiki"])),
+            ]
+        )
+        run_subprocess(args)
 
 
 def create_files(

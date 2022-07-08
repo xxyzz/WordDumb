@@ -27,7 +27,7 @@
   "fin": {
     "spacy": "fi_core_news_",
     "wiki": "fi",
-    "kaikki": "English"
+    "kaikki": "Finnish"
   },
   "fra": {
     "spacy": "fr_core_news_",

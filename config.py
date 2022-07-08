@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFormLayout,
+    QInputDialog,
     QLabel,
     QLineEdit,
     QListWidget,
@@ -30,6 +31,7 @@ from .custom_lemmas import CustomLemmasDialog
 from .data.dump_lemmas import dump_lemmas
 from .deps import install_deps, mac_python
 from .error_dialogs import GITHUB_URL, error_dialog, job_failed
+from .parse_job import dump_wiktionary_job
 from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
 from .utils import (
     custom_lemmas_dump_path,
@@ -39,7 +41,9 @@ from .utils import (
     get_plugin_path,
     insert_flashtext_path,
     insert_installed_libs,
+    load_json_or_pickle,
     run_subprocess,
+    wiktionary_json_path,
 )
 
 prefs = JSONConfig("plugins/worddumb")
@@ -68,6 +72,10 @@ class ConfigWidget(QWidget):
         customize_ww_button = QPushButton("Customize Word Wise")
         customize_ww_button.clicked.connect(self.open_custom_lemmas_dialog)
         vl.addWidget(customize_ww_button)
+
+        custom_wiktionary_button = QPushButton("Customize Wiktionary")
+        custom_wiktionary_button.clicked.connect(self.open_custom_wiktionary_dialog)
+        vl.addWidget(custom_wiktionary_button)
 
         self.search_people_box = QCheckBox(
             "Fetch X-Ray people descriptions from Wikipedia/Fandom"
@@ -216,6 +224,44 @@ class ConfigWidget(QWidget):
                 list_widget.item(index).text() for index in range(list_widget.count())
             ]
             prefs["use_all_formats"] = format_order_dialog.use_all_formats.isChecked()
+
+    def open_custom_wiktionary_dialog(self):
+        language_dict = load_json_or_pickle(self.plugin_path, "data/languages.json")
+        languages = {val["kaikki"]: val["wiki"] for val in language_dict.values()}
+        lang, ok = QInputDialog.getItem(
+            self,
+            "Select Wiktionary source language",
+            "Language",
+            languages.keys(),
+            editable=False,
+        )
+        if not ok:
+            return
+        wiki_lang = languages[lang]
+        wiktionary_path = wiktionary_json_path(self.plugin_path, wiki_lang)
+        if wiktionary_path.exists():
+            custom_lemmas_dlg = CustomLemmasDialog(self, wiki_lang)
+            if custom_lemmas_dlg.exec():
+                self.run_dump_wiktionary_job(wiki_lang, lang, False)
+        else:
+            self.run_dump_wiktionary_job(wiki_lang, lang, True)
+
+    def run_dump_wiktionary_job(self, wiki_lang, lang, enable_extract):
+        gui = self.parent().parent()
+        job = ThreadedJob(
+            "WordDumb's dumb job",
+            "Download Wiktionary",
+            dump_wiktionary_job,
+            (
+                self.plugin_path,
+                {"wiki": wiki_lang, "kaikki": lang},
+                enable_extract,
+            ),
+            {},
+            Dispatcher(partial(job_failed, parent=gui)),
+            killable=False,
+        )
+        gui.job_manager.run_threaded_job(job)
 
 
 class FormatOrderDialog(QDialog):

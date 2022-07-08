@@ -37,6 +37,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
     if notif:
         notif.put((0, "Extracting Wiktionary file"))
     words = []
+    word_set = set()
     len_limit = 2 if lang in CJK_LANGS else 3
     with open(download_path) as f:
         for line in f:
@@ -49,15 +50,16 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                 or re.fullmatch(r"[\W\d]+", word)
             ):
                 continue
-            if lang in CJK_LANGS and re.fullmatch(r"[a-zA-Z]+", word):
+            if lang in CJK_LANGS and re.fullmatch(r"[a-zA-Z\d]+", word):
                 continue
 
+            enabled = False if word in word_set else True
+            word_set.add(word)
             forms = set()
             for form in map(lambda x: x.get("form"), data.get("forms", [])):
-                if form and len(form) >= len_limit and form != word:
+                if form and form not in word_set and len(form) >= len_limit:
                     forms.add(form)
 
-            enabled = True
             for sense in data.get("senses", []):
                 examples = sense.get("examples", [])
                 glosses = sense.get("glosses")
@@ -79,25 +81,22 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                         short_def(glosses[0]),
                         glosses[0],
                         example_sent,
-                        list(forms),
+                        ",".join(forms),
                     )
                 )
                 enabled = False
 
-    download_path.unlink()
+    # download_path.unlink()
     with open(download_path.with_name(f"wiktionary_{lang}.json"), "w") as f:
         json.dump(words, f)
 
-    return words
 
-
-def dump_wikitionary(words, dump_path, lang, notif):
+def dump_wikitionary(json_path, dump_path, lang, notif):
     if notif:
         notif.put((0, "Converting Wiktionary file"))
 
-    if isinstance(words, str):
-        with open(words) as f:
-            words = json.load(f)
+    with open(json_path) as f:
+        words = json.load(f)
 
     if lang in CJK_LANGS:
         import ahocorasick
@@ -107,7 +106,7 @@ def dump_wikitionary(words, dump_path, lang, notif):
             lambda x: x[0] and not automaton.exists(x[1]), words
         ):
             automaton.add_word(word, (word, short_gloss, gloss, example))
-            for form in filter(lambda x: not automaton.exists(x), forms):
+            for form in filter(lambda x: not automaton.exists(x), forms.spit(",")):
                 automaton.add_word(form, (form, short_gloss, gloss, example))
 
         automaton.make_automaton()
@@ -120,7 +119,7 @@ def dump_wikitionary(words, dump_path, lang, notif):
             lambda x: x[0] and x[1] not in keyword_processor, words
         ):
             keyword_processor.add_keyword(word, (short_gloss, gloss, example))
-            for form in filter(lambda x: x not in keyword_processor, forms):
+            for form in filter(lambda x: x not in keyword_processor, forms.split(",")):
                 keyword_processor.add_keyword(form, (short_gloss, gloss, example))
 
         with open(dump_path, "wb") as f:
@@ -131,8 +130,11 @@ def short_def(gloss):
     return re.split(r"[;,]", re.sub(r"\([^)]+\)", "", gloss), 1)[0].strip()
 
 
-def download_and_dump_wiktionary(dump_path, lang, kindle_lemmas, notif, enable_dump):
+def download_and_dump_wiktionary(
+    json_path, dump_path, lang, kindle_lemmas, notif, enable_extract
+):
     download_path = download_wiktionary(dump_path.parent, lang["kaikki"], notif)
-    words = extract_wiktionary(download_path, lang["wiki"], kindle_lemmas, notif)
-    if enable_dump:
-        dump_wikitionary(words, dump_path, lang["wiki"], notif)
+    if enable_extract:
+        extract_wiktionary(download_path, lang["wiki"], kindle_lemmas, notif)
+    if dump_path:
+        dump_wikitionary(json_path, dump_path, lang["wiki"], notif)

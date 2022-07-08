@@ -86,7 +86,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                 )
                 enabled = False
 
-    # download_path.unlink()
+    download_path.unlink()
     with open(download_path.with_name(f"wiktionary_{lang}.json"), "w") as f:
         json.dump(words, f)
 
@@ -133,7 +133,7 @@ def short_def(gloss):
 def download_and_dump_wiktionary(
     json_path, dump_path, lang, kindle_lemmas, notif, enable_extract
 ):
-    download_path = download_wiktionary(dump_path.parent, lang["kaikki"], notif)
+    download_path = download_wiktionary(json_path.parent, lang["kaikki"], notif)
     if enable_extract:
         extract_wiktionary(download_path, lang["wiki"], kindle_lemmas, notif)
     if dump_path:

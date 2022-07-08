@@ -3,13 +3,12 @@
 import json
 import pickle
 import re
-from pathlib import Path
 
 CJK_LANGS = ["zh", "ja", "ko"]
 POS_TYPES = ["adj", "adv", "noun", "phrase", "proverb", "verb"]
 
 
-def download_wiktionary(download_folder, source_language):
+def download_wiktionary(download_folder, source_language, notif):
     if not download_folder.exists():
         download_folder.mkdir()
     filename = f"kaikki.org-dictionary-{source_language.replace(' ', '')}.json"
@@ -17,16 +16,26 @@ def download_wiktionary(download_folder, source_language):
     if not download_path.exists():
         import requests
 
+        if notif:
+            message = f"Downloading {source_language} Wiktionary"
+            notif.put((0, message))
+
         with requests.get(
             f"https://kaikki.org/dictionary/{source_language}/{filename}", stream=True
         ) as r, open(download_path, "wb") as f:
-            for chunk in r.iter_content(chunk_size=1024):
+            total_len = r.headers.get("content-length")
+            current_len = 0
+            for chunk in r.iter_content(chunk_size=4096):
                 f.write(chunk)
+                if notif:
+                    notif.put((current_len / total_len, message))
 
     return download_path
 
 
-def extract_wiktionary(download_path, lang, kindle_lemmas):
+def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
+    if notif:
+        notif.put((0, "Extracting Wiktionary file"))
     words = []
     len_limit = 2 if lang in CJK_LANGS else 3
     with open(download_path) as f:
@@ -75,12 +84,16 @@ def extract_wiktionary(download_path, lang, kindle_lemmas):
                 )
                 enabled = False
 
-    # download_path.unlink()
+    download_path.unlink()
     with open(download_path.with_name(f"wiktionary_{lang}.json"), "w") as f:
         json.dump(words, f)
 
+    return words
 
-def dump_wikitionary(words, dump_path, lang):
+
+def dump_wikitionary(words, dump_path, lang, notif):
+    if notif:
+        notif.put((0, "Converting Wiktionary file"))
     if lang in CJK_LANGS:
         import ahocorasick
 
@@ -113,20 +126,9 @@ def short_def(gloss):
     return re.split(r"[;,]", re.sub(r"\([^)]+\)", "", gloss), 1)[0].strip()
 
 
-if __name__ == "__main__":
-    json_path = download_wiktionary(
-        Path("/Users/x/Library/Preferences/calibre/plugins/worddumb-lemmas"),
-        "English",
-    )
-    lang = "en"
-    import zipfile
-
-    with zipfile.ZipFile(
-        "/Users/x/Library/Preferences/calibre/plugins/WordDumb.zip"
-    ) as zf:
-        with zf.open("lemmas_dump") as f:
-            extract_wiktionary(json_path, lang, pickle.load(f))
-    with open(json_path.with_name(f"wiktionary_{lang}.json")) as f:
-        dump_wikitionary(
-            json.load(f), json_path.with_name(f"wiktionary_{lang}_dump"), lang
-        )
+def download_and_dump_wiktionary(
+    dump_path, source_lang, wiki_lang, kindle_lemmas, notif
+):
+    download_path = download_wiktionary(dump_path.parent, source_lang, notif)
+    words = extract_wiktionary(download_path, wiki_lang, kindle_lemmas, notif)
+    dump_wikitionary(words, dump_path, wiki_lang, notif)

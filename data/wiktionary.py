@@ -94,6 +94,11 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
 def dump_wikitionary(words, dump_path, lang, notif):
     if notif:
         notif.put((0, "Converting Wiktionary file"))
+
+    if isinstance(words, str):
+        with open(words) as f:
+            words = json.load(f)
+
     if lang in CJK_LANGS:
         import ahocorasick
 
@@ -126,9 +131,8 @@ def short_def(gloss):
     return re.split(r"[;,]", re.sub(r"\([^)]+\)", "", gloss), 1)[0].strip()
 
 
-def download_and_dump_wiktionary(
-    dump_path, source_lang, wiki_lang, kindle_lemmas, notif
-):
-    download_path = download_wiktionary(dump_path.parent, source_lang, notif)
-    words = extract_wiktionary(download_path, wiki_lang, kindle_lemmas, notif)
-    dump_wikitionary(words, dump_path, wiki_lang, notif)
+def download_and_dump_wiktionary(dump_path, lang, kindle_lemmas, notif, enable_dump):
+    download_path = download_wiktionary(dump_path.parent, lang["kaikki"], notif)
+    words = extract_wiktionary(download_path, lang["wiki"], kindle_lemmas, notif)
+    if enable_dump:
+        dump_wikitionary(words, dump_path, lang["wiki"], notif)

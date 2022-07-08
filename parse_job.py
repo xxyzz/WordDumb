@@ -23,11 +23,13 @@ try:
         CJK_LANGS,
         get_custom_x_path,
         get_plugin_path,
+        insert_flashtext_path,
         insert_installed_libs,
         load_custom_x_desc,
         load_lemmas_dump,
         run_subprocess,
         wiktionary_dump_path,
+        wiktionary_json_path,
     )
     from .x_ray import X_Ray
 except ImportError:
@@ -82,18 +84,39 @@ def do_job(
         create_x = create_x and not new_epub_path.exists()
         create_ww = create_ww and not new_epub_path.exists()
         if create_ww and not wiktionary_dump_path(plugin_path, lang["wiki"]).exists():
-            if lang["wiki"] == "en":
-                install_deps("wiktionary", book_fmt, notifications)
-                insert_installed_libs(plugin_path)
-                download_and_dump_wiktionary(
-                    wiktionary_dump_path(plugin_path, "en"),
-                    lang["kaikki"],
-                    "en",
-                    load_lemmas_dump(plugin_path, "en"),
-                    notifications,
+            install_deps(
+                "wiktionary_cjk" if lang["wiki"] in CJK_LANGS else "wiktionary",
+                None,
+                notifications,
+            )
+            insert_flashtext_path(plugin_path)
+            insert_installed_libs(plugin_path)
+            download_and_dump_wiktionary(
+                wiktionary_dump_path(plugin_path, lang["wiki"]),
+                lang,
+                load_lemmas_dump(plugin_path, "en") if lang["wiki"] == "en" else None,
+                notifications,
+                False if ismacos and lang["wiki"] in CJK_LANGS else True,
+            )
+            if ismacos and lang["wiki"] in CJK_LANGS:
+                args = [
+                    mac_python(),
+                    str(plugin_path),
+                    "",
+                    str(wiktionary_json_path(plugin_path, lang["wiki"])),
+                    "",
+                    "",
+                    "",
+                    lang["wiki"],
+                ]
+                args.extend([""] * 6)
+                args.extend(
+                    [
+                        str(plugin_path),
+                        str(wiktionary_dump_path(plugin_path, lang["wiki"])),
+                    ]
                 )
-            else:
-                raise Exception("WIKTIONARY_NOT_EXISTS")
+                run_subprocess(args)
     else:
         create_ww = create_ww and not get_ll_path(asin, book_path).exists()
         create_x = create_x and not get_x_ray_path(asin, book_path).exists()

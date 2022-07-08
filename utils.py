@@ -108,6 +108,10 @@ def wiktionary_dump_path(plugin_path, lang):
     return custom_lemmas_folder(plugin_path).joinpath(f"wiktionary_{lang}_dump")
 
 
+def wiktionary_json_path(plugin_path, lang):
+    return custom_lemmas_folder(plugin_path).joinpath(f"wiktionary_{lang}.json")
+
+
 def get_klld_path(plugin_path):
     custom_folder = custom_lemmas_folder(plugin_path)
     for path in custom_folder.glob("*.en.klld"):

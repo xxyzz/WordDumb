@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 from data.dump_lemmas import dump_lemmas
+from data.wiktionary import dump_wikitionary
 from parse_job import create_files
 from utils import insert_flashtext_path, insert_installed_libs
 
@@ -37,9 +38,12 @@ args = parser.parse_args()
 
 if args.dump_path:
     plugin_path = Path(args.plugin_path)
-    insert_flashtext_path(plugin_path)
     insert_installed_libs(plugin_path)
-    dump_lemmas(json.load(sys.stdin), args.dump_path)
+    if args.wiki_lang:
+        dump_wikitionary(args.book_path, args.dump_path, args.wiki_lang, None)
+    else:
+        insert_flashtext_path(plugin_path)
+        dump_lemmas(json.load(sys.stdin), args.dump_path)
 else:
     kfx_json = None
     mobi_html = None

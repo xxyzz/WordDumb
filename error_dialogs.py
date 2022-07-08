@@ -44,13 +44,6 @@ def job_failed(job, parent=None):
                 job.details,
                 parent,
             )
-        elif "WIKTIONARY_NOT_EXISTS" in job.details:
-            error_dialog(
-                "Not found Wiktionary file",
-                "Please download the Wiktionary file in the customize Word Wise dialog then try again.",
-                None,
-                parent,
-            )
         else:
             check_network_error(job.details, parent)
         return True

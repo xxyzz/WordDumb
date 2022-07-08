@@ -38,9 +38,8 @@ class TestDumbCode(unittest.TestCase):
                     fmt,
                     book_path,
                     mi,
-                    {"spacy": "en_core_web_", "wiki": "en"},
-                ),
-                create_ww=False if fmt == "EPUB" else True,
+                    {"spacy": "en_core_web_", "wiki": "en", "kaikki": "English"},
+                )
             )
             if fmt != "EPUB":
                 kll_path = cls.get_db_path(cls, ".kll")

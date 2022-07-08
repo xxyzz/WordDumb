@@ -2,7 +2,7 @@
 
 from calibre.customize import InterfaceActionBase
 
-VERSION = (3, 22, 0)
+VERSION = (3, 23, 0)
 
 
 class WordDumbDumb(InterfaceActionBase):
@@ -54,7 +54,7 @@ class WordDumbDumb(InterfaceActionBase):
             if data is None:
                 continue
             book_fmt, mi, lang = data
-            if book_fmt == "EPUB" or lang["wiki"] != "en":
+            if book_fmt != "EPUB" and lang["wiki"] != "en":
                 log.prints(
                     Log.WARN, "Word Wise is only available in English books on Kindle."
                 )

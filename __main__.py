@@ -16,6 +16,7 @@ from utils import insert_flashtext_path, insert_installed_libs
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-l", help="create word wise", action="store_true")
+parser.add_argument("-x", help="create x-ray", action="store_true")
 parser.add_argument("-s", help="search people", action="store_true")
 parser.add_argument("-m", help="add locator map", action="store_true")
 parser.add_argument("asin")
@@ -49,7 +50,7 @@ else:
 
     create_files(
         args.l,
-        True,
+        args.x,
         args.asin,
         args.book_path,
         args.acr,

@@ -1,86 +1,107 @@
 {
   "cat": {
     "spacy": "ca_core_news_",
-    "wiki": "ca"
+    "wiki": "ca",
+    "kaikki": "Catalan"
   },
   "dan": {
     "spacy": "da_core_news_",
-    "wiki": "da"
+    "wiki": "da",
+    "kaikki": "Danish"
   },
   "deu": {
     "spacy": "de_core_news_",
-    "wiki": "de"
+    "wiki": "de",
+    "kaikki": "German"
   },
   "ell": {
     "spacy": "el_core_news_",
-    "wiki": "el"
+    "wiki": "el",
+    "kaikki": "Geek"
   },
   "eng": {
     "spacy": "en_core_web_",
-    "wiki": "en"
+    "wiki": "en",
+    "kaikki": "English"
   },
   "fin": {
     "spacy": "fi_core_news_",
-    "wiki": "fi"
+    "wiki": "fi",
+    "kaikki": "English"
   },
   "fra": {
     "spacy": "fr_core_news_",
-    "wiki": "fr"
+    "wiki": "fr",
+    "kaikki": "Finnish"
   },
   "ita": {
     "spacy": "it_core_news_",
-    "wiki": "it"
+    "wiki": "it",
+    "kaikki": "Italian"
   },
   "jpn": {
     "spacy": "ja_core_news_",
-    "wiki": "ja"
+    "wiki": "ja",
+    "kaikki": "Japanese"
   },
   "kor": {
     "spacy": "ko_core_news_",
-    "wiki": "ko"
+    "wiki": "ko",
+    "kaikki": "Korean"
   },
   "lit": {
     "spacy": "lt_core_news_",
-    "wiki": "lt"
+    "wiki": "lt",
+    "kaikki": "Lithuanian"
   },
   "mkd": {
     "spacy": "mk_core_news_",
-    "wiki": "mk"
+    "wiki": "mk",
+    "kaikki": "Macedonian"
   },
   "nld": {
     "spacy": "nl_core_news_",
-    "wiki": "nl"
+    "wiki": "nl",
+    "kaikki": "Dutch"
   },
   "nob": {
     "spacy": "nb_core_news_",
-    "wiki": "no"
+    "wiki": "no",
+    "kaikki": "Norwegian Bokmål"
   },
   "pol": {
     "spacy": "pl_core_news_",
-    "wiki": "pl"
+    "wiki": "pl",
+    "kaikki": "Polish"
   },
   "por": {
     "spacy": "pt_core_news_",
-    "wiki": "pt"
+    "wiki": "pt",
+    "kaikki": "Portuguese"
   },
   "ron": {
     "spacy": "ro_core_news_",
-    "wiki": "ro"
+    "wiki": "ro",
+    "kaikki": "Romanian"
   },
   "rus": {
     "spacy": "ru_core_news_",
-    "wiki": "ru"
+    "wiki": "ru",
+    "kaikki": "Russian"
   },
   "spa": {
     "spacy": "es_core_news_",
-    "wiki": "es"
+    "wiki": "es",
+    "kaikki": "Spanish"
   },
   "swe": {
     "spacy": "sv_core_news_",
-    "wiki": "sv"
+    "wiki": "sv",
+    "kaikki": "Spanish"
   },
   "zho": {
     "spacy": "zh_core_web_",
-    "wiki": "zh"
+    "wiki": "zh",
+    "kaikki": "Chinese"
   }
 }

@@ -6,6 +6,7 @@ from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QVariant
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QAbstractScrollArea,
+    QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -109,6 +110,7 @@ class CustomXRayDialog(QDialog):
                     add_x_dlg.aliases.text(),
                     add_x_dlg.description.toPlainText(),
                     add_x_dlg.source.currentData(),
+                    add_x_dlg.omit.isChecked(),
                 ]
             )
             self.x_ray_table.resizeColumnsToContents()
@@ -133,6 +135,7 @@ class XRayTableModle(QAbstractTableModel):
             "Aliases",
             "Description",
             "Description source",
+            "Omit",
         ]
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -145,6 +148,12 @@ class XRayTableModle(QAbstractTableModel):
             return value
         elif role == Qt.ItemDataRole.ToolTipRole and column == 3:
             return value
+        elif role == Qt.ItemDataRole.CheckStateRole and column == 5:
+            new_value = Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
+            if isinstance(new_value, int):  # PyQt5
+                return new_value
+            else:  # PyQt6 Enum
+                return new_value.value
 
     def rowCount(self, index):
         return len(self.x_ray_data)
@@ -162,7 +171,12 @@ class XRayTableModle(QAbstractTableModel):
     def flags(self, index):
         if not index.isValid():
             return Qt.ItemFlag.ItemIsEnabled
-        return QAbstractTableModel.flags(self, index) | Qt.ItemFlag.ItemIsEditable
+        flag = QAbstractTableModel.flags(self, index)
+        if index.column() == 5:
+            flag |= Qt.ItemFlag.ItemIsUserCheckable
+        else:
+            flag |= Qt.ItemFlag.ItemIsEditable
+        return flag
 
     def setData(self, index, value, role):
         if not index.isValid():
@@ -171,6 +185,15 @@ class XRayTableModle(QAbstractTableModel):
         column = index.column()
         if role == Qt.ItemDataRole.EditRole:
             self.x_ray_data[row][column] = value
+            self.dataChanged.emit(index, index, [role])
+            return True
+        elif role == Qt.ItemDataRole.CheckStateRole and column == 5:
+            checked_value = (
+                Qt.CheckState.Checked
+                if isinstance(Qt.CheckState.Checked, int)
+                else Qt.CheckState.Checked.value
+            )
+            self.x_ray_data[row][column] = value == checked_value
             self.dataChanged.emit(index, index, [role])
             return True
         return False
@@ -230,6 +253,9 @@ class AddXRayDialog(QDialog):
         for value, text in DESC_SOURCES.items():
             self.source.addItem(text, value)
         form_layout.addRow("Description source", self.source)
+
+        self.omit = QCheckBox()
+        form_layout.addRow("Omit", self.omit)
 
         confirm_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel

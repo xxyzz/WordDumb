@@ -242,7 +242,7 @@ class EPUB:
         """
         for entity, data in self.entities.items():
             if custom_data := self.custom_x_ray.get(entity):
-                custom_desc, custom_source = custom_data
+                custom_desc, custom_source, _ = custom_data
                 if custom_desc:
                     s += f'<aside id="{data["id"]}" epub:type="footnote"><p>{escape(custom_desc)}</p>'
                     source_name, source_link = self.mediawiki.get_source(custom_source)

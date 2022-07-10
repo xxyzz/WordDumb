@@ -135,6 +135,9 @@ def load_custom_x_desc(book_path):
     custom_path = get_custom_x_path(book_path)
     if custom_path.exists():
         with custom_path.open(encoding="utf-8") as f:
-            return {name: (desc, source) for name, *_, desc, source in json.load(f)}
+            return {
+                name: (desc, source, omit)
+                for name, *_, desc, source, omit in json.load(f)
+            }
     else:
         return {}

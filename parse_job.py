@@ -261,7 +261,14 @@ def create_files(
                 epub.extract_epub(), as_tuples=True
             ):
                 intervals = find_named_entity(
-                    start, epub, doc, None, wiki_lang, escaped_text, xhtml_path
+                    start,
+                    epub,
+                    doc,
+                    None,
+                    wiki_lang,
+                    escaped_text,
+                    custom_x_ray,
+                    xhtml_path,
                 )
                 if create_ww:
                     random.shuffle(intervals)
@@ -303,7 +310,9 @@ def create_files(
                 escaped_text = None
             else:
                 start, escaped_text = context
-            find_named_entity(start, x_ray, doc, mobi_codec, wiki_lang, escaped_text)
+            find_named_entity(
+                start, x_ray, doc, mobi_codec, wiki_lang, escaped_text, custom_x_ray
+            )
             if create_ww:
                 find_lemma(
                     start, doc.text, kw_processor, ll_conn, mobi_codec, escaped_text
@@ -496,7 +505,7 @@ def process_entity(text, lang, len_limit):
 
 
 def find_named_entity(
-    start, x_ray, doc, mobi_codec, lang, escaped_text, xhtml_path=None
+    start, x_ray, doc, mobi_codec, lang, escaped_text, custom_x_ray, xhtml_path=None
 ):
     len_limit = 2 if lang in CJK_LANGS else 3
     starts = set()
@@ -507,7 +516,7 @@ def find_named_entity(
             if ent.ent_id_
             else process_entity(ent.text, lang, len_limit)
         )
-        if text is None:
+        if text is None or (ent.ent_id_ and custom_x_ray.get(ent.ent_id_)[2]):
             continue
 
         ent_text = ent.text if ent.ent_id_ else text

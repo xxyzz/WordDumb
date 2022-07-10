@@ -39,7 +39,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
     words = []
     word_set = set()
     len_limit = 2 if lang in CJK_LANGS else 3
-    with open(download_path) as f:
+    with open(download_path, encoding="utf-8") as f:
         for line in f:
             data = json.loads(line)
             word = data.get("word")
@@ -87,7 +87,9 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                 enabled = False
 
     download_path.unlink()
-    with open(download_path.with_name(f"wiktionary_{lang}.json"), "w") as f:
+    with open(
+        download_path.with_name(f"wiktionary_{lang}.json"), "w", encoding="utf-8"
+    ) as f:
         json.dump(words, f)
 
 
@@ -95,7 +97,7 @@ def dump_wikitionary(json_path, dump_path, lang, notif):
     if notif:
         notif.put((0, "Converting Wiktionary file"))
 
-    with open(json_path) as f:
+    with open(json_path, encoding="utf-8") as f:
         words = json.load(f)
 
     if lang in CJK_LANGS:

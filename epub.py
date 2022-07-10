@@ -243,15 +243,17 @@ class EPUB:
         for entity, data in self.entities.items():
             if custom_data := self.custom_x_ray.get(entity):
                 custom_desc, custom_source = custom_data
-                s += f'<aside id="{data["id"]}" epub:type="footnote"><p>{escape(custom_desc)}</p>'
-                if source_data := self.mediawiki.get_source(custom_source):
-                    source_name, source_link = source_data
+                if custom_desc:
+                    s += f'<aside id="{data["id"]}" epub:type="footnote"><p>{escape(custom_desc)}</p>'
+                    source_name, source_link = self.mediawiki.get_source(custom_source)
                     if source_link:
                         s += f'<p>Source: <a href="{source_link}{quote(entity)}">{source_name}</a></p>'
                     else:
-                        s += source_name
-                s += "</aside>"
-            elif (search_people or data["label"] not in PERSON_LABELS) and (
+                        s += f"<p>Source: {source_name}</p>"
+                    s += "</aside>"
+                    continue
+
+            if (search_people or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)
             ):
                 s += f"""

@@ -64,10 +64,13 @@ class X_Ray:
         for entity, data in self.entities.items():
             if custom_data := self.custom_x_ray.get(entity):
                 custom_desc, custom_source = custom_data
-                insert_x_entity_description(
-                    self.conn, (custom_desc, entity, custom_source, data["id"])
-                )
-            elif (search_people or data["label"] not in PERSON_LABELS) and (
+                if custom_desc:
+                    insert_x_entity_description(
+                        self.conn, (custom_desc, entity, custom_source, data["id"])
+                    )
+                    continue
+
+            if (search_people or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)
             ):
                 summary = intro_cache["intro"]

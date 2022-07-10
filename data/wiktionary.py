@@ -67,7 +67,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                 if not glosses:
                     continue
                 tags = sense.get("tags", [])
-                if any([x in tags for x in ["plural", "alternative"]]):
+                if any([x in tags for x in ["plural", "alternative", "obsolete"]]):
                     continue
                 for example in examples:
                     example = example.get("text")
@@ -87,6 +87,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                 enabled = False
 
     download_path.unlink()
+    words.sort(key=lambda x: x[1])
     with open(
         download_path.with_name(f"wiktionary_{lang}.json"), "w", encoding="utf-8"
     ) as f:

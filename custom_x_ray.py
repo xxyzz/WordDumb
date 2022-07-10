@@ -33,7 +33,7 @@ NER_LABEL_EXPLANATIONS = {
     "PRODUCT": "Objects, vehicles, foods, etc. (not services)",
 }
 
-DESC_SOURCES = {None: "None", 1: "Wikipedia", 2: "Fandom"}
+DESC_SOURCES = {None: "Book quote", 1: "Wikipedia", 2: "Fandom"}
 
 
 class CustomXRayDialog(QDialog):

@@ -77,9 +77,9 @@ class CustomXRayDialog(QDialog):
         vl.addWidget(search_line)
 
         edit_buttons = QHBoxLayout()
-        add_button = QPushButton(QIcon(I("plus.png")), "Add")
+        add_button = QPushButton(QIcon.ic("plus.png"), "Add")
         add_button.clicked.connect(self.add_x_ray)
-        delete_button = QPushButton(QIcon(I("minus.png")), "Delete")
+        delete_button = QPushButton(QIcon.ic("minus.png"), "Delete")
         delete_button.clicked.connect(self.delete_x_ray)
         edit_buttons.addWidget(add_button)
         edit_buttons.addWidget(delete_button)

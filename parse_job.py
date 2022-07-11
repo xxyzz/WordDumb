@@ -75,13 +75,12 @@ def do_job(
     plugin_path = get_plugin_path()
     if book_fmt == "EPUB":
         book_path = Path(book_path)
-        # Python 3.9, PurePath.with_stem
-        new_file_name = book_path.stem
+        new_file_stem = book_path.stem
         if create_x:
-            new_file_name += "_x_ray"
+            new_file_stem += "_x_ray"
         if create_ww:
-            new_file_name += "_word_wise"
-        new_epub_path = book_path.with_name(f"{new_file_name}.epub")
+            new_file_stem += "_word_wise"
+        new_epub_path = book_path.with_stem(new_file_stem)
         create_x = create_x and not new_epub_path.exists()
         create_ww = create_ww and not new_epub_path.exists()
         if create_ww and not wiktionary_dump_path(plugin_path, lang["wiki"]).exists():

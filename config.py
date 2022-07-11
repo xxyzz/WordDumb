@@ -143,7 +143,7 @@ class ConfigWidget(QWidget):
         self.locator_map_box.setChecked(prefs["add_locator_map"])
         vl.addWidget(self.locator_map_box)
 
-        donate_button = QPushButton(QIcon(I("donate.png")), "Tree-fiddy?")
+        donate_button = QPushButton(QIcon.ic("donate.png"), "Tree-fiddy?")
         donate_button.clicked.connect(donate)
         vl.addWidget(donate_button)
 

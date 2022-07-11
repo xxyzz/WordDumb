@@ -4,7 +4,7 @@ import platform
 import re
 import shutil
 
-from calibre.constants import is64bit, ismacos, iswindows
+from calibre.constants import ismacos, iswindows
 
 from .utils import (
     get_plugin_path,
@@ -18,9 +18,6 @@ SPACY_MODEL_VERSION = "3.3.0"
 
 
 def install_deps(model, book_fmt, notif):
-    if not is64bit:
-        raise Exception("32BIT_CALIBRE")
-
     global PY_PATH, PY_VERSION, LIBS_PATH
     PY_PATH, PY_VERSION = which_python()
     LIBS_PATH = PLUGINS_PATH.parent.joinpath(f"worddumb-libs-py{PY_VERSION}")

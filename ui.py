@@ -23,8 +23,7 @@ class WordDumb(InterfaceAction):
     action_menu_clone_qaction = "Create Word Wise and X-Ray"
 
     def genesis(self):
-        icon = get_icons("starfish.svg")
-        self.qaction.setIcon(icon)
+        self.qaction.setIcon(get_icons("starfish.svg", "WordDumb"))
         self.menu = self.qaction.menu()
 
         self.qaction.triggered.connect(partial(run, self.gui, True, True))
@@ -46,14 +45,14 @@ class WordDumb(InterfaceAction):
             self.menu,
             "Customize X-Ray",
             "Customize X-Ray",
-            icon=QIcon(I("polish.png")),
+            icon=QIcon.ic("polish.png"),
             triggered=self.open_custom_x_ray_dialog,
         )
         self.create_menu_action(
             self.menu,
             "Preferences",
             "Preferences",
-            icon=QIcon(I("config.png")),
+            icon=QIcon.ic("config.png"),
             triggered=self.config,
         )
 
@@ -62,7 +61,7 @@ class WordDumb(InterfaceAction):
             self.menu,
             "Donate",
             "Donate",
-            icon=QIcon(I("donate.png")),
+            icon=QIcon.ic("donate.png"),
             description="I need about tree-fiddy.",
             triggered=donate,
         )

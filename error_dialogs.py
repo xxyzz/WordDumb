@@ -36,11 +36,10 @@ def job_failed(job, parent=None):
                 job.datails,
                 parent,
             )
-        elif "32BIT_CALIBRE" in job.details or "32BIT_PYTHON" in job.details:
-            program = "calibre" if "32BIT_CALIBRE" in job.details else "Python"
+        elif "32BIT_PYTHON" in job.details:
             error_dialog(
                 "The wrist game!",
-                f"You're using 32bit {program}, please install the 64bit version.",
+                "You're using 32bit Python, please install the 64bit version.",
                 job.details,
                 parent,
             )

@@ -95,8 +95,7 @@ class SendFile:
         dst_path = sidecar_folder.joinpath(file_path.name)
         if dst_path.is_file():
             dst_path.unlink()
-        # Python 3.9 accepts path-like object, calibre uses 3.8
-        shutil.move(str(file_path), str(dst_path), shutil.copy)
+        shutil.move(file_path, dst_path, shutil.copy)
 
     def push_files_to_android(self, adb_path, package_name):
         device_book_folder = f"/sdcard/Android/data/{package_name}/files/"
@@ -178,7 +177,7 @@ def copy_klld_from_android(package_name, dest_path):
         ]
     )
     for path in dest_path.joinpath("wordwise").iterdir():
-        shutil.move(str(path), str(dest_path))  # Python 3.9
+        shutil.move(path, dest_path)
     dest_path.joinpath("wordwise").rmdir()
 
 

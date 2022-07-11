@@ -122,7 +122,7 @@ class MediaWiki(MediaWikiBase):
                 f"{self.prefs['fandom']}/wiki/" if self.prefs["fandom"] else None,
             )
 
-        return None
+        return None  # book quote
 
     def query(self, titles):
         result = self.session.get(self.wiki_api, params={"titles": "|".join(titles)})

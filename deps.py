@@ -43,7 +43,7 @@ def which_python():
         if r.stdout.strip() != "True":
             raise Exception("32BIT_PYTHON")
     elif ismacos:
-        py = mac_python(True)
+        py = mac_python()
         r = run_subprocess(
             [
                 py,
@@ -52,15 +52,14 @@ def which_python():
             ]
         )
         py_v = r.stdout.strip()
+    upgrade_pip(py)
     return py, py_v
 
 
-def mac_python(upgrade_pip=False):
+def mac_python():
     py = homebrew_mac_bin_path("python3")
     if not shutil.which(py):
         py = "/usr/bin/python3"  # Command Line Tools
-        if upgrade_pip:
-            upgrade_mac_pip(py)
     return py
 
 
@@ -122,7 +121,7 @@ def install_extra_deps(model, book_fmt, reinstall, notif):
             pip_install_pkgs(data["mac_arm"], reinstall, notif)
 
 
-def upgrade_mac_pip(py_path):
+def upgrade_pip(py_path):
     r = run_subprocess(
         [py_path, "-m", "pip", "--version", "--disable-pip-version-check"]
     )
@@ -137,7 +136,6 @@ def upgrade_mac_pip(py_path):
                 "--user",
                 "-U",
                 "--no-cache-dir",
-                "--disable-pip-version-check",
                 "pip",
             ]
         )

@@ -62,7 +62,8 @@ class EPUB:
         self.image_filenames = set()
         self.custom_x_ray = custom_x_ray
         self.lemma_glosses = lemma_glosses
-        self.lemmas = set()
+        self.lemmas = {}
+        self.lemma_id = 0
 
     def extract_epub(self):
         from lxml import etree
@@ -157,7 +158,9 @@ class EPUB:
 
     def add_lemma(self, lemma, start, end, xhtml_path, origin_text):
         self.entity_occurrences[xhtml_path].append((start, end, origin_text, lemma))
-        self.lemmas.add(lemma)
+        if lemma not in self.lemmas:
+            self.lemmas[lemma] = self.lemma_id
+            self.lemma_id += 1
 
     def remove_entities(self, minimal_count):
         for entity, data in self.entities.copy().items():
@@ -221,7 +224,7 @@ class EPUB:
     def build_word_wise_tag(self, word, origin_word, lang):
         short_def, *_ = self.get_lemma_gloss(word, lang)
         len_ratio = 5 if lang in CJK_LANGS else 2.5
-        word_id = quote(word)
+        word_id = self.lemmas[word]
         if len(short_def) / len(word) > len_ratio:
             return f'<a epub:type="noteref" href="word_wise.xhtml#{word_id}">{origin_word}</a>'
         else:
@@ -296,8 +299,8 @@ class EPUB:
         <head><title>Word Wise</title><meta charset="utf-8"/></head>
         <body>
         """
-        for lemma in self.lemmas:
-            s += f'<aside id="{quote(lemma)}" epub:type="footnote">'
+        for lemma, lemma_id in self.lemmas.items():
+            s += f'<aside id="{lemma_id}" epub:type="footnote">'
             _, gloss, example = self.get_lemma_gloss(lemma, lang)
             s += f"<p>{escape(gloss)}</p>"
             if example:

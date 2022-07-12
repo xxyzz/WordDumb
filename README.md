@@ -14,7 +14,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
 ## How to use
 
-- Install 64bit calibre
+- Install calibre 6
 
   - Arch Linux
 

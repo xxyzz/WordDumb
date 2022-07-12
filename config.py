@@ -69,11 +69,11 @@ class ConfigWidget(QWidget):
         format_order_button.clicked.connect(self.open_format_order_dialog)
         vl.addWidget(format_order_button)
 
-        customize_ww_button = QPushButton("Customize Word Wise")
+        customize_ww_button = QPushButton("Customize Kindle Word Wise")
         customize_ww_button.clicked.connect(self.open_custom_lemmas_dialog)
         vl.addWidget(customize_ww_button)
 
-        custom_wiktionary_button = QPushButton("Customize Wiktionary")
+        custom_wiktionary_button = QPushButton("Customize EPUB Wiktionary")
         custom_wiktionary_button.clicked.connect(self.open_custom_wiktionary_dialog)
         vl.addWidget(custom_wiktionary_button)
 

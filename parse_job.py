@@ -84,7 +84,7 @@ def do_job(
         create_x = create_x and not new_epub_path.exists()
         create_ww = create_ww and not new_epub_path.exists()
         if create_ww and not wiktionary_dump_path(plugin_path, lang["wiki"]).exists():
-            dump_wiktionary_job(plugin_path, lang, True)
+            dump_wiktionary_job(plugin_path, lang, True, notifications=notifications)
     else:
         create_ww = create_ww and not get_ll_path(asin, book_path).exists()
         create_x = create_x and not get_x_ray_path(asin, book_path).exists()

@@ -106,17 +106,23 @@ class EPUB:
                     self.xhtml_folder = xhtml_path.parent
                 if "/" in xhtml:
                     self.xhtml_href_has_folder = True
-                with xhtml_path.open(encoding="utf-8") as f:
-                    for match_body in re.finditer(
-                        r"<body.{3,}?</body>", f.read(), re.DOTALL
-                    ):
-                        for m in re.finditer(r">[^<]{2,}<", match_body.group(0)):
-                            text = m.group(0)[1:-1].replace("\n", " ")
-                            yield unescape(text), (
-                                match_body.start() + m.start() + 1,
-                                text,
-                                xhtml_path,
-                            )
+                with xhtml_path.open("r", encoding="utf-8") as f:
+                    # remove soft hyphen
+                    xhtml_text = re.sub(
+                        r"\xad|&shy;|&#xAD;|&#xad;|&#173;", "", f.read()
+                    )
+                with xhtml_path.open("w", encoding="utf-8") as f:
+                    f.write(xhtml_text)
+                for match_body in re.finditer(
+                    r"<body.{3,}?</body>", xhtml_text, re.DOTALL
+                ):
+                    for m in re.finditer(r">[^<]{2,}<", match_body.group(0)):
+                        text = m.group(0)[1:-1].replace("\n", " ")
+                        yield unescape(text), (
+                            match_body.start() + m.start() + 1,
+                            text,
+                            xhtml_path,
+                        )
 
     def add_entity(
         self, entity, ner_label, book_quote, start, end, xhtml_path, origin_entity

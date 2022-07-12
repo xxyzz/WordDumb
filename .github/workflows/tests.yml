@@ -21,7 +21,6 @@ jobs:
       run:
         shell: bash
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
@@ -37,14 +36,25 @@ jobs:
       - name: Install calibre on macOS
         if: matrix.os == 'macos-latest'
         run: |
-          brew update
-          brew install calibre
+          wget -O calibre.dmg https://calibre-ebook.com/dist/osx
+          hdiutil attach calibre.dmg
+          cp -R /Volumes/calibre-*/calibre.app /Applications
+          hdiutil unmount /Volumes/calibre-*
+          rm calibre.dmg
+          echo /Applications/calibre.app/Contents/MacOS >> $GITHUB_PATH
 
       - name: Install calibre and wget on Windows
         if: matrix.os == 'windows-latest'
+        shell: cmd
         run: |
-          choco install calibre wget
-          echo "/C/Program Files/Calibre2" >> $GITHUB_PATH
+          choco install wget
+          wget -O calibre.msi https://calibre-ebook.com/dist/win64
+          start /wait msiexec.exe /i calibre.msi /quiet
+          del calibre.msi
+
+      - name: Add calibre directory to Windows PATH
+        if: matrix.os == 'windows-latest'
+        run: echo "/C/Program Files/Calibre2" >> $GITHUB_PATH
 
       - name: Install KFX Input plugin
         run: |

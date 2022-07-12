@@ -24,13 +24,14 @@ def download_wiktionary(download_folder, source_language, notif):
         with requests.get(
             f"https://kaikki.org/dictionary/{source_language}/{filename}", stream=True
         ) as r, open(download_path, "wb") as f:
-            total_len = int(r.headers.get("content-length"))
-            current_len = 0
+            total_len = int(r.headers.get("content-length", 0))
+            total_chunks = total_len // 4096 + 1
+            chunk_count = 0
             for chunk in r.iter_content(chunk_size=4096):
                 f.write(chunk)
-                current_len += len(chunk)
-                if notif:
-                    notif.put((current_len / total_len, message))
+                if notif and total_len > 0:
+                    chunk_count += 1
+                    notif.put((chunk_count / total_chunks, message))
 
     return download_path
 

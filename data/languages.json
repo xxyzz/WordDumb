@@ -32,7 +32,7 @@
   "fra": {
     "spacy": "fr_core_news_",
     "wiki": "fr",
-    "kaikki": "Finnish"
+    "kaikki": "French"
   },
   "hrv": {
     "spacy": "hr_core_news_",
@@ -102,7 +102,7 @@
   "swe": {
     "spacy": "sv_core_news_",
     "wiki": "sv",
-    "kaikki": "Spanish"
+    "kaikki": "Swedish"
   },
   "zho": {
     "spacy": "zh_core_web_",

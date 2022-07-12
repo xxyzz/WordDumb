@@ -16,7 +16,7 @@
     },
     "numpy": {
       "compiled": true,
-      "version": "1.22.4"
+      "version": "1.23.1"
     }
   },
   "mac_arm": {
@@ -50,7 +50,7 @@
     },
     "urllib3": {
       "compiled": false,
-      "version": "1.26.9"
+      "version": "1.26.10"
     }
   },
   "wiktionary_cjk": {
@@ -60,13 +60,9 @@
     }
   },
   "zh": {
-    "Cython": {
-      "compiled": true,
-      "version": "0.29.30"
-    },
     "spacy-pkuseg": {
       "compiled": true,
-      "version": "0.0.30"
+      "version": "0.0.31"
     }
   }
 }

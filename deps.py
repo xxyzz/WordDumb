@@ -14,7 +14,7 @@ from .utils import (
 )
 
 PLUGINS_PATH = get_plugin_path()
-SPACY_MODEL_VERSION = "3.3.0"
+SPACY_MODEL_VERSION = "3.4.0"
 
 
 def install_deps(model, book_fmt, notif):

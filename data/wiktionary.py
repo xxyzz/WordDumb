@@ -28,6 +28,7 @@ def download_wiktionary(download_folder, source_language, notif):
             current_len = 0
             for chunk in r.iter_content(chunk_size=4096):
                 f.write(chunk)
+                current_len += len(chunk)
                 if notif:
                     notif.put((current_len / total_len, message))
 
@@ -110,7 +111,7 @@ def dump_wikitionary(json_path, dump_path, lang, notif):
             lambda x: x[0] and not automaton.exists(x[1]), words
         ):
             automaton.add_word(word, (word, short_gloss, gloss, example))
-            for form in filter(lambda x: not automaton.exists(x), forms.spit(",")):
+            for form in filter(lambda x: not automaton.exists(x), forms.split(",")):
                 automaton.add_word(form, (form, short_gloss, gloss, example))
 
         automaton.make_automaton()

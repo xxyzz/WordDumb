@@ -26,9 +26,9 @@ from .utils import (
 
 
 class CustomLemmasDialog(QDialog):
-    def __init__(self, parent, lang=None):
+    def __init__(self, parent, lang=None, title=None):
         super().__init__(parent)
-        self.setWindowTitle(f"Customize {'Wiktionary' if lang else 'Word Wise'} lemmas")
+        self.setWindowTitle(f"Customize {title if lang else 'Kindle Word Wise'}")
         vl = QVBoxLayout()
         self.setLayout(vl)
 

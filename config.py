@@ -240,7 +240,9 @@ class ConfigWidget(QWidget):
         wiki_lang = languages[lang]
         wiktionary_path = wiktionary_json_path(self.plugin_path, wiki_lang)
         if wiktionary_path.exists():
-            custom_lemmas_dlg = CustomLemmasDialog(self, wiki_lang)
+            custom_lemmas_dlg = CustomLemmasDialog(
+                self, wiki_lang, f"{lang} Wiktionary"
+            )
             if custom_lemmas_dlg.exec():
                 self.run_dump_wiktionary_job(wiki_lang, lang, False)
         else:

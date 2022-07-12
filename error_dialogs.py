@@ -111,7 +111,7 @@ def unsupported_language_dialog(title, parent):
 def non_english_book_dialog(parent):
     error_dialog(
         "Non-English book",
-        "Word Wise is only available in English books on Kindle.",
+        "For Kindle format books, Word Wise is only available in books in English.",
         None,
         parent,
     )

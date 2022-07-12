@@ -248,7 +248,7 @@ class ConfigWidget(QWidget):
         else:
             self.run_dump_wiktionary_job(wiki_lang, lang, True)
 
-    def run_dump_wiktionary_job(self, wiki_lang, lang, enable_extract):
+    def run_dump_wiktionary_job(self, wiki_lang, lang, enable_download):
         gui = self.parent().parent()
         job = ThreadedJob(
             "WordDumb's dumb job",
@@ -257,7 +257,7 @@ class ConfigWidget(QWidget):
             (
                 self.plugin_path,
                 {"wiki": wiki_lang, "kaikki": lang},
-                enable_extract,
+                enable_download,
             ),
             {},
             Dispatcher(partial(job_failed, parent=gui)),

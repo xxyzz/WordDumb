@@ -176,7 +176,7 @@ def calulate_final_start(kfx_json, mobi_html):
 
 
 def dump_wiktionary_job(
-    plugin_path, lang, enable_extract, abort=None, log=None, notifications=None
+    plugin_path, lang, enable_download, abort=None, log=None, notifications=None
 ):
     install_deps(
         "wiktionary_cjk" if lang["wiki"] in CJK_LANGS else "wiktionary",
@@ -193,7 +193,7 @@ def dump_wiktionary_job(
         lang,
         load_lemmas_dump(plugin_path, "en") if lang["wiki"] == "en" else None,
         notifications,
-        enable_extract,
+        enable_download,
     )
     if ismacos and lang["wiki"] in CJK_LANGS:
         args = [

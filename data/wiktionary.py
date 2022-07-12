@@ -97,7 +97,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
         json.dump(words, f)
 
 
-def dump_wikitionary(json_path, dump_path, lang, notif):
+def dump_wiktionary(json_path, dump_path, lang, notif):
     if notif:
         notif.put((0, "Converting Wiktionary file"))
 
@@ -137,10 +137,10 @@ def short_def(gloss):
 
 
 def download_and_dump_wiktionary(
-    json_path, dump_path, lang, kindle_lemmas, notif, enable_extract
+    json_path, dump_path, lang, kindle_lemmas, notif, enable_download
 ):
-    download_path = download_wiktionary(json_path.parent, lang["kaikki"], notif)
-    if enable_extract:
+    if enable_download:
+        download_path = download_wiktionary(json_path.parent, lang["kaikki"], notif)
         extract_wiktionary(download_path, lang["wiki"], kindle_lemmas, notif)
     if dump_path:
-        dump_wikitionary(json_path, dump_path, lang["wiki"], notif)
+        dump_wiktionary(json_path, dump_path, lang["wiki"], notif)

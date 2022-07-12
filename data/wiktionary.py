@@ -11,7 +11,8 @@ POS_TYPES = ["adj", "adv", "noun", "phrase", "proverb", "verb"]
 def download_wiktionary(download_folder, source_language, notif):
     if not download_folder.exists():
         download_folder.mkdir()
-    filename = f"kaikki.org-dictionary-{source_language.replace(' ', '')}.json"
+    filename_lang = re.sub(r"[\s-]", "", source_language)
+    filename = f"kaikki.org-dictionary-{filename_lang}.json"
     download_path = download_folder.joinpath(filename)
     if not download_path.exists():
         import requests

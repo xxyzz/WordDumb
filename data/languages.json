@@ -34,6 +34,11 @@
     "wiki": "fr",
     "kaikki": "Finnish"
   },
+  "hrv": {
+    "spacy": "hr_core_news_",
+    "wiki": "hr",
+    "kaikki": "Serbo-Croatian"
+  },
   "ita": {
     "spacy": "it_core_news_",
     "wiki": "it",

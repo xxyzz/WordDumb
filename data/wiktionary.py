@@ -17,21 +17,23 @@ def download_wiktionary(download_folder, source_language, notif):
     if not download_path.exists():
         import requests
 
-        if notif:
-            message = f"Downloading {source_language} Wiktionary"
-            notif.put((0, message))
-
         with requests.get(
             f"https://kaikki.org/dictionary/{source_language}/{filename}", stream=True
         ) as r, open(download_path, "wb") as f:
             total_len = int(r.headers.get("content-length", 0))
-            total_chunks = total_len // 4096 + 1
+            chunk_size = 2**23
+            total_chunks = total_len // chunk_size + 1
             chunk_count = 0
-            for chunk in r.iter_content(chunk_size=4096):
+            for chunk in r.iter_content(chunk_size):
                 f.write(chunk)
                 if notif and total_len > 0:
                     chunk_count += 1
-                    notif.put((chunk_count / total_chunks, message))
+                    notif.put(
+                        (
+                            chunk_count / total_chunks,
+                            f"Downloading {source_language} Wiktionary",
+                        )
+                    )
 
     return download_path
 

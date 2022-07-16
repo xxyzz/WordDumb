@@ -89,6 +89,7 @@ def pip_install(
             "--no-deps",
             "--no-cache-dir",
             "--disable-pip-version-check",
+            "--no-user",
         ]
         if compiled:
             args.extend(["--python-version", PY_VERSION])

@@ -19,13 +19,13 @@ try:
     )
     from .deps import install_deps, mac_python
     from .epub import EPUB
-    from .error_dialogs import GITHUB_URL
     from .interval import Interval, IntervalTree
     from .mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
     from .utils import (
         CJK_LANGS,
         get_custom_x_path,
         get_plugin_path,
+        get_user_agent,
         insert_flashtext_path,
         insert_installed_libs,
         load_custom_x_desc,
@@ -45,7 +45,6 @@ except ImportError:
         save_db,
     )
     from epub import EPUB
-    from error_dialogs import GITHUB_URL
     from interval import Interval, IntervalTree
     from mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
     from utils import (
@@ -61,8 +60,6 @@ except ImportError:
 def do_job(
     data, create_ww=True, create_x=True, abort=None, log=None, notifications=None
 ):
-    from calibre_plugins.worddumb import VERSION
-
     from .config import prefs
     from .metadata import get_asin_etc
 
@@ -73,6 +70,7 @@ def do_job(
 
     model = lang["spacy"] + prefs["model_size"]
     plugin_path = get_plugin_path()
+    useragent = get_user_agent()
     if book_fmt == "EPUB":
         book_path = Path(book_path)
         new_file_stem = book_path.stem
@@ -85,7 +83,7 @@ def do_job(
         create_ww = create_ww and not new_epub_path.exists()
         if create_ww and not wiktionary_dump_path(plugin_path, lang["wiki"]).exists():
             dump_wiktionary_job(
-                plugin_path, lang, True, None, notifications=notifications
+                plugin_path, lang, useragent, None, notifications=notifications
             )
     else:
         create_ww = create_ww and not get_ll_path(asin, book_path).exists()
@@ -108,7 +106,7 @@ def do_job(
 
     if notifications:
         notifications.put((0, "Creating files"))
-    version = ".".join(map(str, VERSION))
+
     if ismacos and (
         create_x or (book_fmt == "EPUB" and create_ww and lang["wiki"] in CJK_LANGS)
     ):
@@ -123,7 +121,7 @@ def do_job(
             model,
             lang["wiki"],
             mobi_codec,
-            version,
+            useragent,
             prefs["zh_wiki_variant"],
             prefs["fandom"],
             book_fmt,
@@ -161,7 +159,7 @@ def do_job(
             mobi_html,
             mobi_codec,
             plugin_path,
-            version,
+            useragent,
             prefs,
             notifications,
         )
@@ -180,7 +178,7 @@ def calulate_final_start(kfx_json, mobi_html):
 def dump_wiktionary_job(
     plugin_path,
     lang,
-    enable_download,
+    useragent,
     table_model,
     abort=None,
     log=None,
@@ -202,8 +200,8 @@ def dump_wiktionary_job(
         else wiktionary_dump_path(plugin_path, lang["wiki"]),
         lang,
         load_lemmas_dump(plugin_path, "en") if lang["wiki"] == "en" else None,
+        useragent,
         notifications,
-        enable_download,
     )
     if ismacos and lang["wiki"] in CJK_LANGS:
         args = [
@@ -239,12 +237,11 @@ def create_files(
     mobi_html,
     mobi_codec,
     plugin_path,
-    plugin_version,
+    useragent,
     prefs,
     notif,
 ):
     is_epub = not kfx_json and not mobi_codec
-    useragent = f"WordDumb/{plugin_version} ({GITHUB_URL})"
     if isinstance(plugin_path, str):
         plugin_path = Path(plugin_path)
     kw_processor = None

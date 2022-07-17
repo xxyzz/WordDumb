@@ -8,7 +8,7 @@ CJK_LANGS = ["zh", "ja", "ko"]
 POS_TYPES = ["adj", "adv", "noun", "phrase", "proverb", "verb"]
 
 
-def download_wiktionary(download_folder, source_language, notif):
+def download_wiktionary(download_folder, source_language, useragent, notif):
     if not download_folder.exists():
         download_folder.mkdir()
     filename_lang = re.sub(r"[\s-]", "", source_language)
@@ -18,7 +18,9 @@ def download_wiktionary(download_folder, source_language, notif):
         import requests
 
         with requests.get(
-            f"https://kaikki.org/dictionary/{source_language}/{filename}", stream=True
+            f"https://kaikki.org/dictionary/{source_language}/{filename}",
+            stream=True,
+            headers={"user-agent": useragent},
         ) as r, open(download_path, "wb") as f:
             total_len = int(r.headers.get("content-length", 0))
             chunk_size = 2**23
@@ -139,10 +141,12 @@ def short_def(gloss):
 
 
 def download_and_dump_wiktionary(
-    json_path, dump_path, lang, kindle_lemmas, notif, enable_download
+    json_path, dump_path, lang, kindle_lemmas, useragent, notif
 ):
-    if enable_download:
-        download_path = download_wiktionary(json_path.parent, lang["kaikki"], notif)
+    if useragent:
+        download_path = download_wiktionary(
+            json_path.parent, lang["kaikki"], useragent, notif
+        )
         extract_wiktionary(download_path, lang["wiki"], kindle_lemmas, notif)
     if dump_path:
         dump_wiktionary(json_path, dump_path, lang["wiki"], notif)

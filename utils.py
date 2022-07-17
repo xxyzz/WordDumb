@@ -141,3 +141,11 @@ def load_custom_x_desc(book_path):
             }
     else:
         return {}
+
+
+def get_user_agent():
+    from calibre_plugins.worddumb import VERSION
+
+    from .error_dialogs import GITHUB_URL
+
+    return f"WordDumb/{'.'.join(map(str, VERSION))} ({GITHUB_URL})"

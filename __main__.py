@@ -27,7 +27,7 @@ parser.add_argument("revision")
 parser.add_argument("model")
 parser.add_argument("wiki_lang")
 parser.add_argument("mobi_codec")
-parser.add_argument("version")
+parser.add_argument("useragent")
 parser.add_argument("zh_wiki")
 parser.add_argument("fandom")
 parser.add_argument("book_fmt")
@@ -65,7 +65,7 @@ else:
         mobi_html,
         args.mobi_codec,
         args.plugin_path,
-        args.version,
+        args.useragent,
         {
             "search_people": args.s,
             "zh_wiki_variant": args.zh_wiki,

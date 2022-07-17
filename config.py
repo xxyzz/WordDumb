@@ -39,6 +39,7 @@ from .utils import (
     donate,
     get_klld_path,
     get_plugin_path,
+    get_user_agent,
     insert_flashtext_path,
     insert_installed_libs,
     load_json_or_pickle,
@@ -245,12 +246,12 @@ class ConfigWidget(QWidget):
             )
             if custom_lemmas_dlg.exec():
                 self.run_dump_wiktionary_job(
-                    wiki_lang, lang, False, custom_lemmas_dlg.lemmas_model
+                    wiki_lang, lang, None, custom_lemmas_dlg.lemmas_model
                 )
         else:
-            self.run_dump_wiktionary_job(wiki_lang, lang, True, None)
+            self.run_dump_wiktionary_job(wiki_lang, lang, get_user_agent(), None)
 
-    def run_dump_wiktionary_job(self, wiki_lang, lang, enable_download, table_model):
+    def run_dump_wiktionary_job(self, wiki_lang, lang, useragent, table_model):
         gui = self.parent().parent()
         job = ThreadedJob(
             "WordDumb's dumb job",
@@ -259,7 +260,7 @@ class ConfigWidget(QWidget):
             (
                 self.plugin_path,
                 {"wiki": wiki_lang, "kaikki": lang},
-                enable_download,
+                useragent,
                 table_model,
             ),
             {},

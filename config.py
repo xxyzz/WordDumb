@@ -8,9 +8,9 @@ from calibre.constants import ismacos
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig
-from PyQt5.QtCore import QRegularExpression
-from PyQt5.QtGui import QIcon, QRegularExpressionValidator
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import QRegularExpression
+from PyQt6.QtGui import QIcon, QRegularExpressionValidator
+from PyQt6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
     QComboBox,

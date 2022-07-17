@@ -5,7 +5,7 @@ from functools import partial
 from calibre.gui2 import Dispatcher
 from calibre.gui2.actions import InterfaceAction
 from calibre.gui2.threaded_jobs import ThreadedJob
-from PyQt5.QtGui import QIcon
+from PyQt6.QtGui import QIcon
 
 from .custom_x_ray import CustomXRayDialog
 from .error_dialogs import job_failed, non_english_book_dialog

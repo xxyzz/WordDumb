@@ -2,9 +2,9 @@
 
 import json
 
-from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QVariant
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, QVariant
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import (
     QAbstractScrollArea,
     QCheckBox,
     QComboBox,

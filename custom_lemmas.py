@@ -4,8 +4,8 @@ import base64
 import json
 import sqlite3
 
-from PyQt5.QtCore import QAbstractTableModel, Qt, QVariant
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import QAbstractTableModel, Qt, QVariant
+from PyQt6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
     QComboBox,

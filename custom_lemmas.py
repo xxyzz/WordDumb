@@ -34,7 +34,7 @@ class CustomLemmasDialog(QDialog):
 
         self.lemmas_table = QTableView()
         self.lemmas_table.setAlternatingRowColors(True)
-        self.lemmas_model = WiktionaryTableModle(lang) if lang else LemmasTableModle()
+        self.lemmas_model = WiktionaryTableModel(lang) if lang else LemmasTableModel()
         self.lemmas_table.setModel(self.lemmas_model)
         self.lemmas_table.hideColumn(4 if lang else 2)
         if lang is None:
@@ -74,7 +74,7 @@ class CustomLemmasDialog(QDialog):
             self.lemmas_table.scrollTo(matches[0])
 
 
-class LemmasTableModle(QAbstractTableModel):
+class LemmasTableModel(QAbstractTableModel):
     def __init__(self):
         super().__init__()
         plugin_path = get_plugin_path()
@@ -223,12 +223,13 @@ class ComboBoxDelegate(QStyledItemDelegate):
         super().paint(painter, option, index)
 
 
-class WiktionaryTableModle(QAbstractTableModel):
+class WiktionaryTableModel(QAbstractTableModel):
     def __init__(self, lang):
         super().__init__()
         self.headers = ["Enabled", "Lemma", "Short gloss", "Gloss", "Example", "Forms"]
         self.editable_columns = [2, 5]
-        with open(wiktionary_json_path(get_plugin_path(), lang)) as f:
+        self.json_path = wiktionary_json_path(get_plugin_path(), lang)
+        with open(self.json_path, encoding="utf-8") as f:
             self.lemmas = json.load(f)
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -289,3 +290,7 @@ class WiktionaryTableModle(QAbstractTableModel):
             self.dataChanged.emit(index, index, [role])
             return True
         return False
+
+    def save_json_file(self):
+        with open(self.json_path, "w", encoding="utf-8") as f:
+            json.dump(self.lemmas, f)

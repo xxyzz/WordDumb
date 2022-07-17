@@ -45,7 +45,7 @@ class CustomXRayDialog(QDialog):
 
         self.x_ray_table = QTableView()
         self.x_ray_table.setAlternatingRowColors(True)
-        self.x_ray_model = XRayTableModle(book_path)
+        self.x_ray_model = XRayTableModel(book_path)
         self.x_ray_table.setModel(self.x_ray_model)
         self.x_ray_table.setItemDelegateForColumn(
             1,
@@ -120,7 +120,7 @@ class CustomXRayDialog(QDialog):
         self.x_ray_table.resizeColumnsToContents()
 
 
-class XRayTableModle(QAbstractTableModel):
+class XRayTableModel(QAbstractTableModel):
     def __init__(self, book_path):
         super().__init__()
         self.custom_path = get_custom_x_path(book_path)

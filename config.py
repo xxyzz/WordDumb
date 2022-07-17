@@ -244,11 +244,13 @@ class ConfigWidget(QWidget):
                 self, wiki_lang, f"{lang} Wiktionary"
             )
             if custom_lemmas_dlg.exec():
-                self.run_dump_wiktionary_job(wiki_lang, lang, False)
+                self.run_dump_wiktionary_job(
+                    wiki_lang, lang, False, custom_lemmas_dlg.lemmas_model
+                )
         else:
-            self.run_dump_wiktionary_job(wiki_lang, lang, True)
+            self.run_dump_wiktionary_job(wiki_lang, lang, True, None)
 
-    def run_dump_wiktionary_job(self, wiki_lang, lang, enable_download):
+    def run_dump_wiktionary_job(self, wiki_lang, lang, enable_download, table_model):
         gui = self.parent().parent()
         job = ThreadedJob(
             "WordDumb's dumb job",
@@ -258,6 +260,7 @@ class ConfigWidget(QWidget):
                 self.plugin_path,
                 {"wiki": wiki_lang, "kaikki": lang},
                 enable_download,
+                table_model,
             ),
             {},
             Dispatcher(partial(job_failed, parent=gui)),

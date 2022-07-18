@@ -22,7 +22,8 @@ def install_deps(model, book_fmt, notif):
     PY_PATH, PY_VERSION = which_python()
     LIBS_PATH = PLUGINS_PATH.parent.joinpath(f"worddumb-libs-py{PY_VERSION}")
 
-    if reinstall := False if LIBS_PATH.exists() else True:
+    reinstall = False if LIBS_PATH.exists() else True
+    if reinstall:
         for old_path in LIBS_PATH.parent.glob("worddumb-libs-py*"):
             old_path.rename(LIBS_PATH)
     if model == "lemminflect":

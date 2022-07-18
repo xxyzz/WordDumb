@@ -20,6 +20,8 @@ def job_failed(job, parent=None):
                 job.details,
                 parent,
             )
+        elif "ModuleNotFoundError" in job.details:
+            module_not_found_error(job.details, parent)
         elif "CalledProcessError" in job.details:
             subprocess_error(job, parent)
         elif "JointMOBI" in job.details:
@@ -64,8 +66,24 @@ def subprocess_error(job, parent):
             job.details + exception,
             parent,
         )
+    elif "ModuleNotFoundError" in exception:
+        module_not_found_error(job.details + exception, parent)
     else:
         check_network_error(job.details + exception, parent)
+
+
+def module_not_found_error(error, parent):
+    import re
+
+    broken_pkg = re.search(r"No module named '(.*)'", error)
+    broken_pkg = broken_pkg.group(1).split(".")[0]
+
+    error_dialog(
+        "Welcome to dependency hell",
+        f"Please delete the '{broken_pkg}*' folder from the 'worddumb-libs-py*' folder and try again.",
+        error,
+        parent,
+    )
 
 
 def check_network_error(error, parent):

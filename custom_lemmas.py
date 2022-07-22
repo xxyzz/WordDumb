@@ -3,6 +3,7 @@
 import base64
 import json
 import sqlite3
+from pathlib import Path
 
 from PyQt6.QtCore import QAbstractTableModel, Qt, QVariant
 from PyQt6.QtWidgets import (
@@ -11,12 +12,15 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QFileDialog,
     QLineEdit,
+    QPushButton,
     QStyledItemDelegate,
     QTableView,
     QVBoxLayout,
 )
 
+from .data.anki import extract_apkg
 from .utils import (
     get_klld_path,
     get_plugin_path,
@@ -58,6 +62,10 @@ class CustomLemmasDialog(QDialog):
         search_line.textChanged.connect(lambda: self.search_lemma(search_line.text()))
         vl.addWidget(search_line)
 
+        import_button = QPushButton("Import...")
+        import_button.clicked.connect(self.select_import_file)
+        vl.addWidget(import_button)
+
         save_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save
             | QDialogButtonBox.StandardButton.Cancel
@@ -72,6 +80,18 @@ class CustomLemmasDialog(QDialog):
         ):
             self.lemmas_table.setCurrentIndex(matches[0])
             self.lemmas_table.scrollTo(matches[0])
+
+    def select_import_file(self):
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select file",
+            str(Path.home()),
+            "Anki Deck Package (*.apkg);;CSV (*.csv)",
+        )
+        if file_path.endswith(".apkg"):
+            self.lemmas_model.import_anki(extract_apkg(Path(file_path)))
+        elif file_path.endswith(".csv"):
+            pass
 
 
 class LemmasTableModel(QAbstractTableModel):
@@ -179,6 +199,21 @@ class LemmasTableModel(QAbstractTableModel):
             self.dataChanged.emit(index, index, [role])
             return True
         return False
+
+    def import_anki(self, anki_cards: dict[str, int]) -> None:
+        enabled_words = set()
+        for row in range(self.rowCount(None)):
+            word = self.lemmas[row][1]
+            enable = Qt.CheckState.Unchecked.value
+            difficulty = 1
+            if word not in enabled_words and word in anki_cards:
+                enable = Qt.CheckState.Checked.value
+                difficulty = anki_cards[word]
+                enabled_words.add(word)
+            self.setData(
+                self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
+            )
+            self.setData(self.createIndex(row, 5), difficulty, Qt.ItemDataRole.EditRole)
 
 
 class ComboBoxDelegate(QStyledItemDelegate):
@@ -294,3 +329,15 @@ class WiktionaryTableModel(QAbstractTableModel):
     def save_json_file(self):
         with open(self.json_path, "w", encoding="utf-8") as f:
             json.dump(self.lemmas, f)
+
+    def import_anki(self, anki_cards: dict[str, int]) -> None:
+        enabled_words = set()
+        for row in range(self.rowCount(None)):
+            word = self.lemmas[row][1]
+            enable = Qt.CheckState.Unchecked.value
+            if word not in enabled_words and word in anki_cards:
+                enable = Qt.CheckState.Checked.value
+                enabled_words.add(word)
+            self.setData(
+                self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
+            )

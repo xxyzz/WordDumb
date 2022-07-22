@@ -5,6 +5,7 @@ import json
 import sqlite3
 from pathlib import Path
 
+from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QAbstractTableModel, Qt, QVariant
 from PyQt6.QtWidgets import (
     QAbstractItemView,
@@ -62,16 +63,15 @@ class CustomLemmasDialog(QDialog):
         search_line.textChanged.connect(lambda: self.search_lemma(search_line.text()))
         vl.addWidget(search_line)
 
-        import_button = QPushButton("Import...")
-        import_button.clicked.connect(self.select_import_file)
-        vl.addWidget(import_button)
-
         save_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save
             | QDialogButtonBox.StandardButton.Cancel
         )
         save_button_box.accepted.connect(self.accept)
         save_button_box.rejected.connect(self.reject)
+        import_button = QPushButton(QIcon.ic("document-import.png"), "Import")
+        import_button.clicked.connect(self.select_import_file)
+        save_button_box.addButton(import_button, QDialogButtonBox.ButtonRole.ActionRole)
         vl.addWidget(save_button_box)
 
     def search_lemma(self, text):

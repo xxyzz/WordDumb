@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .data.anki import extract_apkg
+from .data.anki import extract_apkg, extract_csv
 from .utils import (
     get_klld_path,
     get_plugin_path,
@@ -91,7 +91,7 @@ class CustomLemmasDialog(QDialog):
         if file_path.endswith(".apkg"):
             self.lemmas_model.import_anki(extract_apkg(Path(file_path)))
         elif file_path.endswith(".csv"):
-            pass
+            self.lemmas_model.import_csv(extract_csv(file_path))
 
 
 class LemmasTableModel(QAbstractTableModel):
@@ -210,6 +210,21 @@ class LemmasTableModel(QAbstractTableModel):
                 enable = Qt.CheckState.Checked.value
                 difficulty = anki_cards[word]
                 enabled_words.add(word)
+            self.setData(
+                self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
+            )
+            self.setData(self.createIndex(row, 5), difficulty, Qt.ItemDataRole.EditRole)
+
+    def import_csv(self, csv_words: dict[str, list[int, bool]]) -> None:
+        for row in range(self.rowCount(None)):
+            word = self.lemmas[row][1]
+            enable = Qt.CheckState.Unchecked.value
+            difficulty = 1
+            csv_data = csv_words.get(word)
+            if csv_data and csv_data[1]:
+                enable = Qt.CheckState.Checked.value
+                difficulty = csv_data[0]
+                csv_words[word][1] = False
             self.setData(
                 self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
             )
@@ -338,6 +353,18 @@ class WiktionaryTableModel(QAbstractTableModel):
             if word not in enabled_words and word in anki_cards:
                 enable = Qt.CheckState.Checked.value
                 enabled_words.add(word)
+            self.setData(
+                self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
+            )
+
+    def import_csv(self, csv_words: dict[str, list[int, bool]]) -> None:
+        for row in range(self.rowCount(None)):
+            word = self.lemmas[row][1]
+            enable = Qt.CheckState.Unchecked.value
+            csv_data = csv_words.get(word)
+            if csv_data and csv_data[1]:
+                enable = Qt.CheckState.Checked.value
+                csv_words[word][1] = False
             self.setData(
                 self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
             )

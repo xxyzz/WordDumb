@@ -1,3 +1,4 @@
+import csv
 import sqlite3
 import zipfile
 from pathlib import Path
@@ -16,13 +17,13 @@ def extract_apkg(apkg_path: Path) -> dict[str, int]:
         for card_type, fields in conn.execute(
             "SELECT type, flds FROM cards JOIN notes ON cards.nid = notes.id"
         ):
-            cards[fields.split("\x1f")[0]] = difficult_level(card_type)
+            cards[fields.split("\x1f")[0]] = card_type_to_difficult_level(card_type)
 
         Path(db_path).unlink()
         return cards
 
 
-def difficult_level(card_type: int) -> int:
+def card_type_to_difficult_level(card_type: int) -> int:
     # https://github.com/ankidroid/Anki-Android/wiki/Database-Structure#cards
     match card_type:
         case 0:  # new
@@ -35,3 +36,21 @@ def difficult_level(card_type: int) -> int:
             return 4
         case _:
             return 1
+
+
+def extract_csv(csv_path: str) -> dict[str, list[int, bool]]:
+    csv_words = {}
+    with open(csv_path, newline="") as f:
+        for row in csv.reader(f):
+            if len(row) >= 2:
+                word, difficulty, *_ = row
+                try:
+                    difficulty = int(difficulty)
+                except ValueError:
+                    difficulty = 1
+            else:
+                word = row[0]
+                difficulty = 1
+            csv_words[word] = [difficulty, True]
+
+    return csv_words

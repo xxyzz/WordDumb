@@ -54,7 +54,7 @@ class WordDumbDumb(InterfaceActionBase):
             if data is None:
                 continue
             book_fmt, mi, lang = data
-            if book_fmt != "EPUB" and lang["wiki"] != "en":
+            if create_w and book_fmt != "EPUB" and lang["wiki"] != "en":
                 log.prints(
                     Log.WARN, "Word Wise is only available in English books on Kindle."
                 )

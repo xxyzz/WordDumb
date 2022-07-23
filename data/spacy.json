@@ -37,7 +37,7 @@
   },
   "jarowinkler": {
     "compiled": true,
-    "version": "1.1.2"
+    "version": "1.2.0"
   },
   "langcodes": {
     "compiled": false,
@@ -73,7 +73,7 @@
   },
   "rapidfuzz": {
     "compiled": true,
-    "version": "2.1.3"
+    "version": "2.3.0"
   },
   "requests": {
     "compiled": false,
@@ -93,11 +93,11 @@
   },
   "spacy-loggers": {
     "compiled": false,
-    "version": "1.0.2"
+    "version": "1.0.3"
   },
   "srsly": {
     "compiled": true,
-    "version": "2.4.3"
+    "version": "2.4.4"
   },
   "thinc": {
     "compiled": true,

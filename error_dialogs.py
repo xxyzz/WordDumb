@@ -87,11 +87,14 @@ def module_not_found_error(error, parent):
 
 
 def check_network_error(error, parent):
+    CALIBRE_PROXY_FAQ = "https://manual.calibre-ebook.com/faq.html#how-do-i-get-calibre-to-use-my-http-proxy"
+
     if "check_hostname requires server_hostname" in error:
         error_dialog(
             "Cyberspace is not a place beyond the rule of law",
-            """
-            Check your proxy configuration environment variables,
+            f"""
+            Read <a href="{CALIBRE_PROXY_FAQ}">calibre FAQ</a> first then
+            check your proxy environment variables,
             they should be set by these commands:<br>
             <code>$ export HTTP_PROXY="http://host:port"</code><br>
             <code>$ export HTTPS_PROXY="http://host:port"</code><br>
@@ -104,7 +107,7 @@ def check_network_error(error, parent):
     elif "ConnectionError" in error or "Timeout" in error:
         error_dialog(
             "It was a pleasure to burn",
-            "Is GitHub/Wikipedia/Fandom blocked by your ISP? You might need tools to bypass internet censorship.",
+            f"Is GitHub/Wikipedia/Fandom blocked by your ISP? You might need tools to bypass Internet censorship. Please read <a href='{CALIBRE_PROXY_FAQ}'>calibre FAQ</a>.",
             error,
             parent,
         )

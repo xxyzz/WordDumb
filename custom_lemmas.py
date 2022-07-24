@@ -5,8 +5,8 @@ import json
 import sqlite3
 from pathlib import Path
 
-from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QAbstractTableModel, Qt, QVariant
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
@@ -200,16 +200,16 @@ class LemmasTableModel(QAbstractTableModel):
             return True
         return False
 
-    def import_anki(self, anki_cards: dict[str, int]) -> None:
-        enabled_words = set()
+    def import_anki(self, anki_cards: dict[str, list[int, bool]]) -> None:
         for row in range(self.rowCount(None)):
             word = self.lemmas[row][1]
             enable = Qt.CheckState.Unchecked.value
             difficulty = 1
-            if word not in enabled_words and word in anki_cards:
+            data = anki_cards.get(word)
+            if data and data[1]:
                 enable = Qt.CheckState.Checked.value
-                difficulty = anki_cards[word]
-                enabled_words.add(word)
+                difficulty = data[0]
+                anki_cards[word][1] = False
             self.setData(
                 self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
             )
@@ -345,14 +345,14 @@ class WiktionaryTableModel(QAbstractTableModel):
         with open(self.json_path, "w", encoding="utf-8") as f:
             json.dump(self.lemmas, f)
 
-    def import_anki(self, anki_cards: dict[str, int]) -> None:
-        enabled_words = set()
+    def import_anki(self, anki_cards: dict[str, list[int, bool]]) -> None:
         for row in range(self.rowCount(None)):
             word = self.lemmas[row][1]
             enable = Qt.CheckState.Unchecked.value
-            if word not in enabled_words and word in anki_cards:
+            data = anki_cards.get(word)
+            if data and data[1]:
                 enable = Qt.CheckState.Checked.value
-                enabled_words.add(word)
+                anki_cards[word][1] = False
             self.setData(
                 self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
             )

@@ -20,10 +20,10 @@ def job_failed(job, parent=None):
                 job.details,
                 parent,
             )
-        elif "ModuleNotFoundError" in job.details:
-            module_not_found_error(job.details, parent)
         elif "CalledProcessError" in job.details:
             subprocess_error(job, parent)
+        elif "ModuleNotFoundError" in job.details:
+            module_not_found_error(job.details, parent)
         elif "JointMOBI" in job.details:
             error_dialog(
                 "Joint MOBI",

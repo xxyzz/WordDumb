@@ -4,7 +4,7 @@ import zipfile
 from pathlib import Path
 
 
-def extract_apkg(apkg_path: Path) -> dict[str, int]:
+def extract_apkg(apkg_path: Path) -> dict[str, list[int, bool]]:
     cards = {}
     with zipfile.ZipFile(apkg_path) as zf:
         db_path = zipfile.Path(
@@ -17,7 +17,10 @@ def extract_apkg(apkg_path: Path) -> dict[str, int]:
         for card_type, fields in conn.execute(
             "SELECT type, flds FROM cards JOIN notes ON cards.nid = notes.id"
         ):
-            cards[fields.split("\x1f")[0]] = card_type_to_difficult_level(card_type)
+            cards[fields.split("\x1f")[0]] = [
+                card_type_to_difficult_level(card_type),
+                True,
+            ]
 
         Path(db_path).unlink()
         return cards

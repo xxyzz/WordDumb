@@ -37,9 +37,10 @@ NER_LABELS = frozenset(
         "OG",
         "EVN",  # Swedish: https://core.ac.uk/reader/33724960
         "PRS",
+        "DERIV_PER",  # Croatian: https://nl.ijs.si/janes/wp-content/uploads/2017/09/SlovenianNER-eng-v1.1.pdf
     ]
 )
-PERSON_LABELS = frozenset(["PERSON", "PER", "persName", "PS", "PRS"])
+PERSON_LABELS = frozenset(["PERSON", "PER", "persName", "PS", "PRS", "DERIV_PER"])
 GPE_LABELS = frozenset(["GPE", "GPE_LOC", "GPE_ORG", "placeName", "LC"])
 
 
@@ -315,7 +316,7 @@ def query_wikidata(entities, mediawiki, wikidata):
 
 
 def is_gpe_label(lang: str, label: str) -> bool:
-    if lang in ["sv"]:
+    if lang in ["sv", "hr"]:
         return label == "LOC"
     else:
         return label in GPE_LABELS

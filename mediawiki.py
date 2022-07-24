@@ -32,10 +32,13 @@ NER_LABELS = frozenset(
         "persName",
         "placeName",
         "ORGANIZATION",  # Romanian: https://arxiv.org/pdf/1909.01247.pdf#section.4
+        "PS",  # Korean: https://arxiv.org/pdf/2105.09680.pdf#subsubsection.3.4.1
+        "LC",
+        "OG",
     ]
 )
-PERSON_LABELS = frozenset(["PERSON", "PER", "persName"])
-GPE_LABELS = frozenset(["GPE", "GPE_LOC", "GPE_ORG", "placeName"])
+PERSON_LABELS = frozenset(["PERSON", "PER", "persName", "PS"])
+GPE_LABELS = frozenset(["GPE", "GPE_LOC", "GPE_ORG", "placeName", "LC"])
 
 
 class MediaWikiBase:

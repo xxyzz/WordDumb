@@ -35,9 +35,11 @@ NER_LABELS = frozenset(
         "PS",  # Korean: https://arxiv.org/pdf/2105.09680.pdf#subsubsection.3.4.1
         "LC",
         "OG",
+        "EVN",  # Swedish: https://core.ac.uk/reader/33724960
+        "PRS",
     ]
 )
-PERSON_LABELS = frozenset(["PERSON", "PER", "persName", "PS"])
+PERSON_LABELS = frozenset(["PERSON", "PER", "persName", "PS", "PRS"])
 GPE_LABELS = frozenset(["GPE", "GPE_LOC", "GPE_ORG", "placeName", "LC"])
 
 
@@ -298,7 +300,8 @@ def query_wikidata(entities, mediawiki, wikidata):
         (
             mediawiki.get_cache(entity).get("item_id")
             for entity, data in entities.items()
-            if data["label"] in GPE_LABELS and mediawiki.get_cache(entity)
+            if is_gpe_label(mediawiki.lang, data["label"])
+            and mediawiki.get_cache(entity)
         ),
     ):
         if len(pending_item_ids) == MEDIAWIKI_API_EXLIMIT:
@@ -309,6 +312,13 @@ def query_wikidata(entities, mediawiki, wikidata):
     if len(pending_item_ids):
         wikidata.query(pending_item_ids)
     wikidata.close()
+
+
+def is_gpe_label(lang: str, label: str) -> bool:
+    if lang in ["sv"]:
+        return label == "LOC"
+    else:
+        return label in GPE_LABELS
 
 
 # https://en.wikipedia.org/wiki/Interpunct

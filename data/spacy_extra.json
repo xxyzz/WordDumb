@@ -6,7 +6,7 @@
     },
     "SudachiPy": {
       "compiled": true,
-      "version": "0.6.5"
+      "version": "0.6.6"
     }
   },
   "lemminflect": {
@@ -22,7 +22,7 @@
   "mac_arm": {
     "thinc-apple-ops": {
       "compiled": true,
-      "version": "0.0.7"
+      "version": "0.1.0"
     }
   },
   "mac_epub": {
@@ -50,7 +50,7 @@
     },
     "urllib3": {
       "compiled": false,
-      "version": "1.26.10"
+      "version": "1.26.11"
     }
   },
   "wiktionary_cjk": {

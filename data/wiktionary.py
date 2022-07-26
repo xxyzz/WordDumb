@@ -44,7 +44,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
     if notif:
         notif.put((0, "Extracting Wiktionary file"))
     words = []
-    word_set = set()
+    enabled_words = set()
     len_limit = 2 if lang in CJK_LANGS else 3
     with open(download_path, encoding="utf-8") as f:
         for line in f:
@@ -60,11 +60,14 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
             if lang in CJK_LANGS and re.fullmatch(r"[a-zA-Z\d]+", word):
                 continue
 
-            enabled = False if word in word_set else True
-            word_set.add(word)
+            enabled = False if word in enabled_words else True
+            if kindle_lemmas and enabled:
+                enabled = word in kindle_lemmas
+            if enabled:
+                enabled_words.add(word)
             forms = set()
             for form in map(lambda x: x.get("form"), data.get("forms", [])):
-                if form and form not in word_set and len(form) >= len_limit:
+                if form and form not in enabled_words and len(form) >= len_limit:
                     forms.add(form)
 
             for sense in data.get("senses", []):
@@ -83,7 +86,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                         break
                 words.append(
                     (
-                        enabled if not kindle_lemmas else word in kindle_lemmas,
+                        enabled,
                         word,
                         short_def(glosses[0]),
                         glosses[0],

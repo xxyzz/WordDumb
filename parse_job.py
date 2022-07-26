@@ -199,7 +199,7 @@ def dump_wiktionary_job(
         if ismacos and lang["wiki"] in CJK_LANGS
         else wiktionary_dump_path(plugin_path, lang["wiki"]),
         lang,
-        load_lemmas_dump(plugin_path, "en") if lang["wiki"] == "en" else None,
+        load_lemmas_dump(plugin_path) if lang["wiki"] == "en" else None,
         useragent,
         notifications,
     )

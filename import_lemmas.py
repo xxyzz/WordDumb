@@ -7,10 +7,8 @@ from pathlib import Path
 def extract_apkg(apkg_path: Path) -> dict[str, list[int, bool]]:
     cards = {}
     with zipfile.ZipFile(apkg_path) as zf:
-        db_path = zipfile.Path(
-            zf, "collection.anki21"
-        )  # include scheduling information
-        if not db_path.exists():
+        db_path = zipfile.Path(zf, "collection.anki21")
+        if not db_path.exists():  # no scheduling information
             db_path = zipfile.Path(zf, "collection.anki2")
         db_path = zf.extract(db_path.name, apkg_path.parent)
         conn = sqlite3.connect(db_path)
@@ -22,6 +20,7 @@ def extract_apkg(apkg_path: Path) -> dict[str, list[int, bool]]:
                 True,
             ]
 
+        conn.close()
         Path(db_path).unlink()
         return cards
 

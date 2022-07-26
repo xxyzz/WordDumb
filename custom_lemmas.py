@@ -40,7 +40,9 @@ class CustomLemmasDialog(QDialog):
 
         self.lemmas_table = QTableView()
         self.lemmas_table.setAlternatingRowColors(True)
-        self.lemmas_model = WiktionaryTableModel(lang) if lang else LemmasTableModel()
+        self.lemmas_model = (
+            WiktionaryTableModel(lang) if lang else KindleLemmasTableModel()
+        )
         self.lemmas_table.setModel(self.lemmas_model)
         self.lemmas_table.hideColumn(4 if lang else 2)
         if lang is None:
@@ -89,17 +91,107 @@ class CustomLemmasDialog(QDialog):
             str(Path.home()),
             "Anki Deck Package (*.apkg);;CSV (*.csv);;Kindle Vocabulary Builder (*.db)",
         )
+        lemmas_dict = {}
         if file_path.endswith(".apkg"):
-            self.lemmas_model.import_anki(extract_apkg(Path(file_path)))
+            lemmas_dict = extract_apkg(Path(file_path))
         elif file_path.endswith(".csv"):
-            self.lemmas_model.import_csv(extract_csv(file_path))
+            lemmas_dict = extract_csv(file_path)
         elif file_path.endswith(".db"):
-            self.lemmas_model.import_anki(
-                query_vocabulary_builder(self.lang if self.lang else "en", file_path)
+            lemmas_dict = query_vocabulary_builder(
+                self.lang if self.lang else "en", file_path
             )
+
+        self.lemmas_model.import_lemmas(lemmas_dict)
 
 
 class LemmasTableModel(QAbstractTableModel):
+    def rowCount(self, index):
+        return len(self.lemmas)
+
+    def columnCount(self, index):
+        return len(self.headers)
+
+    def headerData(self, section, orientation, role):
+        if (
+            role == Qt.ItemDataRole.DisplayRole
+            and orientation == Qt.Orientation.Horizontal
+        ):
+            return self.headers[section]
+
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
+        if not index.isValid():
+            return QVariant()
+        column = index.column()
+        value = self.lemmas[index.row()][column]
+        if role == Qt.ItemDataRole.CheckStateRole and column == 0:
+            new_value = Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
+            if isinstance(new_value, int):  # PyQt5
+                return new_value
+            else:  # PyQt6 Enum
+                return new_value.value
+        elif (
+            isinstance(self, KindleLemmasTableModel)
+            and role == Qt.ItemDataRole.DisplayRole
+            and column == 3
+        ):
+            return self.pos_types[value]
+        elif role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
+            return value
+        elif role == Qt.ItemDataRole.ToolTipRole and column in self.tooltip_columns:
+            return value
+
+    def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemFlag.ItemIsEnabled
+        flag = QAbstractTableModel.flags(self, index)
+        column = index.column()
+        if column == 0:
+            flag |= Qt.ItemFlag.ItemIsUserCheckable
+        elif column in self.editable_columns:
+            flag |= Qt.ItemFlag.ItemIsEditable
+        return flag
+
+    def setData(self, index, value, role):
+        if not index.isValid():
+            return False
+        column = index.column()
+        if role == Qt.ItemDataRole.CheckStateRole and column == 0:
+            checked_value = (
+                Qt.CheckState.Checked
+                if isinstance(Qt.CheckState.Checked, int)
+                else Qt.CheckState.Checked.value
+            )
+            self.lemmas[index.row()][0] = value == checked_value
+            self.dataChanged.emit(index, index, [role])
+            return True
+        elif role == Qt.ItemDataRole.EditRole and column in self.editable_columns:
+            self.lemmas[index.row()][column] = (
+                int(value) if isinstance(self, KindleLemmasTableModel) else value
+            )
+            self.dataChanged.emit(index, index, [role])
+            return True
+        return False
+
+    def import_lemmas(self, lemmas_dict: dict[str, list[int, bool]]) -> None:
+        for row in range(self.rowCount(None)):
+            lemma = self.lemmas[row][1]
+            enable = Qt.CheckState.Unchecked.value
+            difficulty = 1
+            data = lemmas_dict.get(lemma)
+            if data and data[1]:
+                enable = Qt.CheckState.Checked.value
+                difficulty = data[0]
+                lemmas_dict[lemma][1] = False
+            self.setData(
+                self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
+            )
+            if isinstance(self, KindleLemmasTableModel):
+                self.setData(
+                    self.createIndex(row, 5), difficulty, Qt.ItemDataRole.EditRole
+                )
+
+
+class KindleLemmasTableModel(LemmasTableModel):
     def __init__(self):
         super().__init__()
         plugin_path = get_plugin_path()
@@ -143,97 +235,8 @@ class LemmasTableModel(QAbstractTableModel):
             "Definition",
             "Difficulty",
         ]
-
-    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
-        if not index.isValid():
-            return QVariant()
-        column = index.column()
-        value = self.lemmas[index.row()][column]
-        if role == Qt.ItemDataRole.CheckStateRole and column == 0:
-            new_value = Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
-            if isinstance(new_value, int):  # PyQt5
-                return new_value
-            else:  # PyQt6 Enum
-                return new_value.value
-        elif role == Qt.ItemDataRole.DisplayRole and column == 3:
-            return self.pos_types[value]
-        elif role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
-            return value
-        elif role == Qt.ItemDataRole.ToolTipRole and column == 4:
-            return value
-
-    def rowCount(self, index):
-        return len(self.lemmas)
-
-    def columnCount(self, index):
-        return len(self.headers)
-
-    def headerData(self, section, orientation, role):
-        if (
-            role == Qt.ItemDataRole.DisplayRole
-            and orientation == Qt.Orientation.Horizontal
-        ):
-            return self.headers[section]
-
-    def flags(self, index):
-        if not index.isValid():
-            return Qt.ItemFlag.ItemIsEnabled
-        flag = QAbstractTableModel.flags(self, index)
-        column = index.column()
-        if column == 0:
-            flag |= Qt.ItemFlag.ItemIsUserCheckable
-        elif column == 5:
-            flag |= Qt.ItemFlag.ItemIsEditable
-        return flag
-
-    def setData(self, index, value, role):
-        if not index.isValid():
-            return False
-        column = index.column()
-        if role == Qt.ItemDataRole.CheckStateRole and column == 0:
-            checked_value = (
-                Qt.CheckState.Checked
-                if isinstance(Qt.CheckState.Checked, int)
-                else Qt.CheckState.Checked.value
-            )
-            self.lemmas[index.row()][0] = value == checked_value
-            self.dataChanged.emit(index, index, [role])
-            return True
-        elif role == Qt.ItemDataRole.EditRole and column == 5:
-            self.lemmas[index.row()][5] = int(value)
-            self.dataChanged.emit(index, index, [role])
-            return True
-        return False
-
-    def import_anki(self, anki_cards: dict[str, list[int, bool]]) -> None:
-        for row in range(self.rowCount(None)):
-            word = self.lemmas[row][1]
-            enable = Qt.CheckState.Unchecked.value
-            difficulty = 1
-            data = anki_cards.get(word)
-            if data and data[1]:
-                enable = Qt.CheckState.Checked.value
-                difficulty = data[0]
-                anki_cards[word][1] = False
-            self.setData(
-                self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
-            )
-            self.setData(self.createIndex(row, 5), difficulty, Qt.ItemDataRole.EditRole)
-
-    def import_csv(self, csv_words: dict[str, list[int, bool]]) -> None:
-        for row in range(self.rowCount(None)):
-            word = self.lemmas[row][1]
-            enable = Qt.CheckState.Unchecked.value
-            difficulty = 1
-            csv_data = csv_words.get(word)
-            if csv_data and csv_data[1]:
-                enable = Qt.CheckState.Checked.value
-                difficulty = csv_data[0]
-                csv_words[word][1] = False
-            self.setData(
-                self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
-            )
-            self.setData(self.createIndex(row, 5), difficulty, Qt.ItemDataRole.EditRole)
+        self.editable_columns = [5]
+        self.tooltip_columns = [4]
 
 
 class ComboBoxDelegate(QStyledItemDelegate):
@@ -278,98 +281,16 @@ class ComboBoxDelegate(QStyledItemDelegate):
         super().paint(painter, option, index)
 
 
-class WiktionaryTableModel(QAbstractTableModel):
+class WiktionaryTableModel(LemmasTableModel):
     def __init__(self, lang):
         super().__init__()
         self.headers = ["Enabled", "Lemma", "Short gloss", "Gloss", "Example", "Forms"]
         self.editable_columns = [2, 5]
+        self.tooltip_columns = [3]
         self.json_path = wiktionary_json_path(get_plugin_path(), lang)
         with open(self.json_path, encoding="utf-8") as f:
             self.lemmas = json.load(f)
 
-    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
-        if not index.isValid():
-            return QVariant()
-        column = index.column()
-        value = self.lemmas[index.row()][column]
-        if role == Qt.ItemDataRole.CheckStateRole and column == 0:
-            new_value = Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
-            if isinstance(new_value, int):  # PyQt5
-                return new_value
-            else:  # PyQt6 Enum
-                return new_value.value
-        elif role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
-            return value
-        elif role == Qt.ItemDataRole.ToolTipRole and column == 3:
-            return value
-
-    def rowCount(self, index):
-        return len(self.lemmas)
-
-    def columnCount(self, index):
-        return len(self.headers)
-
-    def headerData(self, section, orientation, role):
-        if (
-            role == Qt.ItemDataRole.DisplayRole
-            and orientation == Qt.Orientation.Horizontal
-        ):
-            return self.headers[section]
-
-    def flags(self, index):
-        if not index.isValid():
-            return Qt.ItemFlag.ItemIsEnabled
-        flag = QAbstractTableModel.flags(self, index)
-        column = index.column()
-        if column == 0:
-            flag |= Qt.ItemFlag.ItemIsUserCheckable
-        elif column in self.editable_columns:
-            flag |= Qt.ItemFlag.ItemIsEditable
-        return flag
-
-    def setData(self, index, value, role):
-        if not index.isValid():
-            return False
-        column = index.column()
-        if role == Qt.ItemDataRole.CheckStateRole and column == 0:
-            checked_value = (
-                Qt.CheckState.Checked
-                if isinstance(Qt.CheckState.Checked, int)
-                else Qt.CheckState.Checked.value
-            )
-            self.lemmas[index.row()][0] = value == checked_value
-            self.dataChanged.emit(index, index, [role])
-            return True
-        elif role == Qt.ItemDataRole.EditRole and column in self.editable_columns:
-            self.lemmas[index.row()][column] = value
-            self.dataChanged.emit(index, index, [role])
-            return True
-        return False
-
     def save_json_file(self):
         with open(self.json_path, "w", encoding="utf-8") as f:
             json.dump(self.lemmas, f)
-
-    def import_anki(self, anki_cards: dict[str, list[int, bool]]) -> None:
-        for row in range(self.rowCount(None)):
-            word = self.lemmas[row][1]
-            enable = Qt.CheckState.Unchecked.value
-            data = anki_cards.get(word)
-            if data and data[1]:
-                enable = Qt.CheckState.Checked.value
-                anki_cards[word][1] = False
-            self.setData(
-                self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
-            )
-
-    def import_csv(self, csv_words: dict[str, list[int, bool]]) -> None:
-        for row in range(self.rowCount(None)):
-            word = self.lemmas[row][1]
-            enable = Qt.CheckState.Unchecked.value
-            csv_data = csv_words.get(word)
-            if csv_data and csv_data[1]:
-                enable = Qt.CheckState.Checked.value
-                csv_words[word][1] = False
-            self.setData(
-                self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
-            )

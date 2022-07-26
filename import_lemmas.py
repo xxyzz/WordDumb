@@ -57,3 +57,31 @@ def extract_csv(csv_path: str) -> dict[str, list[int, bool]]:
             csv_words[word] = [difficulty, True]
 
     return csv_words
+
+
+def query_vocabulary_builder(lang: str, db_path: str) -> dict[str, list[int, bool]]:
+    conn = sqlite3.connect(db_path)
+    words = {}
+    for stem, category, lookups in conn.execute(
+        "SELECT stem, category, count(*) FROM WORDS JOIN LOOKUPS ON LOOKUPS.word_key = WORDS.id WHERE lang = ? GROUP BY stem",
+        (lang,),
+    ):
+        words[stem] = [lookups_to_difficulty(lookups, category), True]
+    conn.close()
+    return words
+
+
+def lookups_to_difficulty(lookups: int, category: int) -> int:
+    if category == 100:
+        return 5  # mastered
+    match lookups:
+        case 1:
+            return 5
+        case 2:
+            return 4
+        case 3:
+            return 3
+        case 4:
+            return 2
+        case _:
+            return 1

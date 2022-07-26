@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .data.anki import extract_apkg, extract_csv
+from .import_lemmas import extract_apkg, extract_csv, query_vocabulary_builder
 from .utils import (
     get_klld_path,
     get_plugin_path,
@@ -33,6 +33,7 @@ from .utils import (
 class CustomLemmasDialog(QDialog):
     def __init__(self, parent, lang=None, title=None):
         super().__init__(parent)
+        self.lang = lang
         self.setWindowTitle(f"Customize {title if lang else 'Kindle Word Wise'}")
         vl = QVBoxLayout()
         self.setLayout(vl)
@@ -86,12 +87,16 @@ class CustomLemmasDialog(QDialog):
             self,
             "Select file",
             str(Path.home()),
-            "Anki Deck Package (*.apkg);;CSV (*.csv)",
+            "Anki Deck Package (*.apkg);;CSV (*.csv);;Kindle Vocabulary Builder (*.db)",
         )
         if file_path.endswith(".apkg"):
             self.lemmas_model.import_anki(extract_apkg(Path(file_path)))
         elif file_path.endswith(".csv"):
             self.lemmas_model.import_csv(extract_csv(file_path))
+        elif file_path.endswith(".db"):
+            self.lemmas_model.import_anki(
+                query_vocabulary_builder(self.lang if self.lang else "en", file_path)
+            )
 
 
 class LemmasTableModel(QAbstractTableModel):

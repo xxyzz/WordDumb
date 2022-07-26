@@ -84,7 +84,7 @@ class CustomLemmasDialog(QDialog):
             self.lemmas_table.setCurrentIndex(matches[0])
             self.lemmas_table.scrollTo(matches[0])
 
-    def select_import_file(self):
+    def select_import_file(self) -> None:
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Select file",
@@ -100,6 +100,8 @@ class CustomLemmasDialog(QDialog):
             lemmas_dict = query_vocabulary_builder(
                 self.lang if self.lang else "en", file_path
             )
+        else:
+            return
 
         self.lemmas_model.import_lemmas(lemmas_dict)
 

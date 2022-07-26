@@ -95,13 +95,15 @@ https://user-images.githubusercontent.com/21101839/124685798-90f87f80-df04-11eb-
 
   Add X-Ray entities that can't be recognized by spaCy model to improve NER accuracy for each selected book. It can also be used to remove entities by checking the "Omit" checkbox.
  
-- Import Word Wise from Anki Deck Package or CSV file
+- Import Word Wise from Anki Deck Package, CSV file or Kindle Vocabulary Builder
 
   Words inside the imported file will be enabled.
 
   - Select the "Include scheduling information" option when exporting the .apkg file from Anki so the card schedule state can be used as Word Wise difficulty.
 
   - The CSV file should have at least one column of words and an optional column of difficulty value.
+  
+  - Kindle Vocabulary Builder database path: `system/vocabulary/vocab.db`
 
 - Connect your e-reader, select one book or multiple books then click the plugin icon or menu. You can also run the plugin in terminal:
 

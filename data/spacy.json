@@ -13,7 +13,7 @@
   },
   "catalogue": {
     "compiled": false,
-    "version": "2.0.7"
+    "version": "2.0.8"
   },
   "certifi": {
     "compiled": false,
@@ -85,7 +85,7 @@
   },
   "spacy": {
     "compiled": true,
-    "version": "3.4.0"
+    "version": "3.4.1"
   },
   "spacy-legacy": {
     "compiled": false,

@@ -18,7 +18,7 @@ args = parser.parse_args()
 
 
 # Convert the semantic diversity-author prevalence(SD-AP) value to difficulty
-def sd_ap_to_difficulty(sd_ap: int) -> int:
+def sd_ap_to_difficulty(sd_ap: float) -> int:
     if sd_ap >= 4:
         return 5
     elif sd_ap >= 3:

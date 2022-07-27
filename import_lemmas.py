@@ -15,7 +15,7 @@ def extract_apkg(apkg_path: Path) -> dict[str, list[int, bool]]:
         for card_type, fields in conn.execute(
             "SELECT type, flds FROM cards JOIN notes ON cards.nid = notes.id"
         ):
-            cards[fields.split("\x1f")[0]] = [
+            cards[fields.split("\x1f", 1)[0]] = [
                 card_type_to_difficult_level(card_type),
                 True,
             ]

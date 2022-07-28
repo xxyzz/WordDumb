@@ -54,7 +54,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
             if (
                 pos not in POS_TYPES
                 or len(word) < len_limit
-                or re.fullmatch(r"[\W\d]+", word)
+                or re.match(r"\W|\d", word)
             ):
                 continue
             if lang in CJK_LANGS and re.fullmatch(r"[a-zA-Z\d]+", word):

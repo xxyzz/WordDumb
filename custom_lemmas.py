@@ -23,6 +23,7 @@ from PyQt6.QtWidgets import (
 
 from .import_lemmas import extract_apkg, extract_csv, query_vocabulary_builder
 from .utils import (
+    custom_lemmas_dump_path,
     get_klld_path,
     get_plugin_path,
     load_lemmas_dump,
@@ -66,16 +67,23 @@ class CustomLemmasDialog(QDialog):
         search_line.textChanged.connect(lambda: self.search_lemma(search_line.text()))
         vl.addWidget(search_line)
 
-        save_button_box = QDialogButtonBox(
+        dialog_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save
             | QDialogButtonBox.StandardButton.Cancel
         )
-        save_button_box.accepted.connect(self.accept)
-        save_button_box.rejected.connect(self.reject)
+        dialog_button_box.accepted.connect(self.accept)
+        dialog_button_box.rejected.connect(self.reject)
         import_button = QPushButton(QIcon.ic("document-import.png"), "Import")
         import_button.clicked.connect(self.select_import_file)
-        save_button_box.addButton(import_button, QDialogButtonBox.ButtonRole.ActionRole)
-        vl.addWidget(save_button_box)
+        dialog_button_box.addButton(
+            import_button, QDialogButtonBox.ButtonRole.ActionRole
+        )
+        if lang is None:
+            dialog_button_box.addButton(QDialogButtonBox.StandardButton.RestoreDefaults)
+            dialog_button_box.button(
+                QDialogButtonBox.StandardButton.RestoreDefaults
+            ).clicked.connect(self.reset_lemmas)
+        vl.addWidget(dialog_button_box)
 
     def search_lemma(self, text):
         if matches := self.lemmas_model.match(
@@ -104,6 +112,12 @@ class CustomLemmasDialog(QDialog):
             return
 
         self.lemmas_model.import_lemmas(lemmas_dict)
+
+    def reset_lemmas(self):
+        custom_path = custom_lemmas_dump_path(get_plugin_path())
+        if custom_path.exists():
+            custom_path.unlink()
+            self.reject()
 
 
 class LemmasTableModel(QAbstractTableModel):

@@ -40,6 +40,11 @@ def download_wiktionary(download_folder, source_language, useragent, notif):
     return download_path
 
 
+FILTER_TAGS = frozenset(
+    {"plural", "alternative", "obsolete", "abbreviation", "initialism"}
+)
+
+
 def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
     if notif:
         notif.put((0, "Extracting Wiktionary file"))
@@ -76,8 +81,8 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                 example_sent = None
                 if not glosses:
                     continue
-                tags = sense.get("tags", [])
-                if any([x in tags for x in ["plural", "alternative", "obsolete"]]):
+                tags = set(sense.get("tags", []))
+                if tags.intersection(FILTER_TAGS):
                     continue
                 for example in examples:
                     example = example.get("text")
@@ -146,7 +151,7 @@ def short_def(gloss: str) -> str:
     gloss = gloss[0].lower() + gloss[1:]
     gloss = gloss.removesuffix(".")
     gloss = re.sub(r"\([^)]+\)", "", gloss)
-    gloss = re.split(r"[;,]", gloss, 1)[0] 
+    gloss = re.split(r"[;,]", gloss, 1)[0]
     return gloss.strip()
 
 

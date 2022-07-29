@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
+    QInputDialog,
     QLineEdit,
     QPushButton,
     QStyledItemDelegate,
@@ -93,6 +94,16 @@ class CustomLemmasDialog(QDialog):
             self.lemmas_table.scrollTo(matches[0])
 
     def select_import_file(self) -> None:
+        retain_lemmas, ok = QInputDialog.getItem(
+            self,
+            "Import file",
+            "Retain current enabled lemmas",
+            ["True", "False"],
+            editable=False,
+        )
+        if not ok:
+            return
+
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Select file",
@@ -111,7 +122,7 @@ class CustomLemmasDialog(QDialog):
         else:
             return
 
-        self.lemmas_model.import_lemmas(lemmas_dict)
+        self.lemmas_model.import_lemmas(lemmas_dict, retain_lemmas == "True")
 
     def reset_lemmas(self):
         custom_path = custom_lemmas_dump_path(get_plugin_path())
@@ -188,11 +199,21 @@ class LemmasTableModel(QAbstractTableModel):
             return True
         return False
 
-    def import_lemmas(self, lemmas_dict: dict[str, list[int, bool]]) -> None:
+    def import_lemmas(
+        self, lemmas_dict: dict[str, list[int, bool]], retain_lemmas: bool
+    ) -> None:
         for row in range(self.rowCount(None)):
             lemma = self.lemmas[row][1]
             enable = Qt.CheckState.Unchecked.value
             difficulty = 1
+            if retain_lemmas:
+                if self.lemmas[row][0]:
+                    enable = Qt.CheckState.Checked.value
+                else:
+                    enable = Qt.CheckState.Unchecked.value
+                if isinstance(self, KindleLemmasTableModel):
+                    difficulty = self.lemmas[row][5]
+
             data = lemmas_dict.get(lemma)
             if data and data[1]:
                 enable = Qt.CheckState.Checked.value

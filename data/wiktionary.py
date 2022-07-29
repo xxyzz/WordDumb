@@ -84,11 +84,14 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                     if example and example != "(obsolete)":
                         example_sent = example
                         break
+                short_gloss = short_def(glosses[0])
+                if short_gloss == "of":
+                    continue
                 words.append(
                     (
                         enabled,
                         word,
-                        short_def(glosses[0]),
+                        short_gloss,
                         glosses[0],
                         example_sent,
                         ",".join(forms),
@@ -139,8 +142,12 @@ def dump_wiktionary(json_path, dump_path, lang, notif):
             pickle.dump(keyword_processor, f)
 
 
-def short_def(gloss):
-    return re.split(r"[;,]", re.sub(r"\([^)]+\)", "", gloss), 1)[0].strip()
+def short_def(gloss: str) -> str:
+    gloss = gloss[0].lower() + gloss[1:]
+    gloss = gloss.removesuffix(".")
+    gloss = re.sub(r"\([^)]+\)", "", gloss)
+    gloss = re.split(r"[;,]", gloss, 1)[0] 
+    return gloss.strip()
 
 
 def download_and_dump_wiktionary(

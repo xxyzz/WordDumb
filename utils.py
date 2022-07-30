@@ -35,19 +35,22 @@ def load_json_or_pickle(plugin_path, filepath):
 
 
 def run_subprocess(args, input_str=None):
-    if platform.system() == "Windows":
-        return subprocess.run(
-            args,
-            input=input_str,
-            check=True,
-            capture_output=True,
-            text=True,
-            creationflags=subprocess.CREATE_NO_WINDOW,
-        )
-    else:
-        return subprocess.run(
-            args, input=input_str, check=True, capture_output=True, text=True
-        )
+    from calibre.gui2 import sanitize_env_vars
+
+    with sanitize_env_vars():
+        if platform.system() == "Windows":
+            return subprocess.run(
+                args,
+                input=input_str,
+                check=True,
+                capture_output=True,
+                text=True,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+        else:
+            return subprocess.run(
+                args, input=input_str, check=True, capture_output=True, text=True
+            )
 
 
 def homebrew_mac_bin_path(package):

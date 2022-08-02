@@ -14,16 +14,17 @@ from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
+    QHBoxLayout,
     QInputDialog,
     QLabel,
     QLineEdit,
     QPushButton,
     QStyledItemDelegate,
     QTableView,
-    QHBoxLayout,
     QVBoxLayout,
 )
 
+from .data.wiktionary import get_ipa
 from .import_lemmas import extract_apkg, extract_csv, query_vocabulary_builder
 from .utils import (
     custom_lemmas_dump_path,
@@ -156,7 +157,8 @@ class CustomLemmasDialog(QDialog):
             prefs["en_ipa"] = self.ipa_button.currentText()
         elif self.lang == "zh":
             prefs["zh_ipa"] = self.ipa_button.currentText()
-        self.lemmas_model.change_ipa(True, None)
+
+        self.lemmas_model.change_ipa()
 
 
 class LemmasTableModel(QAbstractTableModel):
@@ -190,6 +192,15 @@ class LemmasTableModel(QAbstractTableModel):
             and column == 3
         ):
             return self.pos_types[value]
+        elif (
+            isinstance(self, WiktionaryTableModel)
+            and role == Qt.ItemDataRole.DisplayRole
+            and column == 6
+        ):
+            from .config import prefs
+
+            ipa_tag = prefs["en_ipa"] if self.lang == "en" else prefs["zh_ipa"]
+            return get_ipa(self.lang, ipa_tag, value)
         elif role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             return value
         elif role == Qt.ItemDataRole.ToolTipRole and column in self.tooltip_columns:
@@ -349,6 +360,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
 class WiktionaryTableModel(LemmasTableModel):
     def __init__(self, lang):
         super().__init__()
+        self.lang = lang
         self.headers = [
             "Enabled",
             "Lemma",
@@ -364,33 +376,12 @@ class WiktionaryTableModel(LemmasTableModel):
         with open(self.json_path, encoding="utf-8") as f:
             self.lemmas = json.load(f)
 
-        self.lang = lang
-        if lang == "en" or lang == "zh":
-            self.change_ipa(False, self.lemmas)
-
     def save_json_file(self):
         with open(self.json_path, "w", encoding="utf-8") as f:
             json.dump(self.lemmas, f)
 
-    def change_ipa(self, emit_change, origin_lemmas):
-        from .config import prefs
-
-        if origin_lemmas is None:
-            with open(self.json_path, encoding="utf-8") as f:
-                origin_lemmas = json.load(f)
-
-        ipa_tag = prefs["en_ipa"] if self.lang == "en" else prefs["zh_ipa"]
-        for index in range(len(self.lemmas)):
-            ipas = origin_lemmas[index][6]
-            if ipas:
-                table_index = self.createIndex(index, 6)
-                if ipa_tag in ipas:
-                    self.lemmas[index][6] = ipas[ipa_tag]
-                    if emit_change:
-                        self.dataChanged.emit(table_index, table_index, [Qt.ItemDataRole.DisplayRole])
-                elif self.lang == "en":
-                    for ipa in ipas.values():
-                        self.lemmas[index][6] = ipa
-                        if emit_change:
-                            self.dataChanged.emit(table_index, table_index, [Qt.ItemDataRole.DisplayRole])
-                        break
+    def change_ipa(self):
+        for row in range(self.rowCount(None)):
+            if self.lemmas[row][6]:
+                index = self.createIndex(row, 6)
+                self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])

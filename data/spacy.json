@@ -73,7 +73,7 @@
   },
   "rapidfuzz": {
     "compiled": true,
-    "version": "2.3.0"
+    "version": "2.4.2"
   },
   "requests": {
     "compiled": false,
@@ -121,6 +121,6 @@
   },
   "wasabi": {
     "compiled": false,
-    "version": "0.10.0"
+    "version": "0.10.1"
   }
 }

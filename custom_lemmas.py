@@ -15,10 +15,12 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox,
     QFileDialog,
     QInputDialog,
+    QLabel,
     QLineEdit,
     QPushButton,
     QStyledItemDelegate,
     QTableView,
+    QHBoxLayout,
     QVBoxLayout,
 )
 
@@ -67,6 +69,23 @@ class CustomLemmasDialog(QDialog):
         search_line.setPlaceholderText("Search")
         search_line.textChanged.connect(lambda: self.search_lemma(search_line.text()))
         vl.addWidget(search_line)
+
+        if lang:
+            from .config import prefs
+
+            self.ipa_button = QComboBox()
+            if lang == "en":
+                self.ipa_button.addItems(["US", "UK"])
+                self.ipa_button.setCurrentText(prefs["en_ipa"])
+            elif lang == "zh":
+                self.ipa_button.addItems(["Pinyin", "bopomofo"])
+                self.ipa_button.setCurrentText(prefs["zh_ipa"])
+
+            hl = QHBoxLayout()
+            hl.addWidget(QLabel("IPA"))
+            self.ipa_button.currentIndexChanged.connect(self.change_ipa)
+            hl.addWidget(self.ipa_button)
+            vl.addLayout(hl)
 
         dialog_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save
@@ -129,6 +148,15 @@ class CustomLemmasDialog(QDialog):
         if custom_path.exists():
             custom_path.unlink()
             self.reject()
+
+    def change_ipa(self):
+        from .config import prefs
+
+        if self.lang == "en":
+            prefs["en_ipa"] = self.ipa_button.currentText()
+        elif self.lang == "zh":
+            prefs["zh_ipa"] = self.ipa_button.currentText()
+        self.lemmas_model.change_ipa(True, None)
 
 
 class LemmasTableModel(QAbstractTableModel):
@@ -336,20 +364,33 @@ class WiktionaryTableModel(LemmasTableModel):
         with open(self.json_path, encoding="utf-8") as f:
             self.lemmas = json.load(f)
 
+        self.lang = lang
         if lang == "en" or lang == "zh":
-            from .config import prefs
-
-            ipa_tag = prefs["en_ipa"] if lang == "en" else prefs["zh_ipa"]
-            for index in range(len(self.lemmas)):
-                ipas = self.lemmas[index][6]
-                if ipas:
-                    if ipa_tag in ipas:
-                        self.lemmas[index][6] = ipas[ipa_tag]
-                    elif lang == "en":
-                        for ipa in ipas.values():
-                            self.lemmas[index][6] = ipa
-                            break
+            self.change_ipa(False, self.lemmas)
 
     def save_json_file(self):
         with open(self.json_path, "w", encoding="utf-8") as f:
             json.dump(self.lemmas, f)
+
+    def change_ipa(self, emit_change, origin_lemmas):
+        from .config import prefs
+
+        if origin_lemmas is None:
+            with open(self.json_path, encoding="utf-8") as f:
+                origin_lemmas = json.load(f)
+
+        ipa_tag = prefs["en_ipa"] if self.lang == "en" else prefs["zh_ipa"]
+        for index in range(len(self.lemmas)):
+            ipas = origin_lemmas[index][6]
+            if ipas:
+                table_index = self.createIndex(index, 6)
+                if ipa_tag in ipas:
+                    self.lemmas[index][6] = ipas[ipa_tag]
+                    if emit_change:
+                        self.dataChanged.emit(table_index, table_index, [Qt.ItemDataRole.DisplayRole])
+                elif self.lang == "en":
+                    for ipa in ipas.values():
+                        self.lemmas[index][6] = ipa
+                        if emit_change:
+                            self.dataChanged.emit(table_index, table_index, [Qt.ItemDataRole.DisplayRole])
+                        break

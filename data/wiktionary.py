@@ -113,7 +113,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
         json.dump(words, f)
 
 
-def get_ipas(lang: str, sounds: list[dict[str, str | list]]) -> dict[str, str] | str:
+def get_ipas(lang, sounds):
     ipas = {}
     if lang == "en":
         for sound in sounds:
@@ -126,9 +126,9 @@ def get_ipas(lang: str, sounds: list[dict[str, str | list]]) -> dict[str, str] |
         for sound in sounds:
             if "zh-pron" in sound and "standard" in sound.get("tags", []):
                 if "Pinyin" in sound["tags"] and "Pinyin" not in ipas:
-                    ipas["Pinyin"] = sound["ipa"]
+                    ipas["Pinyin"] = sound["zh-pron"]
                 elif "bopomofo" in sound["tags"] and "bopomofo" not in ipas:
-                    ipas["bopomofo"] = sound["ipa"]
+                    ipas["bopomofo"] = sound["zh-pron"]
     else:
         for sound in sounds:
             if "ipa" in sound:

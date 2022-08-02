@@ -21,8 +21,8 @@ parser.add_argument("-x", help="create x-ray", action="store_true")
 parser.add_argument("-s", help="search people", action="store_true")
 parser.add_argument("-m", help="add locator map", action="store_true")
 parser.add_argument("asin")
-parser.add_argument("book_path")
-parser.add_argument("acr")
+parser.add_argument("book_path")  # Wiktionary JSON
+parser.add_argument("acr")  # ipa tag
 parser.add_argument("revision")
 parser.add_argument("model")
 parser.add_argument("wiki_lang")
@@ -40,7 +40,7 @@ if args.dump_path:
     plugin_path = Path(args.plugin_path)
     insert_installed_libs(plugin_path)
     if args.wiki_lang:
-        dump_wiktionary(args.book_path, args.dump_path, args.wiki_lang, None)
+        dump_wiktionary(args.book_path, args.dump_path, args.wiki_lang, args.acr, None)
     else:
         insert_flashtext_path(plugin_path)
         dump_lemmas(json.load(sys.stdin), args.dump_path)

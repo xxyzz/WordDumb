@@ -255,6 +255,12 @@ class ConfigWidget(QWidget):
 
     def run_dump_wiktionary_job(self, wiki_lang, lang, useragent, table_model):
         gui = self.parent().parent()
+        ipa_tag = ""
+        if wiki_lang == "en":
+            ipa_tag = prefs["en_ipa"]
+        elif wiki_lang == "zh":
+            ipa_tag = prefs["zh_ipa"]
+
         job = ThreadedJob(
             "WordDumb's dumb job",
             "Download Wiktionary",
@@ -264,6 +270,7 @@ class ConfigWidget(QWidget):
                 {"wiki": wiki_lang, "kaikki": lang},
                 useragent,
                 table_model,
+                ipa_tag,
             ),
             {},
             Dispatcher(partial(job_failed, parent=gui)),

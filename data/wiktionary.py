@@ -209,7 +209,7 @@ def short_def(gloss: str) -> str:
 
 
 def download_and_dump_wiktionary(
-    json_path, dump_path, lang, kindle_lemmas, useragent, notif
+    json_path, dump_path, lang, kindle_lemmas, useragent, ipa_tag, notif
 ):
     if useragent:
         download_path = download_wiktionary(
@@ -217,4 +217,4 @@ def download_and_dump_wiktionary(
         )
         extract_wiktionary(download_path, lang["wiki"], kindle_lemmas, notif)
     if dump_path:
-        dump_wiktionary(json_path, dump_path, lang["wiki"], notif)
+        dump_wiktionary(json_path, dump_path, lang["wiki"], ipa_tag, notif)

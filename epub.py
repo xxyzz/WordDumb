@@ -307,7 +307,9 @@ class EPUB:
         """
         for lemma, lemma_id in self.lemmas.items():
             s += f'<aside id="{lemma_id}" epub:type="footnote">'
-            _, gloss, example = self.get_lemma_gloss(lemma, lang)
+            _, gloss, example, ipa = self.get_lemma_gloss(lemma, lang)
+            if ipa:
+                s += f"<p>{escape(ipa)}</p>"
             s += f"<p>{escape(gloss)}</p>"
             if example:
                 s += f"<p><i>{escape(example)}</i></p>"

@@ -83,7 +83,13 @@ class CustomLemmasDialog(QDialog):
                 self.ipa_button.setCurrentText(prefs["zh_ipa"])
 
             hl = QHBoxLayout()
-            hl.addWidget(QLabel("IPA"))
+            hl.addWidget(
+                QLabel(
+                    "Phonetic transcription system"
+                    if lang == "zh"
+                    else "International Phonetic Alphabet"
+                )
+            )
             self.ipa_button.currentIndexChanged.connect(self.change_ipa)
             hl.addWidget(self.ipa_button)
             vl.addLayout(hl)

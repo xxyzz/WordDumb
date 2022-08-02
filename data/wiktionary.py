@@ -117,18 +117,29 @@ def get_ipas(lang, sounds):
     ipas = {}
     if lang == "en":
         for sound in sounds:
-            if "ipa" in sound and "tags" in sound:
-                if "US" in sound["tags"] and "US" not in ipas:
-                    ipas["US"] = sound["ipa"]
-                if "UK" in sound["tags"] and "UK" not in ipas:
-                    ipas["UK"] = sound["ipa"]
+            ipa = sound.get("ipa")
+            if not ipa:
+                continue
+            tags = sound.get("tags")
+            if not tags:
+                return ipa
+            if ("US" in tags or "General-American" in tags) and "US" not in ipas:
+                ipas["US"] = ipa
+            if ("UK" in tags or "Received-Pronunciation" in tags) and "UK" not in ipas:
+                ipas["UK"] = ipa
     elif lang == "zh":
         for sound in sounds:
-            if "zh-pron" in sound and "standard" in sound.get("tags", []):
-                if "Pinyin" in sound["tags"] and "Pinyin" not in ipas:
-                    ipas["Pinyin"] = sound["zh-pron"]
-                elif "bopomofo" in sound["tags"] and "bopomofo" not in ipas:
-                    ipas["bopomofo"] = sound["zh-pron"]
+            pron = sound.get("zh-pron")
+            if not pron:
+                continue
+            tags = sound.get("tags")
+            if not tags:
+                return pron
+            if "Mandarin" in tags:
+                if "Pinyin" in tags and "Pinyin" not in ipas:
+                    ipas["Pinyin"] = pron
+                elif "bopomofo" in tags and "bopomofo" not in ipas:
+                    ipas["bopomofo"] = pron
     else:
         for sound in sounds:
             if "ipa" in sound:

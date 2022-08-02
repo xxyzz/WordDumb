@@ -56,6 +56,8 @@ prefs.defaults["add_locator_map"] = False
 prefs.defaults["preferred_formats"] = ["KFX", "AZW3", "AZW", "MOBI", "EPUB"]
 prefs.defaults["use_all_formats"] = False
 prefs.defaults["minimal_x_ray_count"] = 1
+prefs.defaults["en_ipa"] = "US"
+prefs.defaults["zh_ipa"] = "Pinyin"
 
 
 class ConfigWidget(QWidget):

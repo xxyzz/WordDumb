@@ -100,6 +100,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                         glosses[0],
                         example_sent,
                         ",".join(forms),
+                        get_ipas(lang, data.get("sounds", [])),
                     )
                 )
                 enabled = False
@@ -110,6 +111,30 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
         download_path.with_name(f"wiktionary_{lang}.json"), "w", encoding="utf-8"
     ) as f:
         json.dump(words, f)
+
+
+def get_ipas(lang: str, sounds: list[dict[str, str | list]]) -> dict[str, str] | str:
+    ipas = {}
+    if lang == "en":
+        for sound in sounds:
+            if "ipa" in sound and "tags" in sound:
+                if "US" in sound["tags"] and "US" not in ipas:
+                    ipas["US"] = sound["ipa"]
+                if "UK" in sound["tags"] and "UK" not in ipas:
+                    ipas["UK"] = sound["ipa"]
+    elif lang == "zh":
+        for sound in sounds:
+            if "zh-pron" in sound and "standard" in sound.get("tags", []):
+                if "Pinyin" in sound["tags"] and "Pinyin" not in ipas:
+                    ipas["Pinyin"] = sound["ipa"]
+                elif "bopomofo" in sound["tags"] and "bopomofo" not in ipas:
+                    ipas["bopomofo"] = sound["ipa"]
+    else:
+        for sound in sounds:
+            if "ipa" in sound:
+                return sound["ipa"]
+
+    return ipas if ipas else ""
 
 
 def dump_wiktionary(json_path, dump_path, lang, notif):
@@ -123,12 +148,12 @@ def dump_wiktionary(json_path, dump_path, lang, notif):
         import ahocorasick
 
         automaton = ahocorasick.Automaton()
-        for _, word, short_gloss, gloss, example, forms in filter(
+        for _, word, short_gloss, gloss, example, forms, ipa in filter(
             lambda x: x[0] and not automaton.exists(x[1]), words
         ):
-            automaton.add_word(word, (word, short_gloss, gloss, example))
+            automaton.add_word(word, (word, short_gloss, gloss, example, ipa))
             for form in filter(lambda x: not automaton.exists(x), forms.split(",")):
-                automaton.add_word(form, (form, short_gloss, gloss, example))
+                automaton.add_word(form, (form, short_gloss, gloss, example, ipa))
 
         automaton.make_automaton()
         automaton.save(str(dump_path), pickle.dumps)
@@ -136,12 +161,12 @@ def dump_wiktionary(json_path, dump_path, lang, notif):
         from flashtext import KeywordProcessor
 
         keyword_processor = KeywordProcessor()
-        for _, word, short_gloss, gloss, example, forms in filter(
+        for _, word, short_gloss, gloss, example, forms, ipa in filter(
             lambda x: x[0] and x[1] not in keyword_processor, words
         ):
-            keyword_processor.add_keyword(word, (short_gloss, gloss, example))
+            keyword_processor.add_keyword(word, (short_gloss, gloss, example, ipa))
             for form in filter(lambda x: x not in keyword_processor, forms.split(",")):
-                keyword_processor.add_keyword(form, (short_gloss, gloss, example))
+                keyword_processor.add_keyword(form, (short_gloss, gloss, example, ipa))
 
         with open(dump_path, "wb") as f:
             pickle.dump(keyword_processor, f)

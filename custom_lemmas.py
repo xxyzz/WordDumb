@@ -321,12 +321,34 @@ class ComboBoxDelegate(QStyledItemDelegate):
 class WiktionaryTableModel(LemmasTableModel):
     def __init__(self, lang):
         super().__init__()
-        self.headers = ["Enabled", "Lemma", "Short gloss", "Gloss", "Example", "Forms"]
+        self.headers = [
+            "Enabled",
+            "Lemma",
+            "Short gloss",
+            "Gloss",
+            "Example",
+            "Forms",
+            "IPA",
+        ]
         self.editable_columns = [2, 5]
         self.tooltip_columns = [3]
         self.json_path = wiktionary_json_path(get_plugin_path(), lang)
         with open(self.json_path, encoding="utf-8") as f:
             self.lemmas = json.load(f)
+
+        if lang == "en" or lang == "zh":
+            from .config import prefs
+
+            ipa_tag = prefs["en_ipa"] if lang == "en" else prefs["zh_ipa"]
+            for index in range(len(self.lemmas)):
+                ipas = self.lemmas[index][6]
+                if ipas:
+                    if ipa_tag in ipas:
+                        self.lemmas[index][6] = ipas[ipa_tag]
+                    elif lang == "en":
+                        for ipa in ipas.values():
+                            self.lemmas[index][6] = ipa
+                            break
 
     def save_json_file(self):
         with open(self.json_path, "w", encoding="utf-8") as f:

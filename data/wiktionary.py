@@ -91,6 +91,10 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                 example_sent = None
                 if not glosses:
                     continue
+                if len(glosses) > 1:
+                    gloss = glosses[1]
+                else:
+                    gloss = glosses[0]
                 tags = set(sense.get("tags", []))
                 if tags.intersection(FILTER_TAGS):
                     continue
@@ -99,7 +103,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                     if example and example != "(obsolete)":
                         example_sent = example
                         break
-                short_gloss = short_def(glosses[0])
+                short_gloss = short_def(gloss)
                 if short_gloss == "of":
                     continue
                 words.append(
@@ -108,7 +112,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                         word,
                         pos,
                         short_gloss,
-                        glosses[0],
+                        gloss,
                         example_sent,
                         ",".join(forms),
                         get_ipas(lang, data.get("sounds", [])),

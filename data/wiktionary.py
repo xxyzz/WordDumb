@@ -41,7 +41,15 @@ def download_wiktionary(download_folder, source_language, useragent, notif):
 
 
 FILTER_TAGS = frozenset(
-    {"plural", "alternative", "obsolete", "abbreviation", "initialism", "form-of"}
+    {
+        "plural",
+        "alternative",
+        "obsolete",
+        "abbreviation",
+        "initialism",
+        "form-of",
+        "misspelling",
+    }
 )
 
 

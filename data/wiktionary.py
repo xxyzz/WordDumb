@@ -218,8 +218,9 @@ def dump_wiktionary(json_path, dump_path, lang, ipa_tag, notif):
 def short_def(gloss: str) -> str:
     gloss = gloss[0].lower() + gloss[1:]
     gloss = gloss.removesuffix(".")
-    gloss = re.sub(r"\([^)]+\)", "", gloss)
-    gloss = re.split(r"[;,]", gloss, 1)[0]
+    gloss = re.sub(r"\([^)]+\) ?", "", gloss)
+    gloss = min(gloss.split(";"), key=len)
+    gloss = gloss.split(",", 1)[0]
     return gloss.strip()
 
 

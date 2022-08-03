@@ -49,6 +49,7 @@ FILTER_TAGS = frozenset(
         "initialism",
         "form-of",
         "misspelling",
+        "alt-of",
     }
 )
 

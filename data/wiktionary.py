@@ -57,7 +57,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
     if notif:
         notif.put((0, "Extracting Wiktionary file"))
     words = []
-    enabled_words = set()
+    enabled_words_pos = set()
     len_limit = 2 if lang in CJK_LANGS else 3
     with open(download_path, encoding="utf-8") as f:
         for line in f:
@@ -73,14 +73,15 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
             if lang in CJK_LANGS and re.fullmatch(r"[a-zA-Z\d]+", word):
                 continue
 
-            enabled = False if word in enabled_words else True
+            word_pos = f"{word} {pos}"
+            enabled = False if word_pos in enabled_words_pos else True
             if kindle_lemmas and enabled:
                 enabled = word in kindle_lemmas
             if enabled:
-                enabled_words.add(word)
+                enabled_words_pos.add(word_pos)
             forms = set()
             for form in map(lambda x: x.get("form"), data.get("forms", [])):
-                if form and form not in enabled_words and len(form) >= len_limit:
+                if form and form != word and len(form) >= len_limit:
                     forms.add(form)
 
             for sense in data.get("senses", []):
@@ -104,6 +105,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                     (
                         enabled,
                         word,
+                        pos,
                         short_gloss,
                         glosses[0],
                         example_sent,
@@ -182,7 +184,7 @@ def dump_wiktionary(json_path, dump_path, lang, ipa_tag, notif):
         import ahocorasick
 
         automaton = ahocorasick.Automaton()
-        for _, word, short_gloss, gloss, example, forms, ipas in filter(
+        for _, word, _, short_gloss, gloss, example, forms, ipas in filter(
             lambda x: x[0] and not automaton.exists(x[1]), words
         ):
             ipa = get_ipa(lang, ipa_tag, ipas)
@@ -196,7 +198,7 @@ def dump_wiktionary(json_path, dump_path, lang, ipa_tag, notif):
         from flashtext import KeywordProcessor
 
         keyword_processor = KeywordProcessor()
-        for _, word, short_gloss, gloss, example, forms, ipas in filter(
+        for _, word, _, short_gloss, gloss, example, forms, ipas in filter(
             lambda x: x[0] and x[1] not in keyword_processor, words
         ):
             ipa = get_ipa(lang, ipa_tag, ipas)

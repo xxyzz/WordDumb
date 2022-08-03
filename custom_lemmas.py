@@ -49,7 +49,7 @@ class CustomLemmasDialog(QDialog):
             WiktionaryTableModel(lang) if lang else KindleLemmasTableModel()
         )
         self.lemmas_table.setModel(self.lemmas_model)
-        self.lemmas_table.hideColumn(4 if lang else 2)
+        self.lemmas_table.hideColumn(5 if lang else 2)
         if lang is None:
             self.lemmas_table.setItemDelegateForColumn(
                 5,
@@ -201,7 +201,7 @@ class LemmasTableModel(QAbstractTableModel):
         elif (
             isinstance(self, WiktionaryTableModel)
             and role == Qt.ItemDataRole.DisplayRole
-            and column == 6
+            and column == 7
         ):
             from .config import prefs
 
@@ -313,7 +313,7 @@ class KindleLemmasTableModel(LemmasTableModel):
             "Enabled",
             "Lemma",
             "Sense id",
-            "POS type",
+            "POS",
             "Definition",
             "Difficulty",
         ]
@@ -370,14 +370,15 @@ class WiktionaryTableModel(LemmasTableModel):
         self.headers = [
             "Enabled",
             "Lemma",
+            "POS",
             "Short gloss",
             "Gloss",
             "Example",
             "Forms",
             "IPA",
         ]
-        self.editable_columns = [2, 5]
-        self.tooltip_columns = [3]
+        self.editable_columns = [3, 4]
+        self.tooltip_columns = [4]
         self.json_path = wiktionary_json_path(get_plugin_path(), lang)
         with open(self.json_path, encoding="utf-8") as f:
             self.lemmas = json.load(f)
@@ -388,6 +389,6 @@ class WiktionaryTableModel(LemmasTableModel):
 
     def change_ipa(self):
         for row in range(self.rowCount(None)):
-            if self.lemmas[row][6]:
-                index = self.createIndex(row, 6)
+            if self.lemmas[row][7]:
+                index = self.createIndex(row, 7)
                 self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])

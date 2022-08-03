@@ -86,6 +86,8 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                     forms.add(form)
 
             for sense in data.get("senses", []):
+                if "synonyms" in sense:
+                    continue
                 examples = sense.get("examples", [])
                 glosses = sense.get("glosses")
                 example_sent = None

@@ -55,6 +55,7 @@ FILTER_TAGS = frozenset(
         "form-of",
         "misspelling",
         "alt-of",
+        "compound-of",  # Spanish
     }
 )
 

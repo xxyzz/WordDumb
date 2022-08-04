@@ -75,7 +75,7 @@ class CustomLemmasDialog(QDialog):
         search_line.textChanged.connect(lambda: self.search_lemma(search_line.text()))
         vl.addWidget(search_line)
 
-        if lang:
+        if lang in ["en", "zh"]:
             from .config import prefs
 
             self.ipa_button = QComboBox()

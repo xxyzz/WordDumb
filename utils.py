@@ -152,3 +152,10 @@ def get_user_agent():
     from .error_dialogs import GITHUB_URL
 
     return f"WordDumb/{'.'.join(map(str, VERSION))} ({GITHUB_URL})"
+
+
+def get_lemmas_tst_path(plugin_path: Path, lang: str) -> Path:
+    if lang:
+        return custom_lemmas_folder(plugin_path).joinpath(f"wiktionary_{lang}_tst")
+    else:
+        return custom_lemmas_folder(plugin_path).joinpath(f"kindle_lemmas_tst")

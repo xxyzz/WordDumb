@@ -2,6 +2,7 @@
 
 import base64
 import json
+import pickle
 import sqlite3
 from pathlib import Path
 
@@ -24,15 +25,18 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .data.wiktionary import get_ipa
 from .import_lemmas import extract_apkg, extract_csv, query_vocabulary_builder
+from .tst import TST
 from .utils import (
     custom_lemmas_dump_path,
     get_klld_path,
+    get_lemmas_tst_path,
     get_plugin_path,
+    load_json_or_pickle,
     load_lemmas_dump,
     wiktionary_json_path,
 )
+from .wiktionary import get_ipa
 
 
 class CustomLemmasDialog(QDialog):
@@ -113,11 +117,11 @@ class CustomLemmasDialog(QDialog):
         vl.addWidget(dialog_button_box)
 
     def search_lemma(self, text):
-        if matches := self.lemmas_model.match(
-            self.lemmas_model.index(0, 1), Qt.ItemDataRole.DisplayRole, text
-        ):
-            self.lemmas_table.setCurrentIndex(matches[0])
-            self.lemmas_table.scrollTo(matches[0])
+        row = self.lemmas_model.lemmas_tst.get_prefix(text)
+        if row:
+            index = self.lemmas_model.createIndex(row, 1)
+            self.lemmas_table.setCurrentIndex(index)
+            self.lemmas_table.scrollTo(index)
 
     def select_import_file(self) -> None:
         retain_lemmas, ok = QInputDialog.getItem(
@@ -288,6 +292,15 @@ class KindleLemmasTableModel(LemmasTableModel):
         for pos_type_id, pos_type_lable in klld_conn.execute("SELECT * FROM pos_types"):
             self.pos_types[pos_type_id] = pos_type_lable
 
+        self.lemmas_tst = None
+        lemmas_tst_path = get_lemmas_tst_path(plugin_path, None)
+        if lemmas_tst_path.exists():
+            self.lemmas_tst = load_json_or_pickle(None, lemmas_tst_path)
+        else:
+            self.lemmas_tst = TST()
+        lemmas_count = 0
+        lemmas_row = []
+
         for lemma, sense_id, short_def, full_def, pos_type in klld_conn.execute(
             'SELECT lemma, senses.id, short_def, full_def, pos_type FROM lemmas JOIN senses ON lemmas.id = display_lemma_id WHERE (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like "-%" ORDER BY lemma'
         ):
@@ -308,6 +321,11 @@ class KindleLemmasTableModel(LemmasTableModel):
                     difficulty,
                 ]
             )
+            if not lemmas_tst_path.exists():
+                lemmas_row.append((lemma, lemmas_count))
+                lemmas_count += 1
+
+        self.lemmas_tst.put_values(lemmas_row)
         klld_conn.close()
         self.headers = [
             "Enabled",
@@ -319,6 +337,9 @@ class KindleLemmasTableModel(LemmasTableModel):
         ]
         self.editable_columns = [5]
         self.tooltip_columns = [4]
+        if not lemmas_tst_path.exists():
+            with lemmas_tst_path.open("wb") as f:
+                pickle.dump(self.lemmas_tst, f)
 
 
 class ComboBoxDelegate(QStyledItemDelegate):
@@ -379,9 +400,13 @@ class WiktionaryTableModel(LemmasTableModel):
         ]
         self.editable_columns = [3, 4]
         self.tooltip_columns = [4]
-        self.json_path = wiktionary_json_path(get_plugin_path(), lang)
+        plugin_path = get_plugin_path()
+        self.json_path = wiktionary_json_path(plugin_path, lang)
         with open(self.json_path, encoding="utf-8") as f:
             self.lemmas = json.load(f)
+        self.lemmas_tst = load_json_or_pickle(
+            None, get_lemmas_tst_path(plugin_path, lang)
+        )
 
     def save_json_file(self):
         with open(self.json_path, "w", encoding="utf-8") as f:

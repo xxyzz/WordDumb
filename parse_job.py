@@ -8,7 +8,6 @@ from pathlib import Path
 try:
     from calibre.constants import ismacos
 
-    from .data.wiktionary import download_and_dump_wiktionary
     from .database import (
         create_lang_layer,
         create_x_ray_db,
@@ -34,6 +33,7 @@ try:
         wiktionary_dump_path,
         wiktionary_json_path,
     )
+    from .wiktionary import download_and_dump_wiktionary
     from .x_ray import X_Ray
 except ImportError:
     from database import (

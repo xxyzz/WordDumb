@@ -11,9 +11,9 @@ import sys
 from pathlib import Path
 
 from data.dump_lemmas import dump_lemmas
-from data.wiktionary import dump_wiktionary
 from parse_job import create_files
 from utils import insert_flashtext_path, insert_installed_libs
+from wiktionary import dump_wiktionary
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-l", help="create word wise", action="store_true")

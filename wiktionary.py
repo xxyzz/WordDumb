@@ -4,6 +4,11 @@ import json
 import pickle
 import re
 
+try:
+    from .tst import TST
+except ImportError:
+    from tst import TST
+
 CJK_LANGS = ["zh", "ja", "ko"]
 POS_TYPES = ["adj", "adv", "noun", "phrase", "proverb", "verb"]
 
@@ -124,6 +129,10 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
 
     download_path.unlink()
     words.sort(key=lambda x: x[1])
+    lemmas_tst = TST()
+    lemmas_tst.put_values([(x[1], row) for row, x in enumerate(words)])
+    with download_path.parent.joinpath(f"wiktionary_{lang}_tst").open("wb") as f:
+        pickle.dump(lemmas_tst, f)
     with open(
         download_path.with_name(f"wiktionary_{lang}.json"), "w", encoding="utf-8"
     ) as f:

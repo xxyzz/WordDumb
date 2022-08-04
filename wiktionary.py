@@ -10,7 +10,7 @@ except ImportError:
     from tst import TST
 
 CJK_LANGS = ["zh", "ja", "ko"]
-POS_TYPES = ["adj", "adv", "noun", "phrase", "proverb", "verb"]
+POS_TYPES = frozenset(["adj", "adv", "noun", "phrase", "proverb", "verb"])
 
 
 def download_wiktionary(download_folder, source_language, useragent, notif):
@@ -59,6 +59,8 @@ FILTER_TAGS = frozenset(
     }
 )
 
+SPANISH_INFLECTED_GLOSS = r"(?:first|second|third)-person|only used in|gerund combined with"
+
 
 def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
     if notif:
@@ -103,6 +105,8 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                     gloss = glosses[1]
                 else:
                     gloss = glosses[0]
+                if lang == "es" and re.match(SPANISH_INFLECTED_GLOSS, gloss):
+                    continue
                 tags = set(sense.get("tags", []))
                 if tags.intersection(FILTER_TAGS):
                     continue

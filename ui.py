@@ -94,7 +94,7 @@ def run(gui, create_ww, create_x):
     for book_id, book_fmts, book_paths, mi, lang in get_metadata_of_selected_books(gui):
         for book_fmt, book_path in zip(book_fmts, book_paths):
             if create_ww and book_fmt != "EPUB" and lang["wiki"] != "en":
-                non_english_book_dialog(gui)
+                non_english_book_dialog()
                 create_ww = False
             if not create_ww and not create_x:
                 continue

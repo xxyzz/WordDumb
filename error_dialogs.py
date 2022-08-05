@@ -120,28 +120,25 @@ def check_network_error(error, parent):
         )
 
 
-def unsupported_language_dialog(title, parent):
-    error_dialog(
+def warning_dialog(title, message):
+    from calibre.gui2.dialogs.message_box import MessageBox
+
+    MessageBox(MessageBox.WARNING, title, message).exec()
+
+
+def unsupported_language_dialog(book_title):
+    warning_dialog(
         "Unsupported language",
-        f"The language of the book <i>{title}</i> is not supported.",
-        None,
-        parent,
+        f"The language of the book <i>{book_title}</i> is not supported.",
     )
 
 
-def non_english_book_dialog(parent):
-    error_dialog(
+def non_english_book_dialog():
+    warning_dialog(
         "Non-English book",
         "For Kindle format books, Word Wise is only available in books in English.",
-        None,
-        parent,
     )
 
 
-def unsupported_format_dialog(parent):
-    error_dialog(
-        "Unsupported book format",
-        "The book format is not supported.",
-        None,
-        parent,
-    )
+def unsupported_format_dialog():
+    warning_dialog("Unsupported book format", "The book format is not supported.")

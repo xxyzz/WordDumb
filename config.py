@@ -297,7 +297,9 @@ class FormatOrderDialog(QDialog):
 
         self.choose_format_maunally = QCheckBox("Choose format manually")
         self.choose_format_maunally.setChecked(prefs["choose_format_manually"])
-        self.choose_format_maunally.stateChanged.connect(self.disable_all_formats_button)
+        self.choose_format_maunally.stateChanged.connect(
+            self.disable_all_formats_button
+        )
         vl.addWidget(self.choose_format_maunally)
 
         self.use_all_formats = QCheckBox("Create files for all available formats")
@@ -327,3 +329,36 @@ class FormatOrderDialog(QDialog):
             self.use_all_formats.setDisabled(True)
         else:
             self.use_all_formats.setEnabled(True)
+
+
+class ChooseFormatDialog(QDialog):
+    def __init__(self, formats: list[str]) -> None:
+        super().__init__()
+        self.setWindowTitle("Choose book format")
+        vl = QVBoxLayout()
+        self.setLayout(vl)
+
+        message = QLabel(
+            "This book has multiple supported formats. Choose the format you want to use."
+        )
+        vl.addWidget(message)
+
+        self.choose_format_manually = QCheckBox(
+            "Always ask when more than one format is available"
+        )
+        self.choose_format_manually.setChecked(True)
+        vl.addWidget(self.choose_format_manually)
+
+        format_buttons = QDialogButtonBox()
+        for book_format in formats:
+            button = format_buttons.addButton(
+                book_format, QDialogButtonBox.ButtonRole.AcceptRole
+            )
+            button.clicked.connect(partial(self.accept_format, button.text()))
+        vl.addWidget(format_buttons)
+
+    def accept_format(self, chosen_format: str) -> None:
+        self.chosen_format = chosen_format
+        if not self.choose_format_manually.isChecked():
+            prefs["choose_format_manually"] = False
+        self.accept()

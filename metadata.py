@@ -23,17 +23,25 @@ def check_metadata(gui, book_id):
         return None
 
     book_fmts = db.formats(book_id)
-    chosen_fmts = [f for f in prefs["preferred_formats"] if f in book_fmts]
-    if not chosen_fmts:
+    supported_fmts = [f for f in prefs["preferred_formats"] if f in book_fmts]
+    if not supported_fmts:
         unsupported_format_dialog()
         return None
+    if len(supported_fmts) > 1 and prefs["choose_format_manually"]:
+        from .config import ChooseFormatDialog
+
+        choose_format_dlg = ChooseFormatDialog(supported_fmts)
+        if choose_format_dlg.exec():
+            supported_fmts = [choose_format_dlg.chosen_format]
+        else:
+            return None
     if not prefs["use_all_formats"]:
-        chosen_fmts = [chosen_fmts[0]]
+        supported_fmts = [supported_fmts[0]]
 
     return (
         book_id,
-        chosen_fmts,
-        [db.format_abspath(book_id, fmt) for fmt in chosen_fmts],
+        supported_fmts,
+        [db.format_abspath(book_id, fmt) for fmt in supported_fmts],
         mi,
         supported_languages[book_language],
     )

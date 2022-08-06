@@ -120,10 +120,10 @@ def check_network_error(error, parent):
         )
 
 
-def warning_dialog(title, message):
+def warning_dialog(title, message, parent=None):
     from calibre.gui2.dialogs.message_box import MessageBox
 
-    MessageBox(MessageBox.WARNING, title, message).exec()
+    MessageBox(MessageBox.WARNING, title, message, parent=parent).exec()
 
 
 def unsupported_language_dialog(book_title):
@@ -142,3 +142,11 @@ def non_english_book_dialog():
 
 def unsupported_format_dialog():
     warning_dialog("Unsupported book format", "The book format is not supported.")
+
+
+def device_not_found_dialog(parent):
+    warning_dialog(
+        "Device not found",
+        "Please connect your Kindle or Android(requires adb) device then try again.",
+        parent,
+    )

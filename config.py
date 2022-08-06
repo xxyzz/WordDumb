@@ -30,7 +30,7 @@ from PyQt6.QtWidgets import (
 from .custom_lemmas import CustomLemmasDialog
 from .data.dump_lemmas import dump_lemmas
 from .deps import install_deps, mac_python
-from .error_dialogs import GITHUB_URL, error_dialog, job_failed
+from .error_dialogs import GITHUB_URL, device_not_found_dialog, job_failed
 from .parse_job import dump_wiktionary_job
 from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
 from .utils import (
@@ -74,11 +74,11 @@ class ConfigWidget(QWidget):
         vl.addWidget(format_order_button)
 
         customize_ww_button = QPushButton("Customize Kindle Word Wise")
-        customize_ww_button.clicked.connect(self.open_custom_lemmas_dialog)
+        customize_ww_button.clicked.connect(self.open_kindle_lemmas_dialog)
         vl.addWidget(customize_ww_button)
 
         custom_wiktionary_button = QPushButton("Customize EPUB Wiktionary")
-        custom_wiktionary_button.clicked.connect(self.open_custom_wiktionary_dialog)
+        custom_wiktionary_button.clicked.connect(self.open_wiktionary_dialog)
         vl.addWidget(custom_wiktionary_button)
 
         self.search_people_box = QCheckBox(
@@ -166,18 +166,13 @@ class ConfigWidget(QWidget):
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
 
-    def open_custom_lemmas_dialog(self):
+    def open_kindle_lemmas_dialog(self):
         klld_path = get_klld_path(self.plugin_path)
         gui = self.parent().parent()
         if klld_path is None:
             package_name = device_connected(gui, "KFX")
             if not package_name:
-                error_dialog(
-                    "Device not found",
-                    "Please connect your Kindle or Android(requires adb) device then try again.",
-                    "",
-                    self,
-                )
+                device_not_found_dialog(self)
                 return
             custom_folder = custom_lemmas_folder(self.plugin_path)
             if not custom_folder.exists():
@@ -225,7 +220,7 @@ class ConfigWidget(QWidget):
         if format_order_dialog.exec():
             format_order_dialog.save()
 
-    def open_custom_wiktionary_dialog(self):
+    def open_wiktionary_dialog(self):
         language_dict = load_json_or_pickle(self.plugin_path, "data/languages.json")
         languages = {val["kaikki"]: val["wiki"] for val in language_dict.values()}
         lang, ok = QInputDialog.getItem(

@@ -8,7 +8,7 @@ from calibre.constants import ismacos
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig
-from PyQt6.QtCore import QRegularExpression
+from PyQt6.QtCore import QRegularExpression, Qt
 from PyQt6.QtGui import QIcon, QRegularExpressionValidator
 from PyQt6.QtWidgets import (
     QAbstractItemView,
@@ -58,6 +58,7 @@ prefs.defaults["use_all_formats"] = False
 prefs.defaults["minimal_x_ray_count"] = 1
 prefs.defaults["en_ipa"] = "US"
 prefs.defaults["zh_ipa"] = "Pinyin"
+prefs.defaults["choose_format_manually"] = True
 
 
 class ConfigWidget(QWidget):
@@ -222,11 +223,7 @@ class ConfigWidget(QWidget):
     def open_format_order_dialog(self):
         format_order_dialog = FormatOrderDialog(self)
         if format_order_dialog.exec():
-            list_widget = format_order_dialog.format_list
-            prefs["preferred_formats"] = [
-                list_widget.item(index).text() for index in range(list_widget.count())
-            ]
-            prefs["use_all_formats"] = format_order_dialog.use_all_formats.isChecked()
+            format_order_dialog.save()
 
     def open_custom_wiktionary_dialog(self):
         language_dict = load_json_or_pickle(self.plugin_path, "data/languages.json")
@@ -298,8 +295,14 @@ class FormatOrderDialog(QDialog):
         self.format_list.addItems(prefs["preferred_formats"])
         vl.addWidget(self.format_list)
 
+        self.choose_format_maunally = QCheckBox("Choose format manually")
+        self.choose_format_maunally.setChecked(prefs["choose_format_manually"])
+        self.choose_format_maunally.stateChanged.connect(self.disable_all_formats_button)
+        vl.addWidget(self.choose_format_maunally)
+
         self.use_all_formats = QCheckBox("Create files for all available formats")
         self.use_all_formats.setChecked(prefs["use_all_formats"])
+        self.disable_all_formats_button(self.choose_format_maunally.checkState().value)
         vl.addWidget(self.use_all_formats)
 
         save_button_box = QDialogButtonBox(
@@ -309,3 +312,18 @@ class FormatOrderDialog(QDialog):
         save_button_box.accepted.connect(self.accept)
         save_button_box.rejected.connect(self.reject)
         vl.addWidget(save_button_box)
+
+    def save(self):
+        prefs["preferred_formats"] = [
+            self.format_list.item(index).text()
+            for index in range(self.format_list.count())
+        ]
+        prefs["choose_format_manually"] = self.choose_format_maunally.isChecked()
+        prefs["use_all_formats"] = self.use_all_formats.isChecked()
+
+    def disable_all_formats_button(self, choose_format_state: int) -> None:
+        if choose_format_state == Qt.CheckState.Checked.value:
+            self.use_all_formats.setChecked(False)
+            self.use_all_formats.setDisabled(True)
+        else:
+            self.use_all_formats.setEnabled(True)

@@ -350,6 +350,21 @@ class KindleLemmasTableModel(LemmasTableModel):
             with lemmas_tst_path.open("wb") as f:
                 pickle.dump(self.lemmas_tst, f)
 
+    def export(
+        self, export_path: str, only_enabled: bool, difficulty_limit: int
+    ) -> None:
+        with open(export_path, "w", encoding="utf-8") as f:
+            for enabled, lemma, *_, gloss, difficulty, sentence in self.lemmas:
+                if only_enabled and not enabled:
+                    continue
+                if difficulty > difficulty_limit:
+                    continue
+
+                back_text = f"<p>{gloss}</p>"
+                if sentence:
+                    back_text += f"<i>{base64.b64decode(sentence).decode('utf-8')}</i>"
+                f.write(f"{lemma}\t{back_text}\n")
+
 
 class ComboBoxDelegate(QStyledItemDelegate):
     def __init__(self, parent, options, tooltips={}):
@@ -426,3 +441,19 @@ class WiktionaryTableModel(LemmasTableModel):
             if self.lemmas[row][7]:
                 index = self.createIndex(row, 7)
                 self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
+
+    def export(self, export_path: str, only_enabled: bool) -> None:
+        with open(export_path, "w", encoding="utf-8") as f:
+            for enabled, lemma, *_, gloss, example, _, ipas in self.lemmas:
+                if only_enabled and not enabled:
+                    continue
+                back_text = ""
+                if ipas:
+                    back_text += f"<p>{escape(get_ipa(self.lang, ipas))}</p>"
+                gloss = escape(re.sub(r"\t|\n", " ", gloss))
+                back_text += f"<p>{gloss}</p>"
+                if example:
+                    example = escape(re.sub(r"\t|\n", " ", example))
+                    back_text += f"<i>{example}</i>"
+                f.write(f"{lemma}\t{back_text}\n")
+

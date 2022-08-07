@@ -30,7 +30,12 @@ from PyQt6.QtWidgets import (
 from .custom_lemmas import CustomLemmasDialog
 from .data.dump_lemmas import dump_lemmas
 from .deps import install_deps, mac_python
-from .error_dialogs import GITHUB_URL, device_not_found_dialog, job_failed
+from .error_dialogs import (
+    GITHUB_URL,
+    device_not_found_dialog,
+    job_failed,
+    ww_db_not_found_dialog,
+)
 from .parse_job import dump_wiktionary_job
 from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
 from .utils import (
@@ -182,6 +187,10 @@ class ConfigWidget(QWidget):
             else:
                 copy_klld_from_kindle(gui, custom_folder)
 
+        klld_path = get_klld_path(self.plugin_path)
+        if klld_path is None:
+            ww_db_not_found_dialog(self)
+            return
         custom_lemmas_dlg = CustomLemmasDialog(self)
         if custom_lemmas_dlg.exec():
             job = ThreadedJob(

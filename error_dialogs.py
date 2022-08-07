@@ -150,3 +150,11 @@ def device_not_found_dialog(parent):
         "Please connect your Kindle or Android(requires adb) device then try again.",
         parent,
     )
+
+
+def ww_db_not_found_dialog(parent):
+    warning_dialog(
+        "Word Wise database not found",
+        "Can't find Word Wise database on your device, open a Word Wise enabled book to download this file.",
+        parent,
+    )

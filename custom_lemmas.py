@@ -3,7 +3,9 @@
 import base64
 import json
 import pickle
+import re
 import sqlite3
+from html import escape
 from pathlib import Path
 
 from PyQt6.QtCore import QAbstractTableModel, Qt, QVariant
@@ -11,6 +13,7 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
+    QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -112,6 +115,11 @@ class CustomLemmasDialog(QDialog):
         dialog_button_box.addButton(
             import_button, QDialogButtonBox.ButtonRole.ActionRole
         )
+        export_button = QPushButton(QIcon.ic("save.png"), "Export")
+        export_button.clicked.connect(self.set_export_options)
+        dialog_button_box.addButton(
+            export_button, QDialogButtonBox.ButtonRole.ActionRole
+        )
         if lang is None:
             dialog_button_box.addButton(QDialogButtonBox.StandardButton.RestoreDefaults)
             dialog_button_box.button(
@@ -172,6 +180,28 @@ class CustomLemmasDialog(QDialog):
             prefs["zh_ipa"] = self.ipa_button.currentText()
 
         self.lemmas_model.change_ipa()
+
+    def set_export_options(self):
+        option_dialog = ExportOptionsDialog(self.lang is None, self)
+        if not option_dialog.exec():
+            return
+
+        export_path, _ = QFileDialog.getSaveFileName(
+            self, "Set export file path", str(Path.home())
+        )
+        if not export_path:
+            return
+
+        if self.lang:
+            self.lemmas_model.export(
+                export_path, option_dialog.only_enabled_box.isChecked()
+            )
+        else:
+            self.lemmas_model.export(
+                export_path,
+                option_dialog.only_enabled_box.isChecked(),
+                int(option_dialog.difficulty_limit_box.currentText()),
+            )
 
 
 class LemmasTableModel(QAbstractTableModel):
@@ -457,3 +487,37 @@ class WiktionaryTableModel(LemmasTableModel):
                     back_text += f"<i>{example}</i>"
                 f.write(f"{lemma}\t{back_text}\n")
 
+
+class ExportOptionsDialog(QDialog):
+    def __init__(self, is_kindle, parent):
+        super().__init__(parent)
+        self.setWindowTitle("Set export options")
+        vl = QVBoxLayout()
+        self.setLayout(vl)
+
+        text = QLabel(
+            'Export text separated by tab, can be imported to Anki.<br/> "Allow HTML in fields" option needs to be enabled in Anki.'
+        )
+        vl.addWidget(text)
+
+        self.only_enabled_box = QCheckBox("Only export enabled lemmas")
+        vl.addWidget(self.only_enabled_box)
+
+        if is_kindle:
+            hl = QHBoxLayout()
+            difficulty_label = QLabel("Difficulty limit")
+            difficulty_label.setToolTip(
+                "Difficulty higher than this value will not be exported"
+            )
+            self.difficulty_limit_box = QComboBox()
+            self.difficulty_limit_box.addItems(map(str, range(1, 6)))
+            hl.addWidget(difficulty_label)
+            hl.addWidget(self.difficulty_limit_box)
+            vl.addLayout(hl)
+
+        dialog_button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        dialog_button_box.accepted.connect(self.accept)
+        dialog_button_box.rejected.connect(self.reject)
+        vl.addWidget(dialog_button_box)

@@ -53,7 +53,6 @@ class CustomLemmasDialog(QDialog):
             WiktionaryTableModel(lang) if lang else KindleLemmasTableModel()
         )
         self.lemmas_table.setModel(self.lemmas_model)
-        self.lemmas_table.hideColumn(5 if lang else 2)
         if lang is None:
             self.lemmas_table.setItemDelegateForColumn(
                 5,
@@ -63,6 +62,10 @@ class CustomLemmasDialog(QDialog):
                     {0: "Fewer Hints", 4: "More Hints"},
                 ),
             )
+            self.lemmas_table.hideColumn(2)
+            self.lemmas_table.hideColumn(6)
+        else:
+            self.lemmas_table.hideColumn(5)
         self.lemmas_table.horizontalHeader().setMaximumSectionSize(400)
         self.lemmas_table.setSizeAdjustPolicy(
             QAbstractScrollArea.SizeAdjustPolicy.AdjustToContentsOnFirstShow
@@ -298,8 +301,15 @@ class KindleLemmasTableModel(LemmasTableModel):
         lemmas_count = 0
         lemmas_row = []
 
-        for lemma, sense_id, short_def, full_def, pos_type in klld_conn.execute(
-            'SELECT lemma, senses.id, short_def, full_def, pos_type FROM lemmas JOIN senses ON lemmas.id = display_lemma_id WHERE (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like "-%" ORDER BY lemma'
+        for (
+            lemma,
+            sense_id,
+            short_def,
+            full_def,
+            pos_type,
+            sentence,
+        ) in klld_conn.execute(
+            'SELECT lemma, senses.id, short_def, full_def, pos_type, example_sentence FROM lemmas JOIN senses ON lemmas.id = display_lemma_id WHERE (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like "-%" ORDER BY lemma'
         ):
             enabled = False
             difficulty = 1
@@ -316,6 +326,7 @@ class KindleLemmasTableModel(LemmasTableModel):
                         "utf-8"
                     ),
                     difficulty,
+                    sentence,
                 ]
             )
             if not lemmas_tst_path.exists():
@@ -331,6 +342,7 @@ class KindleLemmasTableModel(LemmasTableModel):
             "POS",
             "Definition",
             "Difficulty",
+            "Example sentence",
         ]
         self.editable_columns = [5]
         self.tooltip_columns = [4]

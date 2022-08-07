@@ -179,10 +179,13 @@ def get_ipas(lang, sounds):
     return ipas if ipas else ""
 
 
-def get_ipa(lang, ipa_tag, ipas):
+def get_ipa(lang, ipas):
     if not ipas:
         return ""
     elif lang in ["en", "zh"]:
+        from .config import prefs
+
+        ipa_tag = prefs["en_ipa"] if lang == "en" else prefs["zh_ipa"]
         if isinstance(ipas, str):
             return ipas
         elif ipa_tag in ipas:
@@ -194,7 +197,7 @@ def get_ipa(lang, ipa_tag, ipas):
         return ipas
 
 
-def dump_wiktionary(json_path, dump_path, lang, ipa_tag, notif):
+def dump_wiktionary(json_path, dump_path, lang, notif):
     if notif:
         notif.put((0, "Converting Wiktionary file"))
 
@@ -208,7 +211,7 @@ def dump_wiktionary(json_path, dump_path, lang, ipa_tag, notif):
         for _, word, _, short_gloss, gloss, example, forms, ipas in filter(
             lambda x: x[0] and not automaton.exists(x[1]), words
         ):
-            ipa = get_ipa(lang, ipa_tag, ipas)
+            ipa = get_ipa(lang, ipas)
             automaton.add_word(word, (word, short_gloss, gloss, example, ipa))
             for form in filter(lambda x: not automaton.exists(x), forms.split(",")):
                 automaton.add_word(form, (form, short_gloss, gloss, example, ipa))
@@ -222,7 +225,7 @@ def dump_wiktionary(json_path, dump_path, lang, ipa_tag, notif):
         for _, word, _, short_gloss, gloss, example, forms, ipas in filter(
             lambda x: x[0] and x[1] not in keyword_processor, words
         ):
-            ipa = get_ipa(lang, ipa_tag, ipas)
+            ipa = get_ipa(lang, ipas)
             keyword_processor.add_keyword(word, (short_gloss, gloss, example, ipa))
             for form in filter(lambda x: x not in keyword_processor, forms.split(",")):
                 keyword_processor.add_keyword(form, (short_gloss, gloss, example, ipa))
@@ -241,7 +244,7 @@ def short_def(gloss: str) -> str:
 
 
 def download_and_dump_wiktionary(
-    json_path, dump_path, lang, kindle_lemmas, useragent, ipa_tag, notif
+    json_path, dump_path, lang, kindle_lemmas, useragent, notif
 ):
     if useragent:
         download_path = download_wiktionary(
@@ -249,4 +252,4 @@ def download_and_dump_wiktionary(
         )
         extract_wiktionary(download_path, lang["wiki"], kindle_lemmas, notif)
     if dump_path:
-        dump_wiktionary(json_path, dump_path, lang["wiki"], ipa_tag, notif)
+        dump_wiktionary(json_path, dump_path, lang["wiki"], notif)

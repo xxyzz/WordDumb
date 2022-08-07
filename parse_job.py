@@ -82,13 +82,8 @@ def do_job(
         create_x = create_x and not new_epub_path.exists()
         create_ww = create_ww and not new_epub_path.exists()
         if create_ww and not wiktionary_dump_path(plugin_path, lang["wiki"]).exists():
-            ipa_tag = ""
-            if lang["wiki"] == "en":
-                ipa_tag = prefs["en_ipa"]
-            elif lang["wiki"] == "zh":
-                ipa_tag = prefs["zh_ipa"]
             dump_wiktionary_job(
-                plugin_path, lang, useragent, None, ipa_tag, notifications=notifications
+                plugin_path, lang, useragent, None, notifications=notifications
             )
     else:
         create_ww = create_ww and not get_ll_path(asin, book_path).exists()
@@ -185,7 +180,6 @@ def dump_wiktionary_job(
     lang,
     useragent,
     table_model,
-    ipa_tag,
     abort=None,
     log=None,
     notifications=None,
@@ -207,7 +201,6 @@ def dump_wiktionary_job(
         lang,
         load_lemmas_dump(plugin_path) if lang["wiki"] == "en" else None,
         useragent,
-        ipa_tag,
         notifications,
     )
     if ismacos and lang["wiki"] in CJK_LANGS:
@@ -216,7 +209,7 @@ def dump_wiktionary_job(
             str(plugin_path),
             "",
             str(wiktionary_json_path(plugin_path, lang["wiki"])),
-            ipa_tag,
+            "",
             "",
             "",
             lang["wiki"],

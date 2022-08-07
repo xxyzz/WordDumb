@@ -207,10 +207,7 @@ class LemmasTableModel(QAbstractTableModel):
             and role == Qt.ItemDataRole.DisplayRole
             and column == 7
         ):
-            from .config import prefs
-
-            ipa_tag = prefs["en_ipa"] if self.lang == "en" else prefs["zh_ipa"]
-            return get_ipa(self.lang, ipa_tag, value)
+            return get_ipa(self.lang, value)
         elif role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             return value
         elif role == Qt.ItemDataRole.ToolTipRole and column in self.tooltip_columns:

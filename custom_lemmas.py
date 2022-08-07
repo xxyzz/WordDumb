@@ -314,9 +314,9 @@ class KindleLemmasTableModel(LemmasTableModel):
         kw_processor = load_lemmas_dump(plugin_path)
         self.lemmas = []
         klld_conn = sqlite3.connect(get_klld_path(plugin_path))
-        sense_ids = {}
-        for _, (difficulty, sense_id) in kw_processor.get_all_keywords().items():
-            sense_ids[sense_id] = difficulty
+        sense_ids = set()
+        for _, sense_id in kw_processor.get_all_keywords().values():
+            sense_ids.add(sense_id)
 
         self.pos_types = {}
         for pos_type_id, pos_type_lable in klld_conn.execute("SELECT * FROM pos_types"):
@@ -345,7 +345,8 @@ class KindleLemmasTableModel(LemmasTableModel):
             difficulty = 1
             if sense_id in sense_ids:
                 enabled = True
-                difficulty = sense_ids[sense_id]
+            if lemma in kw_processor:
+                difficulty = kw_processor.get_keyword(lemma)[0]
             self.lemmas.append(
                 [
                     enabled,

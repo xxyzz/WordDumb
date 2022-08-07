@@ -510,7 +510,7 @@ class ExportOptionsDialog(QDialog):
                 "Difficulty higher than this value will not be exported"
             )
             self.difficulty_limit_box = QComboBox()
-            self.difficulty_limit_box.addItems(map(str, range(1, 6)))
+            self.difficulty_limit_box.addItems(map(str, range(5, 0, -1)))
             hl.addWidget(difficulty_label)
             hl.addWidget(self.difficulty_limit_box)
             vl.addLayout(hl)

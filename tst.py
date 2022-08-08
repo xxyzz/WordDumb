@@ -42,8 +42,6 @@ class TST:
     def put(self, key: str, val: Any) -> None:
         if not key or not val:
             return None
-        if self.get(key) is not None:
-            return None
         self.root = self.put_helper(self.root, key, val)
 
     def put_values(self, values: list[tuple[str, int]]) -> None:

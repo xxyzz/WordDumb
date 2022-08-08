@@ -322,14 +322,14 @@ class KindleLemmasTableModel(LemmasTableModel):
         for pos_type_id, pos_type_lable in klld_conn.execute("SELECT * FROM pos_types"):
             self.pos_types[pos_type_id] = pos_type_lable
 
-        self.lemmas_tst = None
         lemmas_tst_path = get_lemmas_tst_path(plugin_path, None)
         if lemmas_tst_path.exists():
             self.lemmas_tst = load_json_or_pickle(None, lemmas_tst_path)
         else:
             self.lemmas_tst = TST()
-        lemmas_count = 0
-        lemmas_row = []
+            row_num = 0
+            lemmas_row = []
+            added_lemmas = set()
 
         for (
             lemma,
@@ -361,10 +361,11 @@ class KindleLemmasTableModel(LemmasTableModel):
                 ]
             )
             if not lemmas_tst_path.exists():
-                lemmas_row.append((lemma, lemmas_count))
-                lemmas_count += 1
+                if lemma not in added_lemmas:
+                    lemmas_row.append((lemma, row_num))
+                    added_lemmas.add(lemma)
+                row_num += 1
 
-        self.lemmas_tst.put_values(lemmas_row)
         klld_conn.close()
         self.headers = [
             "Enabled",
@@ -378,6 +379,7 @@ class KindleLemmasTableModel(LemmasTableModel):
         self.editable_columns = [5]
         self.tooltip_columns = [4]
         if not lemmas_tst_path.exists():
+            self.lemmas_tst.put_values(lemmas_row)
             with lemmas_tst_path.open("wb") as f:
                 pickle.dump(self.lemmas_tst, f)
 

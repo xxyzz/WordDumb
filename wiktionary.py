@@ -135,7 +135,14 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
     download_path.unlink()
     words.sort(key=lambda x: x[1])
     lemmas_tst = TST()
-    lemmas_tst.put_values([(x[1], row) for row, x in enumerate(words)])
+    lemmas_row = []
+    added_lemmas = set()
+    for row, data in enumerate(words):
+        lemma = data[1]
+        if lemma not in added_lemmas:
+            lemmas_row.append((lemma, row))
+            added_lemmas.add(lemma)
+    lemmas_tst.put_values(lemmas_row)
     with download_path.parent.joinpath(f"wiktionary_{lang}_tst").open("wb") as f:
         pickle.dump(lemmas_tst, f)
     with open(

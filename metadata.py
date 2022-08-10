@@ -9,7 +9,7 @@ from pathlib import Path
 from .utils import get_plugin_path, load_json_or_pickle
 
 
-def check_metadata(gui, book_id):
+def check_metadata(gui, book_id, custom_x_ray):
     from .config import prefs
     from .error_dialogs import unsupported_format_dialog, unsupported_language_dialog
 
@@ -27,7 +27,7 @@ def check_metadata(gui, book_id):
     if not supported_fmts:
         unsupported_format_dialog()
         return None
-    if len(supported_fmts) > 1 and prefs["choose_format_manually"]:
+    if len(supported_fmts) > 1 and prefs["choose_format_manually"] and not custom_x_ray:
         from .config import ChooseFormatDialog
 
         choose_format_dlg = ChooseFormatDialog(supported_fmts)

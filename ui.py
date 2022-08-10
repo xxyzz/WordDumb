@@ -71,17 +71,17 @@ class WordDumb(InterfaceAction):
         self.interface_action_base_plugin.do_user_config(self.gui)
 
     def open_custom_x_ray_dialog(self):
-        for _, _, book_paths, mi, _ in get_metadata_of_selected_books(self.gui):
+        for _, _, book_paths, mi, _ in get_metadata_of_selected_books(self.gui, True):
             custom_x_dlg = CustomXRayDialog(book_paths[0], mi.get("title"), self.gui)
             if custom_x_dlg.exec():
                 custom_x_dlg.x_ray_model.save_data()
 
 
-def get_metadata_of_selected_books(gui):
+def get_metadata_of_selected_books(gui, custom_x_ray):
     return filter(
         None,
         [
-            check_metadata(gui, book_id)
+            check_metadata(gui, book_id, custom_x_ray)
             for book_id in map(
                 gui.library_view.model().id,
                 gui.library_view.selectionModel().selectedRows(),
@@ -91,7 +91,7 @@ def get_metadata_of_selected_books(gui):
 
 
 def run(gui, create_ww, create_x):
-    for book_id, book_fmts, book_paths, mi, lang in get_metadata_of_selected_books(gui):
+    for book_id, book_fmts, book_paths, mi, lang in get_metadata_of_selected_books(gui, False):
         for book_fmt, book_path in zip(book_fmts, book_paths):
             if create_ww and book_fmt != "EPUB" and lang["wiki"] != "en":
                 non_english_book_dialog()

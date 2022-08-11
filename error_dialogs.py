@@ -2,6 +2,8 @@
 
 GITHUB_URL = "https://github.com/xxyzz/WordDumb"
 
+load_translations()
+
 
 def error_dialog(title, message, error, parent):
     from calibre.gui2.dialogs.message_box import JobError
@@ -16,7 +18,9 @@ def job_failed(job, parent=None):
         if "FileNotFoundError" in job.details and "subprocess.py" in job.details:
             error_dialog(
                 "We want... a shrubbery!",
-                f"Please read the friendly <a href='{GITHUB_URL}#how-to-use'>manual</a> of how to install Python.",
+                _(
+                    "Please read the friendly <a href='{}#how-to-use'>manual</a> of how to install Python."
+                ).format(GITHUB_URL),
                 job.details,
                 parent,
             )
@@ -27,21 +31,25 @@ def job_failed(job, parent=None):
         elif "JointMOBI" in job.details:
             error_dialog(
                 "Joint MOBI",
-                "Please use <a href='https://github.com/kevinhendricks/KindleUnpack'>KindleUnpack</a>'s '-s' option to split the book.",
+                _(
+                    "Please use <a href='https://github.com/kevinhendricks/KindleUnpack'>KindleUnpack</a>'s '-s' option to split the book."
+                ),
                 job.details,
                 parent,
             )
         elif "DLL load failed" in job.details:
             error_dialog(
                 "Welcome to DLL Hell",
-                "Install <a href='https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads'>Visual C++ 2019 redistributable</a>",
+                _(
+                    "Install <a href='https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads'>Visual C++ 2019 Redistributable</a>"
+                ),
                 job.datails,
                 parent,
             )
         elif "32BIT_PYTHON" in job.details:
             error_dialog(
                 "The wrist game!",
-                "You're using 32bit Python, please install the 64bit version.",
+                _("You're using 32bit Python, please install the 64bit version."),
                 job.details,
                 parent,
             )
@@ -56,13 +64,10 @@ def subprocess_error(job, parent):
     if "No module named pip" in exception:
         error_dialog(
             "Hello, my name is Philip, but everyone calls me Pip, because they hate me.",
-            f"""
-            Please read the friendly <a href='{GITHUB_URL}#how-to-use'>manual</a> of how to install pip.
-            <br><br>
-            If you still have this error, make sure you installed calibre
-            with the <a href="https://calibre-ebook.com/download_linux">
-            binary install command</a> but not from Flathub or Snap Store.
-            """,
+            _(
+                """<p>Please read the friendly <a href='{}#how-to-use'>manual</a> of how to install pip.</p>
+                <p>If you still have this error, make sure you installed calibre with the <a href='https://calibre-ebook.com/download_linux'> binary install command</a> but not from Flathub or Snap Store.</p>"""
+            ).format(GITHUB_URL),
             job.details + exception,
             parent,
         )
@@ -80,7 +85,9 @@ def module_not_found_error(error, parent):
 
     error_dialog(
         "Welcome to dependency hell",
-        f"Please delete the '{broken_pkg}*' folder from the 'worddumb-libs-py*' folder and try again.",
+        _(
+            "Please delete the '{}*' folder from the 'worddumb-libs-py*' folder and try again."
+        ).format(broken_pkg),
         error,
         parent,
     )
@@ -92,29 +99,30 @@ def check_network_error(error, parent):
     if "check_hostname requires server_hostname" in error:
         error_dialog(
             "Cyberspace is not a place beyond the rule of law",
-            f"""
-            Read <a href="{CALIBRE_PROXY_FAQ}">calibre FAQ</a> first then
-            check your proxy environment variables,
-            they should be set by these commands:<br>
-            <code>$ export HTTP_PROXY="http://host:port"</code><br>
-            <code>$ export HTTPS_PROXY="http://host:port"</code><br>
-            <br>
-            If you're allergic to terminal, close your proxy and use a VPN.
-            """,
+            _(
+                """<p>Read <a href='{}'>calibre FAQ</a> first then check your proxy environment variables, they should be set by these commands:</p>
+                <p><code>$ export HTTP_PROXY='http://host:port'</code></p>
+                <p><code>$ export HTTPS_PROXY='http://host:port'</code></p>
+                <p>If you're allergic to terminal, close your proxy and use a VPN.</p>"""
+            ).fomat(CALIBRE_PROXY_FAQ),
             error,
             parent,
         )
     elif "ConnectionError" in error or "Timeout" in error:
         error_dialog(
             "It was a pleasure to burn",
-            f"Is GitHub/Wikipedia/Fandom blocked by your ISP? You might need tools to bypass Internet censorship. Please read <a href='{CALIBRE_PROXY_FAQ}'>calibre FAQ</a>.",
+            _(
+                "Is GitHub/Wikipedia/Fandom blocked by your ISP? You might need to bypass Internet censorship. Please read <a href='{}'>calibre FAQ</a>."
+            ).format(CALIBRE_PROXY_FAQ),
             error,
             parent,
         )
     else:
         error_dialog(
             "Tonnerre de Brest!",
-            f'An error occurred, please copy error message then report bug at <a href="{GITHUB_URL}/issues">GitHub</a>.',
+            _(
+                'An error occurred, please copy error message then report bug at <a href="{}/issues">GitHub</a>.)'
+            ).format(GITHUB_URL),
             error,
             parent,
         )
@@ -128,33 +136,35 @@ def warning_dialog(title, message, parent=None):
 
 def unsupported_language_dialog(book_title):
     warning_dialog(
-        "Unsupported language",
-        f"The language of the book <i>{book_title}</i> is not supported.",
+        _("Unsupported language"),
+        _("The language of the book <i>{}</i> is not supported.").format(book_title),
     )
 
 
 def non_english_book_dialog():
     warning_dialog(
-        "Non-English book",
-        "For Kindle format books, Word Wise is only available in books in English.",
+        _("Non-English book"),
+        _("For Kindle format books, Word Wise is only available in books in English."),
     )
 
 
 def unsupported_format_dialog():
-    warning_dialog("Unsupported book format", "The book format is not supported.")
+    warning_dialog(_("Unsupported book format"), _("The book format is not supported."))
 
 
 def device_not_found_dialog(parent):
     warning_dialog(
-        "Device not found",
-        "Please connect your Kindle or Android(requires adb) device then try again.",
+        _("Device not found"),
+        _("Please connect your Kindle or Android(requires adb) device then try again."),
         parent,
     )
 
 
 def ww_db_not_found_dialog(parent):
     warning_dialog(
-        "Word Wise database not found",
-        "Can't find Word Wise database on your device, open a Word Wise enabled book to download this file.",
+        _("Word Wise database not found"),
+        _(
+            "Can't find Word Wise database on your device, open a Word Wise enabled book to download this file."
+        ),
         parent,
     )

@@ -19,7 +19,6 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox,
     QFileDialog,
     QHBoxLayout,
-    QInputDialog,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -41,12 +40,21 @@ from .utils import (
 )
 from .wiktionary import get_ipa
 
+load_translations()
+
 
 class CustomLemmasDialog(QDialog):
-    def __init__(self, parent, lang=None, title=None):
+    def __init__(self, parent, lang=None, lang_name=None):
         super().__init__(parent)
         self.lang = lang
-        self.setWindowTitle(f"Customize {title if lang else 'Kindle Word Wise'}")
+        window_title = _("Customize")
+        if lang:
+            window_title += f" {lang_name} "
+            window_title += _("Wiktionary")
+        else:
+            window_title += " "
+            window_title += _("Kindle Word Wise")
+        self.setWindowTitle(window_title)
         vl = QVBoxLayout()
         self.setLayout(vl)
 
@@ -62,7 +70,7 @@ class CustomLemmasDialog(QDialog):
                 ComboBoxDelegate(
                     self.lemmas_table,
                     list(range(1, 6)),
-                    {0: "Fewer Hints", 4: "More Hints"},
+                    {0: _("Fewer Hints"), 4: _("More Hints")},
                 ),
             )
             self.lemmas_table.hideColumn(2)
@@ -77,7 +85,7 @@ class CustomLemmasDialog(QDialog):
         vl.addWidget(self.lemmas_table)
 
         search_line = QLineEdit()
-        search_line.setPlaceholderText("Search")
+        search_line.setPlaceholderText(_("Search"))
         search_line.textChanged.connect(lambda: self.search_lemma(search_line.text()))
         vl.addWidget(search_line)
 
@@ -89,15 +97,16 @@ class CustomLemmasDialog(QDialog):
                 self.ipa_button.addItems(["US", "UK"])
                 self.ipa_button.setCurrentText(prefs["en_ipa"])
             elif lang == "zh":
-                self.ipa_button.addItems(["Pinyin", "bopomofo"])
-                self.ipa_button.setCurrentText(prefs["zh_ipa"])
+                self.ipa_button.addItem(_("Pinyin"), "Pinyin")
+                self.ipa_button.addItem(_("bopomofo"), "bopomofo")
+                self.ipa_button.setCurrentText(_(prefs["zh_ipa"]))
 
             hl = QHBoxLayout()
             hl.addWidget(
                 QLabel(
-                    "Phonetic transcription system"
+                    _("Phonetic transcription system")
                     if lang == "zh"
-                    else "International Phonetic Alphabet"
+                    else _("International Phonetic Alphabet")
                 )
             )
             self.ipa_button.currentIndexChanged.connect(self.change_ipa)
@@ -110,12 +119,12 @@ class CustomLemmasDialog(QDialog):
         )
         dialog_button_box.accepted.connect(self.accept)
         dialog_button_box.rejected.connect(self.reject)
-        import_button = QPushButton(QIcon.ic("document-import.png"), "Import")
+        import_button = QPushButton(QIcon.ic("document-import.png"), _("Import"))
         import_button.clicked.connect(self.select_import_file)
         dialog_button_box.addButton(
             import_button, QDialogButtonBox.ButtonRole.ActionRole
         )
-        export_button = QPushButton(QIcon.ic("save.png"), "Export")
+        export_button = QPushButton(QIcon.ic("save.png"), _("Export"))
         export_button.clicked.connect(self.set_export_options)
         dialog_button_box.addButton(
             export_button, QDialogButtonBox.ButtonRole.ActionRole
@@ -135,19 +144,13 @@ class CustomLemmasDialog(QDialog):
             self.lemmas_table.scrollTo(index)
 
     def select_import_file(self) -> None:
-        retain_lemmas, ok = QInputDialog.getItem(
-            self,
-            "Import file",
-            "Retain current enabled lemmas",
-            ["True", "False"],
-            editable=False,
-        )
-        if not ok:
+        import_options_dialog = ImportOptionsDialog(self)
+        if not import_options_dialog.exec():
             return
 
         file_path, _ = QFileDialog.getOpenFileName(
             self,
-            "Select file",
+            "",
             str(Path.home()),
             "Anki Deck Package (*.apkg);;CSV (*.csv);;Kindle Vocabulary Builder (*.db)",
         )
@@ -163,7 +166,9 @@ class CustomLemmasDialog(QDialog):
         else:
             return
 
-        self.lemmas_model.import_lemmas(lemmas_dict, retain_lemmas == "True")
+        self.lemmas_model.import_lemmas(
+            lemmas_dict, import_options_dialog.retain_enabled_lemmas.isChecked()
+        )
 
     def reset_lemmas(self):
         custom_path = custom_lemmas_dump_path(get_plugin_path())
@@ -177,7 +182,7 @@ class CustomLemmasDialog(QDialog):
         if self.lang == "en":
             prefs["en_ipa"] = self.ipa_button.currentText()
         elif self.lang == "zh":
-            prefs["zh_ipa"] = self.ipa_button.currentText()
+            prefs["zh_ipa"] = self.ipa_button.currentData()
 
         self.lemmas_model.change_ipa()
 
@@ -186,9 +191,7 @@ class CustomLemmasDialog(QDialog):
         if not option_dialog.exec():
             return
 
-        export_path, _ = QFileDialog.getSaveFileName(
-            self, "Set export file path", str(Path.home())
-        )
+        export_path, _ = QFileDialog.getSaveFileName(self, "", str(Path.home()))
         if not export_path:
             return
 
@@ -307,6 +310,17 @@ class LemmasTableModel(QAbstractTableModel):
                 )
 
 
+KINDLE_HEADERS = [
+    _("Enabled"),
+    _("Lemma"),
+    "Sense id",
+    _("POS"),
+    _("Definition"),
+    _("Difficulty"),
+    "Example sentence",
+]
+
+
 class KindleLemmasTableModel(LemmasTableModel):
     def __init__(self):
         super().__init__()
@@ -367,15 +381,7 @@ class KindleLemmasTableModel(LemmasTableModel):
                 row_num += 1
 
         klld_conn.close()
-        self.headers = [
-            "Enabled",
-            "Lemma",
-            "Sense id",
-            "POS",
-            "Definition",
-            "Difficulty",
-            "Example sentence",
-        ]
+        self.headers = KINDLE_HEADERS
         self.editable_columns = [5]
         self.tooltip_columns = [4]
         if not lemmas_tst_path.exists():
@@ -446,13 +452,13 @@ class WiktionaryTableModel(LemmasTableModel):
         super().__init__()
         self.lang = lang
         self.headers = [
-            "Enabled",
-            "Lemma",
-            "POS",
-            "Short gloss",
-            "Gloss",
+            _("Enabled"),
+            _("Lemma"),
+            _("POS"),
+            _("Gloss"),
+            _("Definition"),
             "Example",
-            "Forms",
+            _("Forms"),
             "IPA",
         ]
         self.editable_columns = [3, 4]
@@ -494,29 +500,49 @@ class WiktionaryTableModel(LemmasTableModel):
 class ExportOptionsDialog(QDialog):
     def __init__(self, is_kindle, parent):
         super().__init__(parent)
-        self.setWindowTitle("Set export options")
+        self.setWindowTitle(_("Set export options"))
         vl = QVBoxLayout()
         self.setLayout(vl)
 
         text = QLabel(
-            'Export text separated by tab, can be imported to Anki.<br/> "Allow HTML in fields" option needs to be enabled in Anki.'
+            _(
+                'Export text separated by tab, can be imported to Anki.<br/> "Allow HTML in fields" option needs to be enabled in Anki.'
+            )
         )
         vl.addWidget(text)
 
-        self.only_enabled_box = QCheckBox("Only export enabled lemmas")
+        self.only_enabled_box = QCheckBox(_("Only export enabled lemmas"))
         vl.addWidget(self.only_enabled_box)
 
         if is_kindle:
             hl = QHBoxLayout()
-            difficulty_label = QLabel("Difficulty limit")
+            difficulty_label = QLabel(_("Difficulty limit"))
             difficulty_label.setToolTip(
-                "Difficulty higher than this value will not be exported"
+                _("Difficulty higher than this value will not be exported")
             )
             self.difficulty_limit_box = QComboBox()
             self.difficulty_limit_box.addItems(map(str, range(5, 0, -1)))
             hl.addWidget(difficulty_label)
             hl.addWidget(self.difficulty_limit_box)
             vl.addLayout(hl)
+
+        dialog_button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        dialog_button_box.accepted.connect(self.accept)
+        dialog_button_box.rejected.connect(self.reject)
+        vl.addWidget(dialog_button_box)
+
+
+class ImportOptionsDialog(QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowTitle(_("Set import options"))
+        vl = QVBoxLayout()
+        self.setLayout(vl)
+
+        self.retain_enabled_lemmas = QCheckBox(_("Retain current enabled lemmas"))
+        vl.addWidget(self.retain_enabled_lemmas)
 
         dialog_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel

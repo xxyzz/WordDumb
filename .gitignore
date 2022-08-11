@@ -23,3 +23,6 @@ __pycache__
 # word wise lemma
 libs
 lemmas_dump
+
+# translation files
+*.mo

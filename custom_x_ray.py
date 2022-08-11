@@ -22,24 +22,27 @@ from PyQt6.QtWidgets import (
 from .custom_lemmas import ComboBoxDelegate
 from .utils import get_custom_x_path
 
+load_translations()
+
+
 NER_LABEL_EXPLANATIONS = {
-    "EVENT": "Named hurricanes, battles, wars, sports events, etc.",
-    "FAC": "Buildings, airports, highways, bridges, etc.",
-    "GPE": "Countries, cities, states",
-    "LAW": "Named documents made into laws",
-    "LOC": "Non-GPE locations, mountain ranges, bodies of water",
-    "ORG": "Companies, agencies, institutions, etc.",
-    "PERSON": "People, including fictional",
-    "PRODUCT": "Objects, vehicles, foods, etc. (not services)",
+    "EVENT": _("Named hurricanes, battles, wars, sports events, etc."),
+    "FAC": _("Buildings, airports, highways, bridges, etc."),
+    "GPE": _("Countries, cities, states"),
+    "LAW": _("Named documents made into laws"),
+    "LOC": _("Non-GPE locations, mountain ranges, bodies of water"),
+    "ORG": _("Companies, agencies, institutions, etc."),
+    "PERSON": _("People, including fictional"),
+    "PRODUCT": _("Objects, vehicles, foods, etc. (not services)"),
 }
 
-DESC_SOURCES = {None: "Book quote", 1: "Wikipedia", 2: "Fandom"}
+DESC_SOURCES = {None: _("Book quote"), 1: _("Wikipedia"), 2: "Fandom"}
 
 
 class CustomXRayDialog(QDialog):
     def __init__(self, book_path, title, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(f"Customize X-Ray for {title}")
+        self.setWindowTitle(_("Customize X-Ray for {}").format(title))
         vl = QVBoxLayout()
         self.setLayout(vl)
 
@@ -72,14 +75,14 @@ class CustomXRayDialog(QDialog):
         vl.addWidget(self.x_ray_table)
 
         search_line = QLineEdit()
-        search_line.setPlaceholderText("Search")
+        search_line.setPlaceholderText(_("Search"))
         search_line.textChanged.connect(lambda: self.search_x_ray(search_line.text()))
         vl.addWidget(search_line)
 
         edit_buttons = QHBoxLayout()
-        add_button = QPushButton(QIcon.ic("plus.png"), "Add")
+        add_button = QPushButton(QIcon.ic("plus.png"), _("Add"))
         add_button.clicked.connect(self.add_x_ray)
-        delete_button = QPushButton(QIcon.ic("minus.png"), "Delete")
+        delete_button = QPushButton(QIcon.ic("minus.png"), _("Delete"))
         delete_button.clicked.connect(self.delete_x_ray)
         edit_buttons.addWidget(add_button)
         edit_buttons.addWidget(delete_button)
@@ -130,12 +133,12 @@ class XRayTableModel(QAbstractTableModel):
         else:
             self.x_ray_data = []
         self.headers = [
-            "Name",
-            "Named entity label",
-            "Aliases",
-            "Description",
-            "Description source",
-            "Omit",
+            _("Name"),
+            _("Named entity label"),
+            _("Aliases"),
+            _("Description"),
+            _("Description source"),
+            _("Omit"),
         ]
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -220,7 +223,7 @@ class XRayTableModel(QAbstractTableModel):
 class AddXRayDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Add new X-Ray data")
+        self.setWindowTitle(_("Add new X-Ray data"))
         vl = QVBoxLayout()
         self.setLayout(vl)
 
@@ -229,7 +232,7 @@ class AddXRayDialog(QDialog):
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
         )
         self.name_line = QLineEdit()
-        form_layout.addRow("Name", self.name_line)
+        form_layout.addRow(_("Name"), self.name_line)
 
         self.ner_label = QComboBox()
         for index, (label, exp) in zip(
@@ -237,25 +240,25 @@ class AddXRayDialog(QDialog):
         ):
             self.ner_label.addItem(label, label)
             self.ner_label.setItemData(index, exp, Qt.ItemDataRole.ToolTipRole)
-        form_layout.addRow("NER label", self.ner_label)
+        form_layout.addRow(_("NER label"), self.ner_label)
 
         self.aliases = QLineEdit()
-        self.aliases.setPlaceholderText('Separate by ","')
-        form_layout.addRow("Aliases", self.aliases)
+        self.aliases.setPlaceholderText(_('Separate by ","'))
+        form_layout.addRow(_("Aliases"), self.aliases)
 
         self.description = QPlainTextEdit()
-        form_layout.addRow("Description", self.description)
+        form_layout.addRow(_("Description"), self.description)
         self.description.setPlaceholderText(
-            "Leave this empty to use description from Wikipedia or Fandom"
+            _("Leave this empty to use description from Wikipedia or Fandom")
         )
 
         self.source = QComboBox()
         for value, text in DESC_SOURCES.items():
             self.source.addItem(text, value)
-        form_layout.addRow("Description source", self.source)
+        form_layout.addRow(_("Description source"), self.source)
 
         self.omit = QCheckBox()
-        form_layout.addRow("Omit", self.omit)
+        form_layout.addRow(_("Omit"), self.omit)
 
         confirm_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel

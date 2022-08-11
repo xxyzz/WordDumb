@@ -121,7 +121,7 @@ def check_network_error(error, parent):
         error_dialog(
             "Tonnerre de Brest!",
             _(
-                'An error occurred, please copy error message then report bug at <a href="{}/issues">GitHub</a>.)'
+                'An error occurred, please copy error message then report bug at <a href="{}/issues">GitHub</a>.'
             ).format(GITHUB_URL),
             error,
             parent,

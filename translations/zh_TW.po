@@ -1,11 +1,11 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-08-11 15:32+0800\n"
-"PO-Revision-Date: 2022-08-11 15:33+0800\n"
+"POT-Creation-Date: 2022-08-11 15:01+0800\n"
+"PO-Revision-Date: 2022-08-11 15:31+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
-"Language: zh_CN\n"
+"Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,25 +16,25 @@ msgstr ""
 
 #: config.py:79 config.py:283
 msgid "Preferred format order"
-msgstr "首选格式顺序"
+msgstr "首選格式順序"
 
 #: config.py:83
 msgid "Customize Kindle Word Wise"
-msgstr "自定义 Kindle 生词提示"
+msgstr "自定義 Kindle 生詞提示"
 
 #: config.py:87
 msgid "Customize EPUB Wiktionary"
-msgstr "自定义 EPUB 维基词典"
+msgstr "自定義 EPUB 維基詞典"
 
 #: config.py:92
 msgid "Fetch X-Ray people descriptions from Wikipedia/Fandom"
-msgstr "从维基百科或 Fandom 获取 X-Ray 人物描述"
+msgstr "從維基百科或 Fandom 獲取 X-Ray 人物描述"
 
 #: config.py:96
 msgid ""
 "Enable this option for nonfiction books and novels that have character pages "
 "on Wikipedia/Fandom"
-msgstr "为在维基百科或 Fandom 上有人物页面的非小说类书籍和小说启用此选项"
+msgstr "為在維基百科或 Fandom 上有人物頁面的非小說類書籍和小說啟用此選項"
 
 #: config.py:108
 msgid "<a href=\"https://spacy.io/models/en\">spaCy model</a> size"
@@ -42,7 +42,7 @@ msgstr "<a href=“https://spacy.io/models/en”>spaCy 模型</a>大小"
 
 #: config.py:111
 msgid "Larger model improves X-Ray quality"
-msgstr "更大的模型能提高 X-Ray 质量"
+msgstr "更大的模型能提高 X-Ray 質量"
 
 #: config.py:113
 msgid "Small"
@@ -58,83 +58,82 @@ msgstr "大"
 
 #: config.py:122
 msgid "Minimal X-Ray occurrences"
-msgstr "X-Ray 最少出现次数"
+msgstr "X-Ray 最少出現次數"
 
 #: config.py:125
 msgid ""
 "X-Ray entities that appear less then this number and don't have description "
 "from Wikipedia/Fandom will be removed"
-msgstr ""
-"出现次数少于此数量且没有来自维基百科或 Fandom 描述的 X-Ray 实体将被删除"
+msgstr "出現次數少於此數量且沒有來自維基百科或 Fandom 描述的 X-Ray 將被刪除"
 
 #: config.py:142
 msgid "Chinese Wikipedia variant"
-msgstr "中文维基百科变体"
+msgstr "中文維基百科變體"
 
 #: config.py:150
 msgid "Fandom URL"
-msgstr "Fandom 链接"
+msgstr "Fandom 鏈接"
 
 #: config.py:154
 msgid "Add locator map to EPUB footnotes"
-msgstr "添加地图到 EPUB 脚注"
+msgstr "添加地圖到 EPUB 註腳"
 
 #: config.py:156
 msgid "Enable this option if your e-reader supports image in footnotes"
-msgstr "如果您的电子阅读器支持脚注中的图像，请启用此选项"
+msgstr "如果您的電子閱讀器支持腳註中的圖像，請啟用此選項"
 
 #: config.py:165
 msgid "Source code and document"
-msgstr "源代码和文档"
+msgstr "原始碼和文檔"
 
 #: config.py:204 config.py:221
 msgid "Saving customized lemmas"
-msgstr "正在保存自定义词条"
+msgstr "正在保存自定義词条"
 
 #: config.py:243
 msgid "Select Wiktionary source language"
-msgstr "选择维基词典源语言"
+msgstr "選擇維基詞典源語言"
 
 #: config.py:244
 msgid "Language"
-msgstr "语言"
+msgstr "語言"
 
 #: config.py:265
 msgid "Downloading Wiktionary"
-msgstr "正在下载维基词典"
+msgstr "正在下載維基詞典"
 
 #: config.py:299
 msgid "Choose format manually"
-msgstr "手动选择格式"
+msgstr "手動選擇格式"
 
 #: config.py:306
 msgid "Create files for all available formats"
-msgstr "为所有可用格式创建文件"
+msgstr "為所有可用格式創建文件"
 
 #: config.py:338
 msgid "Choose book format"
-msgstr "选择图书格式"
+msgstr "選擇書籍格式"
 
 #: config.py:344
 msgid ""
 "This book has multiple supported formats. Choose the format you want to use."
-msgstr "这本书有多种支持的格式。选择您要使用的格式。"
+msgstr "這本書有多種支持的格式。 選擇您要使用的格式。"
 
 #: config.py:350
 msgid "Always ask when more than one format is available"
-msgstr "有多种可用格式时总是询问"
+msgstr "有多種可用格式時總是詢問"
 
 #: custom_lemmas.py:50
 msgid "Customize"
-msgstr "自定义"
+msgstr "定制"
 
 #: custom_lemmas.py:53
 msgid "Wiktionary"
-msgstr "维基词典"
+msgstr "維基詞典"
 
 #: custom_lemmas.py:56
 msgid "Kindle Word Wise"
-msgstr "Kindle 生词提示"
+msgstr "Kindle 生詞提示"
 
 #: custom_lemmas.py:73
 msgid "Fewer Hints"
@@ -150,51 +149,51 @@ msgstr "搜索"
 
 #: custom_lemmas.py:100
 msgid "Pinyin"
-msgstr "汉语拼音"
+msgstr "漢語拼音"
 
 #: custom_lemmas.py:101
 msgid "bopomofo"
-msgstr "注音符号"
+msgstr "注音符號"
 
 #: custom_lemmas.py:107
 msgid "Phonetic transcription system"
-msgstr "标音系统"
+msgstr "音標系統"
 
 #: custom_lemmas.py:109
 msgid "International Phonetic Alphabet"
-msgstr "国际音标"
+msgstr "國際音標"
 
 #: custom_lemmas.py:122
 msgid "Import"
-msgstr "导入"
+msgstr "導入"
 
 #: custom_lemmas.py:127
 msgid "Export"
-msgstr "导出"
+msgstr "導出"
 
 #: custom_lemmas.py:314 custom_lemmas.py:455
 msgid "Enabled"
-msgstr "启用"
+msgstr "啟用"
 
 #: custom_lemmas.py:315 custom_lemmas.py:456
 msgid "Lemma"
-msgstr "词条"
+msgstr "詞條"
 
 #: custom_lemmas.py:317 custom_lemmas.py:457
 msgid "POS"
-msgstr "词类"
+msgstr "詞類"
 
 #: custom_lemmas.py:318 custom_lemmas.py:459
 msgid "Definition"
-msgstr "定义"
+msgstr "定義"
 
 #: custom_lemmas.py:319
 msgid "Difficulty"
-msgstr "难度等级"
+msgstr "難度等級"
 
 #: custom_lemmas.py:458
 msgid "Gloss"
-msgstr "注释"
+msgstr "注釋"
 
 #: custom_lemmas.py:461
 msgid "Forms"
@@ -202,79 +201,79 @@ msgstr "形式"
 
 #: custom_lemmas.py:503
 msgid "Set export options"
-msgstr "设置导出选项"
+msgstr "設置導出選項"
 
 #: custom_lemmas.py:509
 msgid ""
 "Export text separated by tab, can be imported to Anki.<br/> \"Allow HTML in "
 "fields\" option needs to be enabled in Anki."
 msgstr ""
-"导出以制表符分隔的文本，可以导入到 Anki。<br/> 需要在 Anki 中启用“允许字段中"
-"的 HTML”选项。"
+"導出以製表符分隔的文本，可以導入到 Anki。<br/> 需要在 Anki 中啟用“允許字段中"
+"的 HTML”選項。"
 
 #: custom_lemmas.py:514
 msgid "Only export enabled lemmas"
-msgstr "仅导出已启用词条"
+msgstr "僅導出啟用的词条"
 
 #: custom_lemmas.py:519
 msgid "Difficulty limit"
-msgstr "难度限制"
+msgstr "難度限制"
 
 #: custom_lemmas.py:521
 msgid "Difficulty higher than this value will not be exported"
-msgstr "难度高于此值将不会被导出"
+msgstr "難度高於此值将不會導出"
 
 #: custom_lemmas.py:540
 msgid "Set import options"
-msgstr "设置导入选项"
+msgstr "設置導入選項"
 
 #: custom_lemmas.py:544
 msgid "Retain current enabled lemmas"
-msgstr "保留当前已启用词条"
+msgstr "保留當前啟用的词条"
 
 #: custom_x_ray.py:29
 msgid "Named hurricanes, battles, wars, sports events, etc."
-msgstr "飓风、战斗、战争、体育赛事等"
+msgstr "颶風，戰鬥，戰爭，體育賽事等。"
 
 #: custom_x_ray.py:30
 msgid "Buildings, airports, highways, bridges, etc."
-msgstr "建筑物、机场、公路、桥梁等"
+msgstr "建築物、機場、高速公路、橋樑等"
 
 #: custom_x_ray.py:31
 msgid "Countries, cities, states"
-msgstr "国家、城市、州"
+msgstr "國家、城市、州"
 
 #: custom_x_ray.py:32
 msgid "Named documents made into laws"
-msgstr "被列为法律的文件"
+msgstr "成為法律的文件"
 
 #: custom_x_ray.py:33
 msgid "Non-GPE locations, mountain ranges, bodies of water"
-msgstr "非 GPE 的地点、山脉、水体"
+msgstr "非 GPE 地點、山脈、水體"
 
 #: custom_x_ray.py:34
 msgid "Companies, agencies, institutions, etc."
-msgstr "公司、机构等"
+msgstr "公司、機構等"
 
 #: custom_x_ray.py:35
 msgid "People, including fictional"
-msgstr "人物，包括虚构的"
+msgstr "人物，包括虛構的"
 
 #: custom_x_ray.py:36
 msgid "Objects, vehicles, foods, etc. (not services)"
-msgstr "物品、车辆、食品等（不包括服务）"
+msgstr "物體、車輛、食品等（非服務）"
 
 #: custom_x_ray.py:39
 msgid "Book quote"
-msgstr "书中引文"
+msgstr "書中引文"
 
 #: custom_x_ray.py:39
 msgid "Wikipedia"
-msgstr "维基百科"
+msgstr "維基百科"
 
 #: custom_x_ray.py:45
 msgid "Customize X-Ray for {}"
-msgstr "为《{}》定制 X-Ray"
+msgstr "為《{}》自定義 X-Ray"
 
 #: custom_x_ray.py:83
 msgid "Add"
@@ -282,19 +281,19 @@ msgstr "添加"
 
 #: custom_x_ray.py:85
 msgid "Delete"
-msgstr "删除"
+msgstr "刪除"
 
 #: custom_x_ray.py:136 custom_x_ray.py:235
 msgid "Name"
-msgstr "名称"
+msgstr "名稱"
 
 #: custom_x_ray.py:137
 msgid "Named entity label"
-msgstr "命名实体识别标签"
+msgstr "命名實體標籤"
 
 #: custom_x_ray.py:138 custom_x_ray.py:247
 msgid "Aliases"
-msgstr "别名"
+msgstr "別名"
 
 #: custom_x_ray.py:139 custom_x_ray.py:250
 msgid "Description"
@@ -302,7 +301,7 @@ msgstr "描述"
 
 #: custom_x_ray.py:140 custom_x_ray.py:258
 msgid "Description source"
-msgstr "描述来源"
+msgstr "描述來源"
 
 #: custom_x_ray.py:141 custom_x_ray.py:261
 msgid "Omit"
@@ -310,45 +309,45 @@ msgstr "忽略"
 
 #: custom_x_ray.py:226
 msgid "Add new X-Ray data"
-msgstr "添加新的 X-Ray 数据"
+msgstr "添加新的 X-Ray 數據"
 
 #: custom_x_ray.py:243
 msgid "NER label"
-msgstr "命名实体识别标签"
+msgstr "命名實體識別標籤"
 
 #: custom_x_ray.py:246
 msgid "Separate by \",\""
-msgstr "用“,”隔开"
+msgstr "用“,”分隔"
 
 #: custom_x_ray.py:252
 msgid "Leave this empty to use description from Wikipedia or Fandom"
-msgstr "留空以使用维基百科或 Fandom 的描述"
+msgstr "留空以使用來自維基百科或 Fandom 的描述"
 
 #: error_dialogs.py:22
 msgid ""
 "Please read the friendly <a href='{}#how-to-use'>manual</a> of how to "
 "install Python."
-msgstr "请阅读如何安装 Python 的<a href='{}#how-to-use'>文档</a>。"
+msgstr "請閱讀如何安裝 Python 的<a href=‘{}#how-to-use’>手冊</a>。"
 
 #: error_dialogs.py:35
 msgid ""
 "Please use <a href='https://github.com/kevinhendricks/"
 "KindleUnpack'>KindleUnpack</a>'s '-s' option to split the book."
 msgstr ""
-"请使用 <a href='https://github.com/kevinhendricks/"
-"KindleUnpack'>KindleUnpack</a> 的 \"-s \" 选项来拆分这本书。"
+"請使用 <a href=‘https://github.com/kevinhendricks/"
+"KindleUnpack’>KindleUnpack</a> 的 ‘-s’ 選項來拆分圖書。"
 
 #: error_dialogs.py:44
 msgid ""
 "Install <a href='https://support.microsoft.com/en-us/help/2977003/the-latest-"
 "supported-visual-c-downloads'>Visual C++ 2019 Redistributable</a>"
 msgstr ""
-"安装 <a href='https://support.microsoft.com/en-us/help/2977003/the-latest-"
-"supported-visual-c-downloads'>Visual C++ 2019 Redistributable</a>"
+"安裝 <a href=‘https://support.microsoft.com/en-us/help/2977003/the-latest-"
+"supported-visual-c-downloads’>Visual C++ 2019 Redistributable</a>"
 
 #: error_dialogs.py:52
 msgid "You're using 32bit Python, please install the 64bit version."
-msgstr "你使用的是32位 Python，请安装64位版本。"
+msgstr "您使用的是 32 位 Python，請安裝 64 位版本。"
 
 #: error_dialogs.py:68
 msgid ""
@@ -358,15 +357,16 @@ msgid ""
 "calibre with the <a href='https://calibre-ebook.com/download_linux'> binary "
 "install command</a> but not from Flathub or Snap Store.</p>"
 msgstr ""
-"<p>请阅读如何安装 pip 的<a href='{}#how-to-use'>文档</a>。</p><p>如果您仍然遇"
-"到此错误，请确保您是通过<a href='https://calibre-ebook.com/download_linux'>二"
-"进制安装命令</a>而不是从 Flathub 或 Snap Store 安装的 calibre。</p>"
+"<p>請閱讀關於如何安裝 pip 的<a href=‘{}#how-to-use’>手冊</a>。</p>\n"
+"<p>如果您仍然遇到此錯誤，請確保您使用的是 <a href=‘https://calibre-ebook.com/"
+"download_linux’> 二進制安裝命令</a>而不是從 Flathub 或 Snap Store 安裝的 "
+"calibre。 </p>"
 
 #: error_dialogs.py:89
 msgid ""
 "Please delete the '{}*' folder from the 'worddumb-libs-py*' folder and try "
 "again."
-msgstr "请从 'worddumb-libs-py*' 文件夹中删除 '{}*' 文件夹，并重新尝试。"
+msgstr "請從“worddumb-libs-py*”文件夾中刪除“{}*”文件夾，然後重試。"
 
 #: error_dialogs.py:103
 msgid ""
@@ -377,92 +377,90 @@ msgid ""
 "                <p>If you're allergic to terminal, close your proxy and use "
 "a VPN.</p>"
 msgstr ""
-"<p>请首先阅读 <a href=‘{}’>calibre FAQ</a>，然后检查你的代理环境变量，它们应"
-"该通过这些命令设置：</p>\n"
-"<p><code>$ export HTTP_PROXY=‘http://host:port'</code></p>\n"
-"<p><code>$ export HTTPS_PROXY=‘http://host:port'</code></p>\n"
-"<p>如果你很厌恶命令行，关闭你的代理并使用 VPN。</p>"
+"<p>首先閱讀<a href=‘{}’>calibre FAQ</a>，然後檢查您的代理環境變量，它們應該由"
+"這些命令設置：</p><p><code>$ export HTTP_PROXY=‘ http://host:port'</code></"
+"p>p><code>$ export HTTPS_PROXY=‘http://host:port'</code></p><p>如果你很厭惡命"
+"令列，關閉您的代理並使用 VPN。</p>"
 
 #: error_dialogs.py:115
 msgid ""
 "Is GitHub/Wikipedia/Fandom blocked by your ISP? You might need to bypass "
 "Internet censorship. Please read <a href='{}'>calibre FAQ</a>."
 msgstr ""
-"你的 ISP 是否封锁了 GitHub/Wikipedia/Fandom？你也许需要绕过互联网审查。请阅"
-"读 <a href=‘{}’>calibre FAQ</a>。"
+"您的 ISP 是否封鎖了 GitHub/Wikipedia/Fandom？您可能需要繞過互聯網審查。請閱讀"
+"<a href=‘{}’>calibre FAQ</a>。"
 
 #: error_dialogs.py:124
 msgid ""
 "An error occurred, please copy error message then report bug at <a href=\"{}/"
 "issues\">GitHub</a>."
 msgstr ""
-"发生了一个错误，请复制错误信息并到 <a href=“{}/issues”>GitHub</a> 提交错误报"
-"告。"
+"發生錯誤，請複制錯誤消息，然後在 <a href=“{}/issues”>GitHub</a> 報告錯誤。"
 
 #: error_dialogs.py:139
 msgid "Unsupported language"
-msgstr "不支持的语言"
+msgstr "不支持的語言"
 
 #: error_dialogs.py:140
 msgid "The language of the book <i>{}</i> is not supported."
-msgstr "不支持《{}》一书的语言。"
+msgstr "不支持《{}》一書的語言。"
 
 #: error_dialogs.py:146
 msgid "Non-English book"
-msgstr "非英文书籍"
+msgstr "非英文書籍"
 
 #: error_dialogs.py:147
 msgid ""
 "For Kindle format books, Word Wise is only available in books in English."
-msgstr "对于 Kindle 格式的书籍，生词提示仅适用于英文书籍。"
+msgstr "對於 Kindle 格式的書籍，生詞提示僅適用於英文書籍。"
 
 #: error_dialogs.py:152
 msgid "Unsupported book format"
-msgstr "不支持的图书格式"
+msgstr "不支持的圖書格式"
 
 #: error_dialogs.py:152
 msgid "The book format is not supported."
-msgstr "这种图书格式是不支持的。"
+msgstr "不支持此圖書格式。"
 
 #: error_dialogs.py:157
 msgid "Device not found"
-msgstr "未找到设备"
+msgstr "未找到設備"
 
 #: error_dialogs.py:158
 msgid ""
 "Please connect your Kindle or Android(requires adb) device then try again."
-msgstr "请连接您的 Kindle 或安卓（需要 adb）设备，然后重试。"
+msgstr "請連接您的 Kindle 或安卓（需要 adb）設備，然後重試。"
 
 #: error_dialogs.py:165
 msgid "Word Wise database not found"
-msgstr "未找到生词提示数据库"
+msgstr "未找到生詞提示數據庫"
 
 #: error_dialogs.py:167
 msgid ""
 "Can't find Word Wise database on your device, open a Word Wise enabled book "
 "to download this file."
 msgstr ""
-"在您的设备上找不到生词提示数据库，请打开启用生词提示的书籍以下载此文件。"
+"在您的設備上找不到生詞提示數據庫，請打開啟用生詞提示的書籍以下載此文件。"
 
 #: ui.py:25
 msgid "Create Word Wise and X-Ray"
-msgstr "创建生词提示和 X-Ray"
+msgstr "創建生詞提示和 X-Ray"
 
 #: ui.py:35
 msgid "Create Word Wise"
-msgstr "创建生词提示"
+msgstr "創建生詞提示"
 
 #: ui.py:41
 msgid "Create X-Ray"
-msgstr "创建 X-Ray"
+msgstr "創建 X-Ray"
 
 #: ui.py:49
 msgid "Customize X-Ray"
-msgstr "自定义 X-Ray"
+msgstr "自定義 X-Ray"
 
 #: ui.py:56
 msgid "Preferences"
-msgstr "首选项"
+msgstr "首選項"
 
 #: ui.py:65
 msgid "Donate"
@@ -470,7 +468,7 @@ msgstr "捐助"
 
 #: ui.py:112
 msgid "Word Wise"
-msgstr "生词提示"
+msgstr "生詞提示"
 
 #: ui.py:115
 msgid " and "
@@ -478,11 +476,11 @@ msgstr "和"
 
 #: ui.py:118
 msgid "Generating {} for {}"
-msgstr "正在为《{1}》生成{0}"
+msgstr "正在為《{1}》生成{0}"
 
 #: ui.py:126
 msgid "{} generated for {}"
-msgstr "已为《{1}》生成{0}文件"
+msgstr "已為《{1}》生成{0}文件"
 
 #~ msgid "Select import file"
 #~ msgstr "选择导入文件"

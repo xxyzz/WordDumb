@@ -21,3 +21,5 @@ else
     pip_install
     cp -R .venv/lib/site-packages/flashtext libs
 fi
+
+calibre-debug -c "from calibre.translations.msgfmt import main; main()" translations/*.po

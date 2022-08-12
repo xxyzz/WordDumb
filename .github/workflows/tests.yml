@@ -7,12 +7,14 @@ on:
     paths-ignore:
       - '**.md'
       - 'klld/**'
+      - 'translations/**'
   pull_request:
     branches:
       - '**'
     paths-ignore:
       - '**.md'
       - 'klld/**'
+      - 'translations/**'
 
 jobs:
   test:

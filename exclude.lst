@@ -7,4 +7,4 @@ tests/*
 __pycache__/*
 exclude.lst
 klld/*
-translation/*.po
+translations/*.po

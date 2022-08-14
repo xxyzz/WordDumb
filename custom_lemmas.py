@@ -148,9 +148,9 @@ class CustomLemmasDialog(QDialog):
         if not import_options_dialog.exec():
             return
 
-        file_path, _ = QFileDialog.getOpenFileName(
+        file_path, ignore = QFileDialog.getOpenFileName(
             self,
-            "",
+            _("Select import file"),
             str(Path.home()),
             "Anki Deck Package (*.apkg);;CSV (*.csv);;Kindle Vocabulary Builder (*.db)",
         )
@@ -191,7 +191,9 @@ class CustomLemmasDialog(QDialog):
         if not option_dialog.exec():
             return
 
-        export_path, _ = QFileDialog.getSaveFileName(self, "", str(Path.home()))
+        export_path, ignore = QFileDialog.getSaveFileName(
+            self, _("Set export file path"), str(Path.home())
+        )
         if not export_path:
             return
 
@@ -310,17 +312,6 @@ class LemmasTableModel(QAbstractTableModel):
                 )
 
 
-KINDLE_HEADERS = [
-    _("Enabled"),
-    _("Lemma"),
-    "Sense id",
-    _("POS"),
-    _("Definition"),
-    _("Difficulty"),
-    "Example sentence",
-]
-
-
 class KindleLemmasTableModel(LemmasTableModel):
     def __init__(self):
         super().__init__()
@@ -329,7 +320,7 @@ class KindleLemmasTableModel(LemmasTableModel):
         self.lemmas = []
         klld_conn = sqlite3.connect(get_klld_path(plugin_path))
         sense_ids = set()
-        for _, sense_id in kw_processor.get_all_keywords().values():
+        for ignore, sense_id in kw_processor.get_all_keywords().values():
             sense_ids.add(sense_id)
 
         self.pos_types = {}
@@ -381,7 +372,15 @@ class KindleLemmasTableModel(LemmasTableModel):
                 row_num += 1
 
         klld_conn.close()
-        self.headers = KINDLE_HEADERS
+        self.headers = [
+            _("Enabled"),
+            _("Lemma"),
+            "Sense id",
+            _("POS"),
+            _("Definition"),
+            _("Difficulty"),
+            "Example sentence",
+        ]
         self.editable_columns = [5]
         self.tooltip_columns = [4]
         if not lemmas_tst_path.exists():

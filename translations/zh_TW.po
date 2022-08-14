@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-08-11 15:01+0800\n"
-"PO-Revision-Date: 2022-08-11 15:31+0800\n"
+"POT-Creation-Date: 2022-08-14 20:52+0800\n"
+"PO-Revision-Date: 2022-08-14 20:56+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -171,39 +171,47 @@ msgstr "導入"
 msgid "Export"
 msgstr "導出"
 
-#: custom_lemmas.py:314 custom_lemmas.py:455
+#: custom_lemmas.py:153
+msgid "Select import file"
+msgstr "選擇導入文件"
+
+#: custom_lemmas.py:195
+msgid "Set export file path"
+msgstr "設置導出文件路徑"
+
+#: custom_lemmas.py:376 custom_lemmas.py:454
 msgid "Enabled"
 msgstr "啟用"
 
-#: custom_lemmas.py:315 custom_lemmas.py:456
+#: custom_lemmas.py:377 custom_lemmas.py:455
 msgid "Lemma"
 msgstr "詞條"
 
-#: custom_lemmas.py:317 custom_lemmas.py:457
+#: custom_lemmas.py:379 custom_lemmas.py:456
 msgid "POS"
 msgstr "詞類"
 
-#: custom_lemmas.py:318 custom_lemmas.py:459
+#: custom_lemmas.py:380 custom_lemmas.py:458
 msgid "Definition"
 msgstr "定義"
 
-#: custom_lemmas.py:319
+#: custom_lemmas.py:381
 msgid "Difficulty"
 msgstr "難度等級"
 
-#: custom_lemmas.py:458
+#: custom_lemmas.py:457
 msgid "Gloss"
 msgstr "注釋"
 
-#: custom_lemmas.py:461
+#: custom_lemmas.py:460
 msgid "Forms"
 msgstr "形式"
 
-#: custom_lemmas.py:503
+#: custom_lemmas.py:502
 msgid "Set export options"
 msgstr "設置導出選項"
 
-#: custom_lemmas.py:509
+#: custom_lemmas.py:508
 msgid ""
 "Export text separated by tab, can be imported to Anki.<br/> \"Allow HTML in "
 "fields\" option needs to be enabled in Anki."
@@ -211,23 +219,23 @@ msgstr ""
 "導出以製表符分隔的文本，可以導入到 Anki。<br/> 需要在 Anki 中啟用“允許字段中"
 "的 HTML”選項。"
 
-#: custom_lemmas.py:514
+#: custom_lemmas.py:513
 msgid "Only export enabled lemmas"
 msgstr "僅導出啟用的词条"
 
-#: custom_lemmas.py:519
+#: custom_lemmas.py:518
 msgid "Difficulty limit"
 msgstr "難度限制"
 
-#: custom_lemmas.py:521
+#: custom_lemmas.py:520
 msgid "Difficulty higher than this value will not be exported"
 msgstr "難度高於此值将不會導出"
 
-#: custom_lemmas.py:540
+#: custom_lemmas.py:539
 msgid "Set import options"
 msgstr "設置導入選項"
 
-#: custom_lemmas.py:544
+#: custom_lemmas.py:543
 msgid "Retain current enabled lemmas"
 msgstr "保留當前啟用的词条"
 
@@ -481,17 +489,3 @@ msgstr "正在為《{1}》生成{0}"
 #: ui.py:126
 msgid "{} generated for {}"
 msgstr "已為《{1}》生成{0}文件"
-
-#~ msgid "Select import file"
-#~ msgstr "选择导入文件"
-
-#~ msgid "Set export file path"
-#~ msgstr "设置导出文件路径"
-
-#~ msgid "Import file"
-#~ msgstr "导出文件"
-
-#~ msgid ""
-#~ "Create Kindle Word Wise and X-Ray file and EPUB footnotes then send to e-"
-#~ "reader."
-#~ msgstr "创建 Kindle 生词提示和 X-Ray 文件以及 EPUB 脚注并发送到电子阅读器。"

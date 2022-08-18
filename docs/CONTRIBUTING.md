@@ -2,26 +2,37 @@
 
 ## Debug
 
+Run the `data/dump_lemmas.sh` Bash script when debugging for the first time and when `data/lemmas.json` is changed.
+
 ```
-// run this script when debugging for the first time and when data/lemmas.json is changed
 $ ./data/dump_lemmas.sh
 $ calibre-customize -b . && calibre-debug -g
+```
+
+## Add translations
+
+You can use [Poedit](https://poedit.net)'s "New From POT/PO File..." option then select any .po file in the `translations` folder to create new translation file.
+
+Run this command to compile .mo files, you don't need to do this if you're using Poedit.
+
+```bash
+calibre-debug -c "from calibre.translations.msgfmt import main; main()" translations/*.po
+```
+
+## Create zip file
+
+```bash
+zip -r worddumb-vx.x.x.zip * -x@exclude.lst
 ```
 
 ## Add more Word Wise lemmas
 
 Get `kll.en.en.klld` and `LanguageLayer.en.ASIN.kll` from your Kindle device(please read [word\_wise\_db](./word_wise_db.md)), then:
 
-```
-$ cd data
-$ python3 add_lemmas.py path-of-klld path-of-kll
-$ cd .. && ./data/dump_lemmas.sh
-```
-
-## Create zip file
-
-```
-$ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
+```bash
+cd data
+python3 add_lemmas.py path-of-klld path-of-kll
+cd .. && ./data/dump_lemmas.sh
 ```
 
 ## Remove FAT32 dirty bit

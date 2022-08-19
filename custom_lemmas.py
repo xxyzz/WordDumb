@@ -126,8 +126,12 @@ class CustomLemmasDialog(QDialog):
             hl.addWidget(difficulty_label)
             self.difficulty_limit_box = QComboBox()
             self.difficulty_limit_box.addItems(map(str, range(5, 0, -1)))
-            self.difficulty_limit_box.setCurrentText(str(prefs[f"{lang}_wiktionary_difficulty_limit"]))
-            self.difficulty_limit_box.currentIndexChanged.connect(self.change_difficulty_limit)
+            self.difficulty_limit_box.setCurrentText(
+                str(prefs[f"{lang}_wiktionary_difficulty_limit"])
+            )
+            self.difficulty_limit_box.currentIndexChanged.connect(
+                self.change_difficulty_limit
+            )
             hl.addWidget(self.difficulty_limit_box)
             vl.addLayout(hl)
 
@@ -205,7 +209,7 @@ class CustomLemmasDialog(QDialog):
         self.lemmas_model.change_ipa()
 
     def set_export_options(self):
-        option_dialog = ExportOptionsDialog(self.lang is None, self)
+        option_dialog = ExportOptionsDialog(self)
         if not option_dialog.exec():
             return
 
@@ -215,16 +219,11 @@ class CustomLemmasDialog(QDialog):
         if not export_path:
             return
 
-        if self.lang:
-            self.lemmas_model.export(
-                export_path, option_dialog.only_enabled_box.isChecked()
-            )
-        else:
-            self.lemmas_model.export(
-                export_path,
-                option_dialog.only_enabled_box.isChecked(),
-                int(option_dialog.difficulty_limit_box.currentText()),
-            )
+        self.lemmas_model.export(
+            export_path,
+            option_dialog.only_enabled_box.isChecked(),
+            int(option_dialog.difficulty_limit_box.currentText()),
+        )
 
     def change_difficulty_limit(self):
         from .config import prefs
@@ -336,7 +335,9 @@ class LemmasTableModel(QAbstractTableModel):
                 self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
             )
             self.setData(
-                self.createIndex(row, difficulty_column), difficulty, Qt.ItemDataRole.EditRole
+                self.createIndex(row, difficulty_column),
+                difficulty,
+                Qt.ItemDataRole.EditRole,
             )
 
 
@@ -509,10 +510,14 @@ class WiktionaryTableModel(LemmasTableModel):
                 index = self.createIndex(row, 7)
                 self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
 
-    def export(self, export_path: str, only_enabled: bool) -> None:
+    def export(
+        self, export_path: str, only_enabled: bool, difficulty_limit: int
+    ) -> None:
         with open(export_path, "w", encoding="utf-8") as f:
-            for enabled, lemma, *_, gloss, example, _, ipas, _ in self.lemmas:
+            for enabled, lemma, *_, gloss, example, _, ipas, difficulty in self.lemmas:
                 if only_enabled and not enabled:
+                    continue
+                if difficulty > difficulty_limit:
                     continue
                 back_text = ""
                 if ipas:
@@ -533,7 +538,7 @@ class WiktionaryTableModel(LemmasTableModel):
 
 
 class ExportOptionsDialog(QDialog):
-    def __init__(self, is_kindle, parent):
+    def __init__(self, parent):
         super().__init__(parent)
         self.setWindowTitle(_("Set export options"))
         vl = QVBoxLayout()
@@ -549,17 +554,16 @@ class ExportOptionsDialog(QDialog):
         self.only_enabled_box = QCheckBox(_("Only export enabled lemmas"))
         vl.addWidget(self.only_enabled_box)
 
-        if is_kindle:
-            hl = QHBoxLayout()
-            difficulty_label = QLabel(_("Difficulty limit"))
-            difficulty_label.setToolTip(
-                _("Difficulty higher than this value will not be exported")
-            )
-            self.difficulty_limit_box = QComboBox()
-            self.difficulty_limit_box.addItems(map(str, range(5, 0, -1)))
-            hl.addWidget(difficulty_label)
-            hl.addWidget(self.difficulty_limit_box)
-            vl.addLayout(hl)
+        hl = QHBoxLayout()
+        difficulty_label = QLabel(_("Difficulty limit"))
+        difficulty_label.setToolTip(
+            _("Difficulty higher than this value will not be exported")
+        )
+        self.difficulty_limit_box = QComboBox()
+        self.difficulty_limit_box.addItems(map(str, range(5, 0, -1)))
+        hl.addWidget(difficulty_label)
+        hl.addWidget(self.difficulty_limit_box)
+        vl.addLayout(hl)
 
         dialog_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel

@@ -64,6 +64,8 @@ prefs.defaults["minimal_x_ray_count"] = 1
 prefs.defaults["en_ipa"] = "US"
 prefs.defaults["zh_ipa"] = "Pinyin"
 prefs.defaults["choose_format_manually"] = True
+for data in load_json_or_pickle(get_plugin_path(), "data/languages.json").values():
+    prefs.defaults[f"{data['wiki']}_wiktionary_difficulty_limit"] = 5
 
 load_translations()
 

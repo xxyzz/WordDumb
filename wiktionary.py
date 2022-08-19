@@ -86,8 +86,11 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
 
             word_pos = f"{word} {pos}"
             enabled = False if word_pos in enabled_words_pos else True
+            difficulty = 1
             if kindle_lemmas and enabled:
                 enabled = word in kindle_lemmas
+                if enabled:
+                    difficulty = kindle_lemmas[word][0]
             if enabled:
                 enabled_words_pos.add(word_pos)
             forms = set()
@@ -128,6 +131,7 @@ def extract_wiktionary(download_path, lang, kindle_lemmas, notif):
                         example_sent,
                         ",".join(forms),
                         get_ipas(lang, data.get("sounds", [])),
+                        difficulty,
                     )
                 )
                 enabled = False
@@ -215,7 +219,7 @@ def dump_wiktionary(json_path, dump_path, lang, notif):
         import ahocorasick
 
         automaton = ahocorasick.Automaton()
-        for _, word, _, short_gloss, gloss, example, forms, ipas in filter(
+        for _, word, _, short_gloss, gloss, example, forms, ipas, _ in filter(
             lambda x: x[0] and not automaton.exists(x[1]), words
         ):
             ipa = get_ipa(lang, ipas)
@@ -229,7 +233,7 @@ def dump_wiktionary(json_path, dump_path, lang, notif):
         from flashtext import KeywordProcessor
 
         keyword_processor = KeywordProcessor()
-        for _, word, _, short_gloss, gloss, example, forms, ipas in filter(
+        for _, word, _, short_gloss, gloss, example, forms, ipas, _ in filter(
             lambda x: x[0] and x[1] not in keyword_processor, words
         ):
             ipa = get_ipa(lang, ipas)

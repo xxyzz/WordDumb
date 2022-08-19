@@ -64,15 +64,15 @@ class CustomLemmasDialog(QDialog):
             WiktionaryTableModel(lang) if lang else KindleLemmasTableModel()
         )
         self.lemmas_table.setModel(self.lemmas_model)
+        self.lemmas_table.setItemDelegateForColumn(
+            8 if lang else 5,
+            ComboBoxDelegate(
+                self.lemmas_table,
+                list(range(1, 6)),
+                {0: _("Fewer Hints"), 4: _("More Hints")},
+            ),
+        )
         if lang is None:
-            self.lemmas_table.setItemDelegateForColumn(
-                5,
-                ComboBoxDelegate(
-                    self.lemmas_table,
-                    list(range(1, 6)),
-                    {0: _("Fewer Hints"), 4: _("More Hints")},
-                ),
-            )
             self.lemmas_table.hideColumn(2)
             self.lemmas_table.hideColumn(6)
         else:
@@ -111,6 +111,24 @@ class CustomLemmasDialog(QDialog):
             )
             self.ipa_button.currentIndexChanged.connect(self.change_ipa)
             hl.addWidget(self.ipa_button)
+            vl.addLayout(hl)
+
+        if lang:
+            from .config import prefs
+
+            hl = QHBoxLayout()
+            difficulty_label = QLabel(_("Difficulty limit"))
+            difficulty_label.setToolTip(
+                _(
+                    "Difficult words have lower value. Words have difficulty value higher than this value are disabled."
+                )
+            )
+            hl.addWidget(difficulty_label)
+            self.difficulty_limit_box = QComboBox()
+            self.difficulty_limit_box.addItems(map(str, range(5, 0, -1)))
+            self.difficulty_limit_box.setCurrentText(str(prefs[f"{lang}_wiktionary_difficulty_limit"]))
+            self.difficulty_limit_box.currentIndexChanged.connect(self.change_difficulty_limit)
+            hl.addWidget(self.difficulty_limit_box)
             vl.addLayout(hl)
 
         dialog_button_box = QDialogButtonBox(
@@ -208,6 +226,13 @@ class CustomLemmasDialog(QDialog):
                 int(option_dialog.difficulty_limit_box.currentText()),
             )
 
+    def change_difficulty_limit(self):
+        from .config import prefs
+
+        limit = int(self.difficulty_limit_box.currentText())
+        prefs[f"{self.lang}_wiktionary_difficulty_limit"] = limit
+        self.lemmas_model.change_difficulty_limit(limit)
+
 
 class LemmasTableModel(QAbstractTableModel):
     def rowCount(self, index):
@@ -276,9 +301,9 @@ class LemmasTableModel(QAbstractTableModel):
             self.dataChanged.emit(index, index, [role])
             return True
         elif role == Qt.ItemDataRole.EditRole and column in self.editable_columns:
-            self.lemmas[index.row()][column] = (
-                int(value) if isinstance(self, KindleLemmasTableModel) else value
-            )
+            if isinstance(self, KindleLemmasTableModel) or column == 8:
+                value = int(value)
+            self.lemmas[index.row()][column] = value
             self.dataChanged.emit(index, index, [role])
             return True
         return False
@@ -286,6 +311,11 @@ class LemmasTableModel(QAbstractTableModel):
     def import_lemmas(
         self, lemmas_dict: dict[str, list[int, bool]], retain_lemmas: bool
     ) -> None:
+        if isinstance(self, KindleLemmasTableModel):
+            difficulty_column = 5
+        else:
+            difficulty_column = 8
+
         for row in range(self.rowCount(None)):
             lemma = self.lemmas[row][1]
             enable = Qt.CheckState.Unchecked.value
@@ -295,8 +325,7 @@ class LemmasTableModel(QAbstractTableModel):
                     enable = Qt.CheckState.Checked.value
                 else:
                     enable = Qt.CheckState.Unchecked.value
-                if isinstance(self, KindleLemmasTableModel):
-                    difficulty = self.lemmas[row][5]
+                difficulty = self.lemmas[row][difficulty_column]
 
             data = lemmas_dict.get(lemma)
             if data and data[1]:
@@ -306,10 +335,9 @@ class LemmasTableModel(QAbstractTableModel):
             self.setData(
                 self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
             )
-            if isinstance(self, KindleLemmasTableModel):
-                self.setData(
-                    self.createIndex(row, 5), difficulty, Qt.ItemDataRole.EditRole
-                )
+            self.setData(
+                self.createIndex(row, difficulty_column), difficulty, Qt.ItemDataRole.EditRole
+            )
 
 
 class KindleLemmasTableModel(LemmasTableModel):
@@ -459,8 +487,9 @@ class WiktionaryTableModel(LemmasTableModel):
             "Example",
             _("Forms"),
             "IPA",
+            _("Difficulty"),
         ]
-        self.editable_columns = [3, 4]
+        self.editable_columns = [3, 4, 8]
         self.tooltip_columns = [4]
         plugin_path = get_plugin_path()
         self.json_path = wiktionary_json_path(plugin_path, lang)
@@ -482,7 +511,7 @@ class WiktionaryTableModel(LemmasTableModel):
 
     def export(self, export_path: str, only_enabled: bool) -> None:
         with open(export_path, "w", encoding="utf-8") as f:
-            for enabled, lemma, *_, gloss, example, _, ipas in self.lemmas:
+            for enabled, lemma, *_, gloss, example, _, ipas, _ in self.lemmas:
                 if only_enabled and not enabled:
                     continue
                 back_text = ""
@@ -494,6 +523,13 @@ class WiktionaryTableModel(LemmasTableModel):
                     example = escape(re.sub(r"\t|\n", " ", example))
                     back_text += f"<i>{example}</i>"
                 f.write(f"{lemma}\t{back_text}\n")
+
+    def change_difficulty_limit(self, limit: int) -> None:
+        for row in range(self.rowCount(None)):
+            if self.lemmas[row][0] and self.lemmas[row][8] > limit:
+                self.lemmas[row][0] = False
+                index = self.createIndex(row, 0)
+                self.dataChanged.emit(index, index, [Qt.ItemDataRole.CheckStateRole])
 
 
 class ExportOptionsDialog(QDialog):

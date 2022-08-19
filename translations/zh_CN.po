@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-08-14 20:51+0800\n"
-"PO-Revision-Date: 2022-08-14 20:51+0800\n"
+"POT-Creation-Date: 2022-08-19 16:45+0800\n"
+"PO-Revision-Date: 2022-08-19 16:47+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -14,113 +14,113 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: config.py:79 config.py:283
+#: config.py:81 config.py:285
 msgid "Preferred format order"
 msgstr "首选格式顺序"
 
-#: config.py:83
+#: config.py:85
 msgid "Customize Kindle Word Wise"
 msgstr "自定义 Kindle 生词提示"
 
-#: config.py:87
+#: config.py:89
 msgid "Customize EPUB Wiktionary"
 msgstr "自定义 EPUB 维基词典"
 
-#: config.py:92
+#: config.py:94
 msgid "Fetch X-Ray people descriptions from Wikipedia/Fandom"
 msgstr "从维基百科或 Fandom 获取 X-Ray 人物描述"
 
-#: config.py:96
+#: config.py:98
 msgid ""
 "Enable this option for nonfiction books and novels that have character pages "
 "on Wikipedia/Fandom"
 msgstr "为在维基百科或 Fandom 上有人物页面的非小说类书籍和小说启用此选项"
 
-#: config.py:108
+#: config.py:110
 msgid "<a href=\"https://spacy.io/models/en\">spaCy model</a> size"
 msgstr "<a href=“https://spacy.io/models/en”>spaCy 模型</a>大小"
 
-#: config.py:111
+#: config.py:113
 msgid "Larger model improves X-Ray quality"
 msgstr "更大的模型能提高 X-Ray 质量"
 
-#: config.py:113
+#: config.py:115
 msgid "Small"
 msgstr "小"
 
-#: config.py:113
+#: config.py:115
 msgid "Medium"
 msgstr "中"
 
-#: config.py:113
+#: config.py:115
 msgid "Large"
 msgstr "大"
 
-#: config.py:122
+#: config.py:124
 msgid "Minimal X-Ray occurrences"
 msgstr "X-Ray 最少出现次数"
 
-#: config.py:125
+#: config.py:127
 msgid ""
 "X-Ray entities that appear less then this number and don't have description "
 "from Wikipedia/Fandom will be removed"
 msgstr ""
 "出现次数少于此数量且没有来自维基百科或 Fandom 描述的 X-Ray 实体将被删除"
 
-#: config.py:142
+#: config.py:144
 msgid "Chinese Wikipedia variant"
 msgstr "中文维基百科变体"
 
-#: config.py:150
+#: config.py:152
 msgid "Fandom URL"
 msgstr "Fandom 链接"
 
-#: config.py:154
+#: config.py:156
 msgid "Add locator map to EPUB footnotes"
 msgstr "添加地图到 EPUB 脚注"
 
-#: config.py:156
+#: config.py:158
 msgid "Enable this option if your e-reader supports image in footnotes"
 msgstr "如果您的电子阅读器支持脚注中的图像，请启用此选项"
 
-#: config.py:165
+#: config.py:167
 msgid "Source code and document"
 msgstr "源代码和文档"
 
-#: config.py:204 config.py:221
+#: config.py:206 config.py:223
 msgid "Saving customized lemmas"
 msgstr "正在保存自定义词条"
 
-#: config.py:243
+#: config.py:245
 msgid "Select Wiktionary source language"
 msgstr "选择维基词典源语言"
 
-#: config.py:244
+#: config.py:246
 msgid "Language"
 msgstr "语言"
 
-#: config.py:265
+#: config.py:267
 msgid "Downloading Wiktionary"
 msgstr "正在下载维基词典"
 
-#: config.py:299
+#: config.py:301
 msgid "Choose format manually"
 msgstr "手动选择格式"
 
-#: config.py:306
+#: config.py:308
 msgid "Create files for all available formats"
 msgstr "为所有可用格式创建文件"
 
-#: config.py:338
+#: config.py:340
 msgid "Choose book format"
 msgstr "选择图书格式"
 
-#: config.py:344
+#: config.py:346
 msgid ""
 "This book has multiple supported formats. Choose the format you want to use."
 msgstr "这本书有多种支持的格式。选择您要使用的格式。"
 
-#: config.py:350
+#: config.py:352
 msgid "Always ask when more than one format is available"
 msgstr "有多种可用格式时总是询问"
 
@@ -136,11 +136,11 @@ msgstr "维基词典"
 msgid "Kindle Word Wise"
 msgstr "Kindle 生词提示"
 
-#: custom_lemmas.py:73
+#: custom_lemmas.py:72
 msgid "Fewer Hints"
 msgstr "更少提示"
 
-#: custom_lemmas.py:73
+#: custom_lemmas.py:72
 msgid "More Hints"
 msgstr "更多提示"
 
@@ -164,55 +164,65 @@ msgstr "标音系统"
 msgid "International Phonetic Alphabet"
 msgstr "国际音标"
 
-#: custom_lemmas.py:122
+#: custom_lemmas.py:120 custom_lemmas.py:558
+msgid "Difficulty limit"
+msgstr "难度限制"
+
+#: custom_lemmas.py:123
+msgid ""
+"Difficult words have lower value. Words have difficulty value higher than "
+"this value are disabled."
+msgstr "难词的数值较低。难度值高于此值的单词将被禁用。"
+
+#: custom_lemmas.py:144
 msgid "Import"
 msgstr "导入"
 
-#: custom_lemmas.py:127
+#: custom_lemmas.py:149
 msgid "Export"
 msgstr "导出"
 
-#: custom_lemmas.py:153
+#: custom_lemmas.py:175
 msgid "Select import file"
 msgstr "选择导入文件"
 
-#: custom_lemmas.py:195
+#: custom_lemmas.py:217
 msgid "Set export file path"
 msgstr "设置导出文件路径"
 
-#: custom_lemmas.py:376 custom_lemmas.py:454
+#: custom_lemmas.py:405 custom_lemmas.py:483
 msgid "Enabled"
 msgstr "启用"
 
-#: custom_lemmas.py:377 custom_lemmas.py:455
+#: custom_lemmas.py:406 custom_lemmas.py:484
 msgid "Lemma"
 msgstr "词条"
 
-#: custom_lemmas.py:379 custom_lemmas.py:456
+#: custom_lemmas.py:408 custom_lemmas.py:485
 msgid "POS"
 msgstr "词类"
 
-#: custom_lemmas.py:380 custom_lemmas.py:458
+#: custom_lemmas.py:409 custom_lemmas.py:487
 msgid "Definition"
 msgstr "定义"
 
-#: custom_lemmas.py:381
+#: custom_lemmas.py:410 custom_lemmas.py:491
 msgid "Difficulty"
 msgstr "难度等级"
 
-#: custom_lemmas.py:457
+#: custom_lemmas.py:486
 msgid "Gloss"
 msgstr "注释"
 
-#: custom_lemmas.py:460
+#: custom_lemmas.py:489
 msgid "Forms"
 msgstr "形式"
 
-#: custom_lemmas.py:502
+#: custom_lemmas.py:543
 msgid "Set export options"
 msgstr "设置导出选项"
 
-#: custom_lemmas.py:508
+#: custom_lemmas.py:549
 msgid ""
 "Export text separated by tab, can be imported to Anki.<br/> \"Allow HTML in "
 "fields\" option needs to be enabled in Anki."
@@ -220,23 +230,19 @@ msgstr ""
 "导出以制表符分隔的文本，可以导入到 Anki。<br/> 需要在 Anki 中启用“允许字段中"
 "的 HTML”选项。"
 
-#: custom_lemmas.py:513
+#: custom_lemmas.py:554
 msgid "Only export enabled lemmas"
 msgstr "仅导出已启用词条"
 
-#: custom_lemmas.py:518
-msgid "Difficulty limit"
-msgstr "难度限制"
-
-#: custom_lemmas.py:520
+#: custom_lemmas.py:560
 msgid "Difficulty higher than this value will not be exported"
 msgstr "难度高于此值将不会被导出"
 
-#: custom_lemmas.py:539
+#: custom_lemmas.py:579
 msgid "Set import options"
 msgstr "设置导入选项"
 
-#: custom_lemmas.py:543
+#: custom_lemmas.py:583
 msgid "Retain current enabled lemmas"
 msgstr "保留当前已启用词条"
 

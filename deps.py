@@ -22,17 +22,16 @@ def install_deps(model, book_fmt, notif):
     PY_PATH, PY_VERSION = which_python()
     LIBS_PATH = PLUGINS_PATH.parent.joinpath(f"worddumb-libs-py{PY_VERSION}")
 
-    reinstall = False if LIBS_PATH.exists() else True
-    if reinstall:
+    if not LIBS_PATH.exists():
         for old_path in LIBS_PATH.parent.glob("worddumb-libs-py*"):
-            old_path.rename(LIBS_PATH)
+            shutil.rmtree(old_path)
     if model == "lemminflect":
-        install_lemminflect(reinstall, notif)
+        install_lemminflect(notif)
     elif model.startswith("wiktionary"):
-        install_wiktionary_deps(model, reinstall, notif)
+        install_wiktionary_deps(model, notif)
     else:
-        install_x_ray_deps(model, reinstall, notif)
-        install_extra_deps(model, book_fmt, reinstall, notif)
+        install_x_ray_deps(model, notif)
+        install_extra_deps(model, book_fmt, notif)
 
 
 def which_python():
@@ -64,19 +63,15 @@ def mac_python():
     return py
 
 
-def install_x_ray_deps(model, reinstall, notif):
-    pip_install_pkgs(
-        load_json_or_pickle(PLUGINS_PATH, "data/spacy.json"), reinstall, notif
-    )
+def install_x_ray_deps(model, notif):
+    pip_install_pkgs(load_json_or_pickle(PLUGINS_PATH, "data/x_ray_deps.json"), notif)
     url = f"https://github.com/explosion/spacy-models/releases/download/{model}-{SPACY_MODEL_VERSION}/{model}-{SPACY_MODEL_VERSION}-py3-none-any.whl"
     pip_install(model, SPACY_MODEL_VERSION, url=url, notif=notif)
 
 
-def pip_install(
-    pkg, pkg_version, compiled=False, url=None, reinstall=False, notif=None
-):
+def pip_install(pkg, pkg_version, url=None, notif=None):
     pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
-    if not any(LIBS_PATH.glob(pattern)) or (reinstall and compiled):
+    if not any(LIBS_PATH.glob(pattern)):
         if notif:
             notif.put((0, f"Installing {pkg}"))
         args = [
@@ -91,9 +86,9 @@ def pip_install(
             "--no-cache-dir",
             "--disable-pip-version-check",
             "--no-user",
+            "--python-version",
+            PY_VERSION,
         ]
-        if compiled:
-            args.extend(["--python-version", PY_VERSION])
         if url:
             args.append(url)
         elif pkg_version:
@@ -103,24 +98,22 @@ def pip_install(
         run_subprocess(args)
 
 
-def pip_install_pkgs(pkgs, reinstall, notif):
-    for pkg, value in pkgs.items():
-        pip_install(
-            pkg, value["version"], value["compiled"], reinstall=reinstall, notif=notif
-        )
+def pip_install_pkgs(pkgs, notif):
+    for pkg, version in pkgs.items():
+        pip_install(pkg, version, notif=notif)
 
 
-def install_extra_deps(model, book_fmt, reinstall, notif):
+def install_extra_deps(model, book_fmt, notif):
     # https://spacy.io/usage/models#languages
-    data = load_json_or_pickle(PLUGINS_PATH, "data/spacy_extra.json")
+    data = load_json_or_pickle(PLUGINS_PATH, "data/extra_deps.json")
     if (lang := model[:2]) in data:
-        pip_install_pkgs(data[lang], reinstall, notif)
+        pip_install_pkgs(data[lang], notif)
 
     if ismacos:
         if book_fmt == "EPUB":
-            pip_install_pkgs(data["mac_epub"], reinstall, notif)
+            pip_install_pkgs(data["mac_epub"], notif)
         if platform.machine() == "arm64":
-            pip_install_pkgs(data["mac_arm"], reinstall, notif)
+            pip_install_pkgs(data["mac_arm"], notif)
 
 
 def upgrade_pip(py_path):
@@ -143,13 +136,13 @@ def upgrade_pip(py_path):
         )
 
 
-def install_lemminflect(reinstall, notif):
-    data = load_json_or_pickle(PLUGINS_PATH, "data/spacy_extra.json")
-    pip_install_pkgs(data["lemminflect"], reinstall, notif)
+def install_lemminflect(notif):
+    data = load_json_or_pickle(PLUGINS_PATH, "data/extra_deps.json")
+    pip_install_pkgs(data["lemminflect"], notif)
 
 
-def install_wiktionary_deps(dep_type, reinstall, notif):
-    data = load_json_or_pickle(PLUGINS_PATH, "data/spacy_extra.json")
-    pip_install_pkgs(data["wiktionary"], reinstall, notif)
+def install_wiktionary_deps(dep_type, notif):
+    data = load_json_or_pickle(PLUGINS_PATH, "data/extra_deps.json")
+    pip_install_pkgs(data["wiktionary"], notif)
     if dep_type == "wiktionary_cjk":
-        pip_install_pkgs(data["wiktionary_cjk"], reinstall, notif)
+        pip_install_pkgs(data["wiktionary_cjk"], notif)

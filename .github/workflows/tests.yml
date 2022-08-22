@@ -136,6 +136,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v3
         with:
+          # Don't upload the zip file directly cuz GitHub will zip it again
           name: worddumb-${{ github.sha }}
           path: |
             .

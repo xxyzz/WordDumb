@@ -19,9 +19,9 @@ else
 fi
 
 # Download the latest Kindle lemmas dump file
-PROFICIENCY_VERSION=`cd Proficiency && git describe && cd ..`
-PROFICIENCY_MAJOR_VERSION=`echo $PROFICIENCY_VERSION | cut -d . -f 1`
-wget -P data -nv "https://github.com/xxyzz/Proficiency/releases/download/$PROFICIENCY_VERSION/kindle_lemmas_dump_$PROFICIENCY_MAJOR_VERSION"
+# Hard coding the link cuz GitHub API has rate limit and
+# actions/checkout can't fetch submodule's tag
+wget -P data -nv "https://github.com/xxyzz/Proficiency/releases/download/v0.1.0/kindle_lemmas_dump_v0"
 
 cp Proficiency/en/dump_kindle_lemmas.py ./
 cp Proficiency/tst.py ./libs/

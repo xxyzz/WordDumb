@@ -499,9 +499,6 @@ class WiktionaryTableModel(LemmasTableModel):
         self.lemmas_tst = load_json_or_pickle(
             None, get_lemmas_tst_path(plugin_path, lang)
         )
-        self.enabled_lemmas_in_json = {
-            word for enabled, word, *ignored in self.lemmas if enabled
-        }
 
     def save_json_file(self):
         with open(self.json_path, "w", encoding="utf-8") as f:
@@ -534,11 +531,15 @@ class WiktionaryTableModel(LemmasTableModel):
 
     def change_difficulty_limit(self, limit: int) -> None:
         for row in range(self.rowCount(None)):
-            word = self.lemmas[row][1]
-            enabled = word in self.enabled_lemmas_in_json
-            if enabled and self.lemmas[row][8] > limit:
+            currently_enabled = self.lemmas[row][0]
+            difficulty = self.lemmas[row][8]
+            enabled = currently_enabled
+            if difficulty > limit:
                 enabled = False
-            if self.lemmas[row][0] != enabled:
+            elif not currently_enabled and difficulty > 1:
+                enabled = True
+
+            if currently_enabled != enabled:
                 self.lemmas[row][0] = enabled
                 index = self.createIndex(row, 0)
                 self.dataChanged.emit(index, index, [Qt.ItemDataRole.CheckStateRole])

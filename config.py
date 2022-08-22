@@ -240,7 +240,7 @@ class ConfigWidget(QWidget):
 
     def open_wiktionary_dialog(self):
         language_dict = load_json_or_pickle(self.plugin_path, "data/languages.json")
-        languages = {val["kaikki"]: val["wiki"] for val in language_dict.values()}
+        languages = {_(val["kaikki"]): val["wiki"] for val in language_dict.values()}
         lang_name, ok = QInputDialog.getItem(
             self,
             _("Select Wiktionary source language"),
@@ -276,7 +276,7 @@ class ConfigWidget(QWidget):
         gui = self.parent().parent()
         job = ThreadedJob(
             "WordDumb's dumb job",
-            _("Saving Wiktionary"),
+            _("Saving customized lemmas"),
             self.dump_wiktionary_job,
             (lang, table_model),
             {},

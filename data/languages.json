@@ -17,7 +17,7 @@
   "ell": {
     "spacy": "el_core_news_",
     "wiki": "el",
-    "kaikki": "Geek"
+    "kaikki": "Greek"
   },
   "eng": {
     "spacy": "en_core_web_",

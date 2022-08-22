@@ -99,7 +99,7 @@ class CustomLemmasDialog(QDialog):
                 self.ipa_button.setCurrentText(prefs["en_ipa"])
             elif lang == "zh":
                 self.ipa_button.addItem(_("Pinyin"), "Pinyin")
-                self.ipa_button.addItem(_("bopomofo"), "bopomofo")
+                self.ipa_button.addItem(_("Bopomofo"), "bopomofo")
                 self.ipa_button.setCurrentText(_(prefs["zh_ipa"]))
 
             hl = QHBoxLayout()

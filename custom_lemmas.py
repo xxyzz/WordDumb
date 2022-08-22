@@ -4,6 +4,7 @@ import base64
 import json
 import pickle
 import re
+import shutil
 import sqlite3
 from html import escape
 from pathlib import Path
@@ -31,6 +32,7 @@ from .dump_wiktionary import get_ipa
 from .import_lemmas import extract_apkg, extract_csv, query_vocabulary_builder
 from .utils import (
     custom_kindle_dump_path,
+    custom_lemmas_folder,
     get_klld_path,
     get_lemmas_tst_path,
     get_plugin_path,
@@ -150,11 +152,10 @@ class CustomLemmasDialog(QDialog):
         dialog_button_box.addButton(
             export_button, QDialogButtonBox.ButtonRole.ActionRole
         )
-        if lang is None:
-            dialog_button_box.addButton(QDialogButtonBox.StandardButton.RestoreDefaults)
-            dialog_button_box.button(
-                QDialogButtonBox.StandardButton.RestoreDefaults
-            ).clicked.connect(self.reset_kindle_lemmas)
+        dialog_button_box.addButton(QDialogButtonBox.StandardButton.RestoreDefaults)
+        dialog_button_box.button(
+            QDialogButtonBox.StandardButton.RestoreDefaults
+        ).clicked.connect(self.reset_lemmas)
         vl.addWidget(dialog_button_box)
 
     def search_lemma(self, text):
@@ -191,10 +192,16 @@ class CustomLemmasDialog(QDialog):
             lemmas_dict, import_options_dialog.retain_enabled_lemmas.isChecked()
         )
 
-    def reset_kindle_lemmas(self):
-        custom_path = custom_kindle_dump_path(get_plugin_path())
-        if custom_path.exists():
-            custom_path.unlink()
+    def reset_lemmas(self):
+        plugin_path = get_plugin_path()
+        if self.lang is None:
+            custom_path = custom_kindle_dump_path(plugin_path)
+            if custom_path.exists():
+                custom_path.unlink()
+                self.reject()
+        else:
+            custom_folder = custom_lemmas_folder(plugin_path).joinpath(self.lang)
+            shutil.rmtree(custom_folder)
             self.reject()
 
     def change_ipa(self):

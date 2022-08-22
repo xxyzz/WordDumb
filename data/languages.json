@@ -104,6 +104,11 @@
     "wiki": "sv",
     "kaikki": "Swedish"
   },
+  "ukr": {
+    "spacy": "uk_core_news_",
+    "wiki": "uk",
+    "kaikki": "Ukrainian"
+  },
   "zho": {
     "spacy": "zh_core_web_",
     "wiki": "zh",

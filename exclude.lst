@@ -1,6 +1,3 @@
-data/lemmas.json
-data/add_lemmas.py
-data/*.sh
 docs/*
 tests/*
 **/__pycache__/*
@@ -8,3 +5,4 @@ __pycache__/*
 exclude.lst
 klld/*
 translations/*.po
+Proficiency/*

@@ -19,6 +19,10 @@ Run this command to compile .mo files, you don't need to do this if you're using
 calibre-debug -c "from calibre.translations.msgfmt import main; main()" translations/*.po
 ```
 
+## Add difficulty data to more languages
+
+Check out [Proficiency](https://github.com/xxyzz/Proficiency).
+
 ## Create zip file
 
 ```bash

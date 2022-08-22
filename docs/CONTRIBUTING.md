@@ -2,10 +2,8 @@
 
 ## Debug
 
-Run the `data/dump_lemmas.sh` Bash script when debugging for the first time and when `data/lemmas.json` is changed.
-
 ```
-$ ./data/dump_lemmas.sh
+$ bash ./build_plugin.sh
 $ calibre-customize -b . && calibre-debug -g
 ```
 

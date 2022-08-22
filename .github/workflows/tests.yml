@@ -28,6 +28,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          submodules: 'true'
 
       - name: Install calibre on Ubuntu
         if: matrix.os == 'ubuntu-latest'
@@ -78,13 +80,13 @@ jobs:
       - name: Build plugin(Unix)
         if: matrix.os != 'windows-latest'
         run: |
-          ./data/dump_lemmas.sh
+          bash ./build_plugin.sh
           zip -r worddumb-${{ github.sha }}.zip * -x@exclude.lst
 
       - name: Build plugin(Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          ./data/dump_lemmas.sh
+          bash ./build_plugin.sh
           7z a -x@exclude.lst -x!.* -tzip worddumb-${{ github.sha }}.zip
 
       - name: Add plugin
@@ -138,12 +140,10 @@ jobs:
           path: |
             .
             !.*
-            !data/lemmas.json
-            !data/add_lemmas.py
-            !data/*.sh
             !docs/*
             !tests/*
             !**/__pycache__/*
             !__pycache__/*
             !exclude.lst
             !klld/*
+            !Proficiency

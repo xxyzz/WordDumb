@@ -19,11 +19,9 @@ else
 fi
 
 # Download the latest Kindle lemmas dump file
-wget -nv -O - https://api.github.com/repos/xxyzz/Proficiency/releases/latest \
-    | grep "/kindle_lemmas_dump_v*" \
-    | cut -d : -f 2,3 \
-    | tr -d '" ' \
-    | wget -P data -nv -i -
+PROFICIENCY_VERSION=`cd Proficiency && git describe && cd ..`
+PROFICIENCY_MAJOR_VERSION=`echo $PROFICIENCY_VERSION | cut -d . -f 1`
+wget -P data -nv "https://github.com/xxyzz/Proficiency/releases/download/$PROFICIENCY_VERSION/kindle_lemmas_dump_$PROFICIENCY_MAJOR_VERSION"
 
 cp Proficiency/en/dump_kindle_lemmas.py ./
 cp Proficiency/tst.py ./libs/

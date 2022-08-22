@@ -28,27 +28,28 @@ from PyQt6.QtWidgets import (
 )
 
 from .custom_lemmas import CustomLemmasDialog
-from .data.dump_lemmas import dump_lemmas
-from .deps import install_deps, mac_python
+from .deps import download_wiktionary, install_deps, mac_python
+from .dump_kindle_lemmas import dump_kindle_lemmas
+from .dump_wiktionary import dump_wiktionary
 from .error_dialogs import (
     GITHUB_URL,
     device_not_found_dialog,
     job_failed,
     ww_db_not_found_dialog,
 )
-from .parse_job import dump_wiktionary_job
 from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
 from .utils import (
-    custom_lemmas_dump_path,
+    CJK_LANGS,
+    custom_kindle_dump_path,
     custom_lemmas_folder,
     donate,
     get_klld_path,
     get_plugin_path,
-    get_user_agent,
-    insert_flashtext_path,
     insert_installed_libs,
+    insert_plugin_libs,
     load_json_or_pickle,
     run_subprocess,
+    wiktionary_dump_path,
     wiktionary_json_path,
 )
 
@@ -204,11 +205,11 @@ class ConfigWidget(QWidget):
             job = ThreadedJob(
                 "WordDumb's dumb job",
                 _("Saving customized lemmas"),
-                self.save_lemmas,
+                self.save_kindle_lemmas,
                 (
                     {
                         lemma: (difficulty, sense_id, pos_type)
-                        for enabled, lemma, sense_id, pos_type, _, difficulty, _ in custom_lemmas_dlg.lemmas_model.lemmas
+                        for enabled, lemma, sense_id, pos_type, gloss, difficulty, sent in custom_lemmas_dlg.lemmas_model.lemmas
                         if enabled
                     },
                 ),
@@ -218,19 +219,19 @@ class ConfigWidget(QWidget):
             )
             gui.job_manager.run_threaded_job(job)
 
-    def save_lemmas(self, lemmas, abort=None, log=None, notifications=None):
+    def save_kindle_lemmas(self, lemmas, abort=None, log=None, notifications=None):
         install_deps("lemminflect", None, notifications)
         notifications.put((0, _("Saving customized lemmas")))
-        custom_path = custom_lemmas_dump_path(self.plugin_path)
+        custom_path = custom_kindle_dump_path(self.plugin_path)
         if ismacos:
             plugin_path = str(self.plugin_path)
             args = [mac_python(), plugin_path]
             args.extend([""] * 12 + [plugin_path, str(custom_path)])
             run_subprocess(args, json.dumps(lemmas))
         else:
-            insert_flashtext_path(self.plugin_path)
+            insert_plugin_libs(self.plugin_path)
             insert_installed_libs(self.plugin_path)
-            dump_lemmas(lemmas, custom_path)
+            dump_kindle_lemmas(lemmas, custom_path)
 
     def open_format_order_dialog(self):
         format_order_dialog = FormatOrderDialog(self)
@@ -254,29 +255,66 @@ class ConfigWidget(QWidget):
         if wiktionary_path.exists():
             custom_lemmas_dlg = CustomLemmasDialog(self, wiki_lang, lang_name)
             if custom_lemmas_dlg.exec():
-                self.run_dump_wiktionary_job(
-                    wiki_lang, lang_name, None, custom_lemmas_dlg.lemmas_model
-                )
+                self.run_dump_wiktionary_job(wiki_lang, custom_lemmas_dlg.lemmas_model)
         else:
-            self.run_dump_wiktionary_job(wiki_lang, lang_name, get_user_agent(), None)
+            self.run_download_wiktionary_job(wiki_lang)
 
-    def run_dump_wiktionary_job(self, wiki_lang, lang, useragent, table_model):
+    def run_download_wiktionary_job(self, lang):
         gui = self.parent().parent()
         job = ThreadedJob(
             "WordDumb's dumb job",
             _("Downloading Wiktionary"),
-            dump_wiktionary_job,
-            (
-                self.plugin_path,
-                {"wiki": wiki_lang, "kaikki": lang},
-                useragent,
-                table_model,
-            ),
+            download_wiktionary,
+            (lang,),
             {},
             Dispatcher(partial(job_failed, parent=gui)),
             killable=False,
         )
         gui.job_manager.run_threaded_job(job)
+
+    def run_dump_wiktionary_job(self, lang, table_model):
+        gui = self.parent().parent()
+        job = ThreadedJob(
+            "WordDumb's dumb job",
+            _("Saving Wiktionary"),
+            self.dump_wiktionary_job,
+            (lang, table_model),
+            {},
+            Dispatcher(partial(job_failed, parent=gui)),
+            killable=False,
+        )
+        gui.job_manager.run_threaded_job(job)
+
+    def dump_wiktionary_job(
+        self, lang, table_model, abort=None, log=None, notifications=None
+    ):
+        if table_model:
+            table_model.save_json_file()
+        insert_plugin_libs(self.plugin_path)
+        insert_installed_libs(self.plugin_path)
+        json_path = wiktionary_json_path(self.plugin_path, lang)
+        dump_path = wiktionary_dump_path(self.plugin_path, lang)
+        if ismacos and lang in CJK_LANGS:
+            args = [
+                mac_python(),
+                str(self.plugin_path),
+                "",
+                str(json_path),
+                "",
+                "",
+                "",
+                lang,
+            ]
+            args.extend([""] * 6)
+            args.extend(
+                [
+                    str(self.plugin_path),
+                    str(dump_path),
+                ]
+            )
+            run_subprocess(args)
+        else:
+            dump_wiktionary(json_path, dump_path, lang)
 
 
 class FormatOrderDialog(QDialog):

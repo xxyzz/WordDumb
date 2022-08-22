@@ -27,10 +27,10 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
+from .dump_wiktionary import get_ipa
 from .import_lemmas import extract_apkg, extract_csv, query_vocabulary_builder
-from .tst import TST
 from .utils import (
-    custom_lemmas_dump_path,
+    custom_kindle_dump_path,
     get_klld_path,
     get_lemmas_tst_path,
     get_plugin_path,
@@ -38,7 +38,6 @@ from .utils import (
     load_lemmas_dump,
     wiktionary_json_path,
 )
-from .wiktionary import get_ipa
 
 load_translations()
 
@@ -155,7 +154,7 @@ class CustomLemmasDialog(QDialog):
             dialog_button_box.addButton(QDialogButtonBox.StandardButton.RestoreDefaults)
             dialog_button_box.button(
                 QDialogButtonBox.StandardButton.RestoreDefaults
-            ).clicked.connect(self.reset_lemmas)
+            ).clicked.connect(self.reset_kindle_lemmas)
         vl.addWidget(dialog_button_box)
 
     def search_lemma(self, text):
@@ -192,8 +191,8 @@ class CustomLemmasDialog(QDialog):
             lemmas_dict, import_options_dialog.retain_enabled_lemmas.isChecked()
         )
 
-    def reset_lemmas(self):
-        custom_path = custom_lemmas_dump_path(get_plugin_path())
+    def reset_kindle_lemmas(self):
+        custom_path = custom_kindle_dump_path(get_plugin_path())
         if custom_path.exists():
             custom_path.unlink()
             self.reject()
@@ -360,6 +359,8 @@ class KindleLemmasTableModel(LemmasTableModel):
         if lemmas_tst_path.exists():
             self.lemmas_tst = load_json_or_pickle(None, lemmas_tst_path)
         else:
+            from tst import TST
+
             self.lemmas_tst = TST()
             row_num = 0
             lemmas_row = []

@@ -10,10 +10,10 @@ import json
 import sys
 from pathlib import Path
 
-from data.dump_lemmas import dump_lemmas
+from dump_kindle_lemmas import dump_kindle_lemmas
+from dump_wiktionary import dump_wiktionary
 from parse_job import create_files
-from utils import insert_flashtext_path, insert_installed_libs
-from wiktionary import dump_wiktionary
+from utils import insert_installed_libs, insert_plugin_libs
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-l", help="create word wise", action="store_true")
@@ -40,10 +40,10 @@ if args.dump_path:
     plugin_path = Path(args.plugin_path)
     insert_installed_libs(plugin_path)
     if args.wiki_lang:
-        dump_wiktionary(args.book_path, args.dump_path, args.wiki_lang, None)
+        dump_wiktionary(args.book_path, args.dump_path, args.wiki_lang)
     else:
-        insert_flashtext_path(plugin_path)
-        dump_lemmas(json.load(sys.stdin), args.dump_path)
+        insert_plugin_libs(plugin_path)
+        dump_kindle_lemmas(json.load(sys.stdin), args.dump_path)
 else:
     kfx_json = None
     mobi_html = None

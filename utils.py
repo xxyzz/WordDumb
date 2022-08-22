@@ -10,7 +10,7 @@ import zipfile
 from pathlib import Path
 
 CJK_LANGS = ["zh", "ja", "ko"]
-PROFICIENCY_VERSION = "0.0.1"
+PROFICIENCY_VERSION = "0.1.0"
 PROFICIENCY_MAJOR_VERSION = "0"
 
 

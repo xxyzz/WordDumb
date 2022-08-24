@@ -3,7 +3,7 @@
 ## Debug
 
 ```
-$ bash ./build_plugin.sh
+$ bash -e ./build_plugin.sh
 $ calibre-customize -b . && calibre-debug -g
 ```
 

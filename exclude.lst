@@ -6,3 +6,4 @@ exclude.lst
 klld/*
 translations/*.po
 Proficiency/*
+build_plugin.sh

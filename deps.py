@@ -165,6 +165,8 @@ def download_wiktionary(lang: str, abort=None, log=None, notifications=None) -> 
     filename = f"wiktionary_{lang}_v{PROFICIENCY_VERSION}.tar.gz"
     url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/{filename}"
     extract_folder = custom_lemmas_folder(PLUGINS_PATH)
+    if not extract_folder.exists():
+        extract_folder.mkdir()
     download_path = extract_folder.joinpath(filename)
 
     with requests.get(url, stream=True) as r, open(download_path, "wb") as f:

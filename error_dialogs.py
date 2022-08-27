@@ -168,3 +168,13 @@ def ww_db_not_found_dialog(parent):
         ),
         parent,
     )
+
+
+def kindle_epub_dialog(parent):
+    warning_dialog(
+        _("Kindle doesn't support EPUB"),
+        _(
+            "Kindle doesn't support EPUB format natively, please convert the book format then try again."
+        ),
+        parent,
+    )

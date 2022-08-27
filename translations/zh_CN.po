@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-08-22 13:27+0800\n"
-"PO-Revision-Date: 2022-08-22 13:27+0800\n"
+"POT-Creation-Date: 2022-08-27 08:51+0800\n"
+"PO-Revision-Date: 2022-08-27 08:51+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -87,7 +87,7 @@ msgstr "如果您的电子阅读器支持脚注中的图像，请启用此选项
 msgid "Source code and document"
 msgstr "源代码和文档"
 
-#: config.py:207 config.py:224
+#: config.py:207 config.py:224 config.py:279
 msgid "Saving customized lemmas"
 msgstr "正在保存自定义词条"
 
@@ -549,6 +549,16 @@ msgid ""
 "to download this file."
 msgstr ""
 "在您的设备上找不到生词提示数据库，请打开启用生词提示的书籍以下载此文件。"
+
+#: error_dialogs.py:175
+msgid "Kindle doesn't support EPUB"
+msgstr "Kindle 不支持 EPUB"
+
+#: error_dialogs.py:177
+msgid ""
+"Kindle doesn't support EPUB format natively, please convert the book format "
+"then try again."
+msgstr "Kindle 不支持 EPUB 格式，请转换图书格式后重试。"
 
 #: ui.py:25
 msgid "Create Word Wise and X-Ray"

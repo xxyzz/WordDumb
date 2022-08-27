@@ -9,6 +9,7 @@ from calibre.gui2 import FunctionDispatcher
 from calibre.gui2.dialogs.message_box import JobError
 
 from .database import get_ll_path, get_x_ray_path
+from .error_dialogs import kindle_epub_dialog
 from .metadata import get_asin_etc
 from .utils import homebrew_mac_bin_path, run_subprocess
 
@@ -131,16 +132,18 @@ class SendFile:
 
 
 def device_connected(gui, book_fmt):
-    if gui.device_manager.is_device_present and (
-        book_fmt == "EPUB"
-        or getattr(gui.device_manager.device, "VENDOR_NAME", None) == "KINDLE"
-    ):
-        return True
+    if gui.device_manager.is_device_present:
+        is_kindle = getattr(gui.device_manager.device, "VENDOR_NAME", None) == "KINDLE"
+        if book_fmt == "EPUB":
+            if is_kindle:
+                kindle_epub_dialog(gui)
+            else:
+                return True
+        elif is_kindle:
+            return True
     if book_fmt == "KFX":
         adb_path = which_adb()
-        if adb_path is None:
-            return False
-        if adb_connected(adb_path):
+        if adb_path and adb_connected(adb_path):
             package_name = get_package_name(adb_path)
             return package_name if package_name else False
     return False

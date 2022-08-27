@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-08-22 13:45+0800\n"
-"PO-Revision-Date: 2022-08-22 13:45+0800\n"
+"POT-Creation-Date: 2022-08-27 08:51+0800\n"
+"PO-Revision-Date: 2022-08-27 08:52+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -547,6 +547,16 @@ msgid ""
 "to download this file."
 msgstr ""
 "在您的設備上找不到生詞提示數據庫，請打開啟用生詞提示的書籍以下載此文件。"
+
+#: error_dialogs.py:175
+msgid "Kindle doesn't support EPUB"
+msgstr "Kindle 不支持 EPUB"
+
+#: error_dialogs.py:177
+msgid ""
+"Kindle doesn't support EPUB format natively, please convert the book format "
+"then try again."
+msgstr "Kindle 不支持 EPUB 格式，請轉換書籍格式後重試。"
 
 #: ui.py:25
 msgid "Create Word Wise and X-Ray"

@@ -313,9 +313,7 @@ class LemmasTableModel(QAbstractTableModel):
             return True
         return False
 
-    def import_lemmas(
-        self, lemmas_dict: dict[str, list[int, bool]], retain_lemmas: bool
-    ) -> None:
+    def import_lemmas(self, lemmas_dict: dict[str, int], retain_lemmas: bool) -> None:
         if isinstance(self, KindleLemmasTableModel):
             difficulty_column = 5
         else:
@@ -323,28 +321,31 @@ class LemmasTableModel(QAbstractTableModel):
 
         for row in range(self.rowCount(None)):
             lemma = self.lemmas[row][1]
-            enable = Qt.CheckState.Unchecked.value
-            difficulty = 1
-            if retain_lemmas:
-                if self.lemmas[row][0]:
-                    enable = Qt.CheckState.Checked.value
-                else:
-                    enable = Qt.CheckState.Unchecked.value
-                difficulty = self.lemmas[row][difficulty_column]
+            origin_enable = self.lemmas[row][0]
+            origin_difficulty = self.lemmas[row][difficulty_column]
+            enable = origin_enable
+            difficulty = origin_difficulty
 
-            data = lemmas_dict.get(lemma)
-            if data and data[1]:
-                enable = Qt.CheckState.Checked.value
-                difficulty = data[0]
-                lemmas_dict[lemma][1] = False
-            self.setData(
-                self.createIndex(row, 0), enable, Qt.ItemDataRole.CheckStateRole
-            )
-            self.setData(
-                self.createIndex(row, difficulty_column),
-                difficulty,
-                Qt.ItemDataRole.EditRole,
-            )
+            if imported_difficulty := lemmas_dict.get(lemma):
+                enable = True
+                difficulty = imported_difficulty
+            elif not retain_lemmas:
+                enable = False
+
+            if origin_enable != enable:
+                self.setData(
+                    self.createIndex(row, 0),
+                    Qt.CheckState.Checked.value
+                    if enable
+                    else Qt.CheckState.Unchecked.value,
+                    Qt.ItemDataRole.CheckStateRole,
+                )
+            if origin_difficulty != difficulty:
+                self.setData(
+                    self.createIndex(row, difficulty_column),
+                    difficulty,
+                    Qt.ItemDataRole.EditRole,
+                )
 
 
 class KindleLemmasTableModel(LemmasTableModel):

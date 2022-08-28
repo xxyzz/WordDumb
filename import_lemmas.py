@@ -4,7 +4,7 @@ import zipfile
 from pathlib import Path
 
 
-def extract_apkg(apkg_path: Path) -> dict[str, list[int, bool]]:
+def extract_apkg(apkg_path: Path) -> dict[str, int]:
     cards = {}
     with zipfile.ZipFile(apkg_path) as zf:
         db_path = zipfile.Path(zf, "collection.anki21")
@@ -15,10 +15,7 @@ def extract_apkg(apkg_path: Path) -> dict[str, list[int, bool]]:
         for card_type, fields in conn.execute(
             "SELECT type, flds FROM cards JOIN notes ON cards.nid = notes.id"
         ):
-            cards[fields.split("\x1f", 1)[0]] = [
-                card_type_to_difficult_level(card_type),
-                True,
-            ]
+            cards[fields.split("\x1f", 1)[0]] = card_type_to_difficult_level(card_type)
 
         conn.close()
         Path(db_path).unlink()
@@ -40,7 +37,7 @@ def card_type_to_difficult_level(card_type: int) -> int:
             return 1
 
 
-def extract_csv(csv_path: str) -> dict[str, list[int, bool]]:
+def extract_csv(csv_path: str) -> dict[str, int]:
     csv_words = {}
     with open(csv_path, newline="") as f:
         for row in csv.reader(f):
@@ -53,19 +50,19 @@ def extract_csv(csv_path: str) -> dict[str, list[int, bool]]:
             else:
                 word = row[0]
                 difficulty = 1
-            csv_words[word] = [difficulty, True]
+            csv_words[word] = difficulty
 
     return csv_words
 
 
-def query_vocabulary_builder(lang: str, db_path: str) -> dict[str, list[int, bool]]:
+def query_vocabulary_builder(lang: str, db_path: str) -> dict[str, int]:
     conn = sqlite3.connect(db_path)
     words = {}
     for stem, category, lookups in conn.execute(
         "SELECT stem, category, count(*) FROM WORDS JOIN LOOKUPS ON LOOKUPS.word_key = WORDS.id WHERE lang = ? GROUP BY stem",
         (lang,),
     ):
-        words[stem] = [lookups_to_difficulty(lookups, category), True]
+        words[stem] = lookups_to_difficulty(lookups, category)
     conn.close()
     return words
 

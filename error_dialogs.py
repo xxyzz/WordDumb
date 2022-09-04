@@ -96,7 +96,7 @@ def module_not_found_error(error, parent):
 def check_network_error(error, parent):
     CALIBRE_PROXY_FAQ = "https://manual.calibre-ebook.com/faq.html#how-do-i-get-calibre-to-use-my-http-proxy"
 
-    if "check_hostname requires server_hostname" in error:
+    if "check_hostname requires server_hostname" in error or "SSLError" in error:
         error_dialog(
             "Cyberspace is not a place beyond the rule of law",
             _(

@@ -25,7 +25,7 @@ jobs:
 
       - name: Build plugin
         run: |
-          bash -e ./build_plugin.sh
+          bash ./build_plugin.sh
           zip -r ${FILENAME} * -x@exclude.lst
 
       - name: Create Release

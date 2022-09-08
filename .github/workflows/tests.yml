@@ -80,7 +80,7 @@ jobs:
       - name: Build plugin(Unix)
         if: matrix.os != 'windows-latest'
         run: |
-          bash -e ./build_plugin.sh
+          bash ./build_plugin.sh
           zip -r worddumb-${{ github.sha }}.zip * -x@exclude.lst
 
       - name: Build plugin(Windows)

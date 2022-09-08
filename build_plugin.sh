@@ -1,4 +1,6 @@
-#!/usr/bin/env bash -e
+#!/usr/bin/env bash
+
+set -e
 
 pip_install() {
     if [[ $(uname -v) == *"Ubuntu"* && -n "$CI" ]]; then

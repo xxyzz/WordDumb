@@ -1,0 +1,615 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2022-08-27 08:51+0800\n"
+"PO-Revision-Date: 2022-09-08 08:14+0800\n"
+"Last-Translator: beecom\n"
+"Language-Team: \n"
+"Language: ko_KR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.1.1\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: config.py:82 config.py:323
+msgid "Preferred format order"
+msgstr "선호하는 형식 순서"
+
+#: config.py:86
+msgid "Customize Kindle Word Wise"
+msgstr "킨들 워드와이즈 사용자 지정"
+
+#: config.py:90
+msgid "Customize EPUB Wiktionary"
+msgstr "EPUB 위키낱말사전 사용자 정의"
+
+#: config.py:95
+msgid "Fetch X-Ray people descriptions from Wikipedia/Fandom"
+msgstr "Wikipedia/Fandom에서 X-Ray 인물 설명 가져오기"
+
+#: config.py:99
+msgid ""
+"Enable this option for nonfiction books and novels that have character pages "
+"on Wikipedia/Fandom"
+msgstr ""
+"Wikipedia/Fandom에 캐릭터 페이지가 있는 논픽션 책 및 소설에 대해 이 옵션을 활"
+"성화합니다"
+
+#: config.py:111
+msgid "<a href=\"https://spacy.io/models/en\">spaCy model</a> size"
+msgstr "<a href=\"https://spacy.io/models/en\">spaCy model</a> 크기"
+
+#: config.py:114
+msgid "Larger model improves X-Ray quality"
+msgstr "더 큰 모델은 X-Ray 품질을 향상시킵니다"
+
+#: config.py:116
+msgid "Small"
+msgstr "소"
+
+#: config.py:116
+msgid "Medium"
+msgstr "중"
+
+#: config.py:116
+msgid "Large"
+msgstr "대"
+
+#: config.py:125
+msgid "Minimal X-Ray occurrences"
+msgstr "X-Ray 최소"
+
+#: config.py:128
+msgid ""
+"X-Ray entities that appear less then this number and don't have description "
+"from Wikipedia/Fandom will be removed"
+msgstr ""
+"이 숫자보다 적게 나타나고 Wikipedia/Fandom에 설명이 없는 X-Ray 개체는 제거됩"
+"니다"
+
+#: config.py:145
+msgid "Chinese Wikipedia variant"
+msgstr "중국어 위키백과 변종"
+
+#: config.py:153
+msgid "Fandom URL"
+msgstr "Fandom URL"
+
+#: config.py:157
+msgid "Add locator map to EPUB footnotes"
+msgstr "EPUB 각주에 로케이터 맵 추가"
+
+#: config.py:159
+msgid "Enable this option if your e-reader supports image in footnotes"
+msgstr "e-reader가 각주 이미지를 지원하는 경우 이 옵션을 활성화하십시오"
+
+#: config.py:168
+msgid "Source code and document"
+msgstr "소스 코드 및 문서"
+
+#: config.py:207 config.py:224 config.py:279
+msgid "Saving customized lemmas"
+msgstr "사용자 정의 표제어 저장"
+
+#: config.py:243
+msgid "Catalan"
+msgstr "카탈로니아어"
+
+#: config.py:243
+msgid "Danish"
+msgstr "덴마크어"
+
+#: config.py:243
+msgid "German"
+msgstr "독일어"
+
+#: config.py:243
+msgid "Greek"
+msgstr "그리스어"
+
+#: config.py:243
+msgid "English"
+msgstr "영어"
+
+#: config.py:243
+msgid "Finnish"
+msgstr "핀란드어"
+
+#: config.py:243
+msgid "French"
+msgstr "프랑스어"
+
+#: config.py:243
+msgid "Serbo-Croatian"
+msgstr "세르보크로아티아어"
+
+#: config.py:243
+msgid "Italian"
+msgstr "이탈리아어"
+
+#: config.py:243
+msgid "Japanese"
+msgstr "일본어"
+
+#: config.py:243
+msgid "Korean"
+msgstr "한국어"
+
+#: config.py:243
+msgid "Lithuanian"
+msgstr "리투아니아어"
+
+#: config.py:243
+msgid "Macedonian"
+msgstr "마케도니아어"
+
+#: config.py:243
+msgid "Dutch"
+msgstr "네덜란드어"
+
+#: config.py:243
+msgid "Norwegian Bokmål"
+msgstr "노르웨이 보크몰어"
+
+#: config.py:243
+msgid "Polish"
+msgstr "폴란드어"
+
+#: config.py:243
+msgid "Portuguese"
+msgstr "포르투갈어"
+
+#: config.py:243
+msgid "Romanian"
+msgstr "루마니아어"
+
+#: config.py:243
+msgid "Russian"
+msgstr "러시아어"
+
+#: config.py:243
+msgid "Spanish"
+msgstr "스페인어"
+
+#: config.py:243
+msgid "Swedish"
+msgstr "스웨덴어"
+
+#: config.py:243
+msgid "Ukrainian"
+msgstr "우크라니아어"
+
+#: config.py:243
+msgid "Chinese"
+msgstr "중국어"
+
+#: config.py:246
+msgid "Select Wiktionary source language"
+msgstr "위키낱말사전 소스 언어 선택"
+
+#: config.py:247
+msgid "Language"
+msgstr "언어"
+
+#: config.py:266
+msgid "Downloading Wiktionary"
+msgstr "위키낱말사전 다운로드"
+
+#: config.py:339
+msgid "Choose format manually"
+msgstr "수동으로 형식 선택"
+
+#: config.py:346
+msgid "Create files for all available formats"
+msgstr "사용 가능한 모든 형식의 파일 생성"
+
+#: config.py:378
+msgid "Choose book format"
+msgstr "책 형식 선택"
+
+#: config.py:384
+msgid ""
+"This book has multiple supported formats. Choose the format you want to use."
+msgstr "이 책에은 지원되는 여러 형식이 있습니다. 사용하려는 형식을 선택합니다."
+
+#: config.py:390
+msgid "Always ask when more than one format is available"
+msgstr "둘 이상의 형식을 사용할 수 있는 경우 항상 확인"
+
+#: custom_lemmas.py:51
+msgid "Customize"
+msgstr "사용자 정의"
+
+#: custom_lemmas.py:54
+msgid "Wiktionary"
+msgstr "위키낱말사전"
+
+#: custom_lemmas.py:57
+msgid "Kindle Word Wise"
+msgstr "킨들 워드 와이즈"
+
+#: custom_lemmas.py:73
+msgid "Fewer Hints"
+msgstr "적은 힌트"
+
+#: custom_lemmas.py:73
+msgid "More Hints"
+msgstr "많은 힌트"
+
+#: custom_lemmas.py:89 custom_x_ray.py:78
+msgid "Search"
+msgstr "검색"
+
+#: custom_lemmas.py:101
+msgid "Pinyin"
+msgstr "병음"
+
+#: custom_lemmas.py:102
+msgid "Bopomofo"
+msgstr "보포모포"
+
+#: custom_lemmas.py:108
+msgid "Phonetic transcription system"
+msgstr "음성 전사 시스템"
+
+#: custom_lemmas.py:110
+msgid "International Phonetic Alphabet"
+msgstr "국제 음성 알파벳"
+
+#: custom_lemmas.py:121 custom_lemmas.py:574
+msgid "Difficulty limit"
+msgstr "난이도 제한"
+
+#: custom_lemmas.py:124
+msgid ""
+"Difficult words have lower value. Words have difficulty value higher than "
+"this value are disabled."
+msgstr ""
+"어려운 단어는 가치가 낮습니다. 이 값보다 높은 난이도 값을 가진 단어는 비활성"
+"화됩니다."
+
+#: custom_lemmas.py:145
+msgid "Import"
+msgstr "가져오기"
+
+#: custom_lemmas.py:150
+msgid "Export"
+msgstr "내보내기"
+
+#: custom_lemmas.py:175
+msgid "Select import file"
+msgstr "가져오기 파일 선택"
+
+#: custom_lemmas.py:223
+msgid "Set export file path"
+msgstr "내보내기 파일 경로 설정"
+
+#: custom_lemmas.py:413 custom_lemmas.py:491
+msgid "Enabled"
+msgstr "활성화됨"
+
+#: custom_lemmas.py:414 custom_lemmas.py:492
+msgid "Lemma"
+msgstr "표제어"
+
+#: custom_lemmas.py:416 custom_lemmas.py:493
+msgid "POS"
+msgstr "POS"
+
+#: custom_lemmas.py:417 custom_lemmas.py:495
+msgid "Definition"
+msgstr "정의"
+
+#: custom_lemmas.py:418 custom_lemmas.py:499
+msgid "Difficulty"
+msgstr "난이도"
+
+#: custom_lemmas.py:494
+msgid "Gloss"
+msgstr "어휘"
+
+#: custom_lemmas.py:497
+msgid "Forms"
+msgstr "형식"
+
+#: custom_lemmas.py:559
+msgid "Set export options"
+msgstr "내보내기 옵션 설정"
+
+#: custom_lemmas.py:565
+msgid ""
+"Export text separated by tab, can be imported to Anki.<br/> \"Allow HTML in "
+"fields\" option needs to be enabled in Anki."
+msgstr ""
+"탭으로 구분된 내보내기 텍스트는 Anki로 가져올 수 있습니다.<br/> Anki에서 \"필"
+"드에서 HTML 허용\" 옵션을 활성화해야 합니다."
+
+#: custom_lemmas.py:570
+msgid "Only export enabled lemmas"
+msgstr "활성화된 표제어만 내보내기"
+
+#: custom_lemmas.py:576
+msgid "Difficulty higher than this value will not be exported"
+msgstr "이 값보다 높은 난이도는 내보내지지 않습니다"
+
+#: custom_lemmas.py:595
+msgid "Set import options"
+msgstr "가져오기 옵션 설정"
+
+#: custom_lemmas.py:599
+msgid "Retain current enabled lemmas"
+msgstr "현재 활성화된 표제어 유지"
+
+#: custom_x_ray.py:29
+msgid "Named hurricanes, battles, wars, sports events, etc."
+msgstr "명명된 허리케인, 전투, 전쟁, 스포츠 이벤트 등"
+
+#: custom_x_ray.py:30
+msgid "Buildings, airports, highways, bridges, etc."
+msgstr "건물, 공항, 고속도로, 교량 등"
+
+#: custom_x_ray.py:31
+msgid "Countries, cities, states"
+msgstr "국가, 도시, 주"
+
+#: custom_x_ray.py:32
+msgid "Named documents made into laws"
+msgstr "법률로 만들어진 기명 문서"
+
+#: custom_x_ray.py:33
+msgid "Non-GPE locations, mountain ranges, bodies of water"
+msgstr "비 GPE 위치, 산맥, 수역"
+
+#: custom_x_ray.py:34
+msgid "Companies, agencies, institutions, etc."
+msgstr "회사, 기관, 기관 등"
+
+#: custom_x_ray.py:35
+msgid "People, including fictional"
+msgstr "가상인물을 포함한 사람들"
+
+#: custom_x_ray.py:36
+msgid "Objects, vehicles, foods, etc. (not services)"
+msgstr "물건, 차량, 식품 등(서비스 제외)"
+
+#: custom_x_ray.py:39
+msgid "Book quote"
+msgstr "책 견적"
+
+#: custom_x_ray.py:39
+msgid "Wikipedia"
+msgstr "위키피디아"
+
+#: custom_x_ray.py:45
+msgid "Customize X-Ray for {}"
+msgstr "{}에 대한 X-Ray 사용자 지정"
+
+#: custom_x_ray.py:83
+msgid "Add"
+msgstr "추가"
+
+#: custom_x_ray.py:85
+msgid "Delete"
+msgstr "삭제"
+
+#: custom_x_ray.py:136 custom_x_ray.py:235
+msgid "Name"
+msgstr "이름"
+
+#: custom_x_ray.py:137
+msgid "Named entity label"
+msgstr "명명된 엔터티 레이블"
+
+#: custom_x_ray.py:138 custom_x_ray.py:247
+msgid "Aliases"
+msgstr "별칭"
+
+#: custom_x_ray.py:139 custom_x_ray.py:250
+msgid "Description"
+msgstr "설명"
+
+#: custom_x_ray.py:140 custom_x_ray.py:258
+msgid "Description source"
+msgstr "설명 출처"
+
+#: custom_x_ray.py:141 custom_x_ray.py:261
+msgid "Omit"
+msgstr "생략"
+
+#: custom_x_ray.py:226
+msgid "Add new X-Ray data"
+msgstr "새로운 X-Ray 데이터 추가"
+
+#: custom_x_ray.py:243
+msgid "NER label"
+msgstr "NER 레이블"
+
+#: custom_x_ray.py:246
+msgid "Separate by \",\""
+msgstr "\",\"로 구분"
+
+#: custom_x_ray.py:252
+msgid "Leave this empty to use description from Wikipedia or Fandom"
+msgstr "Wikipedia 또는 Fandom의 설명을 사용하려면 비워 둡니다"
+
+#: error_dialogs.py:22
+msgid ""
+"Please read the friendly <a href='{}#how-to-use'>manual</a> of how to "
+"install Python."
+msgstr ""
+"파이썬 설치에 대한 친절한 <a href='{}#how-to-use'>매뉴얼</a> 을 읽으세요."
+
+#: error_dialogs.py:35
+msgid ""
+"Please use <a href='https://github.com/kevinhendricks/"
+"KindleUnpack'>KindleUnpack</a>'s '-s' option to split the book."
+msgstr ""
+"책을 분할하려면 <a href='https://github.com/kevinhendricks/"
+"KindleUnpack'>KindleUnpack</a> 의 '-s' 옵션을 사용하세요."
+
+#: error_dialogs.py:44
+msgid ""
+"Install <a href='https://support.microsoft.com/en-us/help/2977003/the-latest-"
+"supported-visual-c-downloads'>Visual C++ 2019 Redistributable</a>"
+msgstr ""
+" <a href='https://support.microsoft.com/en-us/help/2977003/the-latest-"
+"supported-visual-c-downloads'>Visual C++ 2019 Redistributable</a> 을 설치하세"
+"요"
+
+#: error_dialogs.py:52
+msgid "You're using 32bit Python, please install the 64bit version."
+msgstr "32비트 Python을 사용 중입니다. 64비트 버전을 설치하세요."
+
+#: error_dialogs.py:68
+msgid ""
+"<p>Please read the friendly <a href='{}#how-to-use'>manual</a> of how to "
+"install pip.</p>\n"
+"                <p>If you still have this error, make sure you installed "
+"calibre with the <a href='https://calibre-ebook.com/download_linux'> binary "
+"install command</a> but not from Flathub or Snap Store.</p>"
+msgstr ""
+"<p>pip 설치 방법에 대한 친숙한 <a href='{}#how-to-use'>매뉴얼</a>을 읽어보세"
+"요.</p>\n"
+"                 <p>이 오류가 계속 발생하면 <a href='https://calibre-ebook."
+"com/download_linux'> 바이너리 설치 명령</a>으로 calibre를 설치했지만 Flathub "
+"또는 Snap Store에서 설치하지 않았는지 확인하세요. </p>"
+
+#: error_dialogs.py:89
+msgid ""
+"Please delete the '{}*' folder from the 'worddumb-libs-py*' folder and try "
+"again."
+msgstr "'worddumb-libs-py*' 폴더에서 '{}*' 폴더를 삭제하고 다시 시도하세요."
+
+#: error_dialogs.py:103
+msgid ""
+"<p>Read <a href='{}'>calibre FAQ</a> first then check your proxy environment "
+"variables, they should be set by these commands:</p>\n"
+"                <p><code>$ export HTTP_PROXY='http://host:port'</code></p>\n"
+"                <p><code>$ export HTTPS_PROXY='http://host:port'</code></p>\n"
+"                <p>If you're allergic to terminal, close your proxy and use "
+"a VPN.</p>"
+msgstr ""
+"<p>먼저 <a href='{}'>calibre FAQ</a>를 읽고 프록시 환경 변수를 확인하세요. 다"
+"음 명령으로 설정해야 합니다.</p>\n"
+"                 <p><code>$ export HTTP_PROXY='http://host:port'</code></p>\n"
+"                 <p><code>$ export HTTPS_PROXY='http://host:port'</code></"
+"p>\n"
+"                 <p>단말기에 알레르기가 있는 경우 프록시를 닫고 VPN을 사용하"
+"세요.</p>"
+
+#: error_dialogs.py:115
+msgid ""
+"Is GitHub/Wikipedia/Fandom blocked by your ISP? You might need to bypass "
+"Internet censorship. Please read <a href='{}'>calibre FAQ</a>."
+msgstr ""
+"GitHub/Wikipedia/Fandom이 ISP에 의해 차단되었습니까? 인터넷 검열을 우회해야 "
+"할 수도 있습니다. <a href='{}'>calibre FAQ</a> 를 읽으십시오."
+
+#: error_dialogs.py:124
+msgid ""
+"An error occurred, please copy error message then report bug at <a href=\"{}/"
+"issues\">GitHub</a>."
+msgstr ""
+"오류가 발생했습니다. 오류 메시지를 복사한 다음 <a href=\"{}/issues\">GitHub</"
+"a> 에서 버그를 보고하세요."
+
+#: error_dialogs.py:139
+msgid "Unsupported language"
+msgstr "지원되지 않는 언어"
+
+#: error_dialogs.py:140
+msgid "The language of the book <i>{}</i> is not supported."
+msgstr "책 <i>{}</i> 의 언어는 지원되지 않습니다."
+
+#: error_dialogs.py:146
+msgid "Non-English book"
+msgstr "영어가 아닌 책"
+
+#: error_dialogs.py:147
+msgid ""
+"For Kindle format books, Word Wise is only available in books in English."
+msgstr "킨들 형식 책의 경우 Word Wise는 영어 책에서만 사용할 수 있습니다."
+
+#: error_dialogs.py:152
+msgid "Unsupported book format"
+msgstr "지원되지 않는 책 형식"
+
+#: error_dialogs.py:152
+msgid "The book format is not supported."
+msgstr "책 형식은 지원되지 않습니다."
+
+#: error_dialogs.py:157
+msgid "Device not found"
+msgstr "장치를 찾을 수 없음"
+
+#: error_dialogs.py:158
+msgid ""
+"Please connect your Kindle or Android(requires adb) device then try again."
+msgstr "킨들 또는 Android(adb 필요) 장치를 연결한 다음 다시 시도하십시오."
+
+#: error_dialogs.py:165
+msgid "Word Wise database not found"
+msgstr "Word Wise 데이터베이스를 찾을 수 없습니다"
+
+#: error_dialogs.py:167
+msgid ""
+"Can't find Word Wise database on your device, open a Word Wise enabled book "
+"to download this file."
+msgstr ""
+"장치에서 Word Wise 데이터베이스를 찾을 수 없습니다. Word Wise 지원 책을 열어 "
+"이 파일을 다운로드하십시오."
+
+#: error_dialogs.py:175
+msgid "Kindle doesn't support EPUB"
+msgstr "킨들은 EPUB를 지원하지 않습니다"
+
+#: error_dialogs.py:177
+msgid ""
+"Kindle doesn't support EPUB format natively, please convert the book format "
+"then try again."
+msgstr ""
+"킨ㄷ은 기본적으로 EPUB 형식을 지원하지 않습니다. 책 형식을 변환한 다음 다시 "
+"시도하십시오."
+
+#: ui.py:25
+msgid "Create Word Wise and X-Ray"
+msgstr "워드와이즈 및 X-Ray 만들기"
+
+#: ui.py:35
+msgid "Create Word Wise"
+msgstr "워드 와이즈 만들기"
+
+#: ui.py:41
+msgid "Create X-Ray"
+msgstr "X-Ray 만들기"
+
+#: ui.py:49
+msgid "Customize X-Ray"
+msgstr "X-Ray 사용자 정의"
+
+#: ui.py:56
+msgid "Preferences"
+msgstr "기본 설정"
+
+#: ui.py:65
+msgid "Donate"
+msgstr "기부"
+
+#: ui.py:112
+msgid "Word Wise"
+msgstr "워드와이즈"
+
+#: ui.py:115
+msgid " and "
+msgstr " 그리고 "
+
+#: ui.py:118
+msgid "Generating {} for {}"
+msgstr "{}에 대한 {} 생성"
+
+#: ui.py:126
+msgid "{} generated for {}"
+msgstr "{}에 대해 생성된 {}"

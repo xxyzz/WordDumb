@@ -1,0 +1,629 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2022-08-27 08:51+0800\n"
+"PO-Revision-Date: 2022-09-08 11:45-0400\n"
+"Last-Translator: <a href=\"https://www.mobileread.com/forums/member.php?"
+"u=90932\">PoP</a>\n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.1.1\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: config.py:82 config.py:323
+msgid "Preferred format order"
+msgstr "Ordre de préférence des formats"
+
+#: config.py:86
+msgid "Customize Kindle Word Wise"
+msgstr "Personaliser Kindle Word Wise"
+
+#: config.py:90
+msgid "Customize EPUB Wiktionary"
+msgstr "Personaliser EPUB Wiktionary"
+
+#: config.py:95
+msgid "Fetch X-Ray people descriptions from Wikipedia/Fandom"
+msgstr "Chercher les descriptions de personnes X-Ray depuis Wikipedia/Fandom"
+
+#: config.py:99
+msgid ""
+"Enable this option for nonfiction books and novels that have character pages "
+"on Wikipedia/Fandom"
+msgstr ""
+"Activez cette option pour les livres non-fiction et nouvelles qui ont des "
+"pages de personnage sur Wikipedia/Fandom"
+
+#: config.py:111
+msgid "<a href=\"https://spacy.io/models/en\">spaCy model</a> size"
+msgstr "<a href=\"https://spacy.io/models/en\">modèle spaCy</a> taille"
+
+#: config.py:114
+msgid "Larger model improves X-Ray quality"
+msgstr "Un modèle plus grand améliore la qualité X-Ray"
+
+#: config.py:116
+msgid "Small"
+msgstr "Petit"
+
+#: config.py:116
+msgid "Medium"
+msgstr "Moyen"
+
+#: config.py:116
+msgid "Large"
+msgstr "Grand"
+
+#: config.py:125
+msgid "Minimal X-Ray occurrences"
+msgstr "Occurrences X-Ray minimum"
+
+#: config.py:128
+msgid ""
+"X-Ray entities that appear less then this number and don't have description "
+"from Wikipedia/Fandom will be removed"
+msgstr ""
+"Les entités X-Ray qui sont en nombre inférieur à ce chiffre et qui n'ont pas "
+"de description depuis Wikipedia/Fandom seront enlevées"
+
+#: config.py:145
+msgid "Chinese Wikipedia variant"
+msgstr "Variante Wikipedia Chinoise"
+
+#: config.py:153
+msgid "Fandom URL"
+msgstr "Fandom URL"
+
+#: config.py:157
+msgid "Add locator map to EPUB footnotes"
+msgstr "Ajouter une carte de localisation aux notes de bas de page EPUB"
+
+#: config.py:159
+msgid "Enable this option if your e-reader supports image in footnotes"
+msgstr ""
+"Activez cette option si votre liseuse prends en charge les images en bas de "
+"page"
+
+#: config.py:168
+msgid "Source code and document"
+msgstr "Code source et document"
+
+#: config.py:207 config.py:224 config.py:279
+msgid "Saving customized lemmas"
+msgstr "Sauvant les lemmes personalisés"
+
+#: config.py:243
+msgid "Catalan"
+msgstr "Catalan"
+
+#: config.py:243
+msgid "Danish"
+msgstr "Danois"
+
+#: config.py:243
+msgid "German"
+msgstr "Allemand"
+
+#: config.py:243
+msgid "Greek"
+msgstr "Grec"
+
+#: config.py:243
+msgid "English"
+msgstr "Anglais"
+
+#: config.py:243
+msgid "Finnish"
+msgstr "Finlandais"
+
+#: config.py:243
+msgid "French"
+msgstr "Français"
+
+#: config.py:243
+msgid "Serbo-Croatian"
+msgstr "Serbo-Croate"
+
+#: config.py:243
+msgid "Italian"
+msgstr "Italien"
+
+#: config.py:243
+msgid "Japanese"
+msgstr "Japonais"
+
+#: config.py:243
+msgid "Korean"
+msgstr "Coréen"
+
+#: config.py:243
+msgid "Lithuanian"
+msgstr "Lituanien"
+
+#: config.py:243
+msgid "Macedonian"
+msgstr "Macédonien"
+
+#: config.py:243
+msgid "Dutch"
+msgstr "Néerlandais"
+
+#: config.py:243
+msgid "Norwegian Bokmål"
+msgstr "Norvégien Bokmål"
+
+#: config.py:243
+msgid "Polish"
+msgstr "Polonais"
+
+#: config.py:243
+msgid "Portuguese"
+msgstr "Portugais"
+
+#: config.py:243
+msgid "Romanian"
+msgstr "Roumain"
+
+#: config.py:243
+msgid "Russian"
+msgstr "Russe"
+
+#: config.py:243
+msgid "Spanish"
+msgstr "Espagnol"
+
+#: config.py:243
+msgid "Swedish"
+msgstr "Suédois"
+
+#: config.py:243
+msgid "Ukrainian"
+msgstr "Ukrainien"
+
+#: config.py:243
+msgid "Chinese"
+msgstr "Chinois"
+
+#: config.py:246
+msgid "Select Wiktionary source language"
+msgstr "Sélectionnez la langue source du Wiktionary"
+
+#: config.py:247
+msgid "Language"
+msgstr "Langue"
+
+#: config.py:266
+msgid "Downloading Wiktionary"
+msgstr "Téléchargeant le Wiktionary"
+
+#: config.py:339
+msgid "Choose format manually"
+msgstr "Choisir le format manuellement"
+
+#: config.py:346
+msgid "Create files for all available formats"
+msgstr "Créer les fichiers pour tous les formats disponibles"
+
+#: config.py:378
+msgid "Choose book format"
+msgstr "Choisir le format du livre"
+
+#: config.py:384
+msgid ""
+"This book has multiple supported formats. Choose the format you want to use."
+msgstr ""
+"Ce livre a plusieurs formats pris en charge. Choisissez le format que vous "
+"voulez utiliser."
+
+#: config.py:390
+msgid "Always ask when more than one format is available"
+msgstr "Toujours demander quand il y a plus d'un format"
+
+#: custom_lemmas.py:51
+msgid "Customize"
+msgstr "Personaliser"
+
+#: custom_lemmas.py:54
+msgid "Wiktionary"
+msgstr "Wiktionary"
+
+#: custom_lemmas.py:57
+msgid "Kindle Word Wise"
+msgstr "Word Wise Kindle"
+
+#: custom_lemmas.py:73
+msgid "Fewer Hints"
+msgstr "Moins d'indices"
+
+#: custom_lemmas.py:73
+msgid "More Hints"
+msgstr "Plus d'indices"
+
+#: custom_lemmas.py:89 custom_x_ray.py:78
+msgid "Search"
+msgstr "Chercher"
+
+#: custom_lemmas.py:101
+msgid "Pinyin"
+msgstr "Pinyin"
+
+#: custom_lemmas.py:102
+msgid "Bopomofo"
+msgstr "Bopomofo"
+
+#: custom_lemmas.py:108
+msgid "Phonetic transcription system"
+msgstr "Système de transcription phonétique"
+
+#: custom_lemmas.py:110
+msgid "International Phonetic Alphabet"
+msgstr "Alphabet Phonétique International"
+
+#: custom_lemmas.py:121 custom_lemmas.py:574
+msgid "Difficulty limit"
+msgstr "Limite de difficulté"
+
+#: custom_lemmas.py:124
+msgid ""
+"Difficult words have lower value. Words have difficulty value higher than "
+"this value are disabled."
+msgstr ""
+"Les mots plus difficiles ont une valeur inférieure. Les mots ayant une "
+"valeur de difficulté supérieure à cette valeur sont déactivés."
+
+#: custom_lemmas.py:145
+msgid "Import"
+msgstr "Importer"
+
+#: custom_lemmas.py:150
+msgid "Export"
+msgstr "Exporter"
+
+#: custom_lemmas.py:175
+msgid "Select import file"
+msgstr "S;electionner le fichier d'importation"
+
+#: custom_lemmas.py:223
+msgid "Set export file path"
+msgstr "Régler le chamin d'exportation du fichier"
+
+#: custom_lemmas.py:413 custom_lemmas.py:491
+msgid "Enabled"
+msgstr "Activé"
+
+#: custom_lemmas.py:414 custom_lemmas.py:492
+msgid "Lemma"
+msgstr "Lemme"
+
+#: custom_lemmas.py:416 custom_lemmas.py:493
+msgid "POS"
+msgstr "POS"
+
+#: custom_lemmas.py:417 custom_lemmas.py:495
+msgid "Definition"
+msgstr "Définition"
+
+#: custom_lemmas.py:418 custom_lemmas.py:499
+msgid "Difficulty"
+msgstr "Difficulté"
+
+#: custom_lemmas.py:494
+msgid "Gloss"
+msgstr "Brillance"
+
+#: custom_lemmas.py:497
+msgid "Forms"
+msgstr "Formes"
+
+#: custom_lemmas.py:559
+msgid "Set export options"
+msgstr "Régler les options d'exportation"
+
+#: custom_lemmas.py:565
+msgid ""
+"Export text separated by tab, can be imported to Anki.<br/> \"Allow HTML in "
+"fields\" option needs to be enabled in Anki."
+msgstr ""
+"Exporter du texte séparé par tabulation, peut être importé vers Anki.<br/> "
+"l'option \"Permettre les champs HTML\" doit être sélectionnée dans Anki."
+
+#: custom_lemmas.py:570
+msgid "Only export enabled lemmas"
+msgstr "Exporter seulement les lemmes en vigeur"
+
+#: custom_lemmas.py:576
+msgid "Difficulty higher than this value will not be exported"
+msgstr "Niveaux de difficulté supérieurs à cette valeur ne seront pas exportés"
+
+#: custom_lemmas.py:595
+msgid "Set import options"
+msgstr "Regler les options d'importation"
+
+#: custom_lemmas.py:599
+msgid "Retain current enabled lemmas"
+msgstr "Garder les lemmes actuellement en vigeur"
+
+#: custom_x_ray.py:29
+msgid "Named hurricanes, battles, wars, sports events, etc."
+msgstr "Noms d'ouragans, batailles, guerres, sports, évènements, etc."
+
+#: custom_x_ray.py:30
+msgid "Buildings, airports, highways, bridges, etc."
+msgstr "Immeubles, aéroports, ponts, etc."
+
+#: custom_x_ray.py:31
+msgid "Countries, cities, states"
+msgstr "Pays, villes, états"
+
+#: custom_x_ray.py:32
+msgid "Named documents made into laws"
+msgstr "Documents nommés devenus lois"
+
+#: custom_x_ray.py:33
+msgid "Non-GPE locations, mountain ranges, bodies of water"
+msgstr "Emplacements non-GPE, chaînes de montagnes, étendues d'eau"
+
+#: custom_x_ray.py:34
+msgid "Companies, agencies, institutions, etc."
+msgstr "Compagnies, agences, institutions, etc."
+
+#: custom_x_ray.py:35
+msgid "People, including fictional"
+msgstr "Personnes, incluant fictives"
+
+#: custom_x_ray.py:36
+msgid "Objects, vehicles, foods, etc. (not services)"
+msgstr "Objets, véhicules, aliments, etc. (pas prestation de service)"
+
+#: custom_x_ray.py:39
+msgid "Book quote"
+msgstr "Citation du livre"
+
+#: custom_x_ray.py:39
+msgid "Wikipedia"
+msgstr "Wikipedia"
+
+#: custom_x_ray.py:45
+msgid "Customize X-Ray for {}"
+msgstr "Personaliser X-Ray pour {}"
+
+#: custom_x_ray.py:83
+msgid "Add"
+msgstr "Ajouter"
+
+#: custom_x_ray.py:85
+msgid "Delete"
+msgstr "Supprimer"
+
+#: custom_x_ray.py:136 custom_x_ray.py:235
+msgid "Name"
+msgstr "Nom"
+
+#: custom_x_ray.py:137
+msgid "Named entity label"
+msgstr "Étiquette de l'entité Nom"
+
+#: custom_x_ray.py:138 custom_x_ray.py:247
+msgid "Aliases"
+msgstr "Pseudonymes"
+
+#: custom_x_ray.py:139 custom_x_ray.py:250
+msgid "Description"
+msgstr "Description"
+
+#: custom_x_ray.py:140 custom_x_ray.py:258
+msgid "Description source"
+msgstr "Source de la description"
+
+#: custom_x_ray.py:141 custom_x_ray.py:261
+msgid "Omit"
+msgstr "Omettre"
+
+#: custom_x_ray.py:226
+msgid "Add new X-Ray data"
+msgstr "Ajouter nouvelles données X-Ray"
+
+#: custom_x_ray.py:243
+msgid "NER label"
+msgstr "Étiquette NER"
+
+#: custom_x_ray.py:246
+msgid "Separate by \",\""
+msgstr "Séparé par \",\""
+
+#: custom_x_ray.py:252
+msgid "Leave this empty to use description from Wikipedia or Fandom"
+msgstr ""
+"Garder cette entrée vide pour utiliser la description depuis Wikipedia ou "
+"Fandom"
+
+#: error_dialogs.py:22
+msgid ""
+"Please read the friendly <a href='{}#how-to-use'>manual</a> of how to "
+"install Python."
+msgstr ""
+"Veuillez lire <a href='{}#how-to-use'>manuel</a> sur l'installation de "
+"Python."
+
+#: error_dialogs.py:35
+msgid ""
+"Please use <a href='https://github.com/kevinhendricks/"
+"KindleUnpack'>KindleUnpack</a>'s '-s' option to split the book."
+msgstr ""
+"Veuillez utiliser l'option s '-s' de <a href='https://github.com/"
+"kevinhendricks/KindleUnpack'>KindleUnpack</a>pour fragmenter le livre."
+
+#: error_dialogs.py:44
+msgid ""
+"Install <a href='https://support.microsoft.com/en-us/help/2977003/the-latest-"
+"supported-visual-c-downloads'>Visual C++ 2019 Redistributable</a>"
+msgstr ""
+"Installer <a href='https://support.microsoft.com/en-us/help/2977003/the-"
+"latest-supported-visual-c-downloads'>Visual C++ 2019 Redistributable</a>"
+
+#: error_dialogs.py:52
+msgid "You're using 32bit Python, please install the 64bit version."
+msgstr "Vous utilisez Python 32bits, veuillez installer La version 64bits."
+
+#: error_dialogs.py:68
+msgid ""
+"<p>Please read the friendly <a href='{}#how-to-use'>manual</a> of how to "
+"install pip.</p>\n"
+"                <p>If you still have this error, make sure you installed "
+"calibre with the <a href='https://calibre-ebook.com/download_linux'> binary "
+"install command</a> but not from Flathub or Snap Store.</p>"
+msgstr ""
+"<p>Veuillez lire  <a href='{}#how-to-use'>manual</a> sur l'installation de "
+"pip.</p>\n"
+"                <p>si vous avez toujours cette erreur, assurez-vous "
+"d'nstaller calibre depuis la commande d'installation<a href='https://calibre-"
+"ebook.com/download_linux'> binaire</a>, pas depuis Flathub ou Snap Store.</p>"
+
+#: error_dialogs.py:89
+msgid ""
+"Please delete the '{}*' folder from the 'worddumb-libs-py*' folder and try "
+"again."
+msgstr ""
+"Veuillez effacer le dossier '{}*' du dossier 'worddumb-libs-py*' et essayez "
+"à nouveau."
+
+#: error_dialogs.py:103
+msgid ""
+"<p>Read <a href='{}'>calibre FAQ</a> first then check your proxy environment "
+"variables, they should be set by these commands:</p>\n"
+"                <p><code>$ export HTTP_PROXY='http://host:port'</code></p>\n"
+"                <p><code>$ export HTTPS_PROXY='http://host:port'</code></p>\n"
+"                <p>If you're allergic to terminal, close your proxy and use "
+"a VPN.</p>"
+msgstr ""
+"<p>Lisez <a href='{}'>calibre FAQ</a> d'abord, puis vérifiez les variables "
+"d'environnement de votre procurateur, elles devraient être initialisés par "
+"ces commandes:</p>\n"
+"                <p><code>$ export HTTP_PROXY='http://host:port'</code></p>\n"
+"                <p><code>$ export HTTPS_PROXY='http://host:port'</code></p>\n"
+"                <p>si vous êtes rebutés par le terminal, fermez votre "
+"procurateur et utilisez un VPN.</p>"
+
+#: error_dialogs.py:115
+msgid ""
+"Is GitHub/Wikipedia/Fandom blocked by your ISP? You might need to bypass "
+"Internet censorship. Please read <a href='{}'>calibre FAQ</a>."
+msgstr ""
+"GitHub/Wikipedia/Fandom sont-ils bloqués par votre ISP? Vous pourriez avoir "
+"besoin de contourner la censure Internet. Veuillez lire <a href='{}'>calibre "
+"FAQ</a>."
+
+#: error_dialogs.py:124
+msgid ""
+"An error occurred, please copy error message then report bug at <a href=\"{}/"
+"issues\">GitHub</a>."
+msgstr ""
+"Une erreur s'est produite, veuillez copier le message d'erreur et rapportez "
+"le problème à <a href=\"{}/issues\">GitHub</a>."
+
+#: error_dialogs.py:139
+msgid "Unsupported language"
+msgstr "Langue non prise en charge"
+
+#: error_dialogs.py:140
+msgid "The language of the book <i>{}</i> is not supported."
+msgstr "Langue du livre <i>{}</i> n'est pas prise en charge."
+
+#: error_dialogs.py:146
+msgid "Non-English book"
+msgstr "Livre non-Anglais"
+
+#: error_dialogs.py:147
+msgid ""
+"For Kindle format books, Word Wise is only available in books in English."
+msgstr ""
+"Pour les formats de livres sur Kindle. Word Wise n'est disponible que pour "
+"les livres en Anglais."
+
+#: error_dialogs.py:152
+msgid "Unsupported book format"
+msgstr "Format de livre non pris en charge"
+
+#: error_dialogs.py:152
+msgid "The book format is not supported."
+msgstr "Ce format de livre n'est pas pris en charge."
+
+#: error_dialogs.py:157
+msgid "Device not found"
+msgstr "Appareil introuvable"
+
+#: error_dialogs.py:158
+msgid ""
+"Please connect your Kindle or Android(requires adb) device then try again."
+msgstr ""
+"Veuillez connecter votre appareil Kindle ou Android(requiert adb) et essayez "
+"à nouveau."
+
+#: error_dialogs.py:165
+msgid "Word Wise database not found"
+msgstr "Base de données Word Wise introuvable"
+
+#: error_dialogs.py:167
+msgid ""
+"Can't find Word Wise database on your device, open a Word Wise enabled book "
+"to download this file."
+msgstr ""
+"Base de données Word Wise introuvable sur votre appareil, ouvrez un livre "
+"prenant en charge Word Wise pour télécharger ce fichier."
+
+#: error_dialogs.py:175
+msgid "Kindle doesn't support EPUB"
+msgstr "Le Kindle ne prends pas en charge le format EPUB"
+
+#: error_dialogs.py:177
+msgid ""
+"Kindle doesn't support EPUB format natively, please convert the book format "
+"then try again."
+msgstr ""
+"Le Kindle ne prends pas en charge le format EPUB nativement, veuillez "
+"convertir le format du livre ae essayez à nouveau."
+
+#: ui.py:25
+msgid "Create Word Wise and X-Ray"
+msgstr "Créer Word Wise et X-Ray"
+
+#: ui.py:35
+msgid "Create Word Wise"
+msgstr "Créer Word Wise"
+
+#: ui.py:41
+msgid "Create X-Ray"
+msgstr "Créer X-Ray"
+
+#: ui.py:49
+msgid "Customize X-Ray"
+msgstr "Personaliser X-Ray"
+
+#: ui.py:56
+msgid "Preferences"
+msgstr "Paramètres"
+
+#: ui.py:65
+msgid "Donate"
+msgstr "Donner"
+
+#: ui.py:112
+msgid "Word Wise"
+msgstr "Word Wise"
+
+#: ui.py:115
+msgid " and "
+msgstr " et "
+
+#: ui.py:118
+msgid "Generating {} for {}"
+msgstr "Générant {} pour {}"
+
+#: ui.py:126
+msgid "{} generated for {}"
+msgstr "{} généré pour {}"

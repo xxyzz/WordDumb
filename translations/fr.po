@@ -86,7 +86,7 @@ msgstr "Ajouter une carte de localisation aux notes de bas de page EPUB"
 #: config.py:159
 msgid "Enable this option if your e-reader supports image in footnotes"
 msgstr ""
-"Activez cette option si votre liseuse prends en charge les images en bas de "
+"Activez cette option si votre liseuse prend en charge les images en bas de "
 "page"
 
 #: config.py:168
@@ -578,14 +578,14 @@ msgstr ""
 
 #: error_dialogs.py:175
 msgid "Kindle doesn't support EPUB"
-msgstr "Le Kindle ne prends pas en charge le format EPUB"
+msgstr "Le Kindle ne prend pas en charge le format EPUB"
 
 #: error_dialogs.py:177
 msgid ""
 "Kindle doesn't support EPUB format natively, please convert the book format "
 "then try again."
 msgstr ""
-"Le Kindle ne prends pas en charge le format EPUB nativement, veuillez "
+"Le Kindle ne prend pas en charge le format EPUB nativement, veuillez "
 "convertir le format du livre ae essayez à nouveau."
 
 #: ui.py:25

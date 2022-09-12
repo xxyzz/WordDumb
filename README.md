@@ -59,7 +59,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   ```
   $ brew install python
 
-  // or install Command Line Tools
+  // or install Command Line Tools, not recommended
   $ xcode-select --install
   ```
 

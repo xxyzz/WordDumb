@@ -5,7 +5,7 @@
   },
   "lemminflect": {
     "lemminflect": "0.2.2",
-    "numpy": "1.23.2"
+    "numpy": "1.23.3"
   },
   "mac_arm": {
     "thinc-apple-ops": "0.1.0"
@@ -14,7 +14,7 @@
     "lxml": "4.9.1"
    },
   "wiktionary": {
-    "certifi": "2022.6.15",
+    "certifi": "2022.6.15.1",
     "charset-normalizer": "2.1.1",
     "idna": "3.3",
     "requests": "2.28.1",

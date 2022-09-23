@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-08-27 08:51+0800\n"
-"PO-Revision-Date: 2022-08-27 08:52+0800\n"
+"POT-Creation-Date: 2022-09-23 13:02+0800\n"
+"PO-Revision-Date: 2022-09-23 13:07+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh\n"
@@ -14,11 +14,11 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: config.py:82 config.py:323
+#: config.py:82 config.py:319
 msgid "Preferred format order"
 msgstr "首選格式順序"
 
-#: config.py:86
+#: config.py:86 custom_lemmas.py:54
 msgid "Customize Kindle Word Wise"
 msgstr "自定義 Kindle 生詞提示"
 
@@ -86,7 +86,7 @@ msgstr "如果您的電子閱讀器支持腳註中的圖像，請啟用此選項
 msgid "Source code and document"
 msgstr "原始碼和文檔"
 
-#: config.py:207 config.py:224 config.py:279
+#: config.py:207 config.py:224 config.py:275
 msgid "Saving customized lemmas"
 msgstr "正在保存自定義词条"
 
@@ -182,138 +182,138 @@ msgstr "烏克蘭語"
 msgid "Chinese"
 msgstr "漢語"
 
-#: config.py:246
-msgid "Select Wiktionary source language"
-msgstr "選擇維基詞典源語言"
-
-#: config.py:247
-msgid "Language"
-msgstr "語言"
-
-#: config.py:266
+#: config.py:262
 msgid "Downloading Wiktionary"
 msgstr "正在下載維基詞典"
 
-#: config.py:339
+#: config.py:335
 msgid "Choose format manually"
 msgstr "手動選擇格式"
 
-#: config.py:346
+#: config.py:342
 msgid "Create files for all available formats"
 msgstr "為所有可用格式創建文件"
 
-#: config.py:378
+#: config.py:374
 msgid "Choose book format"
 msgstr "選擇書籍格式"
 
-#: config.py:384
+#: config.py:380
 msgid ""
 "This book has multiple supported formats. Choose the format you want to use."
 msgstr "這本書有多種支持的格式。 選擇您要使用的格式。"
 
-#: config.py:390
+#: config.py:386
 msgid "Always ask when more than one format is available"
 msgstr "有多種可用格式時總是詢問"
 
-#: custom_lemmas.py:51
-msgid "Customize"
-msgstr "定制"
+#: config.py:409
+msgid "Choose Wiktionary language"
+msgstr "選擇維基詞典語言"
 
-#: custom_lemmas.py:54
-msgid "Wiktionary"
-msgstr "維基詞典"
+#: config.py:420
+msgid "Simplified Chinese"
+msgstr "簡體中文"
 
-#: custom_lemmas.py:57
-msgid "Kindle Word Wise"
-msgstr "Kindle 生詞提示"
+#: config.py:425
+msgid "Lemma language"
+msgstr "詞條語言"
 
-#: custom_lemmas.py:73
+#: config.py:431
+msgid "Gloss language"
+msgstr "釋義語言"
+
+#: custom_lemmas.py:52
+msgid "Customize Wiktionary"
+msgstr "自定義維基詞典"
+
+#: custom_lemmas.py:70
 msgid "Fewer Hints"
 msgstr "更少提示"
 
-#: custom_lemmas.py:73
+#: custom_lemmas.py:70
 msgid "More Hints"
 msgstr "更多提示"
 
-#: custom_lemmas.py:89 custom_x_ray.py:78
+#: custom_lemmas.py:86 custom_x_ray.py:78
 msgid "Search"
 msgstr "搜索"
 
-#: custom_lemmas.py:101
+#: custom_lemmas.py:98
 msgid "Pinyin"
 msgstr "漢語拼音"
 
-#: custom_lemmas.py:102
+#: custom_lemmas.py:99
 msgid "Bopomofo"
 msgstr "注音符號"
 
-#: custom_lemmas.py:108
+#: custom_lemmas.py:105
 msgid "Phonetic transcription system"
 msgstr "音標系統"
 
-#: custom_lemmas.py:110
+#: custom_lemmas.py:107
 msgid "International Phonetic Alphabet"
 msgstr "國際音標"
 
-#: custom_lemmas.py:121 custom_lemmas.py:574
+#: custom_lemmas.py:118 custom_lemmas.py:572
 msgid "Difficulty limit"
 msgstr "難度限制"
 
-#: custom_lemmas.py:124
+#: custom_lemmas.py:121
 msgid ""
 "Difficult words have lower value. Words have difficulty value higher than "
 "this value are disabled."
 msgstr "難詞的數值較低。難度值高於此值的單詞將被禁用。"
 
-#: custom_lemmas.py:145
+#: custom_lemmas.py:142
 msgid "Import"
 msgstr "導入"
 
-#: custom_lemmas.py:150
+#: custom_lemmas.py:147
 msgid "Export"
 msgstr "導出"
 
-#: custom_lemmas.py:175
+#: custom_lemmas.py:172
 msgid "Select import file"
 msgstr "選擇導入文件"
 
-#: custom_lemmas.py:223
+#: custom_lemmas.py:220
 msgid "Set export file path"
 msgstr "設置導出文件路徑"
 
-#: custom_lemmas.py:413 custom_lemmas.py:491
+#: custom_lemmas.py:411 custom_lemmas.py:489
 msgid "Enabled"
 msgstr "啟用"
 
-#: custom_lemmas.py:414 custom_lemmas.py:492
+#: custom_lemmas.py:412 custom_lemmas.py:490
 msgid "Lemma"
 msgstr "詞條"
 
-#: custom_lemmas.py:416 custom_lemmas.py:493
+#: custom_lemmas.py:414 custom_lemmas.py:491
 msgid "POS"
 msgstr "詞類"
 
-#: custom_lemmas.py:417 custom_lemmas.py:495
+#: custom_lemmas.py:415 custom_lemmas.py:493
 msgid "Definition"
 msgstr "定義"
 
-#: custom_lemmas.py:418 custom_lemmas.py:499
+#: custom_lemmas.py:416 custom_lemmas.py:497
 msgid "Difficulty"
 msgstr "難度等級"
 
-#: custom_lemmas.py:494
+#: custom_lemmas.py:492
 msgid "Gloss"
 msgstr "注釋"
 
-#: custom_lemmas.py:497
+#: custom_lemmas.py:495
 msgid "Forms"
 msgstr "形式"
 
-#: custom_lemmas.py:559
+#: custom_lemmas.py:557
 msgid "Set export options"
 msgstr "設置導出選項"
 
-#: custom_lemmas.py:565
+#: custom_lemmas.py:563
 msgid ""
 "Export text separated by tab, can be imported to Anki.<br/> \"Allow HTML in "
 "fields\" option needs to be enabled in Anki."
@@ -321,19 +321,19 @@ msgstr ""
 "導出以製表符分隔的文本，可以導入到 Anki。<br/> 需要在 Anki 中啟用“允許字段中"
 "的 HTML”選項。"
 
-#: custom_lemmas.py:570
+#: custom_lemmas.py:568
 msgid "Only export enabled lemmas"
 msgstr "僅導出啟用的词条"
 
-#: custom_lemmas.py:576
+#: custom_lemmas.py:574
 msgid "Difficulty higher than this value will not be exported"
 msgstr "難度高於此值将不會導出"
 
-#: custom_lemmas.py:595
+#: custom_lemmas.py:593
 msgid "Set import options"
 msgstr "設置導入選項"
 
-#: custom_lemmas.py:599
+#: custom_lemmas.py:597
 msgid "Retain current enabled lemmas"
 msgstr "保留當前啟用的词条"
 

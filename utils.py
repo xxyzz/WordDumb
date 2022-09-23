@@ -10,7 +10,7 @@ import zipfile
 from pathlib import Path
 
 CJK_LANGS = ["zh", "ja", "ko"]
-PROFICIENCY_VERSION = "0.1.0"
+PROFICIENCY_VERSION = "0.2.0"
 PROFICIENCY_MAJOR_VERSION = "0"
 
 
@@ -80,12 +80,12 @@ def insert_plugin_libs(plugin_path):
     insert_lib_path(str(plugin_path.joinpath("libs")))
 
 
-def load_lemmas_dump(plugin_path, lang=None):
+def load_lemmas_dump(plugin_path, lemma_lang, gloss_lang):
     insert_plugin_libs(plugin_path)
     custom_kindle_dump = custom_kindle_dump_path(plugin_path)
-    if lang:
-        file_path = wiktionary_dump_path(plugin_path, lang)
-        if lang in CJK_LANGS:
+    if lemma_lang:
+        file_path = wiktionary_dump_path(plugin_path, lemma_lang, gloss_lang)
+        if lemma_lang in CJK_LANGS:
             insert_installed_libs(plugin_path)
             import ahocorasick
 
@@ -114,15 +114,15 @@ def custom_kindle_dump_path(plugin_path):
     )
 
 
-def wiktionary_dump_path(plugin_path, lang):
+def wiktionary_dump_path(plugin_path, lemma_lang, gloss_lang):
     return custom_lemmas_folder(plugin_path).joinpath(
-        f"{lang}/wiktionary_{lang}_dump_v{PROFICIENCY_MAJOR_VERSION}"
+        f"{lemma_lang}/wiktionary_{lemma_lang}_{gloss_lang}_dump_v{PROFICIENCY_MAJOR_VERSION}"
     )
 
 
-def wiktionary_json_path(plugin_path, lang):
+def wiktionary_json_path(plugin_path, lemma_lang, gloss_lang):
     return custom_lemmas_folder(plugin_path).joinpath(
-        f"{lang}/wiktionary_{lang}_v{PROFICIENCY_MAJOR_VERSION}.json"
+        f"{lemma_lang}/wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.json"
     )
 
 
@@ -165,10 +165,10 @@ def get_user_agent():
     return f"WordDumb/{'.'.join(map(str, VERSION))} ({GITHUB_URL})"
 
 
-def get_lemmas_tst_path(plugin_path: Path, lang: str) -> Path:
-    if lang:
+def get_lemmas_tst_path(plugin_path: Path, lemma_lang: str, gloss_lemma: str) -> Path:
+    if lemma_lang:
         return custom_lemmas_folder(plugin_path).joinpath(
-            f"{lang}/wiktionary_{lang}_tst_v{PROFICIENCY_MAJOR_VERSION}"
+            f"{lemma_lang}/wiktionary_{lemma_lang}_{gloss_lemma}_tst_v{PROFICIENCY_MAJOR_VERSION}"
         )
     else:
         return custom_lemmas_folder(plugin_path).joinpath(

@@ -17,7 +17,6 @@ from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFormLayout,
-    QInputDialog,
     QLabel,
     QLineEdit,
     QListWidget,
@@ -65,6 +64,7 @@ prefs.defaults["minimal_x_ray_count"] = 1
 prefs.defaults["en_ipa"] = "US"
 prefs.defaults["zh_ipa"] = "Pinyin"
 prefs.defaults["choose_format_manually"] = True
+prefs.defaults["wiktionary_gloss_lang"] = "en"
 for data in load_json_or_pickle(get_plugin_path(), "data/languages.json").values():
     prefs.defaults[f"{data['wiki']}_wiktionary_difficulty_limit"] = 5
 
@@ -239,25 +239,21 @@ class ConfigWidget(QWidget):
             format_order_dialog.save()
 
     def open_wiktionary_dialog(self):
-        language_dict = load_json_or_pickle(self.plugin_path, "data/languages.json")
-        languages = {_(val["kaikki"]): val["wiki"] for val in language_dict.values()}
-        lang_name, ok = QInputDialog.getItem(
-            self,
-            _("Select Wiktionary source language"),
-            _("Language"),
-            languages.keys(),
-            editable=False,
-        )
-        if not ok:
-            return
-        wiki_lang = languages[lang_name]
-        wiktionary_path = wiktionary_json_path(self.plugin_path, wiki_lang)
-        if wiktionary_path.exists():
-            custom_lemmas_dlg = CustomLemmasDialog(self, wiki_lang, lang_name)
-            if custom_lemmas_dlg.exec():
-                self.run_dump_wiktionary_job(wiki_lang, custom_lemmas_dlg.lemmas_model)
+        choose_lang_dlg = WiktionaryLangDialog(self)
+        if choose_lang_dlg.exec():
+            lemma_lang = choose_lang_dlg.lemma_lang.currentData()
+            gloss_lang = choose_lang_dlg.gloss_lang.currentData()
+            prefs["wiktionary_gloss_lang"] = gloss_lang
         else:
-            self.run_download_wiktionary_job(wiki_lang)
+            return
+
+        wiktionary_path = wiktionary_json_path(self.plugin_path, lemma_lang, gloss_lang)
+        if wiktionary_path.exists():
+            custom_lemmas_dlg = CustomLemmasDialog(self, lemma_lang)
+            if custom_lemmas_dlg.exec():
+                self.run_dump_wiktionary_job(lemma_lang, custom_lemmas_dlg.lemmas_model)
+        else:
+            self.run_download_wiktionary_job(lemma_lang)
 
     def run_download_wiktionary_job(self, lang):
         gui = self.parent().parent()
@@ -265,20 +261,20 @@ class ConfigWidget(QWidget):
             "WordDumb's dumb job",
             _("Downloading Wiktionary"),
             download_wiktionary,
-            (lang,),
+            (lang, prefs["wiktionary_gloss_lang"]),
             {},
             Dispatcher(partial(job_failed, parent=gui)),
             killable=False,
         )
         gui.job_manager.run_threaded_job(job)
 
-    def run_dump_wiktionary_job(self, lang, table_model):
+    def run_dump_wiktionary_job(self, lemma_lang, table_model):
         gui = self.parent().parent()
         job = ThreadedJob(
-            "WordDumb's dumb job",
+            "WordDumb's dumb dump job",
             _("Saving customized lemmas"),
             self.dump_wiktionary_job,
-            (lang, table_model),
+            (lemma_lang, table_model),
             {},
             Dispatcher(partial(job_failed, parent=gui)),
             killable=False,
@@ -286,15 +282,19 @@ class ConfigWidget(QWidget):
         gui.job_manager.run_threaded_job(job)
 
     def dump_wiktionary_job(
-        self, lang, table_model, abort=None, log=None, notifications=None
+        self, lemma_lang, table_model, abort=None, log=None, notifications=None
     ):
         if table_model:
             table_model.save_json_file()
         insert_plugin_libs(self.plugin_path)
         insert_installed_libs(self.plugin_path)
-        json_path = wiktionary_json_path(self.plugin_path, lang)
-        dump_path = wiktionary_dump_path(self.plugin_path, lang)
-        if ismacos and lang in CJK_LANGS:
+        json_path = wiktionary_json_path(
+            self.plugin_path, lemma_lang, prefs["wiktionary_gloss_lang"]
+        )
+        dump_path = wiktionary_dump_path(
+            self.plugin_path, lemma_lang, prefs["wiktionary_gloss_lang"]
+        )
+        if ismacos and lemma_lang in CJK_LANGS:
             args = [
                 mac_python(),
                 str(self.plugin_path),
@@ -303,7 +303,8 @@ class ConfigWidget(QWidget):
                 "",
                 "",
                 "",
-                lang,
+                lemma_lang,
+                prefs["wiktionary_gloss_lang"],
             ]
             args.extend([""] * 6)
             args.extend(
@@ -314,7 +315,7 @@ class ConfigWidget(QWidget):
             )
             run_subprocess(args)
         else:
-            dump_wiktionary(json_path, dump_path, lang)
+            dump_wiktionary(json_path, dump_path, lemma_lang)
 
 
 class FormatOrderDialog(QDialog):
@@ -405,3 +406,53 @@ class ChooseFormatDialog(QDialog):
         if not self.choose_format_manually.isChecked():
             prefs["choose_format_manually"] = False
         self.accept()
+
+
+class WiktionaryLangDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(_("Choose Wiktionary language"))
+
+        form_layout = QFormLayout()
+        form_layout.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
+
+        language_dict = load_json_or_pickle(get_plugin_path(), "data/languages.json")
+        lemma_languages = {
+            _(val["kaikki"]): val["wiki"] for val in language_dict.values()
+        }
+        gloss_languages = {
+            _(val["kaikki"]): val["wiki"]
+            for val in language_dict.values()
+            if val["gloss"]
+        }
+        gloss_codes = {
+            (val["wiki"]): _(val["kaikki"])
+            for val in language_dict.values()
+            if val["gloss"]
+        }
+        gloss_languages[_("Simplified Chinese")] = "zh_cn"
+        gloss_codes["zh_cn"] = _("Simplified Chinese")
+
+        self.lemma_lang = QComboBox()
+        for text, val in lemma_languages.items():
+            self.lemma_lang.addItem(text, val)
+        form_layout.addRow(_("Lemma language"), self.lemma_lang)
+
+        self.gloss_lang = QComboBox()
+        for text, val in gloss_languages.items():
+            self.gloss_lang.addItem(text, val)
+        self.gloss_lang.setCurrentText(gloss_codes[prefs["wiktionary_gloss_lang"]])
+        form_layout.addRow(_("Gloss language"), self.gloss_lang)
+
+        confirm_button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        confirm_button_box.accepted.connect(self.accept)
+        confirm_button_box.rejected.connect(self.reject)
+
+        vl = QVBoxLayout()
+        vl.addLayout(form_layout)
+        vl.addWidget(confirm_button_box)
+        self.setLayout(vl)

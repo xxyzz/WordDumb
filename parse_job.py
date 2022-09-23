@@ -78,8 +78,17 @@ def do_job(
         new_epub_path = book_path.with_stem(new_file_stem)
         create_x = create_x and not new_epub_path.exists()
         create_ww = create_ww and not new_epub_path.exists()
-        if create_ww and not wiktionary_dump_path(plugin_path, lang["wiki"]).exists():
-            download_wiktionary(lang["wiki"], notifications=notifications)
+        if (
+            create_ww
+            and not wiktionary_dump_path(
+                plugin_path, lang["wiki"], prefs["wiktionary_gloss_lang"]
+            ).exists()
+        ):
+            download_wiktionary(
+                lang["wiki"],
+                prefs["wiktionary_gloss_lang"],
+                notifications=notifications,
+            )
     else:
         create_ww = create_ww and not get_ll_path(asin, book_path).exists()
         create_x = create_x and not get_x_ray_path(asin, book_path).exists()
@@ -115,6 +124,7 @@ def do_job(
             revision,
             model,
             lang["wiki"],
+            prefs["wiktionary_gloss_lang"],
             mobi_codec,
             useragent,
             prefs["zh_wiki_variant"],
@@ -192,7 +202,9 @@ def create_files(
         plugin_path = Path(plugin_path)
     kw_processor = None
     if create_ww:
-        kw_processor = load_lemmas_dump(plugin_path, wiki_lang if is_epub else None)
+        kw_processor = load_lemmas_dump(
+            plugin_path, wiki_lang if is_epub else None, prefs["wiktionary_gloss_lang"]
+        )
 
     if create_x:
         insert_installed_libs(plugin_path)

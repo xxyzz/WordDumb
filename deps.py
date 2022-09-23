@@ -153,16 +153,18 @@ def install_wiktionary_deps(dep_type, notif):
         pip_install_pkgs(data["wiktionary_cjk"], notif)
 
 
-def download_wiktionary(lang: str, abort=None, log=None, notifications=None) -> None:
+def download_wiktionary(
+    lemma_lang: str, gloss_lang: str, abort=None, log=None, notifications=None
+) -> None:
     install_deps(
-        "wiktionary_cjk" if lang in CJK_LANGS else "wiktionary",
+        "wiktionary_cjk" if lemma_lang in CJK_LANGS else "wiktionary",
         None,
         notifications,
     )
     insert_installed_libs(get_plugin_path())
     import requests
 
-    filename = f"wiktionary_{lang}_v{PROFICIENCY_VERSION}.tar.gz"
+    filename = f"wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.tar.gz"
     url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/{filename}"
     extract_folder = custom_lemmas_folder(PLUGINS_PATH)
     if not extract_folder.exists():
@@ -181,7 +183,7 @@ def download_wiktionary(lang: str, abort=None, log=None, notifications=None) -> 
                 notifications.put(
                     (
                         chunk_count / total_chunks,
-                        f"Downloading {lang} Wiktionary file",
+                        f"Downloading {lemma_lang}_{gloss_lang} Wiktionary file",
                     )
                 )
 

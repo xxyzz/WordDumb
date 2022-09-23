@@ -26,6 +26,7 @@ parser.add_argument("acr")
 parser.add_argument("revision")
 parser.add_argument("model")
 parser.add_argument("wiki_lang")
+parser.add_argument("gloss_lang")
 parser.add_argument("mobi_codec")
 parser.add_argument("useragent")
 parser.add_argument("zh_wiki")
@@ -72,6 +73,7 @@ else:
             "fandom": args.fandom,
             "add_locator_map": args.m,
             "minimal_x_ray_count": int(args.minimal_x_ray_count),
+            "wiktionary_gloss_lang": args.gloss_lang,
         },
         None,
     )

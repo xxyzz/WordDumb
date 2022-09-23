@@ -45,16 +45,13 @@ load_translations()
 
 
 class CustomLemmasDialog(QDialog):
-    def __init__(self, parent, lang=None, lang_name=None):
+    def __init__(self, parent, lang=None):
         super().__init__(parent)
         self.lang = lang
-        window_title = _("Customize")
         if lang:
-            window_title += f" {lang_name} "
-            window_title += _("Wiktionary")
+            window_title = _("Customize Wiktionary")
         else:
-            window_title += " "
-            window_title += _("Kindle Word Wise")
+            window_title = _("Customize Kindle Word Wise")
         self.setWindowTitle(window_title)
         vl = QVBoxLayout()
         self.setLayout(vl)
@@ -363,7 +360,7 @@ class KindleLemmasTableModel(LemmasTableModel):
         for pos_type_id, pos_type_lable in klld_conn.execute("SELECT * FROM pos_types"):
             self.pos_types[pos_type_id] = pos_type_lable
 
-        lemmas_tst_path = get_lemmas_tst_path(plugin_path, None)
+        lemmas_tst_path = get_lemmas_tst_path(plugin_path, None, None)
         if lemmas_tst_path.exists():
             self.lemmas_tst = load_json_or_pickle(None, lemmas_tst_path)
         else:
@@ -486,6 +483,8 @@ class ComboBoxDelegate(QStyledItemDelegate):
 
 class WiktionaryTableModel(LemmasTableModel):
     def __init__(self, lang):
+        from .config import prefs
+
         super().__init__()
         self.lang = lang
         self.headers = [
@@ -502,11 +501,13 @@ class WiktionaryTableModel(LemmasTableModel):
         self.editable_columns = [3, 4, 8]
         self.tooltip_columns = [4]
         plugin_path = get_plugin_path()
-        self.json_path = wiktionary_json_path(plugin_path, lang)
+        self.json_path = wiktionary_json_path(
+            plugin_path, lang, prefs["wiktionary_gloss_lang"]
+        )
         with open(self.json_path, encoding="utf-8") as f:
             self.lemmas = json.load(f)
         self.lemmas_tst = load_json_or_pickle(
-            None, get_lemmas_tst_path(plugin_path, lang)
+            None, get_lemmas_tst_path(plugin_path, lang, prefs["wiktionary_gloss_lang"])
         )
 
     def save_json_file(self):

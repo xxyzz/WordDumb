@@ -23,7 +23,7 @@ fi
 # Download the latest Kindle lemmas dump file
 # Hard coding the link cuz GitHub API has rate limit and
 # actions/checkout can't fetch submodule's tag
-wget -P data -nv "https://github.com/xxyzz/Proficiency/releases/download/v0.2.0/kindle_lemmas_dump_v0"
+wget -P data -nv "https://github.com/xxyzz/Proficiency/releases/download/v0.3.0/kindle_lemmas_dump_v0"
 
 cp Proficiency/en/dump_kindle_lemmas.py ./
 cp Proficiency/tst.py ./libs/

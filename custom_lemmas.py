@@ -4,7 +4,6 @@ import base64
 import json
 import pickle
 import re
-import shutil
 import sqlite3
 from html import escape
 from pathlib import Path
@@ -197,8 +196,13 @@ class CustomLemmasDialog(QDialog):
                 custom_path.unlink()
                 self.reject()
         else:
+            from .config import prefs
+
             custom_folder = custom_lemmas_folder(plugin_path).joinpath(self.lang)
-            shutil.rmtree(custom_folder)
+            for path in custom_folder.glob(
+                f"wiktionary_{self.lang}_{prefs['wiktionary_gloss_lang']}_*"
+            ):
+                path.unlink()
             self.reject()
 
     def change_ipa(self):

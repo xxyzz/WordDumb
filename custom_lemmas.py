@@ -353,7 +353,7 @@ class KindleLemmasTableModel(LemmasTableModel):
     def __init__(self):
         super().__init__()
         plugin_path = get_plugin_path()
-        kw_processor = load_lemmas_dump(plugin_path)
+        kw_processor = load_lemmas_dump(plugin_path, None, None)
         self.lemmas = []
         klld_conn = sqlite3.connect(get_klld_path(plugin_path))
         sense_ids = set()

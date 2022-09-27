@@ -145,12 +145,12 @@ class ConfigWidget(QWidget):
         form_layout.addRow(_("Chinese Wikipedia variant"), self.zh_wiki_box)
 
         self.fandom_url = QLineEdit()
-        self.fandom_url.setText(prefs["fandom"])
+        self.fandom_url.setText("")
         self.fandom_url.setPlaceholderText("https://*.fandom.com[/language]")
         fandom_re = QRegularExpression(r"https:\/\/[\w-]+\.fandom\.com(\/\w{2})?")
         fandom_validator = QRegularExpressionValidator(fandom_re)
         self.fandom_url.setValidator(fandom_validator)
-        form_layout.addRow(_("Fandom URL"), self.fandom_url)
+        # form_layout.addRow(_("Fandom URL"), self.fandom_url)
 
         vl.addLayout(form_layout)
 

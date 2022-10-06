@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import operator
 import re
 import shutil
 import zipfile
@@ -195,7 +196,7 @@ class EPUB:
     def insert_anchor_elements(self, lang):
         for xhtml_path, entity_list in self.entity_occurrences.items():
             if self.entities and self.lemmas:
-                entity_list = sorted(entity_list, key=lambda x: x[0])
+                entity_list = sorted(entity_list, key=operator.itemgetter(0))
 
             with xhtml_path.open(encoding="utf-8") as f:
                 xhtml_str = f.read()

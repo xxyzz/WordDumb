@@ -98,8 +98,8 @@ class SendFile:
             dst_path.unlink()
         shutil.move(file_path, dst_path, shutil.copy)
 
-    def push_files_to_android(self, adb_path, package_name):
-        device_book_folder = f"/sdcard/Android/data/{package_name}/files/"
+    def push_files_to_android(self, adb_path):
+        device_book_folder = f"/sdcard/Android/data/{self.package_name}/files/"
         run_subprocess(
             [
                 adb_path,
@@ -125,7 +125,7 @@ class SendFile:
                     adb_path,
                     "push",
                     self.ll_path,
-                    f"/data/data/{package_name}/databases/WordWise.en.{self.asin}.{self.acr.replace('!', '_')}.db",
+                    f"/data/data/{self.package_name}/databases/WordWise.en.{self.asin}.{self.acr.replace('!', '_')}.db",
                 ]
             )
             self.ll_path.unlink()

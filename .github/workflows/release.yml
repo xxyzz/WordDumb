@@ -6,29 +6,17 @@ on:
 name: Create Release
 
 jobs:
-  build:
-    name: Create Release
+  release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: dawidd6/action-download-artifact@v2
         with:
-          submodules: true
+          branch: master
+          workflow: tests.yml
 
-      - name: Get tag name
-        run: echo "FILENAME=worddumb-${GITHUB_REF##*/}.zip" >> $GITHUB_ENV
+      - name: Rename zip file
+        run: mv worddumb-*.zip worddumb-${GITHUB_REF_NAME}.zip
 
-      - name: Install calibre
-        run: |
-          sudo apt install libegl1 libopengl0
-          sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
-
-      - name: Build plugin
-        run: |
-          bash ./build_plugin.sh
-          zip -r ${FILENAME} * -x@exclude.lst
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v1
         with:
           files: worddumb-*.zip

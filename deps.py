@@ -19,7 +19,6 @@ from .utils import (
 )
 
 PLUGINS_PATH = get_plugin_path()
-SPACY_MODEL_VERSION = "3.4.0"
 
 
 def install_deps(model, book_fmt, notif):
@@ -70,8 +69,9 @@ def mac_python():
 
 def install_x_ray_deps(model, notif):
     pip_install_pkgs(load_json_or_pickle(PLUGINS_PATH, "data/x_ray_deps.json"), notif)
-    url = f"https://github.com/explosion/spacy-models/releases/download/{model}-{SPACY_MODEL_VERSION}/{model}-{SPACY_MODEL_VERSION}-py3-none-any.whl"
-    pip_install(model, SPACY_MODEL_VERSION, url=url, notif=notif)
+    spacy_model_version = "3.4.1" if model.startswith("en") else "3.4.0"
+    url = f"https://github.com/explosion/spacy-models/releases/download/{model}-{spacy_model_version}/{model}-{spacy_model_version}-py3-none-any.whl"
+    pip_install(model, spacy_model_version, url=url, notif=notif)
 
 
 def pip_install(pkg, pkg_version, url=None, notif=None):

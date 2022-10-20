@@ -13,6 +13,7 @@ jobs:
         with:
           branch: master
           workflow: tests.yml
+          skip_unpack: true
 
       - name: Rename zip file
         run: mv worddumb-*.zip worddumb-${GITHUB_REF_NAME}.zip

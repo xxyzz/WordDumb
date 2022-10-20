@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-08-27 08:51+0800\n"
-"PO-Revision-Date: 2022-09-08 11:45-0400\n"
+"POT-Creation-Date: 2022-10-20 07:40-0400\n"
+"PO-Revision-Date: 2022-10-20 07:45-0400\n"
 "Last-Translator: <a href=\"https://www.mobileread.com/forums/member.php?"
 "u=90932\">PoP</a>\n"
 "Language-Team: \n"
@@ -15,11 +15,11 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: config.py:82 config.py:323
+#: config.py:82 config.py:324
 msgid "Preferred format order"
 msgstr "Ordre de préférence des formats"
 
-#: config.py:86
+#: config.py:86 custom_lemmas.py:53
 msgid "Customize Kindle Word Wise"
 msgstr "Personaliser Kindle Word Wise"
 
@@ -93,7 +93,7 @@ msgstr ""
 msgid "Source code and document"
 msgstr "Code source et document"
 
-#: config.py:207 config.py:224 config.py:279
+#: config.py:207 config.py:224 config.py:275
 msgid "Saving customized lemmas"
 msgstr "Sauvant les lemmes personalisés"
 
@@ -189,40 +189,52 @@ msgstr "Ukrainien"
 msgid "Chinese"
 msgstr "Chinois"
 
-#: config.py:246
-msgid "Select Wiktionary source language"
-msgstr "Sélectionnez la langue source du Wiktionary"
-
-#: config.py:247
-msgid "Language"
-msgstr "Langue"
-
-#: config.py:266
+#: config.py:262
 msgid "Downloading Wiktionary"
 msgstr "Téléchargeant le Wiktionary"
 
-#: config.py:339
+#: config.py:340
 msgid "Choose format manually"
 msgstr "Choisir le format manuellement"
 
-#: config.py:346
+#: config.py:347
 msgid "Create files for all available formats"
 msgstr "Créer les fichiers pour tous les formats disponibles"
 
-#: config.py:378
+#: config.py:379
 msgid "Choose book format"
 msgstr "Choisir le format du livre"
 
-#: config.py:384
+#: config.py:385
 msgid ""
 "This book has multiple supported formats. Choose the format you want to use."
 msgstr ""
 "Ce livre a plusieurs formats pris en charge. Choisissez le format que vous "
 "voulez utiliser."
 
-#: config.py:390
+#: config.py:391
 msgid "Always ask when more than one format is available"
 msgstr "Toujours demander quand il y a plus d'un format"
+
+#: config.py:414
+msgid "Choose Wiktionary language"
+msgstr "Sélectionnez la langue du Wiktionary"
+
+#: config.py:435 config.py:436
+msgid "Simplified Chinese"
+msgstr "Chinois simplifié"
+
+#: config.py:441
+msgid "Lemma language"
+msgstr "Langue des lemmes"
+
+#: config.py:447
+msgid "Gloss language"
+msgstr "Langue du glose"
+
+#: custom_lemmas.py:51
+msgid "Customize Wiktionary"
+msgstr "Personaliser Wiktionary"
 
 #: custom_lemmas.py:51
 msgid "Customize"
@@ -236,39 +248,39 @@ msgstr "Wiktionary"
 msgid "Kindle Word Wise"
 msgstr "Word Wise Kindle"
 
-#: custom_lemmas.py:73
+#: custom_lemmas.py:69
 msgid "Fewer Hints"
 msgstr "Moins d'indices"
 
-#: custom_lemmas.py:73
+#: custom_lemmas.py:69
 msgid "More Hints"
 msgstr "Plus d'indices"
 
-#: custom_lemmas.py:89 custom_x_ray.py:78
+#: custom_lemmas.py:85 custom_x_ray.py:78
 msgid "Search"
 msgstr "Chercher"
 
-#: custom_lemmas.py:101
+#: custom_lemmas.py:97
 msgid "Pinyin"
 msgstr "Pinyin"
 
-#: custom_lemmas.py:102
+#: custom_lemmas.py:98
 msgid "Bopomofo"
 msgstr "Bopomofo"
 
-#: custom_lemmas.py:108
+#: custom_lemmas.py:104
 msgid "Phonetic transcription system"
 msgstr "Système de transcription phonétique"
 
-#: custom_lemmas.py:110
+#: custom_lemmas.py:106
 msgid "International Phonetic Alphabet"
 msgstr "Alphabet Phonétique International"
 
-#: custom_lemmas.py:121 custom_lemmas.py:574
+#: custom_lemmas.py:117 custom_lemmas.py:580
 msgid "Difficulty limit"
 msgstr "Limite de difficulté"
 
-#: custom_lemmas.py:124
+#: custom_lemmas.py:120
 msgid ""
 "Difficult words have lower value. Words have difficulty value higher than "
 "this value are disabled."
@@ -276,55 +288,55 @@ msgstr ""
 "Les mots plus difficiles ont une valeur inférieure. Les mots ayant une "
 "valeur de difficulté supérieure à cette valeur sont déactivés."
 
-#: custom_lemmas.py:145
+#: custom_lemmas.py:141
 msgid "Import"
 msgstr "Importer"
 
-#: custom_lemmas.py:150
+#: custom_lemmas.py:146
 msgid "Export"
 msgstr "Exporter"
 
-#: custom_lemmas.py:175
+#: custom_lemmas.py:171
 msgid "Select import file"
 msgstr "S;electionner le fichier d'importation"
 
-#: custom_lemmas.py:223
+#: custom_lemmas.py:224
 msgid "Set export file path"
 msgstr "Régler le chamin d'exportation du fichier"
 
-#: custom_lemmas.py:413 custom_lemmas.py:491
+#: custom_lemmas.py:415 custom_lemmas.py:495
 msgid "Enabled"
 msgstr "Activé"
 
-#: custom_lemmas.py:414 custom_lemmas.py:492
+#: custom_lemmas.py:416 custom_lemmas.py:496
 msgid "Lemma"
 msgstr "Lemme"
 
-#: custom_lemmas.py:416 custom_lemmas.py:493
+#: custom_lemmas.py:418 custom_lemmas.py:497
 msgid "POS"
 msgstr "POS"
 
-#: custom_lemmas.py:417 custom_lemmas.py:495
+#: custom_lemmas.py:419 custom_lemmas.py:499
 msgid "Definition"
 msgstr "Définition"
 
-#: custom_lemmas.py:418 custom_lemmas.py:499
+#: custom_lemmas.py:420 custom_lemmas.py:503
 msgid "Difficulty"
 msgstr "Difficulté"
 
-#: custom_lemmas.py:494
+#: custom_lemmas.py:498
 msgid "Gloss"
-msgstr "Brillance"
+msgstr "Glose"
 
-#: custom_lemmas.py:497
+#: custom_lemmas.py:501
 msgid "Forms"
 msgstr "Formes"
 
-#: custom_lemmas.py:559
+#: custom_lemmas.py:565
 msgid "Set export options"
 msgstr "Régler les options d'exportation"
 
-#: custom_lemmas.py:565
+#: custom_lemmas.py:571
 msgid ""
 "Export text separated by tab, can be imported to Anki.<br/> \"Allow HTML in "
 "fields\" option needs to be enabled in Anki."
@@ -332,19 +344,19 @@ msgstr ""
 "Exporter du texte séparé par tabulation, peut être importé vers Anki.<br/> "
 "l'option \"Permettre les champs HTML\" doit être sélectionnée dans Anki."
 
-#: custom_lemmas.py:570
+#: custom_lemmas.py:576
 msgid "Only export enabled lemmas"
 msgstr "Exporter seulement les lemmes en vigeur"
 
-#: custom_lemmas.py:576
+#: custom_lemmas.py:582
 msgid "Difficulty higher than this value will not be exported"
 msgstr "Niveaux de difficulté supérieurs à cette valeur ne seront pas exportés"
 
-#: custom_lemmas.py:595
+#: custom_lemmas.py:601
 msgid "Set import options"
 msgstr "Regler les options d'importation"
 
-#: custom_lemmas.py:599
+#: custom_lemmas.py:605
 msgid "Retain current enabled lemmas"
 msgstr "Garder les lemmes actuellement en vigeur"
 

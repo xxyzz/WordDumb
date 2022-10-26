@@ -104,7 +104,7 @@ def check_network_error(error, parent):
                 <p><code>$ export HTTP_PROXY='http://host:port'</code></p>
                 <p><code>$ export HTTPS_PROXY='http://host:port'</code></p>
                 <p>If you're allergic to terminal, close your proxy and use a VPN.</p>"""
-            ).fomat(CALIBRE_PROXY_FAQ),
+            ).format(CALIBRE_PROXY_FAQ),
             error,
             parent,
         )

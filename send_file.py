@@ -67,7 +67,15 @@ class SendFile:
             )
             if job is None:
                 # update device book ASIN if it doesn't have the same ASIN
-                get_asin_etc(str(device_book_path), self.book_fmt, self.mi, self.asin)
+                _, _, _, update_asin, *_ = get_asin_etc(
+                    str(device_book_path), self.book_fmt, self.mi, self.asin
+                )
+                if update_asin:  # Re-upload book cover
+                    self.gui.update_thumbnail(self.mi)
+                    self.device_manager.device.upload_kindle_thumbnail(
+                        self.mi, self.book_path
+                    )
+
             self.move_file_to_device(self.ll_path, device_book_path)
             self.move_file_to_device(self.x_ray_path, device_book_path)
             self.gui.status_bar.show_message(self.notif)

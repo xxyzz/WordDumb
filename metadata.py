@@ -125,10 +125,11 @@ def get_asin_etc(book_path, book_fmt, mi, library_asin=None):
             asin, update_asin = validate_asin(asin, mi)
         elif library_asin != asin:
             update_asin = True
+            asin = library_asin
         if update_asin:
             yj_book = YJ_Book(book_path)
             yj_md = YJ_Metadata()
-            yj_md.asin = library_asin if library_asin else asin
+            yj_md.asin = asin
             yj_md.content_type = "EBOK"
             yj_book.decode_book(set_metadata=yj_md)
             with open(book_path, "wb") as f:
@@ -151,6 +152,7 @@ def get_asin_etc(book_path, book_fmt, mi, library_asin=None):
                 asin, update_asin = validate_asin(asin, mi)
             elif library_asin != asin:
                 update_asin = True
+                asin = library_asin
             if update_asin:
                 mu.update(mi, asin=asin)
         if library_asin is None:

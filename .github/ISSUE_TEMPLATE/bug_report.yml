@@ -1,6 +1,15 @@
 name: Bug report
 description: File a bug
 body:
+  - type: checkboxes
+    attributes:
+      label: Checkboxes
+      options:
+        - label: I have read the [README](https://github.com/xxyzz/WordDumb#how-to-use) file.
+          required: true
+        - label: I have not found similar issue or disscussion at GitHub.
+          required: true
+
   - type: textarea
     attributes:
       label: Describe the bug

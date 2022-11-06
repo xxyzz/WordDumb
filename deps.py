@@ -127,14 +127,15 @@ def upgrade_pip(py_path):
     r = run_subprocess(
         [py_path, "-m", "pip", "--version", "--disable-pip-version-check"]
     )
-    m = re.match(r"pip (\d+)\.", r.stdout)
-    if m and int(m.group(1)) < 22:
+    m = re.match(r"pip (\d+\.\d+)", r.stdout)
+    # Upgrade pip if its version is lower than 22.3
+    # pip 22.3 introduced the "--python" option
+    if m and [int(x) for x in m.group(1).split(".")] < [22, 3]:
         run_subprocess(
             [
                 py_path,
                 "-m",
                 "pip",
-                "--no-cache-dir",
                 "install",
                 "--user",
                 "-U",

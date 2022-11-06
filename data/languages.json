@@ -3,138 +3,161 @@
     "spacy": "ca_core_news_",
     "wiki": "ca",
     "kaikki": "Catalan",
-    "gloss": false
+    "gloss": false,
+    "has_trf": true
   },
   "dan": {
     "spacy": "da_core_news_",
     "wiki": "da",
     "kaikki": "Danish",
-    "gloss": false
+    "gloss": false,
+    "has_trf": true
   },
   "deu": {
     "spacy": "de_core_news_",
     "wiki": "de",
     "kaikki": "German",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "ell": {
     "spacy": "el_core_news_",
     "wiki": "el",
     "kaikki": "Greek",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "eng": {
     "spacy": "en_core_web_",
     "wiki": "en",
     "kaikki": "English",
-    "gloss": true
+    "gloss": true,
+    "has_trf": true
   },
   "fin": {
     "spacy": "fi_core_news_",
     "wiki": "fi",
     "kaikki": "Finnish",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "fra": {
     "spacy": "fr_core_news_",
     "wiki": "fr",
     "kaikki": "French",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "hrv": {
     "spacy": "hr_core_news_",
     "wiki": "hr",
     "kaikki": "Serbo-Croatian",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "ita": {
     "spacy": "it_core_news_",
     "wiki": "it",
     "kaikki": "Italian",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "jpn": {
     "spacy": "ja_core_news_",
     "wiki": "ja",
     "kaikki": "Japanese",
-    "gloss": false
+    "gloss": false,
+    "has_trf": true
   },
   "kor": {
     "spacy": "ko_core_news_",
     "wiki": "ko",
     "kaikki": "Korean",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "lit": {
     "spacy": "lt_core_news_",
     "wiki": "lt",
     "kaikki": "Lithuanian",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "mkd": {
     "spacy": "mk_core_news_",
     "wiki": "mk",
     "kaikki": "Macedonian",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "nld": {
     "spacy": "nl_core_news_",
     "wiki": "nl",
     "kaikki": "Dutch",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "nob": {
     "spacy": "nb_core_news_",
     "wiki": "no",
     "kaikki": "Norwegian Bokmål",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "pol": {
     "spacy": "pl_core_news_",
     "wiki": "pl",
     "kaikki": "Polish",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "por": {
     "spacy": "pt_core_news_",
     "wiki": "pt",
     "kaikki": "Portuguese",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "ron": {
     "spacy": "ro_core_news_",
     "wiki": "ro",
     "kaikki": "Romanian",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "rus": {
     "spacy": "ru_core_news_",
     "wiki": "ru",
     "kaikki": "Russian",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "spa": {
     "spacy": "es_core_news_",
     "wiki": "es",
     "kaikki": "Spanish",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "swe": {
     "spacy": "sv_core_news_",
     "wiki": "sv",
     "kaikki": "Swedish",
-    "gloss": false
+    "gloss": false,
+    "has_trf": false
   },
   "ukr": {
     "spacy": "uk_core_news_",
     "wiki": "uk",
     "kaikki": "Ukrainian",
-    "gloss": false
+    "gloss": false,
+    "has_trf": true
   },
   "zho": {
     "spacy": "zh_core_web_",
     "wiki": "zh",
     "kaikki": "Chinese",
-    "gloss": true
+    "gloss": true,
+    "has_trf": true
   }
 }

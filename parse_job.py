@@ -66,6 +66,8 @@ def do_job(
     )
 
     model = lang["spacy"] + prefs["model_size"]
+    if prefs["use_gpu"] and lang["has_trf"]:
+        model = lang["spacy"] + "trf"
     plugin_path = get_plugin_path()
     useragent = get_user_agent()
     if book_fmt == "EPUB":
@@ -537,19 +539,22 @@ def find_named_entity(
 def load_spacy(model, book_path):
     import spacy
 
-    nlp = spacy.load(
-        model,
-        exclude=[
-            "tok2vec",
-            "morphologizer",
-            "tagger",
-            "parser",
-            "attribute_ruler",
-            "lemmatizer",
-        ],
-    )
-    # simpler and faster https://spacy.io/usage/linguistic-features#sbd
-    nlp.enable_pipe("senter")
+    excluded_components = [
+        "tok2vec",
+        "morphologizer",
+        "tagger",
+        "attribute_ruler",
+        "lemmatizer",
+        "transformer",
+    ]
+    if model.endswith("_trf"):
+        spacy.require_gpu()
+    else:
+        excluded_components.append("parser")
+    nlp = spacy.load(model, exclude=excluded_components)
+    if not model.endswith("_trf"):
+        # simpler and faster https://spacy.io/usage/linguistic-features#sbd
+        nlp.enable_pipe("senter")
 
     custom_x_path = get_custom_x_path(book_path)
     if custom_x_path.exists():

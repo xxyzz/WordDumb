@@ -65,6 +65,7 @@ prefs.defaults["en_ipa"] = "US"
 prefs.defaults["zh_ipa"] = "Pinyin"
 prefs.defaults["choose_format_manually"] = True
 prefs.defaults["wiktionary_gloss_lang"] = "en"
+prefs.defaults["use_gpu"] = False
 for data in load_json_or_pickle(get_plugin_path(), "data/languages.json").values():
     prefs.defaults[f"{data['wiki']}_wiktionary_difficulty_limit"] = 5
 
@@ -101,6 +102,16 @@ class ConfigWidget(QWidget):
         )
         self.search_people_box.setChecked(prefs["search_people"])
         vl.addWidget(self.search_people_box)
+
+        if not ismacos:
+            self.use_gpu_box = QCheckBox(_("Run spaCy with GPU"))
+            self.use_gpu_box.setToolTip(
+                _(
+                    "Requires CUDA. GPU will be used when creating X-Ray file if spaCy has transformer model for the book language with ner component."
+                )
+            )
+            self.use_gpu_box.setChecked(prefs["use_gpu"])
+            vl.addWidget(self.use_gpu_box)
 
         form_layout = QFormLayout()
         form_layout.setFieldGrowthPolicy(
@@ -179,6 +190,8 @@ class ConfigWidget(QWidget):
         prefs["fandom"] = self.fandom_url.text()
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
+        if not ismacos:
+            prefs["use_gpu"] = self.use_gpu_box.isChecked()
 
     def open_kindle_lemmas_dialog(self):
         klld_path = get_klld_path(self.plugin_path)

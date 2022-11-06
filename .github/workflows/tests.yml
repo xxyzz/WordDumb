@@ -128,9 +128,15 @@ jobs:
 
       - name: Patch pip
         run: |
-          python -m pip install -U --user pip
-          PIP_PATH=($(python3 -m pip --version))
-          PIP_PATH="${PIP_PATH[3]}/__pip-runner__.py"
+          if [[ "$OSTYPE" == "msys" ]]; then
+            py -m pip install -U --user pip
+            PIP_PATH=($(py -m pip --version))
+            PIP_PATH="${PIP_PATH[3]}\__pip-runner__.py"
+          else
+            python3 -m pip install -U --user pip
+            PIP_PATH=($(python3 -m pip --version))
+            PIP_PATH="${PIP_PATH[3]}/__pip-runner__.py"
+          fi
           echo -e "import site\nsite.USER_SITE = None\n$(cat $PIP_PATH)" > $PIP_PATH
 
       - name: Run test

@@ -459,10 +459,6 @@ msgstr ""
 "supported-visual-c-downloads'>Visual C++ 2019 Redistributable</a> 을 설치하세"
 "요"
 
-#: error_dialogs.py:52
-msgid "You're using 32bit Python, please install the 64bit version."
-msgstr "32비트 Python을 사용 중입니다. 64비트 버전을 설치하세요."
-
 #: error_dialogs.py:68
 msgid ""
 "<p>Please read the friendly <a href='{}#how-to-use'>manual</a> of how to "

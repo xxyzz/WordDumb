@@ -67,9 +67,6 @@ def which_python():
     py_v = ".".join(platform.python_version_tuple()[:2])
     if iswindows:
         py = "py" if shutil.which("py") else "python"
-        r = run_subprocess([py, "-c", "import sys; print(sys.maxsize > 2**32)"])
-        if r.stdout.strip() != "True":
-            raise Exception("32BIT_PYTHON")
     elif ismacos:
         py = mac_python()
         r = run_subprocess(

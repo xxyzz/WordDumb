@@ -46,13 +46,6 @@ def job_failed(job, parent=None):
                 job.datails,
                 parent,
             )
-        elif "32BIT_PYTHON" in job.details:
-            error_dialog(
-                "The wrist game!",
-                _("You're using 32bit Python, please install the 64bit version."),
-                job.details,
-                parent,
-            )
         else:
             check_network_error(job.details, parent)
         return True

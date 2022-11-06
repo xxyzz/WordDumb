@@ -451,10 +451,6 @@ msgstr ""
 "安裝 <a href=‘https://support.microsoft.com/en-us/help/2977003/the-latest-"
 "supported-visual-c-downloads’>Visual C++ 2019 Redistributable</a>"
 
-#: error_dialogs.py:52
-msgid "You're using 32bit Python, please install the 64bit version."
-msgstr "您使用的是 32 位 Python，請安裝 64 位版本。"
-
 #: error_dialogs.py:68
 msgid ""
 "<p>Please read the friendly <a href='{}#how-to-use'>manual</a> of how to "

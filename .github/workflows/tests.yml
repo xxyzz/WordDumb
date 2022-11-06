@@ -108,7 +108,7 @@ jobs:
         with:
           path: |
             ~/.config/calibre/plugins/worddumb-*
-          key: ${{ runner.os }}-${{ hashFiles('data/x_ray_deps.json') }}-${{ env.CALIBRE_PY }}
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ env.CALIBRE_PY }}
 
       - name: Restore dependencies and Wikipedia cache(macOS)
         if: matrix.os == 'macos-latest'
@@ -116,7 +116,7 @@ jobs:
         with:
           path: |
             ~/Library/Preferences/calibre/plugins/worddumb-*
-          key: ${{ runner.os }}-${{ hashFiles('data/x_ray_deps.json') }}-${{ hashFiles('data/extra_deps.json') }}-${{ env.MACOS_PY }}
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ hashFiles('data/extra_deps.json') }}-${{ env.MACOS_PY }}
 
       - name: Restore dependencies and Wikipedia cache(Windows)
         if: matrix.os == 'windows-latest'
@@ -124,7 +124,14 @@ jobs:
         with:
           path: |
             ~/AppData/Roaming/calibre/plugins/worddumb-*
-          key: ${{ runner.os }}-${{ hashFiles('data/x_ray_deps.json') }}-${{ env.CALIBRE_PY }}
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ env.CALIBRE_PY }}
+
+      - name: Patch pip
+        run: |
+          python -m pip install -U --user pip
+          PIP_PATH=($(python3 -m pip --version))
+          PIP_PATH="${PIP_PATH[3]}/__pip-runner__.py"
+          echo -e "import site\nsite.USER_SITE = None\n$(cat $PIP_PATH)" > $PIP_PATH
 
       - name: Run test
         run: cd tests && calibre-debug test.py

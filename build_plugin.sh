@@ -4,7 +4,7 @@ set -e
 
 pip_install() {
     if [[ $(uname -v) == *"Ubuntu"* && -n "$CI" ]]; then
-        python -m pip install --no-cache-dir -U pip
+        python -m pip install -U pip
     fi
     python -m pip install -t libs git+https://github.com/vi3k6i5/flashtext@b316c7e9e54b6b4d078462b302a83db85f884a94
     deactivate

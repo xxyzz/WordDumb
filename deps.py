@@ -18,24 +18,48 @@ from .utils import (
     run_subprocess,
 )
 
-PLUGINS_PATH = get_plugin_path()
+PY_PATH = None
+LIBS_PATH = None
+RUNNABLE_PIP = None
 
 
 def install_deps(model, book_fmt, notif):
-    global PY_PATH, PY_VERSION, LIBS_PATH
-    PY_PATH, PY_VERSION = which_python()
-    LIBS_PATH = PLUGINS_PATH.parent.joinpath(f"worddumb-libs-py{PY_VERSION}")
+    global PY_PATH, LIBS_PATH, CALIBRE_DEBUG_PATH, RUNNABLE_PIP
+    plugin_path = get_plugin_path()
+
+    if PY_PATH is None:
+        PY_PATH, py_version = which_python()
+        upgrade_pip(PY_PATH)
+        LIBS_PATH = plugin_path.parent.joinpath(f"worddumb-libs-py{py_version}")
+        if not ismacos:
+            RUNNABLE_PIP = get_runnable_pip(PY_PATH)
 
     if not LIBS_PATH.exists():
         for old_path in LIBS_PATH.parent.glob("worddumb-libs-py*"):
             shutil.rmtree(old_path)
+
+    dep_versions = load_json_or_pickle(plugin_path, "data/deps.json")
     if model == "lemminflect":
-        install_lemminflect(notif)
+        pip_install("lemminflect", dep_versions["lemminflect"], notif=notif)
     elif model.startswith("wiktionary"):
-        install_wiktionary_deps(model, notif)
+        pip_install("requests", dep_versions["requests"], notif=notif)
+        if model == "wiktionary_cjk":
+            pip_install("pyahocorasick", dep_versions["pyahocorasick"], notif=notif)
     else:
-        install_x_ray_deps(model, notif)
-        install_extra_deps(model, book_fmt, notif)
+        # Install X-Ray dependencies
+        pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
+
+        spacy_model_version = "3.4.1" if model.startswith("en") else "3.4.0"
+        url = f"https://github.com/explosion/spacy-models/releases/download/{model}-{spacy_model_version}/{model}-{spacy_model_version}-py3-none-any.whl"
+        pip_install(model, spacy_model_version, url=url, notif=notif)
+
+        if ismacos:
+            if platform.machine() == "arm64":
+                pip_install(
+                    "thinc-apple-ops", dep_versions["thinc-apple-ops"], notif=notif
+                )
+            if book_fmt == "EPUB":
+                pip_install("lxml", dep_versions["lxml"], notif=notif)
 
 
 def which_python():
@@ -56,7 +80,6 @@ def which_python():
             ]
         )
         py_v = r.stdout.strip()
-    upgrade_pip(py)
     return py, py_v
 
 
@@ -67,11 +90,14 @@ def mac_python():
     return py
 
 
-def install_x_ray_deps(model, notif):
-    pip_install_pkgs(load_json_or_pickle(PLUGINS_PATH, "data/x_ray_deps.json"), notif)
-    spacy_model_version = "3.4.1" if model.startswith("en") else "3.4.0"
-    url = f"https://github.com/explosion/spacy-models/releases/download/{model}-{spacy_model_version}/{model}-{spacy_model_version}-py3-none-any.whl"
-    pip_install(model, spacy_model_version, url=url, notif=notif)
+def get_runnable_pip(py_path):
+    r = run_subprocess(
+        [py_path, "-m", "pip", "--version", "--disable-pip-version-check"]
+    )
+    # pip "--python" option
+    # https://github.com/pypa/pip/blob/6d131137cf7aa8c1c64f1fadca4770879e9f407f/src/pip/_internal/cli/main_parser.py#L82-L105
+    # https://github.com/pypa/pip/blob/6d131137cf7aa8c1c64f1fadca4770879e9f407f/src/pip/_internal/build_env.py#L43-L56
+    return r.stdout.split()[3] + "/__pip-runner__.py"
 
 
 def pip_install(pkg, pkg_version, url=None, notif=None):
@@ -79,21 +105,22 @@ def pip_install(pkg, pkg_version, url=None, notif=None):
     if not any(LIBS_PATH.glob(pattern)):
         if notif:
             notif.put((0, f"Installing {pkg}"))
-        args = [
-            PY_PATH,
-            "-m",
-            "pip",
-            "--no-cache-dir",
-            "--disable-pip-version-check",
-            "install",
-            "-U",
-            "-t",
-            LIBS_PATH,
-            "--no-deps",
-            "--no-user",
-            "--python-version",
-            PY_VERSION,
-        ]
+
+        if ismacos:
+            args = [PY_PATH, "-m", "pip"]
+        else:
+            args = ["calibre-debug", "-e", RUNNABLE_PIP, "--"]
+        args.extend(
+            [
+                "--disable-pip-version-check",
+                "install",
+                "-U",
+                "-t",
+                LIBS_PATH,
+                "--no-user",  # disable "--user" option which conflicts with "-t"
+            ]
+        )
+
         if url:
             args.append(url)
         elif pkg_version:
@@ -101,26 +128,6 @@ def pip_install(pkg, pkg_version, url=None, notif=None):
         else:
             args.append(pkg)
         run_subprocess(args)
-
-
-def pip_install_pkgs(pkgs, notif):
-    for pkg, version in pkgs.items():
-        pip_install(pkg, version, notif=notif)
-
-
-def install_extra_deps(model, book_fmt, notif):
-    # https://spacy.io/usage/models#languages
-    data = load_json_or_pickle(PLUGINS_PATH, "data/extra_deps.json")
-    if (lang := model[:2]) in data:
-        pip_install_pkgs(data[lang], notif)
-
-    if ismacos:
-        from .config import prefs
-
-        if book_fmt == "EPUB" or prefs["fandom"]:
-            pip_install_pkgs(data["mac_epub"], notif)
-        if platform.machine() == "arm64":
-            pip_install_pkgs(data["mac_arm"], notif)
 
 
 def upgrade_pip(py_path):
@@ -144,32 +151,21 @@ def upgrade_pip(py_path):
         )
 
 
-def install_lemminflect(notif):
-    data = load_json_or_pickle(PLUGINS_PATH, "data/extra_deps.json")
-    pip_install_pkgs(data["lemminflect"], notif)
-
-
-def install_wiktionary_deps(dep_type, notif):
-    data = load_json_or_pickle(PLUGINS_PATH, "data/extra_deps.json")
-    pip_install_pkgs(data["wiktionary"], notif)
-    if dep_type == "wiktionary_cjk":
-        pip_install_pkgs(data["wiktionary_cjk"], notif)
-
-
 def download_wiktionary(
     lemma_lang: str, gloss_lang: str, abort=None, log=None, notifications=None
 ) -> None:
+    plugin_path = get_plugin_path()
     install_deps(
         "wiktionary_cjk" if lemma_lang in CJK_LANGS else "wiktionary",
         None,
         notifications,
     )
-    insert_installed_libs(get_plugin_path())
+    insert_installed_libs(plugin_path)
     import requests
 
     filename = f"wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.tar.gz"
     url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/{filename}"
-    extract_folder = custom_lemmas_folder(PLUGINS_PATH)
+    extract_folder = custom_lemmas_folder(plugin_path)
     if not extract_folder.exists():
         extract_folder.mkdir()
     download_path = extract_folder.joinpath(filename)

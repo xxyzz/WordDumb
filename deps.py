@@ -96,7 +96,10 @@ def get_runnable_pip(py_path):
     # pip "--python" option
     # https://github.com/pypa/pip/blob/6d131137cf7aa8c1c64f1fadca4770879e9f407f/src/pip/_internal/cli/main_parser.py#L82-L105
     # https://github.com/pypa/pip/blob/6d131137cf7aa8c1c64f1fadca4770879e9f407f/src/pip/_internal/build_env.py#L43-L56
-    return r.stdout.split()[3] + "/__pip-runner__.py"
+    pip_path = r.stdout.split()[3]
+    if iswindows:
+        pip_path = pip_path.replace("\\", "/")
+    return pip_path + "/__pip-runner__.py"
 
 
 def pip_install(pkg, pkg_version, url=None, notif=None):

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-09-23 13:07+0800\n"
-"PO-Revision-Date: 2022-09-23 13:07+0800\n"
+"POT-Creation-Date: 2022-11-06 12:41+0800\n"
+"PO-Revision-Date: 2022-11-06 12:41+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.2\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
@@ -36,7 +36,19 @@ msgid ""
 "on Wikipedia/Fandom"
 msgstr "为在维基百科或 Fandom 上有人物页面的非小说类书籍和小说启用此选项"
 
-#: config.py:111
+#: config.py:107
+msgid "Run spaCy with GPU"
+msgstr "使用 GPU 运行 spaCy"
+
+#: config.py:110
+msgid ""
+"Requires CUDA. GPU will be used when creating X-Ray file if spaCy has "
+"transformer model for the book language with ner component."
+msgstr ""
+"需要 CUDA。如果 spaCy 具有带有 ner 组件的书籍语言的 transformer 模型，则在创"
+"建 X-Ray 文件时使用 GPU。"
+
+#: config.py:122
 msgid "<a href=\"https://spacy.io/models/en\">spaCy model</a> size"
 msgstr "<a href=“https://spacy.io/models/en”>spaCy 模型</a>大小"
 
@@ -70,10 +82,6 @@ msgstr ""
 #: config.py:145
 msgid "Chinese Wikipedia variant"
 msgstr "中文维基百科变体"
-
-#: config.py:153
-msgid "Fandom URL"
-msgstr "Fandom 链接"
 
 #: config.py:157
 msgid "Add locator map to EPUB footnotes"

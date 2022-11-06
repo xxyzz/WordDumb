@@ -53,7 +53,9 @@ def install_deps(model, book_fmt, notif):
         url = f"https://github.com/explosion/spacy-models/releases/download/{model}-{spacy_model_version}/{model}-{spacy_model_version}-py3-none-any.whl"
         pip_install(model, spacy_model_version, url=url, notif=notif)
         if model.endswith("_trf"):
-            pip_install("cupy-wheel", dep_versions["cupy-wheel"], notif=notif)
+            from .config import prefs
+
+            pip_install(prefs["cupy"], dep_versions["cupy"], notif=notif)
 
         if ismacos:
             if platform.machine() == "arm64":

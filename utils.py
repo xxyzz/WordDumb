@@ -72,8 +72,8 @@ def insert_lib_path(path):
 
 
 def insert_installed_libs(plugin_path):
-    for path in plugin_path.parent.glob("worddumb-libs-py*"):
-        insert_lib_path(str(path))
+    py_v = ".".join(platform.python_version_tuple()[:2])
+    insert_lib_path(str(plugin_path.parent.joinpath(f"worddumb-libs-py{py_v}")))
 
 
 def insert_plugin_libs(plugin_path):

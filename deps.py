@@ -55,13 +55,10 @@ def install_deps(model, book_fmt, notif):
 
             pip_install(prefs["cupy"], dep_versions["cupy"], notif=notif)
 
-        if ismacos:
-            if platform.machine() == "arm64":
-                pip_install(
-                    "thinc-apple-ops", dep_versions["thinc-apple-ops"], notif=notif
-                )
-            if book_fmt == "EPUB":
-                pip_install("lxml", dep_versions["lxml"], notif=notif)
+        if ismacos and platform.machine() == "arm64":
+            pip_install("thinc-apple-ops", dep_versions["thinc-apple-ops"], notif=notif)
+        if book_fmt == "EPUB" and USE_SYSTEM_PYTHON:
+            pip_install("lxml", dep_versions["lxml"], notif=notif)
 
 
 def which_python(use_system_python=False):

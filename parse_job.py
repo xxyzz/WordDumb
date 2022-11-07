@@ -6,7 +6,7 @@ from html import escape, unescape
 from pathlib import Path
 
 try:
-    from calibre.constants import ismacos
+    from calibre.constants import isfrozen, ismacos
 
     from .database import (
         create_lang_layer,
@@ -16,7 +16,7 @@ try:
         insert_lemma,
         save_db,
     )
-    from .deps import download_wiktionary, install_deps, mac_python
+    from .deps import download_wiktionary, install_deps, which_python
     from .epub import EPUB
     from .interval import Interval, IntervalTree
     from .mediawiki import NER_LABELS, Fandom, Wikidata, Wikimedia_Commons, Wikipedia
@@ -113,12 +113,20 @@ def do_job(
     if notifications:
         notifications.put((0, "Creating files"))
 
-    if ismacos and (
-        create_x or (book_fmt == "EPUB" and create_ww and lang["wiki"] in CJK_LANGS)
-    ):
+    # Run plugin code in another Python process
+    # macOS: bypass library validation
+    # official calibre build: calibre's optimize level is 2 which removes docstring,
+    # but the "transformers" package formats docstrings in their code
+    if (
+        ismacos
+        and (
+            create_x or (book_fmt == "EPUB" and create_ww and lang["wiki"] in CJK_LANGS)
+        )
+    ) or (create_x and isfrozen and model.endswith("_trf")):
         plugin_path = str(plugin_path)
+        py_path, _ = which_python(True)
         args = [
-            mac_python(),
+            py_path,
             plugin_path,
             asin,
             book_path,

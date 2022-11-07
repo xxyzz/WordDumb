@@ -5,7 +5,7 @@ import re
 import shutil
 import tarfile
 
-from calibre.constants import ismacos, iswindows
+from calibre.constants import isfrozen, ismacos, iswindows
 
 from .utils import (
     CJK_LANGS,
@@ -21,22 +21,20 @@ from .utils import (
 PY_PATH = None
 LIBS_PATH = None
 RUNNABLE_PIP = None
+USE_SYSTEM_PYTHON = False
 
 
 def install_deps(model, book_fmt, notif):
-    global PY_PATH, LIBS_PATH, CALIBRE_DEBUG_PATH, RUNNABLE_PIP
+    global PY_PATH, LIBS_PATH, CALIBRE_DEBUG_PATH, RUNNABLE_PIP, USE_SYSTEM_PYTHON
     plugin_path = get_plugin_path()
+    USE_SYSTEM_PYTHON = ismacos or (isfrozen and model.endswith("_trf"))
 
     if PY_PATH is None:
-        PY_PATH, py_version = which_python()
+        PY_PATH, py_version = which_python(USE_SYSTEM_PYTHON)
         upgrade_pip(PY_PATH)
         LIBS_PATH = plugin_path.parent.joinpath(f"worddumb-libs-py{py_version}")
-        if not ismacos:
+        if not USE_SYSTEM_PYTHON:
             RUNNABLE_PIP = get_runnable_pip(PY_PATH)
-
-    if not LIBS_PATH.exists():
-        for old_path in LIBS_PATH.parent.glob("worddumb-libs-py*"):
-            shutil.rmtree(old_path)
 
     dep_versions = load_json_or_pickle(plugin_path, "data/deps.json")
     if model == "lemminflect":
@@ -66,13 +64,16 @@ def install_deps(model, book_fmt, notif):
                 pip_install("lxml", dep_versions["lxml"], notif=notif)
 
 
-def which_python():
+def which_python(use_system_python=False):
     py = "python3"
     py_v = ".".join(platform.python_version_tuple()[:2])
     if iswindows:
         py = "py" if shutil.which("py") else "python"
     elif ismacos:
         py = mac_python()
+        use_system_python = True
+
+    if use_system_python:
         r = run_subprocess(
             [
                 py,
@@ -110,7 +111,7 @@ def pip_install(pkg, pkg_version, url=None, notif=None):
         if notif:
             notif.put((0, f"Installing {pkg}"))
 
-        if ismacos:
+        if USE_SYSTEM_PYTHON:
             args = [PY_PATH, "-m", "pip"]
         else:
             args = ["calibre-debug", "-e", RUNNABLE_PIP, "--"]

@@ -553,7 +553,6 @@ def load_spacy(model, book_path):
         "tagger",
         "attribute_ruler",
         "lemmatizer",
-        "transformer",
     ]
     if model.endswith("_trf"):
         spacy.require_gpu()

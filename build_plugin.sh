@@ -20,9 +20,7 @@ else
     pip_install
 fi
 
-# Download the latest Kindle lemmas dump file
-# Hard coding the link cuz GitHub API has rate limit and
-# actions/checkout can't fetch submodule's tag
+# Could use /releases/latest/download/file_name at here
 wget -P data -nv "https://github.com/xxyzz/Proficiency/releases/download/v0.3.1/kindle_lemmas_dump_v0"
 
 cp Proficiency/en/dump_kindle_lemmas.py ./

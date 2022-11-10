@@ -41,9 +41,9 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           wget -nv -O calibre.dmg https://calibre-ebook.com/dist/osx
-          hdiutil attach calibre.dmg
+          hdiutil attach -noverify calibre.dmg
           cp -R /Volumes/calibre-*/calibre.app /Applications
-          hdiutil unmount /Volumes/calibre-*
+          hdiutil detach /Volumes/calibre-*
           rm calibre.dmg
           echo /Applications/calibre.app/Contents/MacOS >> $GITHUB_PATH
 

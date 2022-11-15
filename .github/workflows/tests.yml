@@ -41,7 +41,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           wget -nv -O calibre.dmg https://calibre-ebook.com/dist/osx
-          hdiutil attach -noverify calibre.dmg
+          hdiutil attach -noverify -noautofsck calibre.dmg
           cp -R /Volumes/calibre-*/calibre.app /Applications
           hdiutil detach /Volumes/calibre-*
           rm calibre.dmg

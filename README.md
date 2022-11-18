@@ -6,7 +6,7 @@ Supported languages: Bokmål, Català, Dansk, Deutsch, English, Español, Franç
 
 Test plugin will be uploaded to [GitHub Actions Artifacts](https://github.com/xxyzz/WordDumb/actions/workflows/tests.yml) at each git push automatically.
 
-![screenshot](https://user-images.githubusercontent.com/21101839/130245435-b874f19a-7785-4093-9975-81596efc42bb.png)
+![screenshot](https://user-images.githubusercontent.com/21101839/202722815-357c8cfe-703c-4e58-843f-deaf694f6fea.png)
 
 ## Contribute
 
@@ -71,7 +71,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
 - Install WordDumb:
 
-https://user-images.githubusercontent.com/21101839/124686751-39f3aa00-df06-11eb-9b07-8c8f98544683.mov
+https://user-images.githubusercontent.com/21101839/202723023-082a6147-6425-43be-9869-43293c90a306.mov
 
 - Install [KFX Input](https://www.mobileread.com/forums/showthread.php?t=291290) plugin for KFX books(optional if you don't use this format). The installation steps are similar to the above video.
 
@@ -85,11 +85,9 @@ https://user-images.githubusercontent.com/21101839/124686751-39f3aa00-df06-11eb-
 
     - Larger spaCy model has higher [Named-entity recognition](https://en.wikipedia.org/wiki/Named-entity_recognition) precision therefore improves X-Ray quality, more details at https://spacy.io/models/en
 
-    - Enter a Fandom link to get X-Ray descriptions from Fandom, delete the link to search Wikipedia.
-
     - Enable "Add locator map to EPUB footnotes" if your e-reader supports image in footnotes.
 
-https://user-images.githubusercontent.com/21101839/124685798-90f87f80-df04-11eb-8eb6-dee012de6cab.mov
+https://user-images.githubusercontent.com/21101839/202723256-36b96e53-fbf0-4a38-ba35-27fe331d7f1d.mov
 
 - Customize X-Ray
 
@@ -111,11 +109,9 @@ https://user-images.githubusercontent.com/21101839/124685798-90f87f80-df04-11eb-
   $ calibre-debug -r WordDumb -- -h
   ```
 
-https://user-images.githubusercontent.com/21101839/124686791-4d067a00-df06-11eb-93c6-0dea4ee60e04.mov
+https://user-images.githubusercontent.com/21101839/202723395-c84ed588-5fba-43f7-880c-70667efc9fca.mov
 
 - Don't add soft hyphens to AZW3, AZW and MOBI books, it will cause the plugin to produce mediocre Word Wise and X-Ray files.
-
-- This plugin requires access to https://files.pythonhosted.org (download X-Ray dependencies), https://raw.githubusercontent.com (download spaCy model), and https://wikipedia.org (X-Ray descriptions). These domains might be blocked in some countries([Censorship of Wikipedia](https://en.wikipedia.org/wiki/Censorship_of_Wikipedia), [Censorship of GitHub](https://en.wikipedia.org/wiki/Censorship_of_GitHub)).
 
 - [Display Word Wise in other languages](./klld)
 

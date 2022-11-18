@@ -203,28 +203,16 @@ class Wikidata(MediaWikiBase):
     def query(self, items):
         items = " ".join(map(lambda x: f"wd:{x}", items))
         query = f"""
-        SELECT ?item ?democracy_index (SAMPLE(?maps) AS ?map) (MAX(?inceptions) AS ?inception) WHERE {{
+        SELECT ?item (SAMPLE(?maps) AS ?map) (MAX(?inceptions) AS ?inception) WHERE {{
           VALUES ?item {{ {items} }}
           OPTIONAL {{
             ?item (p:P242/ps:P242) ?maps.
             FILTER(REGEX(STR(?maps), "(orthographic|globe)", "i"))
           }}
           OPTIONAL {{ ?item wdt:P242 ?maps. }}
-          OPTIONAL {{
-            ?item p:P8328 ?statement.
-            ?statement ps:P8328 ?democracy_index;
-              pq:P585 ?most_recent.
-            {{
-              SELECT ?item (MAX(?point_in_time) AS ?most_recent) WHERE {{
-                VALUES ?item {{ {items} }}
-                ?item (p:P8328/pq:P585) ?point_in_time.
-              }}
-              GROUP BY ?item
-            }}
-          }}
           OPTIONAL {{ ?item wdt:P571 ?inceptions. }}
         }}
-        GROUP BY ?item ?democracy_index
+        GROUP BY ?item
         """
         result = self.session.get(
             "https://query.wikidata.org/sparql",
@@ -233,16 +221,14 @@ class Wikidata(MediaWikiBase):
         result = result.json()
         for binding in result.get("results", {}).get("bindings"):
             item_id = binding["item"]["value"].split("/")[-1]
-            democracy_index = binding.get("democracy_index", {}).get("value")
             map_url = binding.get("map", {}).get("value")
             inception = binding.get("inception", {}).get("value")
             if inception and inception.startswith("http"):  # unknown value, Q649
                 inception = None
-            if democracy_index or map_url or inception:
+            if map_url or inception:
                 self.add_cache(
                     item_id,
                     {
-                        "democracy_index": democracy_index,
                         "map_filename": unquote(map_url).split("/")[-1]
                         if map_url
                         else None,
@@ -264,19 +250,6 @@ def inception_text(inception):
         # Python 3.11: datetime.now(timezone.utc) - inception
         years = (datetime.now() - inception).days // 365
         return f"Inception: {inception.strftime('%d %B %Y').lstrip('0')}({years} years ago)"
-
-
-def regime_type(democracy_index_score):
-    if democracy_index_score > 8:
-        regime_type = "full democracy"
-    elif democracy_index_score > 6:
-        regime_type = "flawed democracy"
-    elif democracy_index_score > 4:
-        regime_type = "hybrid regime"
-    else:
-        regime_type = "authoritarian regime"
-
-    return f"Democracy Index: {democracy_index_score} {regime_type}"
 
 
 def query_mediawiki(entities, mediawiki, search_people):

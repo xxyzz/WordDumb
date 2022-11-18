@@ -17,7 +17,6 @@ try:
         is_full_name,
         query_mediawiki,
         query_wikidata,
-        regime_type,
     )
     from .utils import CJK_LANGS
 except ImportError:
@@ -28,7 +27,6 @@ except ImportError:
         is_full_name,
         query_mediawiki,
         query_wikidata,
-        regime_type,
     )
     from utils import CJK_LANGS
 
@@ -275,8 +273,6 @@ class EPUB:
                 if self.wikidata and (
                     wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])
                 ):
-                    if democracy_index := wikidata_cache.get("democracy_index"):
-                        s += f"<p>{regime_type(float(democracy_index))}</p>"
                     if inception := wikidata_cache.get("inception"):
                         s += f"<p>{inception_text(inception)}</p>"
                     if self.wiki_commons and (

@@ -100,7 +100,7 @@ class EPUB:
                 xhtml = item.get("href")
                 xhtml_path = self.extract_folder.joinpath(xhtml)
                 if not xhtml_path.exists():
-                    xhtml_path = next(self.extract_folder.rglob(xhtml))
+                    xhtml_path = next(self.extract_folder.rglob(xhtml.split("/")[-1]))
                 if not xhtml_path.parent.samefile(self.extract_folder):
                     self.xhtml_folder = xhtml_path.parent
                 if "/" in xhtml:

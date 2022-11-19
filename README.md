@@ -84,6 +84,8 @@ https://user-images.githubusercontent.com/21101839/202723023-082a6147-6425-43be-
     - Enable "Fetch X-Ray people descriptions from Wikipedia or Fandom" option for nonfiction books and novels that have character pages on Wikipedia or Fandom. A quote from the book will be used if it's disabled or the page is not found.
 
     - Larger spaCy model has higher [Named-entity recognition](https://en.wikipedia.org/wiki/Named-entity_recognition) precision therefore improves X-Ray quality, more details at https://spacy.io/models/en
+    
+    - Enter a Fandom link to get X-Ray descriptions from Fandom, delete the link to search Wikipedia.
 
     - Enable "Add locator map to EPUB footnotes" if your e-reader supports image in footnotes.
 

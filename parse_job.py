@@ -19,7 +19,7 @@ try:
     from .deps import download_wiktionary, install_deps, mac_python
     from .epub import EPUB
     from .interval import Interval, IntervalTree
-    from .mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
+    from .mediawiki import NER_LABELS, Fandom, Wikidata, Wikimedia_Commons, Wikipedia
     from .utils import (
         CJK_LANGS,
         get_custom_x_path,
@@ -43,7 +43,7 @@ except ImportError:
     )
     from epub import EPUB
     from interval import Interval, IntervalTree
-    from mediawiki import NER_LABELS, MediaWiki, Wikidata, Wikimedia_Commons
+    from mediawiki import NER_LABELS, Fandom, Wikidata, Wikimedia_Commons, Wikipedia
     from utils import (
         CJK_LANGS,
         get_custom_x_path,
@@ -209,7 +209,10 @@ def create_files(
     if create_x:
         insert_installed_libs(plugin_path)
         nlp = load_spacy(model, book_path)
-        mediawiki = MediaWiki(wiki_lang, useragent, plugin_path, prefs)
+        if prefs["fandom"]:
+            mediawiki = Fandom(useragent, plugin_path, prefs)
+        else:
+            mediawiki = Wikipedia(wiki_lang, useragent, plugin_path, prefs)
         wikidata = None if prefs["fandom"] else Wikidata(plugin_path, useragent)
         custom_x_ray = load_custom_x_desc(book_path)
 

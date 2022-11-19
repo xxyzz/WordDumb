@@ -6,6 +6,7 @@ from collections import defaultdict
 from datetime import datetime
 from urllib.parse import unquote
 
+# https://www.mediawiki.org/wiki/API:Get_the_contents_of_a_page
 # https://www.mediawiki.org/wiki/Special:MyLanguage/Extension:TextExtracts#API
 MEDIAWIKI_API_EXLIMIT = 20
 FUZZ_THRESHOLD = 85.7
@@ -44,7 +45,7 @@ PERSON_LABELS = frozenset(["PERSON", "PER", "persName", "PS", "PRS", "DERIV_PER"
 GPE_LABELS = frozenset(["GPE", "GPE_LOC", "GPE_ORG", "placeName", "LC"])
 
 
-class MediaWikiBase:
+class MediaWiki:
     def __init__(self, cache_path, useragent):
         import requests
 
@@ -83,22 +84,19 @@ class MediaWikiBase:
                 json.dump(self.cache, f)
 
 
-class MediaWiki(MediaWikiBase):
+class Wikipedia(MediaWiki):
     def __init__(self, lang, useragent, plugin_path, prefs):
         self.lang = lang
-        self.prefs = prefs
-        if prefs["fandom"]:
-            self.source_id = 2
-            self.source_name, self.source_link = self.get_source(2)
-            self.wiki_api = f"{prefs['fandom']}/api.php"
-            cache_path = plugin_path.parent.joinpath(
-                f"worddumb-fandom/{prefs['fandom'][8:].replace('/', '')}.json"
-            )
-        else:
-            self.source_id = 1
-            self.source_name, self.source_link = self.get_source(1)
-            self.wiki_api = f"https://{lang}.wikipedia.org/w/api.php"
-            cache_path = plugin_path.parent.joinpath(f"worddumb-wikimedia/{lang}.json")
+        self.source_id = 1
+        self.source_name = "Wikipedia"
+        self.source_link = (
+            f"https://{lang}.wikipedia.org/wiki/"
+            if lang != "zh"
+            else f"https://zh.wikipedia.org/zh-{prefs['zh_wiki_variant']}/"
+        )
+        self.wiki_api = f"https://{lang}.wikipedia.org/w/api.php"
+        cache_path = plugin_path.parent.joinpath(f"worddumb-wikimedia/{lang}.json")
+
         super().__init__(cache_path, useragent)
         self.session.params = {
             "format": "json",
@@ -113,22 +111,6 @@ class MediaWiki(MediaWikiBase):
         }
         if lang == "zh" and not prefs["fandom"]:
             self.session.params["variant"] = f"zh-{prefs['zh_wiki_variant']}"
-
-    def get_source(self, source_id):
-        if source_id == 1:
-            return (
-                "Wikipedia",
-                f"https://{self.lang}.wikipedia.org/wiki/"
-                if self.lang != "zh"
-                else f"https://zh.wikipedia.org/zh-{self.prefs['zh_wiki_variant']}/",
-            )
-        elif source_id == 2:
-            return (
-                "Fandom",
-                f"{self.prefs['fandom']}/wiki/" if self.prefs["fandom"] else None,
-            )
-
-        return None  # book quote
 
     def query(self, titles):
         result = self.session.get(self.wiki_api, params={"titles": "|".join(titles)})
@@ -169,6 +151,49 @@ class MediaWiki(MediaWikiBase):
             self.add_cache(title, None)
 
 
+class Fandom(MediaWiki):
+    def __init__(self, useragent, plugin_path, prefs):
+        self.source_id = 2
+        self.source_name = "Fandom"
+        self.source_link = f"{prefs['fandom']}/wiki/"
+        self.wiki_api = f"{prefs['fandom']}/api.php"
+        # Remove "https://" from Fandom URL
+        cache_path = plugin_path.parent.joinpath(
+            f"worddumb-fandom/{prefs['fandom'][8:].replace('/', '')}.json"
+        )
+
+        super().__init__(cache_path, useragent)
+        # Fandom doesn't have TextExtract extension
+        # https://www.mediawiki.org/wiki/Special:MyLanguage/API:Parse
+        self.session.params = {
+            "format": "json",
+            "action": "parse",
+            "prop": "text",
+            "section": 0,
+            "redirects": 1,
+            "formatversion": 2,
+        }
+
+    def query(self, page):
+        from lxml import etree
+
+        result = self.session.get(self.wiki_api, params={"page": page})
+        data = result.json()
+        if "parse" in data:
+            data = data["parse"]
+            text = data["text"]
+            html = etree.HTML(text)
+            # Remove infobox and quote element
+            for e in html.xpath("//table | //aside | //dl"):
+                e.getparent().remove(e)
+            intro = html.xpath("string()").strip()
+            self.add_cache(page, {"intro": intro})
+            for redirect in data.get("redirects", []):
+                self.add_cache(redirect["to"], redirect["from"])
+        else:
+            self.add_cache(page, None)  # Not found
+
+
 class Wikimedia_Commons:
     def __init__(self, plugin_path, useragent):
         import requests
@@ -194,7 +219,7 @@ class Wikimedia_Commons:
         self.session.close()
 
 
-class Wikidata(MediaWikiBase):
+class Wikidata(MediaWiki):
     def __init__(self, plugin_path, useragent):
         super().__init__(
             plugin_path.parent.joinpath("worddumb-wikimedia/wikidata.json"), useragent
@@ -255,13 +280,19 @@ def inception_text(inception):
 def query_mediawiki(entities, mediawiki, search_people):
     pending_entities = []
     for entity, data in entities.items():
-        if len(pending_entities) == MEDIAWIKI_API_EXLIMIT:
+        if (
+            isinstance(mediawiki, Wikipedia)
+            and len(pending_entities) == MEDIAWIKI_API_EXLIMIT
+        ):
             mediawiki.query(pending_entities)
             pending_entities.clear()
         elif not mediawiki.has_cache(entity) and (
             search_people or data["label"] not in PERSON_LABELS
         ):
-            pending_entities.append(entity)
+            if isinstance(mediawiki, Wikipedia):
+                pending_entities.append(entity)
+            else:
+                mediawiki.query(entity)
     if len(pending_entities):
         mediawiki.query(pending_entities)
     mediawiki.close()

@@ -115,7 +115,9 @@ def install_extra_deps(model, book_fmt, notif):
         pip_install_pkgs(data[lang], notif)
 
     if ismacos:
-        if book_fmt == "EPUB":
+        from .config import prefs
+
+        if book_fmt == "EPUB" or prefs["fandom"]:
             pip_install_pkgs(data["mac_epub"], notif)
         if platform.machine() == "arm64":
             pip_install_pkgs(data["mac_arm"], notif)

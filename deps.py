@@ -4,6 +4,8 @@ import platform
 import re
 import shutil
 import tarfile
+from io import BytesIO
+from urllib.request import urlopen
 
 from calibre.constants import isfrozen, ismacos, iswindows
 
@@ -13,7 +15,6 @@ from .utils import (
     custom_lemmas_folder,
     get_plugin_path,
     homebrew_mac_bin_path,
-    insert_installed_libs,
     load_json_or_pickle,
     run_subprocess,
 )
@@ -39,10 +40,8 @@ def install_deps(model, book_fmt, notif):
     dep_versions = load_json_or_pickle(plugin_path, "data/deps.json")
     if model == "lemminflect":
         pip_install("lemminflect", dep_versions["lemminflect"], notif=notif)
-    elif model.startswith("wiktionary"):
-        pip_install("requests", dep_versions["requests"], notif=notif)
-        if model == "wiktionary_cjk":
-            pip_install("pyahocorasick", dep_versions["pyahocorasick"], notif=notif)
+    elif model == "wiktionary_cjk":
+        pip_install("pyahocorasick", dep_versions["pyahocorasick"], notif=notif)
     else:
         # Install X-Ray dependencies
         pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
@@ -159,39 +158,11 @@ def upgrade_pip(py_path):
 def download_wiktionary(
     lemma_lang: str, gloss_lang: str, abort=None, log=None, notifications=None
 ) -> None:
-    plugin_path = get_plugin_path()
-    install_deps(
-        "wiktionary_cjk" if lemma_lang in CJK_LANGS else "wiktionary",
-        None,
-        notifications,
-    )
-    insert_installed_libs(plugin_path)
-    import requests
+    if lemma_lang in CJK_LANGS:
+        install_deps("wiktionary_cjk", None, notifications)
 
-    filename = f"wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.tar.gz"
-    url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/{filename}"
-    extract_folder = custom_lemmas_folder(plugin_path)
-    if not extract_folder.exists():
-        extract_folder.mkdir()
-    download_path = extract_folder.joinpath(filename)
-
-    with requests.get(url, stream=True) as r, open(download_path, "wb") as f:
-        total_len = int(r.headers.get("content-length", 0))
-        chunk_size = 2**20
-        total_chunks = total_len // chunk_size + 1
-        chunk_count = 0
-        for chunk in r.iter_content(chunk_size):
-            f.write(chunk)
-            if notifications and total_len > 0:
-                chunk_count += 1
-                notifications.put(
-                    (
-                        chunk_count / total_chunks,
-                        f"Downloading {lemma_lang}_{gloss_lang} Wiktionary file",
-                    )
-                )
-
-    with tarfile.open(download_path) as tar:
-        tar.extractall(extract_folder)
-
-    download_path.unlink()
+    url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.tar.gz"
+    extract_folder = custom_lemmas_folder(get_plugin_path())
+    with urlopen(url) as r:
+        with tarfile.open(fileobj=BytesIO(r.read())) as tar:
+            tar.extractall(extract_folder)

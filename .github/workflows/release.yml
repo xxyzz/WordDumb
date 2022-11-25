@@ -11,7 +11,6 @@ jobs:
     steps:
       - uses: dawidd6/action-download-artifact@v2
         with:
-          branch: master
           workflow: tests.yml
           skip_unpack: true
           commit: ${{ github.sha }}

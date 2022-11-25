@@ -127,7 +127,7 @@ class ConfigWidget(QWidget):
                 "cupy-cuda102": "CUDA 10.2",
             }
             self.cupy_verison_box = QComboBox()
-            for cupy_pkg, text in cupy_pkgs:
+            for cupy_pkg, text in cupy_pkgs.items():
                 self.cupy_verison_box.addItem(text, cupy_pkg)
             self.cupy_verison_box.setCurrentText(cupy_pkgs[prefs["cupy"]])
             form_layout.addRow(_("CUDA version"), self.cupy_verison_box)

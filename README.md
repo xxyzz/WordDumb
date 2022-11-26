@@ -86,8 +86,8 @@ https://user-images.githubusercontent.com/21101839/202723023-082a6147-6425-43be-
     - Enable "Run spaCy with GPU" option if your machine has [CUDA](https://developer.nvidia.com/cuda-downloads). GPU will be used when creating X-Ray file if spaCy has transformer model for the book language with ner component.
 
     - Larger spaCy model has higher [Named-entity recognition](https://en.wikipedia.org/wiki/Named-entity_recognition) precision therefore improves X-Ray quality, more details at https://spacy.io/models/en
-    
-    - Enter a Fandom link to get X-Ray descriptions from Fandom, delete the link to search Wikipedia.
+
+    - Enter a Fandom link to get X-Ray descriptions from Fandom, delete the link to search Wikipedia. This option also supports Fandom Wiki that has multiple languages by appending the language code to URL, for example https://lotr.fandom.com/fr.
 
     - Enable "Add locator map to EPUB footnotes" if your e-reader supports image in footnotes.
 
@@ -96,7 +96,7 @@ https://user-images.githubusercontent.com/21101839/202723256-36b96e53-fbf0-4a38-
 - Customize X-Ray
 
   Add X-Ray entities that can't be recognized by spaCy model to improve NER accuracy for each selected book. It can also be used to remove entities by checking the "Omit" checkbox.
- 
+
 - Import Word Wise from Anki Deck Package, CSV file or Kindle Vocabulary Builder
 
   Words inside the imported file will be enabled.
@@ -104,7 +104,7 @@ https://user-images.githubusercontent.com/21101839/202723256-36b96e53-fbf0-4a38-
   - Select the "Include scheduling information" option when exporting the .apkg file from Anki so the card schedule state can be used as Word Wise difficulty.
 
   - The CSV file should have at least one column of words and an optional column of difficulty value.
-  
+
   - Kindle Vocabulary Builder database path: `system/vocabulary/vocab.db`
 
 - Connect your e-reader, select one book or multiple books then click the plugin icon or menu. You can also run the plugin in terminal:

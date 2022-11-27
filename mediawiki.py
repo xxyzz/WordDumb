@@ -251,8 +251,10 @@ class Fandom(MediaWiki):
             data = data["parse"]
             text = data["text"]
             html = etree.HTML(text)
-            # Remove infobox and quote element
-            for e in html.xpath("//table | //aside | //dl"):
+            # Remove infobox, quote, references, error
+            for e in html.xpath(
+                "//table | //aside | //dl | //p/sup[contains(@class, 'reference')] | //span[contains(@class, 'error')]"
+            ):
                 e.getparent().remove(e)
             intro = html.xpath("string()").strip()
             self.add_cache(page, {"intro": intro})

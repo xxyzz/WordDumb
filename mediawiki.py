@@ -253,7 +253,7 @@ class Fandom(MediaWiki):
             html = etree.HTML(text)
             # Remove infobox, quote, references, error
             for e in html.xpath(
-                "//table | //aside | //dl | //p/sup[contains(@class, 'reference')] | //span[contains(@class, 'error')]"
+                "//table | //aside | //dl | //*[contains(@class, 'reference')] | //span[contains(@class, 'error')]"
             ):
                 e.getparent().remove(e)
             intro = html.xpath("string()").strip()

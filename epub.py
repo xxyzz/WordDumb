@@ -7,7 +7,7 @@ import zipfile
 from collections import defaultdict
 from html import escape, unescape
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 try:
     from .mediawiki import (
@@ -72,7 +72,7 @@ class EPUB:
 
         with self.extract_folder.joinpath("META-INF/container.xml").open("rb") as f:
             root = etree.fromstring(f.read())
-            opf_path = root.find(".//n:rootfile", NAMESPACES).get("full-path")
+            opf_path = unquote(root.find(".//n:rootfile", NAMESPACES).get("full-path"))
             self.opf_path = self.extract_folder.joinpath(opf_path)
             if not self.opf_path.exists():
                 self.opf_path = next(self.extract_folder.rglob(opf_path))
@@ -82,13 +82,13 @@ class EPUB:
                 'opf:manifest/opf:item[starts-with(@media-type, "image/")]',
                 namespaces=NAMESPACES,
             ):
-                image = item.get("href")
-                image_path = self.extract_folder.joinpath(image)
+                image_href = unquote(item.get("href"))
+                image_path = self.extract_folder.joinpath(image_href)
                 if not image_path.exists():
-                    image_path = next(self.extract_folder.rglob(image))
+                    image_path = next(self.extract_folder.rglob(image_href))
                 if not image_path.parent.samefile(self.extract_folder):
                     self.image_folder = image_path.parent
-                if "/" in image:
+                if "/" in image_href:
                     self.image_href_has_folder = True
                     break
 
@@ -97,13 +97,13 @@ class EPUB:
             ):
                 if item.get("properties") == "nav":
                     continue
-                xhtml = item.get("href")
-                xhtml_path = self.extract_folder.joinpath(xhtml)
+                xhtml_href = unquote(item.get("href"))
+                xhtml_path = self.extract_folder.joinpath(xhtml_href)
                 if not xhtml_path.exists():
-                    xhtml_path = next(self.extract_folder.rglob(xhtml.split("/")[-1]))
+                    xhtml_path = next(self.extract_folder.rglob(xhtml_href))
                 if not xhtml_path.parent.samefile(self.extract_folder):
                     self.xhtml_folder = xhtml_path.parent
-                if "/" in xhtml:
+                if "/" in xhtml_href:
                     self.xhtml_href_has_folder = True
                 with xhtml_path.open("r", encoding="utf-8") as f:
                     # remove soft hyphen

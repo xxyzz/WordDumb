@@ -17,6 +17,7 @@ try:
         is_full_name,
         query_mediawiki,
         query_wikidata,
+        x_ray_source,
     )
     from .utils import CJK_LANGS
 except ImportError:
@@ -27,6 +28,7 @@ except ImportError:
         is_full_name,
         query_mediawiki,
         query_wikidata,
+        x_ray_source,
     )
     from utils import CJK_LANGS
 
@@ -177,21 +179,21 @@ class EPUB:
                 del self.entities[entity]
                 self.removed_entity_ids.add(data["id"])
 
-    def modify_epub(self, prefs, lang):
+    def modify_epub(self, prefs: dict[str, str | int | bool], lang: str) -> None:
         if self.entities:
             query_mediawiki(self.entities, self.mediawiki, prefs["search_people"])
             if self.wikidata:
                 query_wikidata(self.entities, self.mediawiki, self.wikidata)
             if prefs["minimal_x_ray_count"] > 1:
                 self.remove_entities(prefs["minimal_x_ray_count"])
-            self.create_x_ray_footnotes(prefs["search_people"], lang)
+            self.create_x_ray_footnotes(prefs, lang)
         self.insert_anchor_elements(lang)
         if self.lemmas:
             self.create_word_wise_footnotes(lang)
         self.modify_opf()
         self.zip_extract_folder()
 
-    def insert_anchor_elements(self, lang):
+    def insert_anchor_elements(self, lang: str) -> None:
         for xhtml_path, entity_list in self.entity_occurrences.items():
             if self.entities and self.lemmas:
                 entity_list = sorted(entity_list, key=operator.itemgetter(0))
@@ -242,7 +244,10 @@ class EPUB:
             p_tags += f"<p>{p_str}</p>"
         return p_tags
 
-    def create_x_ray_footnotes(self, search_people, lang):
+    def create_x_ray_footnotes(
+        self, prefs: dict[str, str | int | bool], lang: str
+    ) -> None:
+        source_name, source_link = x_ray_source(self.mediawiki.source_id, prefs, lang)
         image_prefix = ""
         if self.xhtml_href_has_folder:
             image_prefix += "../"
@@ -257,26 +262,24 @@ class EPUB:
         """
         for entity, data in self.entities.items():
             if custom_data := self.custom_x_ray.get(entity):
-                custom_desc, custom_source, _ = custom_data
-                if custom_desc:
-                    s += f'<aside id="{data["id"]}" epub:type="footnote">'
-                    s += self.split_p_tags(custom_desc)
-                    if source_data := self.mediawiki.get_source(custom_source):
-                        source_name, source_link = source_data
-                        if source_link:
-                            s += f'<p>Source: <a href="{source_link}{quote(entity)}">{source_name}</a></p>'
-                        else:
-                            s += f"<p>Source: {source_name}</p>"
-                    s += "</aside>"
-                    continue
-
-            if (search_people or data["label"] not in PERSON_LABELS) and (
+                custom_desc, custom_source_id, _ = custom_data
+                s += f'<aside id="{data["id"]}" epub:type="footnote">{self.split_p_tags(custom_desc)}'
+                if custom_source_id:
+                    custom_source_name, custom_source_link = x_ray_source(
+                        custom_source_id, prefs, lang
+                    )
+                    if custom_source_link:
+                        s += f'<p>Source: <a href="{custom_source_link}{quote(entity)}">{custom_source_name}</a></p>'
+                    else:
+                        s += f"<p>Source: {custom_source_name}</p>"
+                s += "</aside>"
+            elif (prefs["search_people"] or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)
             ):
                 s += f"""
                 <aside id="{data["id"]}" epub:type="footnote">
                 {self.split_p_tags(intro_cache["intro"])}
-                <p>Source: <a href="{self.mediawiki.source_link}{quote(entity)}">{self.mediawiki.source_name}</a></p>
+                <p>Source: <a href="{source_link}{quote(entity)}">{source_name}</a></p>
                 """
                 if self.wikidata and (
                     wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])

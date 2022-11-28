@@ -92,12 +92,6 @@ class Wikipedia(MediaWiki):
     ) -> None:
         self.lang = lang
         self.source_id = 1
-        self.source_name = "Wikipedia"
-        self.source_link = (
-            f"https://{lang}.wikipedia.org/wiki/"
-            if lang != "zh"
-            else f"https://zh.wikipedia.org/zh-{prefs['zh_wiki_variant']}/"
-        )
         self.wiki_api = f"https://{lang}.wikipedia.org/w/api.php"
         cache_path = plugin_path.parent.joinpath(f"worddumb-wikimedia/{lang}.json")
 
@@ -221,8 +215,6 @@ class Fandom(MediaWiki):
         self, useragent: str, plugin_path: Path, prefs: dict[str, str]
     ) -> None:
         self.source_id = 2
-        self.source_name = "Fandom"
-        self.source_link = f"{prefs['fandom']}/wiki/"
         self.wiki_api = f"{prefs['fandom']}/api.php"
         # Remove "https://" from Fandom URL
         cache_path = plugin_path.parent.joinpath(
@@ -413,3 +405,18 @@ def is_full_name(
         and partial_label in PERSON_LABELS
         and full_label in PERSON_LABELS
     )
+
+
+def x_ray_source(
+    source_id: str, prefs: dict[str, str | int | bool], lang: str
+) -> tuple[str, str | None]:
+    if source_id == 1:
+        source_link = (
+            f"https://{lang}.wikipedia.org/wiki/"
+            if lang != "zh"
+            else f"https://zh.wikipedia.org/zh-{prefs['zh_wiki_variant']}/"
+        )
+        return "Wikipedia", source_link
+    else:
+        source_link = prefs["fandom"] + "/wiki" if prefs["fandom"] else None
+        return "Fandom", source_link

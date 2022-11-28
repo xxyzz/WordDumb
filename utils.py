@@ -126,7 +126,7 @@ def wiktionary_json_path(plugin_path, lemma_lang, gloss_lang):
     )
 
 
-def get_klld_path(plugin_path):
+def get_klld_path(plugin_path: Path) -> Path | None:
     custom_folder = custom_lemmas_folder(plugin_path)
     for path in custom_folder.glob("*.en.klld"):
         return path
@@ -135,29 +135,29 @@ def get_klld_path(plugin_path):
     return None
 
 
-def donate():
+def donate() -> None:
     webbrowser.open("https://liberapay.com/xxyzz/donate")
 
 
-def get_custom_x_path(book_path):
+def get_custom_x_path(book_path: str | Path) -> Path:
     if isinstance(book_path, str):
         book_path = Path(book_path)
     return book_path.parent.joinpath("worddumb-custom-x-ray.json")
 
 
-def load_custom_x_desc(book_path):
+def load_custom_x_desc(book_path: str | Path) -> dict[str, tuple[str, int, bool]]:
     custom_path = get_custom_x_path(book_path)
     if custom_path.exists():
         with custom_path.open(encoding="utf-8") as f:
             return {
-                name: (desc, source, omit)
-                for name, *_, desc, source, omit in json.load(f)
+                name: (desc, source_id, omit)
+                for name, *_, desc, source_id, omit in json.load(f)
             }
     else:
         return {}
 
 
-def get_user_agent():
+def get_user_agent() -> str:
     from calibre_plugins.worddumb import VERSION
 
     from .error_dialogs import GITHUB_URL

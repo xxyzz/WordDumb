@@ -235,6 +235,13 @@ class EPUB:
         else:
             return f'<ruby><a epub:type="noteref" href="word_wise.xhtml#{word_id}">{origin_word}</a><rp>(</rp><rt>{short_def}</rt><rp>)</rp></ruby>'
 
+    def split_p_tags(self, intro: str) -> str:
+        intro = escape(intro)
+        p_tags = ""
+        for p_str in intro.splitlines():
+            p_tags += f"<p>{p_str}</p>"
+        return p_tags
+
     def create_x_ray_footnotes(self, search_people, lang):
         image_prefix = ""
         if self.xhtml_href_has_folder:
@@ -252,7 +259,8 @@ class EPUB:
             if custom_data := self.custom_x_ray.get(entity):
                 custom_desc, custom_source, _ = custom_data
                 if custom_desc:
-                    s += f'<aside id="{data["id"]}" epub:type="footnote"><p>{escape(custom_desc)}</p>'
+                    s += f'<aside id="{data["id"]}" epub:type="footnote">'
+                    s += self.split_p_tags(custom_desc)
                     if source_data := self.mediawiki.get_source(custom_source):
                         source_name, source_link = source_data
                         if source_link:
@@ -267,7 +275,7 @@ class EPUB:
             ):
                 s += f"""
                 <aside id="{data["id"]}" epub:type="footnote">
-                <p>{escape(intro_cache["intro"])}</p>
+                {self.split_p_tags(intro_cache["intro"])}
                 <p>Source: <a href="{self.mediawiki.source_link}{quote(entity)}">{self.mediawiki.source_name}</a></p>
                 """
                 if self.wikidata and (

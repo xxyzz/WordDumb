@@ -14,7 +14,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
 
 ## How to use
 
-- Install calibre 6
+- Install calibre 6.9.0+
 
   - Arch Linux
 
@@ -40,7 +40,7 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   # choco install calibre
   ```
 
-- Install 64bit Python and pip
+- Install 64bit Python 3.10+ and pip
 
   - Arch Linux
 

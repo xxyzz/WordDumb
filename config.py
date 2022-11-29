@@ -3,7 +3,7 @@
 import json
 import webbrowser
 from functools import partial
-from typing import TYPE_CHECKING, Any, TypedDict
+from typing import TYPE_CHECKING, Any
 
 from calibre.constants import ismacos
 from calibre.gui2 import Dispatcher
@@ -67,7 +67,6 @@ prefs.defaults["zh_ipa"] = "Pinyin"
 prefs.defaults["choose_format_manually"] = True
 prefs.defaults["wiktionary_gloss_lang"] = "en"
 prefs.defaults["use_gpu"] = False
-prefs.defaults["cupy"] = "cupy-cuda11x"
 for data in load_json_or_pickle(get_plugin_path(), "data/languages.json").values():
     prefs.defaults[f"{data['wiki']}_wiktionary_difficulty_limit"] = 5
 
@@ -121,19 +120,6 @@ class ConfigWidget(QWidget):
         form_layout.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
         )
-
-        if not ismacos:
-            cupy_pkgs = {
-                "cupy-cuda11x": "CUDA 11.2 ~ 11.x",
-                "cupy-cuda111": "CUDA 11.1",
-                "cupy-cuda110": "CUDA 11.0",
-                "cupy-cuda102": "CUDA 10.2",
-            }
-            self.cupy_verison_box = QComboBox()
-            for cupy_pkg, text in cupy_pkgs.items():
-                self.cupy_verison_box.addItem(text, cupy_pkg)
-            self.cupy_verison_box.setCurrentText(cupy_pkgs[prefs["cupy"]])
-            form_layout.addRow(_("CUDA version"), self.cupy_verison_box)
 
         model_size_label = QLabel(
             _('<a href="https://spacy.io/models/en">spaCy model</a> size')
@@ -209,7 +195,6 @@ class ConfigWidget(QWidget):
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
         if not ismacos:
             prefs["use_gpu"] = self.use_gpu_box.isChecked()
-            prefs["cupy"] = self.cupy_verison_box.currentData()
 
     def open_kindle_lemmas_dialog(self) -> None:
         klld_path = get_klld_path(self.plugin_path)

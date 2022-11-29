@@ -19,7 +19,7 @@ class SendFile:
     def __init__(
         self,
         gui: Any,
-        data: tuple[int, str, Path, Any, bool, str, str],
+        data: tuple[int, str, str, Any, bool, str, str],
         package_name: str | bool,
         notif: Any,
     ) -> None:

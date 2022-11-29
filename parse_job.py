@@ -60,7 +60,7 @@ def do_job(
     abort: Any = None,
     log: Any = None,
     notifications: Any = None,
-) -> tuple[int, str, Path, Any, bool, str, str]:
+) -> tuple[int, str, str, Any, bool, str, str]:
     from .config import prefs
     from .metadata import get_asin_etc
 
@@ -96,13 +96,13 @@ def do_job(
                 notifications=notifications,
             )
     else:
-        create_ww = create_ww and not get_ll_path(asin, book_path).exists()
-        create_x = create_x and not get_x_ray_path(asin, book_path).exists()
+        create_ww = create_ww and not get_ll_path(asin, book_path_str).exists()
+        create_x = create_x and not get_x_ray_path(asin, book_path_str).exists()
 
     return_values = (
         book_id,
         asin,
-        new_epub_path if book_fmt == "EPUB" else book_path,
+        str(new_epub_path) if book_fmt == "EPUB" else book_path_str,
         mi,
         update_asin,
         book_fmt,
@@ -133,7 +133,7 @@ def do_job(
             py_path,
             plugin_path,
             asin,
-            book_path,
+            book_path_str,
             acr,
             revision,
             model,

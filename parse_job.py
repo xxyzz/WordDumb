@@ -19,19 +19,18 @@ try:
     from .deps import download_wiktionary, install_deps, which_python
     from .epub import EPUB
     from .interval import Interval, IntervalTree
-    from .mediawiki import NER_LABELS, Fandom, Wikidata, Wikimedia_Commons, Wikipedia
+    from .mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
     from .utils import (
         CJK_LANGS,
-        get_custom_x_path,
         get_plugin_path,
         get_user_agent,
         insert_installed_libs,
-        load_custom_x_desc,
         load_lemmas_dump,
         run_subprocess,
         wiktionary_dump_path,
     )
     from .x_ray import X_Ray
+    from .x_ray_share import NER_LABELS, CustomX, get_custom_x_path, load_custom_x_desc
 except ImportError:
     from database import (
         create_lang_layer,
@@ -43,15 +42,10 @@ except ImportError:
     )
     from epub import EPUB
     from interval import Interval, IntervalTree
-    from mediawiki import NER_LABELS, Fandom, Wikidata, Wikimedia_Commons, Wikipedia
-    from utils import (
-        CJK_LANGS,
-        get_custom_x_path,
-        insert_installed_libs,
-        load_custom_x_desc,
-        load_lemmas_dump,
-    )
+    from mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
+    from utils import CJK_LANGS, Prefs, insert_installed_libs, load_lemmas_dump
     from x_ray import X_Ray
+    from x_ray_share import NER_LABELS, CustomX, get_custom_x_path, load_custom_x_desc
 
 
 def do_job(

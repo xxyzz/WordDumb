@@ -20,7 +20,7 @@ from PyQt6.QtWidgets import (
 )
 
 from .custom_lemmas import ComboBoxDelegate
-from .utils import get_custom_x_path
+from .x_ray_share import get_custom_x_path
 
 load_translations()
 

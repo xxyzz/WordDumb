@@ -11,23 +11,27 @@ from urllib.parse import quote, unquote
 
 try:
     from .mediawiki import (
-        FUZZ_THRESHOLD,
-        PERSON_LABELS,
         inception_text,
-        is_full_name,
         query_mediawiki,
         query_wikidata,
+    )
+    from .x_ray_share import (
+        FUZZ_THRESHOLD,
+        PERSON_LABELS,
+        is_full_name,
         x_ray_source,
     )
     from .utils import CJK_LANGS
 except ImportError:
     from mediawiki import (
-        FUZZ_THRESHOLD,
-        PERSON_LABELS,
         inception_text,
-        is_full_name,
         query_mediawiki,
         query_wikidata,
+    )
+    from x_ray_share import (
+        FUZZ_THRESHOLD,
+        PERSON_LABELS,
+        is_full_name,
         x_ray_source,
     )
     from utils import CJK_LANGS

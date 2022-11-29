@@ -15,13 +15,11 @@ try:
         save_db,
     )
     from .mediawiki import (
-        FUZZ_THRESHOLD,
-        PERSON_LABELS,
         inception_text,
-        is_full_name,
         query_mediawiki,
         query_wikidata,
     )
+    from .x_ray_share import FUZZ_THRESHOLD, PERSON_LABELS, XRayEntity, is_full_name
 except ImportError:
     from database import (
         create_x_indices,
@@ -34,13 +32,11 @@ except ImportError:
         save_db,
     )
     from mediawiki import (
-        FUZZ_THRESHOLD,
-        PERSON_LABELS,
         inception_text,
-        is_full_name,
         query_mediawiki,
         query_wikidata,
     )
+    from x_ray_share import FUZZ_THRESHOLD, PERSON_LABELS, XRayEntity, is_full_name
 
 
 class X_Ray:

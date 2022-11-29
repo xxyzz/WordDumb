@@ -1,49 +1,21 @@
 #!/usr/bin/env python3
 
 import json
-import re
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote
 
+try:
+    from .x_ray_share import PERSON_LABELS, XRayEntity
+except ImportError:
+    from x_ray_share import PERSON_LABELS, XRayEntity
+
 # https://www.mediawiki.org/wiki/API:Get_the_contents_of_a_page
 # https://www.mediawiki.org/wiki/Extension:TextExtracts#API
 MEDIAWIKI_API_EXLIMIT = 20
-FUZZ_THRESHOLD = 85.7
 
-# https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L325
-NER_LABELS = frozenset(
-    [
-        "EVENT",  # OntoNotes 5: English, Chinese
-        "FAC",
-        "GPE",
-        "LAW",
-        "LOC",
-        "ORG",
-        "PERSON",
-        "PRODUCT",
-        "MISC",  # Catalan
-        "PER",
-        "EVT",  # Norwegian Bokmål: https://github.com/ltgoslo/norne#entity-types
-        "GPE_LOC",
-        "GPE_ORG",
-        "PROD",
-        "geogName",  # Polish: https://arxiv.org/pdf/1811.10418.pdf#subsection.2.1
-        "orgName",
-        "persName",
-        "placeName",
-        "ORGANIZATION",  # Romanian: https://arxiv.org/pdf/1909.01247.pdf#section.4
-        "PS",  # Korean: https://arxiv.org/pdf/2105.09680.pdf#subsubsection.3.4.1
-        "LC",
-        "OG",
-        "EVN",  # Swedish: https://core.ac.uk/reader/33724960
-        "PRS",
-        "DERIV_PER",  # Croatian: https://nl.ijs.si/janes/wp-content/uploads/2017/09/SlovenianNER-eng-v1.1.pdf
-    ]
-)
-PERSON_LABELS = frozenset(["PERSON", "PER", "persName", "PS", "PRS", "DERIV_PER"])
 GPE_LABELS = frozenset(["GPE", "GPE_LOC", "GPE_ORG", "placeName", "LC"])
 
 
@@ -390,33 +362,3 @@ def is_gpe_label(lang: str, label: str) -> bool:
         return label == "LOC"
     else:
         return label in GPE_LABELS
-
-
-# https://en.wikipedia.org/wiki/Interpunct
-NAME_DIVISION_REG = r"\s|\u00B7|\u2027|\u30FB|\uFF65"
-
-
-def is_full_name(
-    partial_name: str, partial_label: str, full_name: str, full_label: str
-) -> bool:
-    return (
-        not re.search(NAME_DIVISION_REG, partial_name)
-        and re.search(NAME_DIVISION_REG, full_name)
-        and partial_label in PERSON_LABELS
-        and full_label in PERSON_LABELS
-    )
-
-
-def x_ray_source(
-    source_id: str, prefs: dict[str, str | int | bool], lang: str
-) -> tuple[str, str | None]:
-    if source_id == 1:
-        source_link = (
-            f"https://{lang}.wikipedia.org/wiki/"
-            if lang != "zh"
-            else f"https://zh.wikipedia.org/zh-{prefs['zh_wiki_variant']}/"
-        )
-        return "Wikipedia", source_link
-    else:
-        source_link = prefs["fandom"] + "/wiki" if prefs["fandom"] else None
-        return "Fandom", source_link

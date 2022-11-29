@@ -139,24 +139,6 @@ def donate() -> None:
     webbrowser.open("https://liberapay.com/xxyzz/donate")
 
 
-def get_custom_x_path(book_path: str | Path) -> Path:
-    if isinstance(book_path, str):
-        book_path = Path(book_path)
-    return book_path.parent.joinpath("worddumb-custom-x-ray.json")
-
-
-def load_custom_x_desc(book_path: str | Path) -> dict[str, tuple[str, int, bool]]:
-    custom_path = get_custom_x_path(book_path)
-    if custom_path.exists():
-        with custom_path.open(encoding="utf-8") as f:
-            return {
-                name: (desc, source_id, omit)
-                for name, *_, desc, source_id, omit in json.load(f)
-            }
-    else:
-        return {}
-
-
 def get_user_agent() -> str:
     from calibre_plugins.worddumb import VERSION
 

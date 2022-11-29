@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sqlite3
 from pathlib import Path
+from typing import Iterator
 
 try:
     from .utils import load_json_or_pickle
@@ -8,11 +9,13 @@ except ImportError:
     from utils import load_json_or_pickle
 
 
-def get_ll_path(asin, book_path):
+def get_ll_path(asin: str, book_path: str) -> Path:
     return Path(book_path).parent.joinpath(f"LanguageLayer.en.{asin}.kll")
 
 
-def create_lang_layer(asin, book_path, acr, revision):
+def create_lang_layer(
+    asin: str, book_path: str, acr: str, revision: str
+) -> tuple[sqlite3.Connection, Path]:
     db_path = get_ll_path(asin, book_path)
     ll_conn = sqlite3.connect(":memory:")
     ll_conn.executescript(
@@ -47,18 +50,20 @@ def create_lang_layer(asin, book_path, acr, revision):
     return ll_conn, db_path
 
 
-def insert_lemma(ll_conn, data):
+def insert_lemma(ll_conn: sqlite3.Connection, data: tuple[int, int, int, int]) -> None:
     ll_conn.execute(
         "INSERT INTO glosses (start, end, difficulty, sense_id, low_confidence) VALUES (?, ?, ?, ?, 0)",
         data,
     )
 
 
-def get_x_ray_path(asin, book_path):
+def get_x_ray_path(asin: str, book_path: str) -> Path:
     return Path(book_path).parent.joinpath(f"XRAY.entities.{asin}.asc")
 
 
-def create_x_ray_db(asin, book_path, lang, plugin_path, prefs):
+def create_x_ray_db(
+    asin: str, book_path: str, lang: str, plugin_path: Path, prefs: dict[str, str]
+) -> tuple[sqlite3.Connection, Path]:
     db_path = get_x_ray_path(asin, book_path)
     x_ray_conn = sqlite3.connect(":memory:")
     x_ray_conn.executescript(
@@ -151,7 +156,7 @@ def create_x_ray_db(asin, book_path, lang, plugin_path, prefs):
     return x_ray_conn, db_path
 
 
-def create_x_indices(conn):
+def create_x_indices(conn: sqlite3.Connection) -> None:
     conn.executescript(
         """
         CREATE INDEX idx_entity_type ON entity(type ASC);
@@ -161,37 +166,49 @@ def create_x_indices(conn):
     )
 
 
-def insert_x_book_metadata(conn, data):
+def insert_x_book_metadata(
+    conn: sqlite3.Connection, data: tuple[int, int, int, int, int, str | None]
+) -> None:
     conn.execute("INSERT INTO book_metadata VALUES(0, ?, ?, 0, 0, ?, ?, ?, ?)", data)
 
 
-def insert_x_entities(conn, data):
+def insert_x_entities(
+    conn: sqlite3.Connection, data: Iterator[tuple[int, str, int, int]]
+) -> None:
     conn.executemany(
         "INSERT INTO entity (id, label, type, count, has_info_card) VALUES(?, ?, ?, ?, 1)",
         data,
     )
 
 
-def insert_x_entity_description(conn, data):
+def insert_x_entity_description(
+    conn: sqlite3.Connection, data: tuple[str, str, int | None, int]
+) -> None:
     conn.execute("INSERT INTO entity_description VALUES(?, ?, ?, ?)", data)
 
 
-def insert_x_occurrences(conn, data):
+def insert_x_occurrences(
+    conn: sqlite3.Connection, data: Iterator[tuple[int, int, int]]
+) -> None:
     conn.executemany("INSERT INTO occurrence VALUES(?, ?, ?)", data)
 
 
-def insert_x_type(conn, data):
+def insert_x_type(
+    conn: sqlite3.Connection, data: tuple[int, int, int, int, str]
+) -> None:
     conn.execute("INSERT INTO type VALUES(?, ?, ?, ?, ?)", data)
 
 
-def insert_x_excerpt_image(conn, data):
+def insert_x_excerpt_image(
+    conn: sqlite3.Connection, data: tuple[int, int, int, str, int]
+) -> None:
     conn.execute(
         "INSERT INTO excerpt (id, start, length, image, goto) VALUES(?, ?, ?, ?, ?)",
         data,
     )
 
 
-def save_db(source, dest_path):
+def save_db(source: sqlite3.Connection, dest_path: Path) -> None:
     source.commit()
     dest = sqlite3.connect(dest_path)
     with dest:

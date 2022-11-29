@@ -5,6 +5,8 @@ import re
 import shutil
 import tarfile
 from io import BytesIO
+from pathlib import Path
+from typing import Any
 from urllib.request import urlopen
 
 from calibre.constants import isfrozen, ismacos, iswindows
@@ -20,12 +22,12 @@ from .utils import (
 )
 
 PY_PATH = None
-LIBS_PATH = None
+LIBS_PATH = Path()
 RUNNABLE_PIP = None
 USE_SYSTEM_PYTHON = False
 
 
-def install_deps(model, book_fmt, notif):
+def install_deps(model: str, book_fmt: str | None, notif: Any) -> None:
     global PY_PATH, LIBS_PATH, CALIBRE_DEBUG_PATH, RUNNABLE_PIP, USE_SYSTEM_PYTHON
     plugin_path = get_plugin_path()
     USE_SYSTEM_PYTHON = ismacos or (isfrozen and model.endswith("_trf"))
@@ -63,7 +65,7 @@ def install_deps(model, book_fmt, notif):
                 pip_install("lxml", dep_versions["lxml"], notif=notif)
 
 
-def which_python(use_system_python=False):
+def which_python(use_system_python: bool = False) -> tuple[str, str]:
     py = "python3"
     py_v = ".".join(platform.python_version_tuple()[:2])
     if iswindows:
@@ -84,14 +86,14 @@ def which_python(use_system_python=False):
     return py, py_v
 
 
-def mac_python():
+def mac_python() -> str:
     py = homebrew_mac_bin_path("python3")
     if not shutil.which(py):
         py = "/usr/bin/python3"  # Command Line Tools
     return py
 
 
-def get_runnable_pip(py_path):
+def get_runnable_pip(py_path: str) -> str:
     r = run_subprocess(
         [py_path, "-m", "pip", "--version", "--disable-pip-version-check"]
     )
@@ -104,7 +106,9 @@ def get_runnable_pip(py_path):
     return pip_path + "/__pip-runner__.py"
 
 
-def pip_install(pkg, pkg_version, url=None, notif=None):
+def pip_install(
+    pkg: str, pkg_version: str, url: str | None = None, notif: Any = None
+) -> None:
     pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
     if not any(LIBS_PATH.glob(pattern)):
         if notif:
@@ -120,7 +124,7 @@ def pip_install(pkg, pkg_version, url=None, notif=None):
                 "install",
                 "-U",
                 "-t",
-                LIBS_PATH,
+                str(LIBS_PATH),
                 "--no-user",  # disable "--user" option which conflicts with "-t"
             ]
         )
@@ -134,7 +138,7 @@ def pip_install(pkg, pkg_version, url=None, notif=None):
         run_subprocess(args)
 
 
-def upgrade_pip(py_path):
+def upgrade_pip(py_path: str) -> None:
     r = run_subprocess(
         [py_path, "-m", "pip", "--version", "--disable-pip-version-check"]
     )

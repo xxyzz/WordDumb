@@ -4,6 +4,8 @@ import random
 import re
 from html import escape, unescape
 from pathlib import Path
+from sqlite3 import Connection
+from typing import Any, Iterator
 
 try:
     from calibre.constants import isfrozen, ismacos
@@ -20,8 +22,10 @@ try:
     from .epub import EPUB
     from .interval import Interval, IntervalTree
     from .mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
+    from .metadata import KFXJson
     from .utils import (
         CJK_LANGS,
+        Prefs,
         get_plugin_path,
         get_user_agent,
         insert_installed_libs,
@@ -43,20 +47,26 @@ except ImportError:
     from epub import EPUB
     from interval import Interval, IntervalTree
     from mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
+    from metadata import KFXJson
     from utils import CJK_LANGS, Prefs, insert_installed_libs, load_lemmas_dump
     from x_ray import X_Ray
     from x_ray_share import NER_LABELS, CustomX, get_custom_x_path, load_custom_x_desc
 
 
 def do_job(
-    data, create_ww=True, create_x=True, abort=None, log=None, notifications=None
-):
+    data: tuple[int, str, str, Any, dict[str, str]],
+    create_ww: bool = True,
+    create_x: bool = True,
+    abort: Any = None,
+    log: Any = None,
+    notifications: Any = None,
+) -> tuple[int, str, Path, Any, bool, str, str]:
     from .config import prefs
     from .metadata import get_asin_etc
 
-    (book_id, book_fmt, book_path, mi, lang) = data
+    (book_id, book_fmt, book_path_str, mi, lang) = data
     (asin, acr, revision, update_asin, kfx_json, mobi_html, mobi_codec) = get_asin_etc(
-        book_path, book_fmt, mi
+        book_path_str, book_fmt, mi
     )
 
     model = lang["spacy"] + prefs["model_size"]
@@ -65,7 +75,7 @@ def do_job(
     plugin_path = get_plugin_path()
     useragent = get_user_agent()
     if book_fmt == "EPUB":
-        book_path = Path(book_path)
+        book_path = Path(book_path_str)
         new_file_stem = book_path.stem
         if create_x:
             new_file_stem += "_x_ray"
@@ -159,7 +169,7 @@ def do_job(
             create_ww,
             create_x,
             asin,
-            book_path,
+            book_path_str,
             acr,
             revision,
             model,
@@ -167,7 +177,7 @@ def do_job(
             kfx_json,
             mobi_html,
             mobi_codec,
-            plugin_path,
+            str(plugin_path),
             useragent,
             prefs,
             notifications,
@@ -176,7 +186,7 @@ def do_job(
     return return_values
 
 
-def calulate_final_start(kfx_json, mobi_html):
+def calulate_final_start(kfx_json: list[KFXJson] | None, mobi_html: bytes) -> int:
     if kfx_json:
         return kfx_json[-1]["position"] + len(kfx_json[-1]["content"])
     elif mobi_html:
@@ -185,25 +195,24 @@ def calulate_final_start(kfx_json, mobi_html):
 
 
 def create_files(
-    create_ww,
-    create_x,
-    asin,
-    book_path,
-    acr,
-    revision,
-    model,
-    wiki_lang,
-    kfx_json,
-    mobi_html,
-    mobi_codec,
-    plugin_path,
-    useragent,
-    prefs,
-    notif,
-):
+    create_ww: bool,
+    create_x: bool,
+    asin: str,
+    book_path: str,
+    acr: str,
+    revision: str,
+    model: str,
+    wiki_lang: str,
+    kfx_json: list[KFXJson] | None,
+    mobi_html: bytes,
+    mobi_codec: str,
+    plugin_path_str: str,
+    useragent: str,
+    prefs: Prefs,
+    notif: Any,
+) -> None:
     is_epub = not kfx_json and not mobi_codec
-    if isinstance(plugin_path, str):
-        plugin_path = Path(plugin_path)
+    plugin_path = Path(plugin_path_str)
     kw_processor = None
     if create_ww:
         kw_processor = load_lemmas_dump(
@@ -235,7 +244,7 @@ def create_files(
                     start,
                     epub,
                     doc,
-                    None,
+                    "",
                     wiki_lang,
                     escaped_text,
                     custom_x_ray,
@@ -307,14 +316,16 @@ def create_files(
                 kw_processor,
                 ll_conn,
                 mobi_codec,
-                None if kfx_json else context[1],
+                "" if kfx_json else context[1],
             )
 
     if create_ww:
         save_db(ll_conn, ll_path)
 
 
-def parse_book(kfx_json, mobi_html, mobi_codec):
+def parse_book(
+    kfx_json: list[KFXJson] | None, mobi_html: bytes, mobi_codec: str
+) -> Iterator[tuple[str, tuple[int, str] | int]]:
     if kfx_json:
         for entry in filter(lambda x: x["type"] == 1, kfx_json):
             yield entry["content"], entry["position"]
@@ -326,7 +337,9 @@ def parse_book(kfx_json, mobi_html, mobi_codec):
                 yield unescape(text), (match_body.start() + m.start() + 1, text)
 
 
-def index_in_escaped_text(token, escaped_text, start_offset):
+def index_in_escaped_text(
+    token: str, escaped_text: str, start_offset: int
+) -> tuple[int, int] | None:
     if token not in escaped_text[start_offset:]:
         # replace Unicode character to numeric character reference
         token = escape(token, False).encode("ascii", "xmlcharrefreplace").decode()
@@ -335,10 +348,17 @@ def index_in_escaped_text(token, escaped_text, start_offset):
         token_start = escaped_text.index(token, start_offset)
         return token_start, token_start + len(token)
     else:
-        return None, None
+        return None
 
 
-def find_lemma(start, text, kw_processor, ll_conn, mobi_codec, escaped_text):
+def find_lemma(
+    start: int,
+    text: str,
+    kw_processor: Any,
+    ll_conn: Connection,
+    mobi_codec: str,
+    escaped_text: str,
+) -> None:
     starts = set()
     for data, token_start, token_end in kw_processor.extract_keywords(
         text, span_info=True
@@ -346,11 +366,10 @@ def find_lemma(start, text, kw_processor, ll_conn, mobi_codec, escaped_text):
         end = None
         lemma = text[token_start:token_end]
         if mobi_codec:
-            lemma_start, lemma_end = index_in_escaped_text(
-                lemma, escaped_text, token_start
-            )
-            if lemma_start is None:
+            result = index_in_escaped_text(lemma, escaped_text, token_start)
+            if result is None:
                 continue
+            lemma_start, lemma_end = result
             index = start + len(escaped_text[:lemma_start].encode(mobi_codec))
         else:
             index = start + token_start
@@ -369,11 +388,17 @@ def find_lemma(start, text, kw_processor, ll_conn, mobi_codec, escaped_text):
 
 
 def epub_find_lemma(
-    start, text, kw_processor, escaped_text, xhtml_path, epub, interval_tree=None
-):
+    start: int,
+    text: str,
+    kw_processor: Any,
+    escaped_text: str,
+    xhtml_path: Path,
+    epub: EPUB,
+    interval_tree: IntervalTree | None = None,
+) -> None:
     from flashtext import KeywordProcessor
 
-    starts = set()
+    starts: set[int] = set()
     if isinstance(kw_processor, KeywordProcessor):
         for data, token_start, token_end in kw_processor.extract_keywords(
             text, span_info=True
@@ -405,19 +430,22 @@ def epub_find_lemma(
 
 
 def epub_add_lemma(
-    token_start,
-    token_end,
-    interval_tree,
-    text,
-    escaped_text,
-    start,
-    starts,
-    epub,
-    xhtml_path,
-):
+    token_start: int,
+    token_end: int,
+    interval_tree: IntervalTree | None,
+    text: str,
+    escaped_text: str,
+    start: int,
+    starts: set[int],
+    epub: EPUB,
+    xhtml_path: Path,
+) -> None:
     lemma = text[token_start:token_end]
-    lemma_start, lemma_end = index_in_escaped_text(lemma, escaped_text, token_start)
-    if lemma_start is None or lemma_start in starts:
+    result = index_in_escaped_text(lemma, escaped_text, token_start)
+    if result is None:
+        return
+    lemma_start, lemma_end = result
+    if lemma_start in starts:
         return
     if interval_tree and interval_tree.is_overlap(Interval(lemma_start, lemma_end - 1)):
         return
@@ -446,7 +474,7 @@ DIRECTIONS = frozenset(
 )
 
 
-def process_entity(text, lang, len_limit):
+def process_entity(text: str, lang: str, len_limit: int) -> str | None:
     if re.search(r"https?:|www\.", text, re.IGNORECASE):
         return None
     text = re.sub(r"^\W+", "", text)
@@ -476,8 +504,15 @@ def process_entity(text, lang, len_limit):
 
 
 def find_named_entity(
-    start, x_ray, doc, mobi_codec, lang, escaped_text, custom_x_ray, xhtml_path=None
-):
+    start: int,
+    x_ray: X_Ray,
+    doc: Any,
+    mobi_codec: str,
+    lang: str,
+    escaped_text: str,
+    custom_x_ray: CustomX,
+    xhtml_path: Path | None = None,
+) -> list[Interval]:
     len_limit = 2 if lang in CJK_LANGS else 3
     starts = set()
     intervals = []
@@ -492,9 +527,10 @@ def find_named_entity(
 
         ent_text = ent.text if ent.ent_id_ else text
         if escaped_text:
-            start_char, end_char = index_in_escaped_text(
-                ent_text, escaped_text, ent.start_char
-            )
+            result = index_in_escaped_text(ent_text, escaped_text, ent.start_char)
+            if result is None:
+                continue
+            start_char, end_char = result
             if start_char is None:
                 continue
         elif not ent.ent_id_:
@@ -538,7 +574,7 @@ def find_named_entity(
     return intervals
 
 
-def load_spacy(model, book_path):
+def load_spacy(model: str, book_path: str) -> Any:
     import spacy
 
     excluded_components = [

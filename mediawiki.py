@@ -88,7 +88,7 @@ class Wikipedia(MediaWiki):
         )
         data = result.json()
         converts = defaultdict(list)
-        redirect_to_sections = defaultdict(dict)
+        redirect_to_sections: dict[str, dict[str, str]] = defaultdict(dict)
         for convert_type in ["normalized", "redirects"]:
             for d in data["query"].get(convert_type, []):
                 # different titles can be redirected to the same page
@@ -130,7 +130,7 @@ class Wikipedia(MediaWiki):
 
     def get_section_text(
         self,
-        redirect_to_sections: dict[dict[str, str]],
+        redirect_to_sections: dict[str, dict[str, str]],
         converts: dict[str, list[str]],
         titles: set[str],
     ) -> None:
@@ -229,7 +229,7 @@ class Fandom(MediaWiki):
 
 
 class Wikimedia_Commons:
-    def __init__(self, plugin_path: str, useragent: str) -> None:
+    def __init__(self, plugin_path: Path, useragent: str) -> None:
         import requests
 
         self.session = requests.Session()
@@ -254,16 +254,16 @@ class Wikimedia_Commons:
 
 
 class Wikidata(MediaWiki):
-    def __init__(self, plugin_path: str, useragent: str) -> None:
+    def __init__(self, plugin_path: Path, useragent: str) -> None:
         super().__init__(
             plugin_path.parent.joinpath("worddumb-wikimedia/wikidata.json"), useragent
         )
 
     def query(self, items: list[str]) -> None:
-        items = " ".join(map(lambda x: f"wd:{x}", items))
+        items_str = " ".join(map(lambda x: f"wd:{x}", items))
         query = f"""
         SELECT ?item (SAMPLE(?maps) AS ?map) (MAX(?inceptions) AS ?inception) WHERE {{
-          VALUES ?item {{ {items} }}
+          VALUES ?item {{ {items_str} }}
           OPTIONAL {{
             ?item (p:P242/ps:P242) ?maps.
             FILTER(REGEX(STR(?maps), "(orthographic|globe)", "i"))
@@ -277,8 +277,7 @@ class Wikidata(MediaWiki):
             "https://query.wikidata.org/sparql",
             params={"query": query, "format": "json"},
         )
-        result = result.json()
-        for binding in result.get("results", {}).get("bindings"):
+        for binding in result.json().get("results", {}).get("bindings"):
             item_id = binding["item"]["value"].split("/")[-1]
             map_url = binding.get("map", {}).get("value")
             inception = binding.get("inception", {}).get("value")
@@ -298,23 +297,23 @@ class Wikidata(MediaWiki):
                 self.add_cache(item_id, None)
 
 
-def inception_text(inception: str) -> str:
-    if inception.startswith("-"):
-        bc = int(inception[1:5]) + 1  # 2BC: -0001, 1BC: +0000, 1AD: 0001
+def inception_text(inception_str: str) -> str:
+    if inception_str.startswith("-"):
+        bc = int(inception_str[1:5]) + 1  # 2BC: -0001, 1BC: +0000, 1AD: 0001
         years = datetime.now().year + bc
         return f"Inception: {bc} BC({years} years ago)"
     else:
         # don't need to remove the last "Z" in Python 3.11
-        inception = datetime.fromisoformat(inception[:-1])
+        inception = datetime.fromisoformat(inception_str[:-1])
         # Python 3.11: datetime.now(timezone.utc) - inception
         years = (datetime.now() - inception).days // 365
         return f"Inception: {inception.strftime('%d %B %Y').lstrip('0')}({years} years ago)"
 
 
 def query_mediawiki(
-    entities: dict[str, dict[str, str]], mediawiki: MediaWiki, search_people: bool
+    entities: dict[str, XRayEntity], mediawiki: Wikipedia | Fandom, search_people: bool
 ) -> None:
-    pending_entities = set()
+    pending_entities: set[str] = set()
     for entity, data in entities.items():
         if (
             isinstance(mediawiki, Wikipedia)
@@ -329,15 +328,15 @@ def query_mediawiki(
                 pending_entities.add(entity)
             else:
                 mediawiki.query(entity)
-    if len(pending_entities):
+    if len(pending_entities) and isinstance(mediawiki, Wikipedia):
         mediawiki.query(pending_entities)
     mediawiki.close()
 
 
 def query_wikidata(
-    entities: dict[str, dict[str, str]], mediawiki: MediaWiki, wikidata: Wikidata
+    entities: dict[str, XRayEntity], mediawiki: Wikipedia, wikidata: Wikidata
 ) -> None:
-    pending_item_ids = []
+    pending_item_ids: list[str] = []
     for item_id in filter(
         lambda x: x and not wikidata.has_cache(x),
         (

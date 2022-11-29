@@ -477,10 +477,8 @@ msgstr ""
 "calibre。 </p>"
 
 #: error_dialogs.py:89
-msgid ""
-"Please delete the '{}*' folder from the 'worddumb-libs-py*' folder and try "
-"again."
-msgstr "請從“worddumb-libs-py*”文件夾中刪除“{}*”文件夾，然後重試。"
+msgid "Please delete the '{}/worddumb-libs-py*' folder then try again."
+msgstr "請刪除“{}/worddumb-libs-py*”文件夾，然後重試。"
 
 #: error_dialogs.py:103
 msgid ""

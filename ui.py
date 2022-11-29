@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from functools import partial
+from typing import TYPE_CHECKING, Any, Iterator
 
 from calibre.gui2 import Dispatcher
 from calibre.gui2.actions import InterfaceAction
@@ -14,7 +15,9 @@ from .parse_job import do_job
 from .send_file import SendFile, device_connected
 from .utils import donate
 
-load_translations()
+load_translations()  # type: ignore
+if TYPE_CHECKING:
+    _: Any
 
 
 class WordDumb(InterfaceAction):
@@ -25,7 +28,7 @@ class WordDumb(InterfaceAction):
     action_menu_clone_qaction = _("Create Word Wise and X-Ray")
 
     def genesis(self):
-        self.qaction.setIcon(get_icons("starfish.svg", "WordDumb"))
+        self.qaction.setIcon(get_icons("starfish.svg", "WordDumb"))  # type: ignore
         self.menu = self.qaction.menu()
 
         self.qaction.triggered.connect(partial(run, self.gui, True, True))
@@ -79,7 +82,9 @@ class WordDumb(InterfaceAction):
                 custom_x_dlg.x_ray_model.save_data()
 
 
-def get_metadata_of_selected_books(gui, custom_x_ray):
+def get_metadata_of_selected_books(
+    gui: Any, custom_x_ray: bool
+) -> Iterator[tuple[int, list[str], list[str], Any, dict[str, str]]]:
     return filter(
         None,
         [
@@ -92,7 +97,7 @@ def get_metadata_of_selected_books(gui, custom_x_ray):
     )
 
 
-def run(gui, create_ww, create_x):
+def run(gui: Any, create_ww: bool, create_x: bool) -> None:
     for book_id, book_fmts, book_paths, mi, lang in get_metadata_of_selected_books(
         gui, False
     ):

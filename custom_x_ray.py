@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+from typing import TYPE_CHECKING, Any
 
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt, QVariant
 from PyQt6.QtGui import QIcon
@@ -22,7 +23,9 @@ from PyQt6.QtWidgets import (
 from .custom_lemmas import ComboBoxDelegate
 from .x_ray_share import get_custom_x_path
 
-load_translations()
+load_translations()  # type: ignore
+if TYPE_CHECKING:
+    _: Any
 
 
 NER_LABEL_EXPLANATIONS = {
@@ -40,7 +43,7 @@ DESC_SOURCES = {None: _("Book quote"), 1: _("Wikipedia"), 2: "Fandom"}
 
 
 class CustomXRayDialog(QDialog):
-    def __init__(self, book_path, title, parent=None):
+    def __init__(self, book_path: str, title: str, parent: Any = None) -> None:
         super().__init__(parent)
         self.setWindowTitle(_("Customize X-Ray for {}").format(title))
         vl = QVBoxLayout()
@@ -96,14 +99,14 @@ class CustomXRayDialog(QDialog):
         save_button_box.rejected.connect(self.reject)
         vl.addWidget(save_button_box)
 
-    def search_x_ray(self, text):
+    def search_x_ray(self, text: str) -> None:
         if matches := self.x_ray_model.match(
             self.x_ray_model.index(0, 0), Qt.ItemDataRole.DisplayRole, text
         ):
             self.x_ray_table.setCurrentIndex(matches[0])
             self.x_ray_table.scrollTo(matches[0])
 
-    def add_x_ray(self):
+    def add_x_ray(self) -> None:
         add_x_dlg = AddXRayDialog(self)
         if add_x_dlg.exec() and (name := add_x_dlg.name_line.text()):
             self.x_ray_model.insert_data(
@@ -118,13 +121,13 @@ class CustomXRayDialog(QDialog):
             )
             self.x_ray_table.resizeColumnsToContents()
 
-    def delete_x_ray(self):
+    def delete_x_ray(self) -> None:
         self.x_ray_model.delete_data(self.x_ray_table.selectedIndexes())
         self.x_ray_table.resizeColumnsToContents()
 
 
 class XRayTableModel(QAbstractTableModel):
-    def __init__(self, book_path):
+    def __init__(self, book_path: str) -> None:
         super().__init__()
         self.custom_path = get_custom_x_path(book_path)
         if self.custom_path.exists():
@@ -215,7 +218,7 @@ class XRayTableModel(QAbstractTableModel):
             self.x_ray_data.pop(row)
             self.endRemoveRows()
 
-    def save_data(self):
+    def save_data(self) -> None:
         with open(self.custom_path, "w", encoding="utf-8") as f:
             json.dump(self.x_ray_data, f, indent=2, ensure_ascii=False)
 

@@ -7,6 +7,7 @@ import re
 import sqlite3
 from html import escape
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 from PyQt6.QtCore import QAbstractTableModel, Qt, QVariant
 from PyQt6.QtGui import QIcon
@@ -40,11 +41,13 @@ from .utils import (
     wiktionary_json_path,
 )
 
-load_translations()
+load_translations()  # type: ignore
+if TYPE_CHECKING:
+    _: Any
 
 
 class CustomLemmasDialog(QDialog):
-    def __init__(self, parent, lang=None):
+    def __init__(self, parent: Any, lang: str | None = None) -> None:
         super().__init__(parent)
         self.lang = lang
         if lang:
@@ -57,7 +60,7 @@ class CustomLemmasDialog(QDialog):
 
         self.lemmas_table = QTableView()
         self.lemmas_table.setAlternatingRowColors(True)
-        self.lemmas_model = (
+        self.lemmas_model: Any = (
             WiktionaryTableModel(lang) if lang else KindleLemmasTableModel()
         )
         self.lemmas_table.setModel(self.lemmas_model)
@@ -154,7 +157,7 @@ class CustomLemmasDialog(QDialog):
         ).clicked.connect(self.reset_lemmas)
         vl.addWidget(dialog_button_box)
 
-    def search_lemma(self, text):
+    def search_lemma(self, text: str) -> None:
         row = self.lemmas_model.lemmas_tst.get_prefix(text)
         if row:
             index = self.lemmas_model.createIndex(row, 1)

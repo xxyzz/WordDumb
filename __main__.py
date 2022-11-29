@@ -47,7 +47,7 @@ if args.dump_path:
         dump_kindle_lemmas(json.load(sys.stdin), args.dump_path)
 else:
     kfx_json = None
-    mobi_html = None
+    mobi_html = b""
     if args.book_fmt == "KFX":
         kfx_json = json.load(sys.stdin)
     elif args.book_fmt != "EPUB":

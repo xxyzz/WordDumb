@@ -10,15 +10,15 @@ def extract_apkg(apkg_path: Path) -> dict[str, int]:
         db_path = zipfile.Path(zf, "collection.anki21")
         if not db_path.exists():  # no scheduling information
             db_path = zipfile.Path(zf, "collection.anki2")
-        db_path = zf.extract(db_path.name, apkg_path.parent)
-        conn = sqlite3.connect(db_path)
+        ex_db_path = zf.extract(db_path.name, apkg_path.parent)
+        conn = sqlite3.connect(ex_db_path)
         for card_type, fields in conn.execute(
             "SELECT type, flds FROM cards JOIN notes ON cards.nid = notes.id"
         ):
             cards[fields.split("\x1f", 1)[0]] = card_type_to_difficult_level(card_type)
 
         conn.close()
-        Path(db_path).unlink()
+        Path(ex_db_path).unlink()
         return cards
 
 
@@ -42,9 +42,9 @@ def extract_csv(csv_path: str) -> dict[str, int]:
     with open(csv_path, newline="") as f:
         for row in csv.reader(f):
             if len(row) >= 2:
-                word, difficulty, *_ = row
+                word, difficulty_str, *_ = row
                 try:
-                    difficulty = int(difficulty)
+                    difficulty = int(difficulty_str)
                 except ValueError:
                     difficulty = 1
             else:

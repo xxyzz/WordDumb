@@ -3,6 +3,7 @@
 import json
 import webbrowser
 from functools import partial
+from typing import TYPE_CHECKING, Any, TypedDict
 
 from calibre.constants import ismacos
 from calibre.gui2 import Dispatcher
@@ -70,7 +71,9 @@ prefs.defaults["cupy"] = "cupy-cuda11x"
 for data in load_json_or_pickle(get_plugin_path(), "data/languages.json").values():
     prefs.defaults[f"{data['wiki']}_wiktionary_difficulty_limit"] = 5
 
-load_translations()
+load_translations()  # type: ignore
+if TYPE_CHECKING:
+    _: Any
 
 
 class ConfigWidget(QWidget):
@@ -194,10 +197,10 @@ class ConfigWidget(QWidget):
         github_button.clicked.connect(self.github)
         vl.addWidget(github_button)
 
-    def github(self):
+    def github(self) -> None:
         webbrowser.open(GITHUB_URL)
 
-    def save_settings(self):
+    def save_settings(self) -> None:
         prefs["search_people"] = self.search_people_box.isChecked()
         prefs["model_size"] = self.model_size_box.currentData()
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
@@ -208,7 +211,7 @@ class ConfigWidget(QWidget):
             prefs["use_gpu"] = self.use_gpu_box.isChecked()
             prefs["cupy"] = self.cupy_verison_box.currentData()
 
-    def open_kindle_lemmas_dialog(self):
+    def open_kindle_lemmas_dialog(self) -> None:
         klld_path = get_klld_path(self.plugin_path)
         gui = self.parent().parent()
         if klld_path is None:

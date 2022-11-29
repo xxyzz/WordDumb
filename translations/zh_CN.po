@@ -477,10 +477,8 @@ msgstr ""
 "进制安装命令</a>而不是从 Flathub 或 Snap Store 安装的 calibre。</p>"
 
 #: error_dialogs.py:89
-msgid ""
-"Please delete the '{}*' folder from the 'worddumb-libs-py*' folder and try "
-"again."
-msgstr "请从 'worddumb-libs-py*' 文件夹中删除 '{}*' 文件夹，并重新尝试。"
+msgid "Please delete the '{}/worddumb-libs-py*' folder then try again."
+msgstr "请删除 '{}/worddumb-libs-py*' 文件夹，并重新尝试。"
 
 #: error_dialogs.py:103
 msgid ""

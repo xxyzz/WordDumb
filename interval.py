@@ -2,26 +2,27 @@
 
 from collections import namedtuple
 from dataclasses import dataclass
+from typing import Optional
 
 Interval = namedtuple("Interval", ["low", "high"])
 
 
 @dataclass
 class Node:
-    interval = None
+    interval = Interval(0, 0)
     max_high = 0
-    left = None
-    right = None
+    left: Optional["Node"] = None
+    right: Optional["Node"] = None
 
 
 class IntervalTree:
-    def __init__(self):
-        self.root = None
+    def __init__(self) -> None:
+        self.root: Node | None = None
 
-    def check_overlap(self, interval_a, interval_b):
+    def check_overlap(self, interval_a: Interval, interval_b: Interval) -> bool:
         return interval_a.low <= interval_b.high and interval_a.high >= interval_b.low
 
-    def insert(self, node, interval):
+    def insert(self, node: Node | None, interval: Interval) -> Node:
         if node is None:
             new_node = Node()
             new_node.interval = interval
@@ -40,14 +41,14 @@ class IntervalTree:
 
         return node
 
-    def insert_intervals(self, intervals):
+    def insert_intervals(self, intervals: Interval) -> None:
         for interval in intervals:
             self.insert(self.root, interval)
 
-    def is_overlap(self, interval):
+    def is_overlap(self, interval: Interval) -> Interval | None:
         return self.search_overlap(self.root, interval)
 
-    def search_overlap(self, node, interval):
+    def search_overlap(self, node: Node | None, interval: Interval) -> Interval | None:
         if node is None:
             return None
 

@@ -2,6 +2,8 @@
 
 import re
 from collections import Counter, defaultdict
+from pathlib import Path
+from sqlite3 import Connection
 
 try:
     from .database import (
@@ -15,10 +17,15 @@ try:
         save_db,
     )
     from .mediawiki import (
+        Fandom,
+        Wikidata,
+        Wikipedia,
         inception_text,
         query_mediawiki,
         query_wikidata,
     )
+    from .metadata import KFXJson
+    from .utils import Prefs
     from .x_ray_share import FUZZ_THRESHOLD, PERSON_LABELS, XRayEntity, is_full_name
 except ImportError:
     from database import (
@@ -32,29 +39,40 @@ except ImportError:
         save_db,
     )
     from mediawiki import (
+        Fandom,
+        Wikidata,
+        Wikipedia,
         inception_text,
         query_mediawiki,
         query_wikidata,
     )
+    from metadata import KFXJson
+    from utils import Prefs
     from x_ray_share import FUZZ_THRESHOLD, PERSON_LABELS, XRayEntity, is_full_name
 
 
 class X_Ray:
-    def __init__(self, conn, mediawiki, wikidata, custom_x_ray):
+    def __init__(
+        self,
+        conn: Connection,
+        mediawiki: Wikipedia | Fandom,
+        wikidata: Wikidata,
+        custom_x_ray: dict[str, tuple[str, int, bool]],
+    ) -> None:
         self.conn = conn
         self.entity_id = 1
         self.num_people = 0
         self.num_terms = 0
-        self.entities = {}
-        self.people_counter = Counter()
-        self.terms_counter = Counter()
+        self.entities: dict[str, XRayEntity] = {}
+        self.people_counter: Counter[str] = Counter()
+        self.terms_counter: Counter[str] = Counter()
         self.num_images = 0
         self.mediawiki = mediawiki
         self.wikidata = wikidata
-        self.entity_occurrences = defaultdict(list)
+        self.entity_occurrences: dict[int, list[tuple[int, int]]] = defaultdict(list)
         self.custom_x_ray = custom_x_ray
 
-    def insert_descriptions(self, search_people):
+    def insert_descriptions(self, search_people: bool) -> None:
         for entity, data in self.entities.items():
             if custom_data := self.custom_x_ray.get(entity):
                 custom_desc, custom_source, _ = custom_data
@@ -81,7 +99,9 @@ class X_Ray:
                     self.conn, (data["quote"], entity, None, data["id"])
                 )
 
-    def add_entity(self, entity, ner_label, start, quote, entity_len):
+    def add_entity(
+        self, entity: str, ner_label: str, start: int, quote: str, entity_len: int
+    ) -> None:
         from rapidfuzz.fuzz import token_set_ratio
         from rapidfuzz.process import extractOne
 
@@ -120,7 +140,7 @@ class X_Ray:
             self.terms_counter[entity_id] += 1
         self.entity_occurrences[entity_id].append((start, entity_len))
 
-    def merge_entities(self, minimal_count):
+    def merge_entities(self, minimal_count: int) -> None:
         for src_name, src_entity in self.entities.copy().items():
             dest_name = self.mediawiki.get_direct_cache(src_name)
             src_counter = self.get_entity_counter(src_entity["label"])
@@ -149,13 +169,21 @@ class X_Ray:
             else:
                 self.num_terms += 1
 
-    def get_entity_counter(self, entity_label):
+    def get_entity_counter(self, entity_label: str) -> Counter[str]:
         return (
             self.people_counter if entity_label in PERSON_LABELS else self.terms_counter
         )
 
-    def finish(self, db_path, erl, kfx_json, mobi_html, mobi_codec, prefs):
-        def top_mentioned(counter):
+    def finish(
+        self,
+        db_path: Path,
+        erl: int,
+        kfx_json: list[KFXJson],
+        mobi_html: bytes,
+        mobi_codec: str,
+        prefs: Prefs,
+    ) -> None:
+        def top_mentioned(counter: Counter[str]) -> str:
             return ",".join(map(str, [e[0] for e in counter.most_common(10)]))
 
         query_mediawiki(self.entities, self.mediawiki, prefs["search_people"])
@@ -212,7 +240,7 @@ class X_Ray:
         create_x_indices(self.conn)
         save_db(self.conn, db_path)
 
-    def find_kfx_images(self, kfx_json):
+    def find_kfx_images(self, kfx_json: list[KFXJson]) -> None:
         images = set()
         for index, image in filter(lambda x: x[1]["type"] == 2, enumerate(kfx_json)):
             if image["content"] in images:
@@ -240,7 +268,7 @@ class X_Ray:
             )
             self.num_images += 1
 
-    def find_mobi_images(self, mobi_html, mobi_codec):
+    def find_mobi_images(self, mobi_html: bytes, mobi_codec: str) -> None:
         images = set()
         for match_img in re.finditer(b"<img [^>]+/>", mobi_html):
             if match_src := re.search(

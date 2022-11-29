@@ -5,13 +5,15 @@ import random
 import re
 import string
 from pathlib import Path
+from typing import Any, BinaryIO, TypedDict
 
-from .utils import get_plugin_path, load_json_or_pickle
 
-
-def check_metadata(gui, book_id, custom_x_ray):
+def check_metadata(
+    gui: Any, book_id: int, custom_x_ray: bool
+) -> tuple[int, list[str], list[str], Any, dict[str, str]] | None:
     from .config import prefs
     from .error_dialogs import unsupported_format_dialog, unsupported_language_dialog
+    from .utils import get_plugin_path, load_json_or_pickle
 
     db = gui.current_db.new_api
     supported_languages = load_json_or_pickle(get_plugin_path(), "data/languages.json")
@@ -47,9 +49,13 @@ def check_metadata(gui, book_id, custom_x_ray):
     )
 
 
-def cli_check_metadata(book_path, log):
+def cli_check_metadata(
+    book_path_str: str, log: Any
+) -> tuple[str, Any, dict[str, str]] | None:
+    from .utils import get_plugin_path, load_json_or_pickle
+
     supported_languages = load_json_or_pickle(get_plugin_path(), "data/languages.json")
-    book_path = Path(book_path)
+    book_path = Path(book_path_str)
     book_fmt = book_path.suffix.upper()[1:]
     mi = None
     if book_fmt == "KFX":
@@ -88,14 +94,14 @@ def cli_check_metadata(book_path, log):
     return None
 
 
-def random_asin():
+def random_asin() -> str:
     "return an invalid ASIN"
     asin = "BB"
     asin += "".join(random.choices(string.ascii_uppercase + string.digits, k=8))
     return asin
 
 
-def validate_asin(asin, mi):
+def validate_asin(asin: str | None, mi: Any) -> tuple[str, bool]:
     # check ASIN, create a random one if doesn't exist
     update_asin = False
     if asin is None or re.fullmatch("B[0-9A-Z]{9}", asin) is None:
@@ -105,10 +111,18 @@ def validate_asin(asin, mi):
     return asin, update_asin
 
 
-def get_asin_etc(book_path, book_fmt, mi, library_asin=None):
+class KFXJson(TypedDict):
+    position: int
+    content: str
+    type: int
+
+
+def get_asin_etc(
+    book_path: str, book_fmt: str, mi: Any, library_asin: str | None = None
+) -> tuple[str, str, str, bool, KFXJson | None, bytes, str]:
     revision = ""
-    kfx_json = None
-    mobi_html = None
+    kfx_json: KFXJson | None = None
+    mobi_html = b""
     mobi_codec = ""
     update_asin = False
     asin = ""
@@ -119,7 +133,7 @@ def get_asin_etc(book_path, book_fmt, mi, library_asin=None):
 
         yj_book = YJ_Book(book_path)
         yj_md = yj_book.get_metadata()
-        asin = getattr(yj_md, "asin", None)
+        asin = getattr(yj_md, "asin", "")
         acr = getattr(yj_md, "asset_id", "")
         if library_asin is None:
             asin, update_asin = validate_asin(asin, mi)
@@ -161,14 +175,14 @@ def get_asin_etc(book_path, book_fmt, mi, library_asin=None):
     return asin, acr, revision, update_asin, kfx_json, mobi_html, mobi_codec
 
 
-def get_mobi_revision(f):
+def get_mobi_revision(f: BinaryIO) -> str:
     # modified from calibre.ebooks.mobi.reader.headers:MetadataHeader.header
     f.seek(78)
     f.seek(int.from_bytes(f.read(4), "big") + 32)
     return f.read(4).hex()  # Unique-ID MOBI header
 
 
-def extract_mobi(book_path):
+def extract_mobi(book_path: str) -> bytes:
     # use code from calibre.ebooks.mobi.reader.mobi8:Mobi8Reader.__call__
     # and calibre.ebook.conversion.plugins.mobi_input:MOBIInput.convert
     # https://github.com/kevinhendricks/KindleUnpack/blob/master/lib/mobi_k8proc.py#L216

@@ -7,34 +7,47 @@ import zipfile
 from collections import defaultdict
 from html import escape, unescape
 from pathlib import Path
+from typing import Any, Iterator
 from urllib.parse import quote, unquote
 
 try:
     from .mediawiki import (
+        Fandom,
+        Wikidata,
+        Wikimedia_Commons,
+        Wikipedia,
         inception_text,
         query_mediawiki,
         query_wikidata,
     )
+    from .utils import CJK_LANGS, Prefs
     from .x_ray_share import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
+        CustomX,
+        XRayEntity,
         is_full_name,
         x_ray_source,
     )
-    from .utils import CJK_LANGS
 except ImportError:
     from mediawiki import (
+        Fandom,
+        Wikidata,
+        Wikimedia_Commons,
+        Wikipedia,
         inception_text,
         query_mediawiki,
         query_wikidata,
     )
+    from utils import CJK_LANGS, Prefs
     from x_ray_share import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
+        CustomX,
+        XRayEntity,
         is_full_name,
         x_ray_source,
     )
-    from utils import CJK_LANGS
 
 
 NAMESPACES = {
@@ -47,30 +60,38 @@ NAMESPACES = {
 
 class EPUB:
     def __init__(
-        self, book_path, mediawiki, wiki_commons, wikidata, custom_x_ray, lemma_glosses
-    ):
-        self.book_path = book_path
+        self,
+        book_path_str: str,
+        mediawiki: Wikipedia | Fandom,
+        wiki_commons: Wikimedia_Commons | None,
+        wikidata: Wikidata | None,
+        custom_x_ray: CustomX,
+        lemma_glosses: Any,
+    ) -> None:
+        self.book_path = Path(book_path_str)
         self.mediawiki = mediawiki
         self.wiki_commons = wiki_commons
         self.wikidata = wikidata
         self.entity_id = 0
-        self.entities = {}
-        self.entity_occurrences = defaultdict(list)
-        self.removed_entity_ids = set()
-        self.extract_folder = Path(book_path).with_name("extract")
+        self.entities: dict[str, XRayEntity] = {}
+        self.entity_occurrences: dict[
+            Path, list[tuple[int, int, str, int | str]]
+        ] = defaultdict(list)
+        self.removed_entity_ids: set[int] = set()
+        self.extract_folder = self.book_path.with_name("extract")
         if self.extract_folder.exists():
             shutil.rmtree(self.extract_folder)
         self.xhtml_folder = self.extract_folder
         self.xhtml_href_has_folder = False
         self.image_folder = self.extract_folder
         self.image_href_has_folder = False
-        self.image_filenames = set()
+        self.image_filenames: set[str] = set()
         self.custom_x_ray = custom_x_ray
         self.lemma_glosses = lemma_glosses
-        self.lemmas = {}
+        self.lemmas: dict[str, int] = {}
         self.lemma_id = 0
 
-    def extract_epub(self):
+    def extract_epub(self) -> Iterator[tuple[str, tuple[int, str, Path]]]:
         from lxml import etree
 
         with zipfile.ZipFile(self.book_path) as zf:
@@ -130,8 +151,15 @@ class EPUB:
                         )
 
     def add_entity(
-        self, entity, ner_label, book_quote, start, end, xhtml_path, origin_entity
-    ):
+        self,
+        entity: str,
+        ner_label: str,
+        book_quote: str,
+        start: int,
+        end: int,
+        xhtml_path: Path,
+        origin_entity: str,
+    ) -> None:
         from rapidfuzz.fuzz import token_set_ratio
         from rapidfuzz.process import extractOne
 
@@ -167,13 +195,15 @@ class EPUB:
             (start, end, origin_entity, entity_id)
         )
 
-    def add_lemma(self, lemma, start, end, xhtml_path, origin_text):
+    def add_lemma(
+        self, lemma: str, start: int, end: int, xhtml_path: Path, origin_text: str
+    ) -> None:
         self.entity_occurrences[xhtml_path].append((start, end, origin_text, lemma))
         if lemma not in self.lemmas:
             self.lemmas[lemma] = self.lemma_id
             self.lemma_id += 1
 
-    def remove_entities(self, minimal_count):
+    def remove_entities(self, minimal_count: int) -> None:
         for entity, data in self.entities.copy().items():
             if (
                 data["count"] < minimal_count
@@ -183,7 +213,7 @@ class EPUB:
                 del self.entities[entity]
                 self.removed_entity_ids.add(data["id"])
 
-    def modify_epub(self, prefs: dict[str, str | int | bool], lang: str) -> None:
+    def modify_epub(self, prefs: Prefs, lang: str) -> None:
         if self.entities:
             query_mediawiki(self.entities, self.mediawiki, prefs["search_people"])
             if self.wikidata:
@@ -232,7 +262,7 @@ class EPUB:
                     )
                 f.write(new_xhtml_str)
 
-    def build_word_wise_tag(self, word, origin_word, lang):
+    def build_word_wise_tag(self, word: str, origin_word: str, lang: str) -> str:
         short_def, *_ = self.get_lemma_gloss(word, lang)
         len_ratio = 5 if lang in CJK_LANGS else 2.5
         word_id = self.lemmas[word]
@@ -248,9 +278,7 @@ class EPUB:
             p_tags += f"<p>{p_str}</p>"
         return p_tags
 
-    def create_x_ray_footnotes(
-        self, prefs: dict[str, str | int | bool], lang: str
-    ) -> None:
+    def create_x_ray_footnotes(self, prefs: Prefs, lang: str) -> None:
         source_name, source_link = x_ray_source(self.mediawiki.source_id, prefs, lang)
         image_prefix = ""
         if self.xhtml_href_has_folder:
@@ -309,7 +337,7 @@ class EPUB:
         if self.wiki_commons:
             self.wiki_commons.close()
 
-    def create_word_wise_footnotes(self, lang):
+    def create_word_wise_footnotes(self, lang: str) -> None:
         s = f"""
         <html xmlns="http://www.w3.org/1999/xhtml"
         xmlns:epub="http://www.idpf.org/2007/ops"
@@ -333,7 +361,7 @@ class EPUB:
         ) as f:
             f.write(s)
 
-    def modify_opf(self):
+    def modify_opf(self) -> None:
         from lxml import etree
 
         xhtml_prefix = ""
@@ -371,9 +399,8 @@ class EPUB:
         with self.opf_path.open("w", encoding="utf-8") as f:
             f.write(etree.tostring(self.opf_root, encoding=str))
 
-    def zip_extract_folder(self):
-        self.book_path = Path(self.book_path)
-        shutil.make_archive(self.extract_folder, "zip", self.extract_folder)
+    def zip_extract_folder(self) -> None:
+        shutil.make_archive(str(self.extract_folder), "zip", self.extract_folder)
         new_filename = self.book_path.stem
         if self.entities:
             new_filename += "_x_ray"
@@ -386,7 +413,7 @@ class EPUB:
         )
         shutil.rmtree(self.extract_folder)
 
-    def get_lemma_gloss(self, lemma, lang):
+    def get_lemma_gloss(self, lemma: str, lang: str) -> tuple[str, str, str, str]:
         if lang in CJK_LANGS:  # pyahocorasick
             return self.lemma_glosses.get(lemma)[1:]
         else:  # flashtext

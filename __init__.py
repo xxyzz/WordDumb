@@ -67,7 +67,9 @@ class WordDumbDumb(InterfaceActionBase):
                 notif.append("Word Wise")
             if create_x:
                 notif.append("X-Ray")
-            notif = " and ".join(notif)
-            log.prints(Log.INFO, f"Creating {notif} file for book {mi.get('title')}")
+            notif_str = " and ".join(notif)
+            log.prints(
+                Log.INFO, f"Creating {notif_str} file for book {mi.get('title')}"
+            )
 
             do_job((None, book_fmt, file_path, mi, lang), create_w, create_x)

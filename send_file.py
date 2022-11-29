@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import traceback
 from pathlib import Path
+from typing import Any
 
 from calibre.constants import ismacos
 from calibre.gui2 import FunctionDispatcher
@@ -15,7 +16,13 @@ from .utils import homebrew_mac_bin_path, run_subprocess
 
 
 class SendFile:
-    def __init__(self, gui, data, package_name, notif):
+    def __init__(
+        self,
+        gui: Any,
+        data: tuple[int, str, Path, Any, bool, str, str],
+        package_name: str | bool,
+        notif: Any,
+    ) -> None:
         self.gui = gui
         self.device_manager = gui.device_manager
         self.notif = notif
@@ -35,7 +42,7 @@ class SendFile:
             self.acr = "_"
 
     # use some code from calibre.gui2.device:DeviceMixin.upload_books
-    def send_files(self, job):
+    def send_files(self, job: Any) -> None:
         if isinstance(self.package_name, str):
             try:
                 adb_path = which_adb()
@@ -93,7 +100,7 @@ class SendFile:
             )
             self.gui.upload_memory[job] = ([self.mi], None, None, [self.book_path])
 
-    def move_file_to_device(self, file_path, device_book_path):
+    def move_file_to_device(self, file_path: Path, device_book_path: Path) -> None:
         if not file_path.is_file():
             return
         sidecar_folder = device_book_path.parent.joinpath(
@@ -106,7 +113,7 @@ class SendFile:
             dst_path.unlink()
         shutil.move(file_path, dst_path, shutil.copy)
 
-    def push_files_to_android(self, adb_path):
+    def push_files_to_android(self, adb_path: str) -> None:
         device_book_folder = f"/sdcard/Android/data/{self.package_name}/files/"
         run_subprocess(
             [
@@ -139,7 +146,7 @@ class SendFile:
             self.ll_path.unlink()
 
 
-def device_connected(gui, book_fmt):
+def device_connected(gui: Any, book_fmt: str) -> str | bool:
     if gui.device_manager.is_device_present:
         is_kindle = getattr(gui.device_manager.device, "VENDOR_NAME", None) == "KINDLE"
         if book_fmt == "EPUB":
@@ -157,16 +164,16 @@ def device_connected(gui, book_fmt):
     return False
 
 
-def adb_connected(adb_path):
+def adb_connected(adb_path: str) -> bool:
     r = run_subprocess([adb_path, "devices"])
     return r.stdout.strip().endswith("device") if r else False
 
 
-def which_adb():
+def which_adb() -> str | None:
     return shutil.which(homebrew_mac_bin_path("adb") if ismacos else "adb")
 
 
-def get_package_name(adb_path):
+def get_package_name(adb_path: str) -> str | None:
     r = run_subprocess(
         [adb_path, "shell", "pm", "list", "packages", "com.amazon.kindle"]
     )
@@ -176,7 +183,7 @@ def get_package_name(adb_path):
     return None
 
 
-def copy_klld_from_android(package_name, dest_path):
+def copy_klld_from_android(package_name: str, dest_path: Path) -> None:
     adb_path = which_adb()
     run_subprocess([adb_path, "root"])
     run_subprocess(
@@ -192,7 +199,7 @@ def copy_klld_from_android(package_name, dest_path):
     dest_path.joinpath("wordwise").rmdir()
 
 
-def copy_klld_from_kindle(gui, dest_path):
+def copy_klld_from_kindle(gui: Any, dest_path: Path) -> None:
     for klld_path in Path(f"{gui.device_manager.device._main_prefix}/system/kll").glob(
         "*.en.klld"
     ):

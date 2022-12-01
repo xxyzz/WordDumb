@@ -69,6 +69,8 @@ Please read [CONTRIBUTING](./docs/CONTRIBUTING.md).
   # choco install python
   ```
 
+  Python 3.11 on Windows is yet supported by [PyTorch](https://github.com/pytorch/pytorch) which is the depency of [spacy-transformers](https://github.com/explosion/spacy-transformers). If you want to run spaCy on GPU, install Python 3.10.
+
 - Install WordDumb:
 
 https://user-images.githubusercontent.com/21101839/202723023-082a6147-6425-43be-9869-43293c90a306.mov

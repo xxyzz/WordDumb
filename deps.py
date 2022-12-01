@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import platform
-import re
 import shutil
 import tarfile
 from io import BytesIO
@@ -93,15 +92,19 @@ def mac_python() -> str:
 
 def get_runnable_pip(py_path: str) -> str:
     r = run_subprocess(
-        [py_path, "-m", "pip", "--version", "--disable-pip-version-check"]
+        [py_path, "-m", "pip", "--disable-pip-version-check", "show", "pip"]
     )
     # pip "--python" option
     # https://github.com/pypa/pip/blob/6d131137cf7aa8c1c64f1fadca4770879e9f407f/src/pip/_internal/cli/main_parser.py#L82-L105
     # https://github.com/pypa/pip/blob/6d131137cf7aa8c1c64f1fadca4770879e9f407f/src/pip/_internal/build_env.py#L43-L56
-    pip_path = r.stdout.split()[3]
+    pip_path = ""
+    for line in r.stdout.splitlines():
+        if line.startswith("Location: "):
+            pip_path = line[10:]
+            break
     if iswindows:
         pip_path = pip_path.replace("\\", "/")
-    return pip_path + "/__pip-runner__.py"
+    return pip_path + "/pip/__pip-runner__.py"
 
 
 def pip_install(
@@ -138,12 +141,16 @@ def pip_install(
 
 def upgrade_pip(py_path: str) -> None:
     r = run_subprocess(
-        [py_path, "-m", "pip", "--version", "--disable-pip-version-check"]
+        [py_path, "-m", "pip", "--disable-pip-version-check", "show", "pip"]
     )
-    m = re.match(r"pip (\d+\.\d+)", r.stdout)
+    pip_version = ""
+    for line in r.stdout.splitlines():
+        if line.startswith("Version: "):
+            pip_version = line[9:]
+            break
     # Upgrade pip if its version is lower than 22.3
     # pip 22.3 introduced the "--python" option
-    if m and [int(x) for x in m.group(1).split(".")] < [22, 3]:
+    if [int(x) for x in pip_version.split(".")] < [22, 3]:
         run_subprocess(
             [
                 py_path,

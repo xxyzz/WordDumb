@@ -125,6 +125,8 @@ def pip_install(
     notif: Any = None,
 ) -> None:
     pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
+    if pkg == "torch" and extra_index:
+        pattern = f"torch-*+{extra_index.split('/')[-1]}*"
     if not any(LIBS_PATH.glob(pattern)):
         if notif:
             notif.put((0, f"Installing {pkg}"))

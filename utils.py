@@ -33,7 +33,7 @@ def load_json_or_pickle(plugin_path: Path | None, filepath: str | Path) -> Any:
             if filepath.endswith(".json"):
                 path = zipfile.Path(zf, filepath)
                 if path.exists():
-                    with path.open() as f:
+                    with path.open(encoding="utf-8") as f:
                         return json.load(f)
                 return None
             with zf.open(filepath) as f:

@@ -48,6 +48,10 @@ msgstr ""
 "需要 CUDA。如果 spaCy 具有帶有 ner 組件的書籍語言的 transformer 模型，則在創"
 "建 X-Ray 文件時使用 GPU。"
 
+#: config.py:134
+msgid "CUDA version"
+msgstr "CUDA 版本"
+
 #: config.py:136
 msgid "<a href=\"https://spacy.io/models/en\">spaCy model</a> size"
 msgstr "<a href=“https://spacy.io/models/en”>spaCy 模型</a>大小"

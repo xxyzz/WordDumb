@@ -51,7 +51,17 @@ def install_deps(model: str, book_fmt: str | None, notif: Any) -> None:
         url = f"https://github.com/explosion/spacy-models/releases/download/{model}-{spacy_model_version}/{model}-{spacy_model_version}-py3-none-any.whl"
         pip_install(model, spacy_model_version, url=url, notif=notif)
         if model.endswith("_trf"):
+            from .config import prefs
+
             pip_install("cupy-wheel", dep_versions["cupy"], notif=notif)
+            # PyTorch's Windows package on pypi.org is CPU build version, reintall the CUDA build version
+            if iswindows or prefs["cuda"] == "cu116":
+                pip_install(
+                    "torch",
+                    "",
+                    extra_index=f"https://download.pytorch.org/whl/{prefs['cuda']}",
+                    notif=notif,
+                )
 
         if ismacos and platform.machine() == "arm64":
             pip_install("thinc-apple-ops", dep_versions["thinc-apple-ops"], notif=notif)
@@ -108,7 +118,11 @@ def get_runnable_pip(py_path: str) -> str:
 
 
 def pip_install(
-    pkg: str, pkg_version: str, url: str | None = None, notif: Any = None
+    pkg: str,
+    pkg_version: str,
+    url: str | None = None,
+    extra_index: str | None = None,
+    notif: Any = None,
 ) -> None:
     pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
     if not any(LIBS_PATH.glob(pattern)):
@@ -136,6 +150,10 @@ def pip_install(
             args.append(f"{pkg}=={pkg_version}")
         else:
             args.append(pkg)
+
+        if extra_index:
+            args.extend(["--extra-index-url", extra_index])
+
         run_subprocess(args)
 
 

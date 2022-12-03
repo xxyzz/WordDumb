@@ -67,6 +67,7 @@ prefs.defaults["zh_ipa"] = "Pinyin"
 prefs.defaults["choose_format_manually"] = True
 prefs.defaults["wiktionary_gloss_lang"] = "en"
 prefs.defaults["use_gpu"] = False
+prefs.defaults["cuda"] = "cu117"
 for data in load_json_or_pickle(get_plugin_path(), "data/languages.json").values():
     prefs.defaults[f"{data['wiki']}_wiktionary_difficulty_limit"] = 5
 
@@ -106,6 +107,11 @@ class ConfigWidget(QWidget):
         self.search_people_box.setChecked(prefs["search_people"])
         vl.addWidget(self.search_people_box)
 
+        form_layout = QFormLayout()
+        form_layout.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
+
         if not ismacos:
             self.use_gpu_box = QCheckBox(_("Run spaCy with GPU"))
             self.use_gpu_box.setToolTip(
@@ -116,10 +122,12 @@ class ConfigWidget(QWidget):
             self.use_gpu_box.setChecked(prefs["use_gpu"])
             vl.addWidget(self.use_gpu_box)
 
-        form_layout = QFormLayout()
-        form_layout.setFieldGrowthPolicy(
-            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
-        )
+            cuda_versions = {"cu117": "CUDA 11.7", "cu116": "CUDA 11.6"}
+            self.cuda_version_box = QComboBox()
+            for cuda_version, text in cuda_versions.items():
+                self.cuda_version_box.addItem(text, cuda_version)
+            self.cuda_version_box.setCurrentText(cuda_versions[prefs["cuda"]])
+            form_layout.addRow(_("CUDA version"), self.cuda_version_box)
 
         model_size_label = QLabel(
             _('<a href="https://spacy.io/models/en">spaCy model</a> size')
@@ -195,6 +203,7 @@ class ConfigWidget(QWidget):
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
         if not ismacos:
             prefs["use_gpu"] = self.use_gpu_box.isChecked()
+            prefs["cuda"] = self.cuda_version_box.currentData()
 
     def open_kindle_lemmas_dialog(self) -> None:
         klld_path = get_klld_path(self.plugin_path)

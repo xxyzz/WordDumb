@@ -175,3 +175,4 @@ class Prefs(TypedDict):
     choose_format_manually: bool
     wiktionary_gloss_lang: str
     use_cpu: bool
+    cuda: str

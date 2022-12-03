@@ -127,7 +127,11 @@ class ConfigWidget(QWidget):
             for cuda_version, text in cuda_versions.items():
                 self.cuda_version_box.addItem(text, cuda_version)
             self.cuda_version_box.setCurrentText(cuda_versions[prefs["cuda"]])
-            form_layout.addRow(_("CUDA version"), self.cuda_version_box)
+            cuda_version_label = QLabel(_("CUDA version"))
+            cuda_version_label.setToolTip(
+                _('Use command "nvcc --version" to check CUDA version')
+            )
+            form_layout.addRow(cuda_version_label, self.cuda_version_box)
 
         model_size_label = QLabel(
             _('<a href="https://spacy.io/models/en">spaCy model</a> size')

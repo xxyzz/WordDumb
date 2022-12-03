@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-11-06 12:39+0800\n"
-"PO-Revision-Date: 2022-11-06 12:39+0800\n"
+"POT-Creation-Date: 2022-12-03 10:07+0800\n"
+"PO-Revision-Date: 2022-12-03 10:12+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.2\n"
+"X-Generator: Poedit 3.2.2\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
@@ -52,7 +52,11 @@ msgstr ""
 msgid "CUDA version"
 msgstr "CUDA 版本"
 
-#: config.py:136
+#: config.py:131
+msgid "Use command \"nvcc --version\" to check CUDA version"
+msgstr "使用命令 “nvcc --version“ 來檢查 CUDA 版本"
+
+#: config.py:135
 msgid "<a href=\"https://spacy.io/models/en\">spaCy model</a> size"
 msgstr "<a href=“https://spacy.io/models/en”>spaCy 模型</a>大小"
 
@@ -86,7 +90,11 @@ msgstr "出現次數少於此數量且沒有來自維基百科或 Fandom 描述�
 msgid "Chinese Wikipedia variant"
 msgstr "中文維基百科變體"
 
-#: config.py:157
+#: config.py:177
+msgid "Fandom URL"
+msgstr "Fandom 鏈接"
+
+#: config.py:181
 msgid "Add locator map to EPUB footnotes"
 msgstr "添加地圖到 EPUB 註腳"
 

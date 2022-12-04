@@ -168,7 +168,7 @@ class Wikipedia(MediaWiki):
                     # Remove references
                     for e in html.xpath("//p[1]/sup[contains(@class, 'reference')]"):
                         e.getparent().remove(e)
-                    text = e.xpath("string(//p[1])")
+                    text = html.xpath("string(//p[1])")
                     if not text:
                         continue
                     text = text.strip()

@@ -66,10 +66,7 @@ def install_deps(model: str, book_fmt: str | None, notif: Any) -> None:
         if ismacos and platform.machine() == "arm64":
             pip_install("thinc-apple-ops", dep_versions["thinc-apple-ops"], notif=notif)
         if USE_SYSTEM_PYTHON:
-            from .config import prefs
-
-            if book_fmt == "EPUB" or prefs["fandom"]:
-                pip_install("lxml", dep_versions["lxml"], notif=notif)
+            pip_install("lxml", dep_versions["lxml"], notif=notif)
 
 
 def which_python(use_system_python: bool = False) -> tuple[str, str]:

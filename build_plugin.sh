@@ -21,7 +21,7 @@ else
 fi
 
 # Could use /releases/latest/download/file_name at here
-wget -P data -nv "https://github.com/xxyzz/Proficiency/releases/download/v0.3.1/kindle_lemmas_dump_v0"
+wget -P data -nv "https://github.com/xxyzz/Proficiency/releases/download/v0.4.0/kindle_lemmas_dump_v0"
 
 cp Proficiency/en/dump_kindle_lemmas.py ./
 cp Proficiency/tst.py ./libs/

@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 CJK_LANGS = ["zh", "ja", "ko"]
-PROFICIENCY_VERSION = "0.3.1"
+PROFICIENCY_VERSION = "0.4.0"
 PROFICIENCY_MAJOR_VERSION = "0"
 
 

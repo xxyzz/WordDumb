@@ -26,10 +26,10 @@ RUNNABLE_PIP = None
 USE_SYSTEM_PYTHON = False
 
 
-def install_deps(model: str, book_fmt: str | None, notif: Any) -> None:
+def install_deps(pkg: str, notif: Any) -> None:
     global PY_PATH, LIBS_PATH, CALIBRE_DEBUG_PATH, RUNNABLE_PIP, USE_SYSTEM_PYTHON
     plugin_path = get_plugin_path()
-    USE_SYSTEM_PYTHON = ismacos or (isfrozen and model.endswith("_trf"))
+    USE_SYSTEM_PYTHON = ismacos or (isfrozen and pkg.endswith("_trf"))
 
     if PY_PATH is None:
         PY_PATH, py_version = which_python(USE_SYSTEM_PYTHON)
@@ -39,18 +39,20 @@ def install_deps(model: str, book_fmt: str | None, notif: Any) -> None:
             RUNNABLE_PIP = get_runnable_pip(PY_PATH)
 
     dep_versions = load_json_or_pickle(plugin_path, "data/deps.json")
-    if model == "lemminflect":
+    if pkg == "lemminflect":
         pip_install("lemminflect", dep_versions["lemminflect"], notif=notif)
-    elif model == "wiktionary_cjk":
+    elif pkg == "pyahocorasick":
         pip_install("pyahocorasick", dep_versions["pyahocorasick"], notif=notif)
+    elif pkg == "lxml":
+        pip_install("lxml", dep_versions["lxml"], notif=notif)
     else:
         # Install X-Ray dependencies
         pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
 
-        spacy_model_version = "3.4.1" if model.startswith("en") else "3.4.0"
-        url = f"https://github.com/explosion/spacy-models/releases/download/{model}-{spacy_model_version}/{model}-{spacy_model_version}-py3-none-any.whl"
-        pip_install(model, spacy_model_version, url=url, notif=notif)
-        if model.endswith("_trf"):
+        spacy_model_version = "3.4.1" if pkg.startswith("en") else "3.4.0"
+        url = f"https://github.com/explosion/spacy-models/releases/download/{pkg}-{spacy_model_version}/{pkg}-{spacy_model_version}-py3-none-any.whl"
+        pip_install(pkg, spacy_model_version, url=url, notif=notif)
+        if pkg.endswith("_trf"):
             from .config import prefs
 
             pip_install("cupy-wheel", dep_versions["cupy"], notif=notif)
@@ -185,7 +187,7 @@ def download_wiktionary(
     lemma_lang: str, gloss_lang: str, abort=None, log=None, notifications=None
 ) -> None:
     if lemma_lang in CJK_LANGS:
-        install_deps("wiktionary_cjk", None, notifications)
+        install_deps("pyahocorasick", notifications)
 
     if notifications:
         notifications.put((0, f"Downloading {lemma_lang}-{gloss_lang} Wiktionary file"))

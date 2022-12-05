@@ -249,7 +249,7 @@ class ConfigWidget(QWidget):
             gui.job_manager.run_threaded_job(job)
 
     def save_kindle_lemmas(self, lemmas, abort=None, log=None, notifications=None):
-        install_deps("lemminflect", None, notifications)
+        install_deps("lemminflect", notifications)
         notifications.put((0, _("Saving customized lemmas")))
         custom_path = custom_kindle_dump_path(self.plugin_path)
         if ismacos:

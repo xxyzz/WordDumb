@@ -4,5 +4,5 @@
   "lxml": "4.9.1",
   "pyahocorasick": "1.4.4",
   "thinc-apple-ops": "0.1.2",
-  "rapidfuzz": "2.13.2"
+  "rapidfuzz": "2.13.3"
 }

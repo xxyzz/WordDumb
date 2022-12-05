@@ -187,7 +187,8 @@ def download_wiktionary(
     if lemma_lang in CJK_LANGS:
         install_deps("wiktionary_cjk", None, notifications)
 
-    notifications.put((0, f"Downloading {lemma_lang}-{gloss_lang} Wiktionary file"))
+    if notifications:
+        notifications.put((0, f"Downloading {lemma_lang}-{gloss_lang} Wiktionary file"))
     url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.tar.gz"
     extract_folder = custom_lemmas_folder(get_plugin_path())
     with urlopen(url) as r:

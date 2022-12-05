@@ -36,6 +36,7 @@ try:
     from .x_ray import X_Ray
     from .x_ray_share import NER_LABELS, CustomX, get_custom_x_path, load_custom_x_desc
 except ImportError:
+    isfrozen = False
     from database import (
         create_lang_layer,
         create_x_ray_db,
@@ -575,6 +576,11 @@ def find_named_entity(
 
 
 def load_spacy(model: str, book_path: str) -> Any:
+    if not model.endswith("_trf") and isfrozen:
+        import importlib.metadata
+
+        importlib.metadata.distributions = hide_spacy_transformers
+
     import spacy
 
     excluded_components = [
@@ -604,3 +610,16 @@ def load_spacy(model: str, book_path: str) -> Any:
                     patterns.append({"label": label, "pattern": alias, "id": name})
         ruler.add_patterns(patterns)
     return nlp
+
+
+def hide_spacy_transformers(**kwargs):
+    """
+    Remove spacy-transfomers package from the results of importlib.metadata.entry_points().
+    spaCy loads the spacy-transfomers packge even when loading a CPU model, which loads
+    code from the transformers library and causes error in calibre's Python interpreter.
+    Traceback log can be found in GitHub issue #91.
+    """
+    from importlib.metadata import Distribution
+
+    pkgs = Distribution.discover(**kwargs)
+    return [pkg for pkg in pkgs if pkg.name != "spacy-transformers"]

@@ -113,10 +113,10 @@ class ConfigWidget(QWidget):
         )
 
         if not ismacos:
-            self.use_gpu_box = QCheckBox(_("Run spaCy with GPU"))
+            self.use_gpu_box = QCheckBox(_("Run spaCy with GPU(requires CUDA)"))
             self.use_gpu_box.setToolTip(
                 _(
-                    "Requires CUDA. GPU will be used when creating X-Ray file if spaCy has transformer model for the book language with ner component."
+                    "GPU will be used when creating X-Ray file if spaCy has transformer model for the book language with ner component."
                 )
             )
             self.use_gpu_box.setChecked(prefs["use_gpu"])

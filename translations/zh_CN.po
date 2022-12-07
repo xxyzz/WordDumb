@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-12-03 10:07+0800\n"
-"PO-Revision-Date: 2022-12-03 10:12+0800\n"
+"POT-Creation-Date: 2022-12-07 12:46+0800\n"
+"PO-Revision-Date: 2022-12-07 12:47+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -36,17 +36,17 @@ msgid ""
 "on Wikipedia/Fandom"
 msgstr "为在维基百科或 Fandom 上有人物页面的非小说类书籍和小说启用此选项"
 
-#: config.py:107
-msgid "Run spaCy with GPU"
-msgstr "使用 GPU 运行 spaCy"
+#: config.py:116
+msgid "Run spaCy with GPU(requires CUDA)"
+msgstr "使用 GPU 运行 spaCy（需要 CUDA）"
 
-#: config.py:110
+#: config.py:119
 msgid ""
-"Requires CUDA. GPU will be used when creating X-Ray file if spaCy has "
-"transformer model for the book language with ner component."
+"GPU will be used when creating X-Ray file if spaCy has transformer model for "
+"the book language with ner component."
 msgstr ""
-"需要 CUDA。如果 spaCy 具有带有 ner 组件的书籍语言的 transformer 模型，则在创"
-"建 X-Ray 文件时使用 GPU。"
+"如果 spaCy 具有带有 ner 组件的书籍语言的 transformer 模型，则在创建 X-Ray 文"
+"件时使用 GPU。"
 
 #: config.py:134
 msgid "CUDA version"

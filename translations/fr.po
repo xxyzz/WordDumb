@@ -40,15 +40,15 @@ msgstr ""
 "pages de personnage sur Wikipedia/Fandom"
 
 #: config.py:116
-msgid "Run spaCy with GPU"
-msgstr "Exécuter spaCy sur le GPU"
+msgid "Run spaCy with GPU(requires CUDA)"
+msgstr "Exécuter spaCy sur le GPU(requiert CUDA)"
 
 #: config.py:119
 msgid ""
-"Requires CUDA. GPU will be used when creating X-Ray file if spaCy has "
+"GPU will be used when creating X-Ray file if spaCy has "
 "transformer model for the book language with ner component."
 msgstr ""
-"Requiert CUDA. Le GPU sera utilisé à la création du fichier X-Ray si spaCy "
+"Le GPU sera utilisé à la création du fichier X-Ray si spaCy "
 "inclut un modèle transformer ayant le composant ner pour le langage de ce "
 "livre."
 

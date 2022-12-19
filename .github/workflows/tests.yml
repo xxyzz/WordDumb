@@ -116,7 +116,7 @@ jobs:
         with:
           path: |
             ~/Library/Preferences/calibre/plugins/worddumb-*
-          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ hashFiles('data/extra_deps.json') }}-${{ env.MACOS_PY }}
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ env.MACOS_PY }}
 
       - name: Restore dependencies and Wikipedia cache(Windows)
         if: matrix.os == 'windows-latest'

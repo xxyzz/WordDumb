@@ -60,7 +60,7 @@ def install_deps(pkg: str, notif: Any) -> None:
             if iswindows or prefs["cuda"] == "cu116":
                 pip_install(
                     "torch",
-                    "",
+                    dep_versions["torch"],
                     extra_index=f"https://download.pytorch.org/whl/{prefs['cuda']}",
                     notif=notif,
                 )
@@ -125,7 +125,7 @@ def pip_install(
 ) -> None:
     pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
     if pkg == "torch" and extra_index:
-        pattern = f"torch-*+{extra_index.split('/')[-1]}*"
+        pattern = f"torch-{pkg_version}+{extra_index.split('/')[-1]}*"
     if not any(LIBS_PATH.glob(pattern)):
         if notif:
             notif.put((0, f"Installing {pkg}"))

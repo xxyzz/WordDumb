@@ -66,7 +66,12 @@ def install_deps(pkg: str, notif: Any) -> None:
                 )
 
         if ismacos and platform.machine() == "arm64":
-            pip_install("thinc-apple-ops", dep_versions["thinc-apple-ops"], notif=notif)
+            pip_install(
+                "thinc-apple-ops",
+                dep_versions["thinc-apple-ops"],
+                no_deps=True,
+                notif=notif,
+            )
         if USE_SYSTEM_PYTHON:
             pip_install("lxml", dep_versions["lxml"], notif=notif)
 
@@ -121,6 +126,7 @@ def pip_install(
     pkg_version: str,
     url: str | None = None,
     extra_index: str | None = None,
+    no_deps: bool = False,
     notif: Any = None,
 ) -> None:
     pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
@@ -144,6 +150,9 @@ def pip_install(
                 "--no-user",  # disable "--user" option which conflicts with "-t"
             ]
         )
+
+        if no_deps:
+            args.append("--no-deps")
 
         if url:
             args.append(url)

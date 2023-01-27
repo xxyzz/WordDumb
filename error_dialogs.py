@@ -134,13 +134,6 @@ def unsupported_language_dialog(book_title: str) -> None:
     )
 
 
-def non_english_book_dialog() -> None:
-    warning_dialog(
-        _("Non-English book"),
-        _("For Kindle format books, Word Wise is only available in books in English."),
-    )
-
-
 def unsupported_format_dialog() -> None:
     warning_dialog(_("Unsupported book format"), _("The book format is not supported."))
 

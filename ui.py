@@ -98,15 +98,12 @@ def get_metadata_of_selected_books(
 
 
 def run(gui: Any, create_ww: bool, create_x: bool) -> None:
+    if not create_ww and not create_x:
+        return
     for book_id, book_fmts, book_paths, mi, lang in get_metadata_of_selected_books(
         gui, False
     ):
         for book_fmt, book_path in zip(book_fmts, book_paths):
-            if create_ww and book_fmt != "EPUB" and lang["wiki"] != "en":
-                non_english_book_dialog()
-                create_ww = False
-            if not create_ww and not create_x:
-                continue
             title = (
                 f'{mi.get("title")}({book_fmt})'
                 if len(book_fmts) > 1

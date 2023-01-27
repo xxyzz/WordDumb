@@ -27,5 +27,3 @@ __pycache__
 libs
 dump_wiktionary.py
 dump_kindle_lemmas.py
-data/kindle_lemmas.json
-data/kindle_lemmas_dump_*

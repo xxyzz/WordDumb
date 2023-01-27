@@ -39,9 +39,7 @@ def install_deps(pkg: str, notif: Any) -> None:
             RUNNABLE_PIP = get_runnable_pip(PY_PATH)
 
     dep_versions = load_json_or_pickle(plugin_path, "data/deps.json")
-    if pkg == "lemminflect":
-        pip_install("lemminflect", dep_versions["lemminflect"], notif=notif)
-    elif pkg == "pyahocorasick":
+    if pkg == "pyahocorasick":
         pip_install("pyahocorasick", dep_versions["pyahocorasick"], notif=notif)
     elif pkg == "lxml":
         pip_install("lxml", dep_versions["lxml"], notif=notif)
@@ -192,15 +190,15 @@ def upgrade_pip(py_path: str) -> None:
         )
 
 
-def download_wiktionary(
-    lemma_lang: str, gloss_lang: str, abort=None, log=None, notifications=None
+def download_word_wise_file(
+    is_kindle: bool, lemma_lang: str, gloss_lang: str, abort=None, log=None, notifications=None
 ) -> None:
     if lemma_lang in CJK_LANGS:
         install_deps("pyahocorasick", notifications)
 
     if notifications:
-        notifications.put((0, f"Downloading {lemma_lang}-{gloss_lang} Wiktionary file"))
-    url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.tar.gz"
+        notifications.put((0, f"Downloading {lemma_lang}-{gloss_lang} {'Kindle' if is_kindle else 'Wiktionary'} file"))
+    url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/{'kindle' if is_kindle else 'wiktionary'}_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.tar.gz"
     extract_folder = custom_lemmas_folder(get_plugin_path())
     with urlopen(url) as r:
         with tarfile.open(fileobj=BytesIO(r.read())) as tar:

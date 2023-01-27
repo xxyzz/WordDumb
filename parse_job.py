@@ -19,7 +19,7 @@ try:
         insert_lemma,
         save_db,
     )
-    from .deps import download_wiktionary, install_deps, which_python
+    from .deps import download_word_wise_file, install_deps, which_python
     from .epub import EPUB
     from .interval import Interval, IntervalTree
     from .mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
@@ -102,7 +102,8 @@ def do_job(
                 plugin_path, lang["wiki"], prefs["wiktionary_gloss_lang"]
             ).exists()
         ):
-            download_wiktionary(
+            download_word_wise_file(
+                False,
                 lang["wiki"],
                 prefs["wiktionary_gloss_lang"],
                 notifications=notifications,
@@ -110,6 +111,8 @@ def do_job(
     else:
         create_ww = create_ww and not get_ll_path(asin, book_path_str).exists()
         create_x = create_x and not get_x_ray_path(asin, book_path_str).exists()
+        if create_ww and not kindle_dump_path(plugin_path, lang["wiki"]).exists():
+            download_word_wise_file(True, lang["wiki"], "en", notifications=notifications)
 
     return_values = (
         book_id,
@@ -228,7 +231,7 @@ def create_files(
     kw_processor = None
     if create_ww:
         kw_processor = load_lemmas_dump(
-            plugin_path, wiki_lang if is_epub else None, prefs["wiktionary_gloss_lang"]
+            not is_epub, wiki_lang, prefs["wiktionary_gloss_lang"] if is_epub else "en", plugin_path
         )
 
     if create_x:

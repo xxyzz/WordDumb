@@ -1,8 +1,7 @@
 {
   "cupy": "11.4.0",
-  "lemminflect": "0.2.3",
   "lxml": "4.9.2",
-  "pyahocorasick": "1.4.4",
+  "pyahocorasick": "2.0.0",
   "thinc-apple-ops": "0.1.3",
   "torch": "1.13.1",
   "rapidfuzz": "2.13.7"

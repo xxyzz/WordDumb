@@ -83,22 +83,20 @@ def insert_plugin_libs(plugin_path: Path) -> None:
     insert_lib_path(str(plugin_path.joinpath("libs")))
 
 
-def load_lemmas_dump(plugin_path: Path, lemma_lang: str, gloss_lang: str) -> Any:
+def load_lemmas_dump(is_kindle: bool, lemma_lang: str, gloss_lang: str, plugin_path: Path) -> Any:
     insert_plugin_libs(plugin_path)
-    custom_kindle_dump = custom_kindle_dump_path(plugin_path)
-    if lemma_lang:
-        file_path = wiktionary_dump_path(plugin_path, lemma_lang, gloss_lang)
-        if lemma_lang in CJK_LANGS:
-            insert_installed_libs(plugin_path)
-            import ahocorasick
-
-            return ahocorasick.load(str(file_path), pickle.loads)
-        else:
-            return load_json_or_pickle(None, file_path)
-    elif custom_kindle_dump.exists():
-        return load_json_or_pickle(None, custom_kindle_dump)
+    if is_kindle:
+        dump_path = kindle_dump_path(plugin_path, lemma_lang)
     else:
-        return load_json_or_pickle(plugin_path, f"data/{custom_kindle_dump.name}")
+        dump_path = wiktionary_dump_path(plugin_path, lemma_lang, gloss_lang)
+
+    if lemma_lang in CJK_LANGS:
+        insert_installed_libs(plugin_path)
+        import ahocorasick
+
+        return ahocorasick.load(str(dump_path), pickle.loads)
+    elif dump_path.exists():
+        return load_json_or_pickle(None, dump_path)
 
 
 def get_plugin_path() -> Path:
@@ -111,21 +109,27 @@ def custom_lemmas_folder(plugin_path: Path) -> Path:
     return plugin_path.parent.joinpath("worddumb-lemmas")
 
 
-def custom_kindle_dump_path(plugin_path: Path) -> Path:
+def kindle_db_path(plugin_path: Path, lemma_lang: str) -> Path:
     return custom_lemmas_folder(plugin_path).joinpath(
-        f"kindle_lemmas_dump_v{PROFICIENCY_MAJOR_VERSION}"
+        f"{lemma_lang}/kindle_{lemma_lang}_en_v{PROFICIENCY_MAJOR_VERSION}.db"
+    )
+
+
+def kindle_dump_path(plugin_path: Path, lemma_lang: str) -> Path:
+    return custom_lemmas_folder(plugin_path).joinpath(
+        f"{lemma_lang}/kindle_{lemma_lang}_en_dump_v{PROFICIENCY_MAJOR_VERSION}"
+    )
+
+
+def wiktionary_db_path(plugin_path: Path, lemma_lang: str, gloss_lang: str) -> Path:
+    return custom_lemmas_folder(plugin_path).joinpath(
+        f"{lemma_lang}/wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.db"
     )
 
 
 def wiktionary_dump_path(plugin_path: Path, lemma_lang: str, gloss_lang: str) -> Path:
     return custom_lemmas_folder(plugin_path).joinpath(
         f"{lemma_lang}/wiktionary_{lemma_lang}_{gloss_lang}_dump_v{PROFICIENCY_MAJOR_VERSION}"
-    )
-
-
-def wiktionary_json_path(plugin_path: Path, lemma_lang: str, gloss_lang: str) -> Path:
-    return custom_lemmas_folder(plugin_path).joinpath(
-        f"{lemma_lang}/wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.json"
     )
 
 
@@ -148,17 +152,6 @@ def get_user_agent() -> str:
     from .error_dialogs import GITHUB_URL
 
     return f"WordDumb/{'.'.join(map(str, VERSION))} ({GITHUB_URL})"
-
-
-def get_lemmas_tst_path(plugin_path: Path, lemma_lang: str, gloss_lemma: str) -> Path:
-    if lemma_lang:
-        return custom_lemmas_folder(plugin_path).joinpath(
-            f"{lemma_lang}/wiktionary_{lemma_lang}_{gloss_lemma}_tst_v{PROFICIENCY_MAJOR_VERSION}"
-        )
-    else:
-        return custom_lemmas_folder(plugin_path).joinpath(
-            f"kindle_lemmas_tst_v{PROFICIENCY_MAJOR_VERSION}"
-        )
 
 
 class Prefs(TypedDict):

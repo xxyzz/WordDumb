@@ -1,5 +1,11 @@
 # Contributing
 
+## Clone project
+
+```bash
+git clone --recurse-submodules git@github.com:xxyzz/WordDumb.git
+```
+
 ## Debug
 
 ```

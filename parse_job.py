@@ -2,6 +2,7 @@
 import json
 import random
 import re
+import shutil
 from html import escape, unescape
 from pathlib import Path
 from sqlite3 import Connection
@@ -66,8 +67,18 @@ def do_job(
     from .metadata import get_asin_etc
 
     (book_id, book_fmt, book_path_str, mi, lang) = data
+    set_en_lang = (
+        True if create_ww and book_fmt != "EPUB" and lang["wiki"] != "en" else False
+    )
+    if set_en_lang:
+        book_path = Path(book_path_str)
+        book_path = book_path.with_stem(book_path.stem + "_en")
+        if not book_path.exists():
+            shutil.copy(book_path_str, book_path)
+        book_path_str = str(book_path)
+
     (asin, acr, revision, update_asin, kfx_json, mobi_html, mobi_codec) = get_asin_etc(
-        book_path_str, book_fmt, mi
+        book_path_str, book_fmt, mi, set_en_lang=set_en_lang
     )
 
     model = lang["spacy"] + prefs["model_size"]

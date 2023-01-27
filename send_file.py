@@ -67,7 +67,11 @@ class SendFile:
                 return
 
         set_en_lang = False
-        if self.ll_path.exists() and self.book_fmt != "EPUB" and self.mi.language != "eng":
+        if (
+            self.ll_path.exists()
+            and self.book_fmt != "EPUB"
+            and self.mi.language != "eng"
+        ):
             set_en_lang = True
         [has_book, _, _, _, paths] = self.gui.book_on_device(self.book_id)
         if has_book and self.book_fmt != "EPUB":
@@ -78,7 +82,11 @@ class SendFile:
             if job is None:
                 # update device book ASIN if it doesn't have the same ASIN
                 _, _, _, update_asin, *_ = get_asin_etc(
-                    str(device_book_path), self.book_fmt, self.mi, self.asin, set_en_lang=set_en_lang
+                    str(device_book_path),
+                    self.book_fmt,
+                    self.mi,
+                    self.asin,
+                    set_en_lang=set_en_lang,
                 )
                 if update_asin:  # Re-upload book cover
                     self.gui.update_thumbnail(self.mi)

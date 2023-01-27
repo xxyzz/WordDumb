@@ -191,13 +191,23 @@ def upgrade_pip(py_path: str) -> None:
 
 
 def download_word_wise_file(
-    is_kindle: bool, lemma_lang: str, gloss_lang: str, abort=None, log=None, notifications=None
+    is_kindle: bool,
+    lemma_lang: str,
+    gloss_lang: str,
+    abort=None,
+    log=None,
+    notifications=None,
 ) -> None:
     if lemma_lang in CJK_LANGS:
         install_deps("pyahocorasick", notifications)
 
     if notifications:
-        notifications.put((0, f"Downloading {lemma_lang}-{gloss_lang} {'Kindle' if is_kindle else 'Wiktionary'} file"))
+        notifications.put(
+            (
+                0,
+                f"Downloading {lemma_lang}-{gloss_lang} {'Kindle' if is_kindle else 'Wiktionary'} file",
+            )
+        )
     url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/{'kindle' if is_kindle else 'wiktionary'}_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.tar.gz"
     extract_folder = custom_lemmas_folder(get_plugin_path())
     with urlopen(url) as r:

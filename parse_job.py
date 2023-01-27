@@ -30,6 +30,7 @@ try:
         get_plugin_path,
         get_user_agent,
         insert_installed_libs,
+        kindle_dump_path,
         load_lemmas_dump,
         run_subprocess,
         wiktionary_dump_path,
@@ -112,7 +113,9 @@ def do_job(
         create_ww = create_ww and not get_ll_path(asin, book_path_str).exists()
         create_x = create_x and not get_x_ray_path(asin, book_path_str).exists()
         if create_ww and not kindle_dump_path(plugin_path, lang["wiki"]).exists():
-            download_word_wise_file(True, lang["wiki"], "en", notifications=notifications)
+            download_word_wise_file(
+                True, lang["wiki"], "en", notifications=notifications
+            )
 
     return_values = (
         book_id,
@@ -231,7 +234,10 @@ def create_files(
     kw_processor = None
     if create_ww:
         kw_processor = load_lemmas_dump(
-            not is_epub, wiki_lang, prefs["wiktionary_gloss_lang"] if is_epub else "en", plugin_path
+            not is_epub,
+            wiki_lang,
+            prefs["wiktionary_gloss_lang"] if is_epub else "en",
+            plugin_path,
         )
 
     if create_x:
@@ -309,7 +315,7 @@ def create_files(
                 start, x_ray, doc, mobi_codec, wiki_lang, escaped_text, custom_x_ray
             )
             if create_ww:
-                find_lemma(
+                kindle_find_lemma(
                     start, doc.text, kw_processor, ll_conn, mobi_codec, escaped_text
                 )
             if notif:
@@ -325,7 +331,7 @@ def create_files(
         )
     elif create_ww:
         for text, context in parse_book(kfx_json, mobi_html, mobi_codec):
-            find_lemma(
+            kindle_find_lemma(
                 context if kfx_json else context[0],
                 text,
                 kw_processor,
@@ -366,7 +372,7 @@ def index_in_escaped_text(
         return None
 
 
-def find_lemma(
+def kindle_find_lemma(
     start: int,
     text: str,
     kw_processor: Any,
@@ -374,32 +380,72 @@ def find_lemma(
     mobi_codec: str,
     escaped_text: str,
 ) -> None:
-    starts = set()
-    for data, token_start, token_end in kw_processor.extract_keywords(
-        text, span_info=True
-    ):
-        end = None
-        lemma = text[token_start:token_end]
+    from flashtext import KeywordProcessor
+
+    starts: set[int] = set()
+    if isinstance(kw_processor, KeywordProcessor):
+        for data, token_start, token_end in kw_processor.extract_keywords(
+            text, span_info=True
+        ):
+            kindle_add_lemma(
+                token_start,
+                token_end,
+                start,
+                text,
+                ll_conn,
+                mobi_codec,
+                escaped_text,
+                starts,
+                data,
+            )
+    else:
+        for token_end, data in kw_processor.iter_long(text):
+            kindle_add_lemma(
+                token_end + 1 - len(data[0]),
+                token_end + 1,
+                start,
+                text,
+                ll_conn,
+                mobi_codec,
+                escaped_text,
+                starts,
+                data[1:],
+            )
+
+
+def kindle_add_lemma(
+    token_start: int,
+    token_end: int,
+    text_start: int,
+    text: str,
+    ll_conn: Connection,
+    mobi_codec: str,
+    escaped_text: str,
+    starts: set[int],
+    data: tuple[int, int, int],
+):
+    end = None
+    lemma = text[token_start:token_end]
+    if mobi_codec:
+        result = index_in_escaped_text(lemma, escaped_text, token_start)
+        if result is None:
+            return
+        lemma_start, lemma_end = result
+        index = text_start + len(escaped_text[:lemma_start].encode(mobi_codec))
+    else:
+        index = text_start + token_start
+
+    if index in starts:
+        return
+    else:
+        starts.add(index)
+
+    if " " in lemma:
         if mobi_codec:
-            result = index_in_escaped_text(lemma, escaped_text, token_start)
-            if result is None:
-                continue
-            lemma_start, lemma_end = result
-            index = start + len(escaped_text[:lemma_start].encode(mobi_codec))
+            end = index + len(escaped_text[lemma_start:lemma_end].encode(mobi_codec))
         else:
-            index = start + token_start
-        if index in starts:
-            continue
-        else:
-            starts.add(index)
-        if " " in lemma:
-            if mobi_codec:
-                end = index + len(
-                    escaped_text[lemma_start:lemma_end].encode(mobi_codec)
-                )
-            else:
-                end = index + len(lemma)
-        insert_lemma(ll_conn, (index, end) + tuple(data))
+            end = index + len(lemma)
+    insert_lemma(ll_conn, (index, end) + tuple(data))
 
 
 def epub_find_lemma(

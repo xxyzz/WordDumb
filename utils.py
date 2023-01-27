@@ -83,7 +83,9 @@ def insert_plugin_libs(plugin_path: Path) -> None:
     insert_lib_path(str(plugin_path.joinpath("libs")))
 
 
-def load_lemmas_dump(is_kindle: bool, lemma_lang: str, gloss_lang: str, plugin_path: Path) -> Any:
+def load_lemmas_dump(
+    is_kindle: bool, lemma_lang: str, gloss_lang: str, plugin_path: Path
+) -> Any:
     insert_plugin_libs(plugin_path)
     if is_kindle:
         dump_path = kindle_dump_path(plugin_path, lemma_lang)

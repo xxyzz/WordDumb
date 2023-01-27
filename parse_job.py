@@ -123,8 +123,8 @@ def do_job(
     if not create_ww and not create_x:
         return return_values
 
-    cjk_epub_ww = book_fmt == "EPUB" and create_ww and lang["wiki"] in CJK_LANGS
-    if ismacos and cjk_epub_ww:
+    cjk_ww = create_ww and lang["wiki"] in CJK_LANGS
+    if ismacos and cjk_ww and book_fmt == "EPUB":
         install_deps("lxml", notifications)
     if create_x:
         install_deps(model, notifications)
@@ -136,7 +136,7 @@ def do_job(
     # macOS: bypass library validation
     # official calibre build: calibre's optimize level is 2 which removes docstring,
     # but the "transformers" package formats docstrings in their code
-    if (ismacos and (create_x or cjk_epub_ww)) or (
+    if (ismacos and (create_x or cjk_ww)) or (
         create_x and isfrozen and model.endswith("_trf")
     ):
         plugin_path = str(plugin_path)

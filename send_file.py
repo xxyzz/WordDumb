@@ -66,6 +66,9 @@ class SendFile:
                 Path(self.book_path).unlink()
                 return
 
+        set_en_lang = False
+        if self.ll_path.exists() and self.book_fmt != "EPUB" and self.mi.language != "eng":
+            set_en_lang = True
         [has_book, _, _, _, paths] = self.gui.book_on_device(self.book_id)
         if has_book and self.book_fmt != "EPUB":
             # _main_prefix: Kindle mount point, /Volumes/Kindle
@@ -75,7 +78,7 @@ class SendFile:
             if job is None:
                 # update device book ASIN if it doesn't have the same ASIN
                 _, _, _, update_asin, *_ = get_asin_etc(
-                    str(device_book_path), self.book_fmt, self.mi, self.asin
+                    str(device_book_path), self.book_fmt, self.mi, self.asin, set_en_lang=set_en_lang
                 )
                 if update_asin:  # Re-upload book cover
                     self.gui.update_thumbnail(self.mi)
@@ -85,10 +88,16 @@ class SendFile:
 
             self.move_file_to_device(self.ll_path, device_book_path)
             self.move_file_to_device(self.x_ray_path, device_book_path)
+            libray_book_path = Path(self.book_path)
+            if libray_book_path.stem.endswith("_en"):
+                libray_book_path.unlink()
             self.gui.status_bar.show_message(self.notif)
         elif job is None or self.book_fmt == "EPUB":
             # upload book and cover to device
             self.gui.update_thumbnail(self.mi)
+            # without this the book language won't be English after uploading
+            if set_en_lang and self.book_fmt == "KFX":
+                self.mi.language = "eng"
             job = self.device_manager.upload_books(
                 FunctionDispatcher(self.send_files),
                 [self.book_path],

@@ -118,7 +118,11 @@ class KFXJson(TypedDict):
 
 
 def get_asin_etc(
-    book_path: str, book_fmt: str, mi: Any, library_asin: str | None = None
+    book_path: str,
+    book_fmt: str,
+    mi: Any,
+    library_asin: str | None = None,
+    set_en_lang: bool = False,
 ) -> tuple[str, str, str, bool, KFXJson | None, bytes, str]:
     revision = ""
     kfx_json: KFXJson | None = None
@@ -129,7 +133,7 @@ def get_asin_etc(
     acr = ""
 
     if book_fmt == "KFX":
-        from calibre_plugins.kfx_input.kfxlib import YJ_Book, YJ_Metadata
+        from calibre_plugins.kfx_input.kfxlib import YJ_Book
 
         yj_book = YJ_Book(book_path)
         yj_md = yj_book.get_metadata()
@@ -140,14 +144,13 @@ def get_asin_etc(
         elif library_asin != asin:
             update_asin = True
             asin = library_asin
-        if update_asin:
-            yj_book = YJ_Book(book_path)
-            yj_md = YJ_Metadata()
-            yj_md.asin = asin
-            yj_md.content_type = "EBOK"
-            yj_book.decode_book(set_metadata=yj_md)
-            with open(book_path, "wb") as f:
-                f.write(yj_book.convert_to_single_kfx())
+        lang = yj_md.language
+        update_lang = False
+        if set_en_lang and lang != "en":
+            update_lang = True
+            lang = "en"
+        if update_asin or update_lang:
+            update_kfx_metedata(book_path, asin, lang)
         if library_asin is None:
             kfx_json = json.loads(yj_book.convert_to_json_content())["data"]
     elif book_fmt != "EPUB":
@@ -167,7 +170,16 @@ def get_asin_etc(
             elif library_asin != asin:
                 update_asin = True
                 asin = library_asin
-            if update_asin:
+            locale = mu.record0[0x5C:0x60]
+            lang = mi.language
+            update_lang = False
+            if set_en_lang and lang[2:] != (9).to_bytes(2, "big"):  # MOBI header locale
+                update_lang = True
+                locale = (9).to_bytes(4, "big")
+                lang = "eng"
+            if update_asin or update_lang:
+                mi.language = lang
+                mu.record0[0x5C:0x60] = locale
                 mu.update(mi, asin=asin)
         if library_asin is None:
             mobi_html = extract_mobi(book_path)
@@ -203,3 +215,16 @@ def extract_mobi(book_path: str) -> bytes:
             m8r.build_parts()
             html = b"".join(m8r.parts)  # KindleUnpack
         return html
+
+
+def update_kfx_metedata(book_path: str, asin: str, lang: str):
+    from calibre_plugins.kfx_input.kfxlib import YJ_Book, YJ_Metadata
+
+    yj_book = YJ_Book(book_path)
+    yj_md = YJ_Metadata()
+    yj_md.asin = asin
+    yj_md.language = lang
+    yj_md.content_type = "EBOK"
+    yj_book.decode_book(set_metadata=yj_md)
+    with open(book_path, "wb") as f:
+        f.write(yj_book.convert_to_single_kfx())

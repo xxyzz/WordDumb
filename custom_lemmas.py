@@ -20,6 +20,7 @@ from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
+    QFormLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -61,7 +62,8 @@ class CustomLemmasDialog(QDialog):
 
         self.lemmas_table = QTableView()
         self.lemmas_table.setAlternatingRowColors(True)
-        db = QSqlDatabase.addDatabase("QSQLITE")
+        self.db_connection_name = "lemmas_connection"
+        db = QSqlDatabase.addDatabase("QSQLITE", self.db_connection_name)
         db.setDatabaseName(str(db_path))
         db.open()
         self.lemmas_model: WiktionaryTableModel | KindleLemmasTableModel = (
@@ -94,10 +96,29 @@ class CustomLemmasDialog(QDialog):
         self.lemmas_table.resizeColumnsToContents()
         vl.addWidget(self.lemmas_table)
 
-        search_line = QLineEdit()
-        search_line.setPlaceholderText(_("Search"))
-        # search_line.textChanged.connect(lambda: self.search_lemma(search_line.text()))
-        vl.addWidget(search_line)
+        form_layout = QFormLayout()
+        form_layout.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
+        vl.addLayout(form_layout)
+
+        self.filter_lemma_line = QLineEdit()
+        self.filter_lemma_line.textChanged.connect(self.filter_data)
+        form_layout.addRow(_("Filter lemma"), self.filter_lemma_line)
+
+        self.filter_enabled_box = QComboBox()
+        self.filter_enabled_box.addItem(_("All"), "all")
+        self.filter_enabled_box.addItem(_("Enabled"), "enabled")
+        self.filter_enabled_box.addItem(_("Disabled"), "disabled")
+        self.filter_enabled_box.currentIndexChanged.connect(self.filter_data)
+        form_layout.addRow(_("Filter enabled"), self.filter_enabled_box)
+
+        self.filter_difficulty_box = QComboBox()
+        self.filter_difficulty_box.addItem(_("All"), "all")
+        for difficulty_level in range(5, 0, -1):
+            self.filter_difficulty_box.addItem(str(difficulty_level), difficulty_level)
+        self.filter_difficulty_box.currentIndexChanged.connect(self.filter_data)
+        form_layout.addRow(_("Filter difficulty"), self.filter_difficulty_box)
 
         if not is_kindle:
             from .config import prefs
@@ -113,33 +134,25 @@ class CustomLemmasDialog(QDialog):
                     self.ipa_button.addItem(_("Bopomofo"), "bopomofo")
                     self.ipa_button.setCurrentText(_(prefs["zh_ipa"]))
 
-                hl = QHBoxLayout()
-                hl.addWidget(
-                    QLabel(
-                        _("Phonetic transcription system")
-                        if lemma_lang == "zh"
-                        else _("International Phonetic Alphabet")
-                    )
+                form_layout.addRow(
+                    _("Phonetic transcription system")
+                    if lemma_lang == "zh"
+                    else _("International Phonetic Alphabet"),
+                    self.ipa_button,
                 )
-                self.ipa_button.currentIndexChanged.connect(self.change_ipa)
-                hl.addWidget(self.ipa_button)
-                vl.addLayout(hl)
 
-            hl = QHBoxLayout()
             difficulty_label = QLabel(_("Difficulty limit"))
             difficulty_label.setToolTip(
                 _(
                     "Difficult words have lower value. Words have difficulty value higher than this value are disabled."
                 )
             )
-            hl.addWidget(difficulty_label)
             self.difficulty_limit_box = QComboBox()
             self.difficulty_limit_box.addItems(map(str, range(5, 0, -1)))
             self.difficulty_limit_box.setCurrentText(
                 str(prefs[f"{lemma_lang}_wiktionary_difficulty_limit"])
             )
-            hl.addWidget(self.difficulty_limit_box)
-            vl.addLayout(hl)
+            form_layout.addRow(difficulty_label, self.difficulty_limit_box)
 
         dialog_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save
@@ -163,12 +176,21 @@ class CustomLemmasDialog(QDialog):
         ).clicked.connect(self.reset_lemmas)
         vl.addWidget(dialog_button_box)
 
-    def search_lemma(self, text: str) -> None:
-        row = self.lemmas_model.lemmas_tst.get_prefix(text)
-        if row:
-            index = self.lemmas_model.createIndex(row, 1)
-            self.lemmas_table.setCurrentIndex(index)
-            self.lemmas_table.scrollTo(index)
+    def filter_data(self) -> None:
+        filter_lemma = self.filter_lemma_line.text()
+        filter_enabled = self.filter_enabled_box.currentData()
+        filter_difficulty = self.filter_difficulty_box.currentData()
+        filter_sql = f"lemma LIKE '{filter_lemma}%'" if filter_lemma else ""
+        if filter_enabled != "all":
+            if filter_sql:
+                filter_sql += " AND "
+            filter_sql += f"enabled = {1 if filter_enabled == 'enabled' else 0}"
+        if filter_difficulty != "all":
+            if filter_sql:
+                filter_sql += " AND "
+            filter_sql += f"difficulty = {filter_difficulty}"
+        self.lemmas_model.setFilter(filter_sql)
+        self.lemmas_model.select()
 
     def select_import_file(self) -> None:
         import_options_dialog = ImportOptionsDialog(self)
@@ -198,8 +220,7 @@ class CustomLemmasDialog(QDialog):
         )
 
     def reset_lemmas(self):
-        plugin_path = get_plugin_path()
-        self.lemmas_model.database().close()
+        QSqlDatabase.removeDatabase(self.db_connection_name)
         self.db_path.unlink()
         self.reject()
 

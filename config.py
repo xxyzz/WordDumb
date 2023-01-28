@@ -11,6 +11,7 @@ from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig
 from PyQt6.QtCore import QObject, QRegularExpression, Qt
 from PyQt6.QtGui import QIcon, QRegularExpressionValidator
+from PyQt6.QtSql import QSqlDatabase
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -247,6 +248,7 @@ class ConfigWidget(QWidget):
                         (is_kindle, lemma_lang, gloss_lang),
                         _("Saving customized lemmas"),
                     )
+                QSqlDatabase.removeDatabase(custom_lemmas_dlg.db_connection_name)
 
     def run_threaded_job(self, func, args, job_title):
         gui = self.parent().parent()

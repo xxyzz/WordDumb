@@ -59,17 +59,29 @@ class CustomLemmasDialog(QDialog):
         self.setWindowTitle(window_title)
         vl = QVBoxLayout()
         self.setLayout(vl)
+        self.init_sql_table(is_kindle)
+        vl.addWidget(self.lemmas_table)
+        form_layout = QFormLayout()
+        form_layout.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
+        vl.addLayout(form_layout)
+        self.init_filters(form_layout)
+        if not is_kindle:
+            self.init_wiktionary_buttons(form_layout)
+        vl.addWidget(self.init_dialog_buttons())
 
+    def init_sql_table(self, is_kindle: bool) -> None:
         self.lemmas_table = QTableView()
         self.lemmas_table.setAlternatingRowColors(True)
         self.db_connection_name = "lemmas_connection"
         db = QSqlDatabase.addDatabase("QSQLITE", self.db_connection_name)
-        db.setDatabaseName(str(db_path))
+        db.setDatabaseName(str(self.db_path))
         db.open()
         self.lemmas_model: WiktionaryTableModel | KindleLemmasTableModel = (
-            KindleLemmasTableModel(db, lemma_lang)
+            KindleLemmasTableModel(db, self.lemma_lang)
             if is_kindle
-            else WiktionaryTableModel(db, lemma_lang)
+            else WiktionaryTableModel(db, self.lemma_lang)
         )
         self.lemmas_model.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
         self.lemmas_model.setTable("lemmas")
@@ -94,14 +106,8 @@ class CustomLemmasDialog(QDialog):
             QAbstractScrollArea.SizeAdjustPolicy.AdjustToContentsOnFirstShow
         )
         self.lemmas_table.resizeColumnsToContents()
-        vl.addWidget(self.lemmas_table)
 
-        form_layout = QFormLayout()
-        form_layout.setFieldGrowthPolicy(
-            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
-        )
-        vl.addLayout(form_layout)
-
+    def init_filters(self, form_layout: QFormLayout) -> None:
         self.filter_lemma_line = QLineEdit()
         self.filter_lemma_line.textChanged.connect(self.filter_data)
         form_layout.addRow(_("Filter lemma"), self.filter_lemma_line)
@@ -120,40 +126,42 @@ class CustomLemmasDialog(QDialog):
         self.filter_difficulty_box.currentIndexChanged.connect(self.filter_data)
         form_layout.addRow(_("Filter difficulty"), self.filter_difficulty_box)
 
-        if not is_kindle:
-            from .config import prefs
 
-            if lemma_lang in ["en", "zh"]:
-                self.ipa_button = QComboBox()
-                if lemma_lang == "en":
-                    self.ipa_button.addItem(_("General American"), "ga_ipa")
-                    self.ipa_button.addItem(_("Received Pronunciation"), "rp_ipa")
-                    self.ipa_button.setCurrentText(prefs["en_ipa"])
-                elif lemma_lang == "zh":
-                    self.ipa_button.addItem(_("Pinyin"), "pinyin")
-                    self.ipa_button.addItem(_("Bopomofo"), "bopomofo")
-                    self.ipa_button.setCurrentText(_(prefs["zh_ipa"]))
+    def init_wiktionary_buttons(self, form_layout: QFormLayout) -> None:
+        from .config import prefs
 
-                form_layout.addRow(
-                    _("Phonetic transcription system")
-                    if lemma_lang == "zh"
-                    else _("International Phonetic Alphabet"),
-                    self.ipa_button,
-                )
+        if self.lemma_lang in ["en", "zh"]:
+            self.ipa_button = QComboBox()
+            if self.lemma_lang == "en":
+                self.ipa_button.addItem(_("General American"), "ga_ipa")
+                self.ipa_button.addItem(_("Received Pronunciation"), "rp_ipa")
+                self.ipa_button.setCurrentText(prefs["en_ipa"])
+            elif self.lemma_lang == "zh":
+                self.ipa_button.addItem(_("Pinyin"), "pinyin")
+                self.ipa_button.addItem(_("Bopomofo"), "bopomofo")
+                self.ipa_button.setCurrentText(_(prefs["zh_ipa"]))
 
-            difficulty_label = QLabel(_("Difficulty limit"))
-            difficulty_label.setToolTip(
-                _(
-                    "Difficult words have lower value. Words have difficulty value higher than this value are disabled."
-                )
+            form_layout.addRow(
+                _("Phonetic transcription system")
+                if self.lemma_lang == "zh"
+                else _("International Phonetic Alphabet"),
+                self.ipa_button,
             )
-            self.difficulty_limit_box = QComboBox()
-            self.difficulty_limit_box.addItems(map(str, range(5, 0, -1)))
-            self.difficulty_limit_box.setCurrentText(
-                str(prefs[f"{lemma_lang}_wiktionary_difficulty_limit"])
-            )
-            form_layout.addRow(difficulty_label, self.difficulty_limit_box)
 
+        difficulty_label = QLabel(_("Difficulty limit"))
+        difficulty_label.setToolTip(
+            _(
+                "Difficult words have lower value. Words have difficulty value higher than this value are disabled."
+            )
+        )
+        self.difficulty_limit_box = QComboBox()
+        self.difficulty_limit_box.addItems(map(str, range(5, 0, -1)))
+        self.difficulty_limit_box.setCurrentText(
+            str(prefs[f"{self.lemma_lang}_wiktionary_difficulty_limit"])
+        )
+        form_layout.addRow(difficulty_label, self.difficulty_limit_box)
+
+    def init_dialog_buttons(self) -> QDialogButtonBox:
         dialog_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save
             | QDialogButtonBox.StandardButton.Cancel
@@ -174,7 +182,7 @@ class CustomLemmasDialog(QDialog):
         dialog_button_box.button(
             QDialogButtonBox.StandardButton.RestoreDefaults
         ).clicked.connect(self.reset_lemmas)
-        vl.addWidget(dialog_button_box)
+        return dialog_button_box
 
     def filter_data(self) -> None:
         filter_lemma = self.filter_lemma_line.text()

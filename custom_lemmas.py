@@ -30,7 +30,9 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
+from .error_dialogs import device_not_found_dialog, ww_db_not_found_dialog
 from .import_lemmas import extract_apkg, extract_csv, query_vocabulary_builder
+from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
 from .utils import (
     custom_lemmas_folder,
     get_klld_path,
@@ -74,6 +76,8 @@ class CustomLemmasDialog(QDialog):
     def init_sql_table(self, is_kindle: bool) -> None:
         self.lemmas_table = QTableView()
         self.lemmas_table.setAlternatingRowColors(True)
+        if is_kindle:
+            self.check_empty_kindle_gloss()
         self.db_connection_name = "lemmas_connection"
         db = QSqlDatabase.addDatabase("QSQLITE", self.db_connection_name)
         db.setDatabaseName(str(self.db_path))
@@ -125,7 +129,6 @@ class CustomLemmasDialog(QDialog):
             self.filter_difficulty_box.addItem(str(difficulty_level), difficulty_level)
         self.filter_difficulty_box.currentIndexChanged.connect(self.filter_data)
         form_layout.addRow(_("Filter difficulty"), self.filter_difficulty_box)
-
 
     def init_wiktionary_buttons(self, form_layout: QFormLayout) -> None:
         from .config import prefs
@@ -183,6 +186,48 @@ class CustomLemmasDialog(QDialog):
             QDialogButtonBox.StandardButton.RestoreDefaults
         ).clicked.connect(self.reset_lemmas)
         return dialog_button_box
+
+    def check_empty_kindle_gloss(self) -> None:
+        custom_db_conn = sqlite3.connect(self.db_path)
+        for gloss in custom_db_conn.execute("SELECT short_def FROM lemmas LIMIT 1"):
+            empty_gloss = len(gloss) == 0
+        if not empty_gloss:
+            return
+        plugin_path = get_plugin_path()
+        klld_path = get_klld_path(plugin_path)
+        if klld_path is None:
+            gui = self.parent().parent()
+            package_name = device_connected(gui, "KFX")
+            if not package_name:
+                device_not_found_dialog(self)
+                return
+            custom_folder = custom_lemmas_folder(plugin_path)
+            if isinstance(package_name, str):
+                copy_klld_from_android(package_name, custom_folder)
+            else:
+                copy_klld_from_kindle(gui, custom_folder)
+
+        klld_path = get_klld_path(plugin_path)
+        if klld_path is None:
+            ww_db_not_found_dialog(self)
+            return
+
+        klld_conn = sqlite3.connect(klld_path)
+        for sense_id, short_def, full_def, example in klld_conn.execute(
+            "SELECT senses.id, short_def, full_def, example_sentence FROM lemmas JOIN senses ON lemmas.id = display_lemma_id WHERE (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like '-%'"
+        ):
+            short_def = base64.b64decode(short_def if short_def else full_def).decode(
+                "utf-8"
+            )
+            full_def = base64.b64decode(full_def).decode("utf-8") if full_def else ""
+            example = base64.b64decode(example).decode("utf-8") if example else ""
+            custom_db_conn.execute(
+                "UPDATE lemmas SET short_def = ?, full_def = ?, example = ? WHERE sense_id = ?",
+                (short_def, full_def, example, sense_id),
+            )
+        klld_conn.close()
+        custom_db_conn.commit()
+        custom_db_conn.close()
 
     def filter_data(self) -> None:
         filter_lemma = self.filter_lemma_line.text()
@@ -359,26 +404,27 @@ class KindleLemmasTableModel(LemmasTableModel):
     def __init__(self, db: QSqlDatabase, lemma_lang: str) -> None:
         super().__init__(db)
         self.headers = [
-            "Sense id",
+            "sense_id",
             _("Enabled"),
             _("Lemma"),
             _("POS"),
             _("Gloss"),
+            "full_def",
             _("Difficulty"),
-            "Example sentence",
-            _("Forms"),
+            "example_sentence",
+            "forms",
         ]
         self.checkable_column = 1
         self.lemma_column = 2
-        self.difficulty_column = 5
-        self.hide_columns = [0, 6, 7]
+        self.difficulty_column = 6
+        self.hide_columns = [0, 5, 7, 8]
         self.tooltip_columns = [2, 4]
         if lemma_lang != "en":
             self.headers.append("display_lemma_id")
-            self.editable_columns = [2, 5]
-            self.hide_columns.append(8)
+            self.editable_columns = [2, 6]
+            self.hide_columns.append(9)
         else:
-            self.editable_columns = [5]
+            self.editable_columns = [6]
 
     def export(
         self, export_path: str, only_enabled: bool, difficulty_limit: int

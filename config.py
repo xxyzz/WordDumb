@@ -32,12 +32,7 @@ from .custom_lemmas import CustomLemmasDialog
 from .deps import download_word_wise_file, install_deps, mac_python
 from .dump_kindle_lemmas import dump_kindle_lemmas
 from .dump_wiktionary import dump_wiktionary
-from .error_dialogs import (
-    GITHUB_URL,
-    device_not_found_dialog,
-    job_failed,
-    ww_db_not_found_dialog,
-)
+from .error_dialogs import GITHUB_URL, job_failed
 from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
 from .utils import (
     CJK_LANGS,

@@ -21,7 +21,7 @@ parser.add_argument("-x", help="create x-ray", action="store_true")
 parser.add_argument("-s", help="search people", action="store_true")
 parser.add_argument("-m", help="add locator map", action="store_true")
 parser.add_argument("asin")
-parser.add_argument("book_path")  # Wiktionary JSON
+parser.add_argument("book_path")  # or Word Wise db path
 parser.add_argument("acr")
 parser.add_argument("revision")
 parser.add_argument("model")
@@ -38,13 +38,15 @@ parser.add_argument("dump_path")
 args = parser.parse_args()
 
 if args.dump_path:
-    plugin_path = Path(args.plugin_path)
-    insert_installed_libs(plugin_path)
-    if args.wiki_lang:
-        dump_wiktionary(args.book_path, args.dump_path, args.wiki_lang)
+    insert_installed_libs(Path(args.plugin_path))
+    if args.book_fmt == "EPUB":
+        dump_wiktionary(args.wiki_lang, Path(args.book_path), Path(args.dump_path))
     else:
-        insert_plugin_libs(plugin_path)
-        dump_kindle_lemmas(json.load(sys.stdin), args.dump_path)
+        dump_kindle_lemmas(
+            args.wiki_lang in ["zh", "ja", "ko"],
+            Path(args.book_path),
+            Path(args.dump_path),
+        )
 else:
     kfx_json = None
     mobi_html = b""

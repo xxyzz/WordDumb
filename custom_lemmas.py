@@ -9,8 +9,9 @@ from html import escape
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from PyQt6.QtCore import QAbstractTableModel, Qt, QVariant
+from PyQt6.QtCore import QAbstractTableModel, QModelIndex, QObject, Qt, QVariant
 from PyQt6.QtGui import QIcon
+from PyQt6.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
@@ -28,17 +29,14 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .dump_wiktionary import get_ipa
 from .import_lemmas import extract_apkg, extract_csv, query_vocabulary_builder
 from .utils import (
-    custom_kindle_dump_path,
     custom_lemmas_folder,
     get_klld_path,
-    get_lemmas_tst_path,
     get_plugin_path,
+    kindle_dump_path,
     load_json_or_pickle,
     load_lemmas_dump,
-    wiktionary_json_path,
 )
 
 load_translations()  # type: ignore
@@ -47,36 +45,48 @@ if TYPE_CHECKING:
 
 
 class CustomLemmasDialog(QDialog):
-    def __init__(self, parent: Any, lang: str | None = None) -> None:
+    def __init__(
+        self, parent: QObject, is_kindle: bool, lemma_lang: str, db_path: Path
+    ) -> None:
         super().__init__(parent)
-        self.lang = lang
-        if lang:
-            window_title = _("Customize Wiktionary")
-        else:
+        self.lemma_lang = lemma_lang
+        self.db_path = db_path
+        if is_kindle:
             window_title = _("Customize Kindle Word Wise")
+        else:
+            window_title = _("Customize Wiktionary")
         self.setWindowTitle(window_title)
         vl = QVBoxLayout()
         self.setLayout(vl)
 
         self.lemmas_table = QTableView()
         self.lemmas_table.setAlternatingRowColors(True)
-        self.lemmas_model: Any = (
-            WiktionaryTableModel(lang) if lang else KindleLemmasTableModel()
+        db = QSqlDatabase.addDatabase("QSQLITE")
+        db.setDatabaseName(str(db_path))
+        db.open()
+        self.lemmas_model: WiktionaryTableModel | KindleLemmasTableModel = (
+            KindleLemmasTableModel(db, lemma_lang)
+            if is_kindle
+            else WiktionaryTableModel(db, lemma_lang)
         )
+        self.lemmas_model.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
+        self.lemmas_model.setTable("lemmas")
+        self.lemmas_model.setSort(
+            self.lemmas_model.lemma_column, Qt.SortOrder.AscendingOrder
+        )
+        self.lemmas_model.select()
+
         self.lemmas_table.setModel(self.lemmas_model)
         self.lemmas_table.setItemDelegateForColumn(
-            8 if lang else 5,
+            self.lemmas_model.difficulty_column,
             ComboBoxDelegate(
                 self.lemmas_table,
                 list(range(1, 6)),
                 {0: _("Fewer Hints"), 4: _("More Hints")},
             ),
         )
-        if lang is None:
-            self.lemmas_table.hideColumn(2)
-            self.lemmas_table.hideColumn(6)
-        else:
-            self.lemmas_table.hideColumn(5)
+        for column in self.lemmas_model.hide_columns:
+            self.lemmas_table.hideColumn(column)
         self.lemmas_table.horizontalHeader().setMaximumSectionSize(400)
         self.lemmas_table.setSizeAdjustPolicy(
             QAbstractScrollArea.SizeAdjustPolicy.AdjustToContentsOnFirstShow
@@ -86,35 +96,34 @@ class CustomLemmasDialog(QDialog):
 
         search_line = QLineEdit()
         search_line.setPlaceholderText(_("Search"))
-        search_line.textChanged.connect(lambda: self.search_lemma(search_line.text()))
+        # search_line.textChanged.connect(lambda: self.search_lemma(search_line.text()))
         vl.addWidget(search_line)
 
-        if lang in ["en", "zh"]:
+        if not is_kindle:
             from .config import prefs
 
-            self.ipa_button = QComboBox()
-            if lang == "en":
-                self.ipa_button.addItems(["US", "UK"])
-                self.ipa_button.setCurrentText(prefs["en_ipa"])
-            elif lang == "zh":
-                self.ipa_button.addItem(_("Pinyin"), "Pinyin")
-                self.ipa_button.addItem(_("Bopomofo"), "bopomofo")
-                self.ipa_button.setCurrentText(_(prefs["zh_ipa"]))
+            if lemma_lang in ["en", "zh"]:
+                self.ipa_button = QComboBox()
+                if lemma_lang == "en":
+                    self.ipa_button.addItem(_("General American"), "ga_ipa")
+                    self.ipa_button.addItem(_("Received Pronunciation"), "rp_ipa")
+                    self.ipa_button.setCurrentText(prefs["en_ipa"])
+                elif lemma_lang == "zh":
+                    self.ipa_button.addItem(_("Pinyin"), "pinyin")
+                    self.ipa_button.addItem(_("Bopomofo"), "bopomofo")
+                    self.ipa_button.setCurrentText(_(prefs["zh_ipa"]))
 
-            hl = QHBoxLayout()
-            hl.addWidget(
-                QLabel(
-                    _("Phonetic transcription system")
-                    if lang == "zh"
-                    else _("International Phonetic Alphabet")
+                hl = QHBoxLayout()
+                hl.addWidget(
+                    QLabel(
+                        _("Phonetic transcription system")
+                        if lemma_lang == "zh"
+                        else _("International Phonetic Alphabet")
+                    )
                 )
-            )
-            self.ipa_button.currentIndexChanged.connect(self.change_ipa)
-            hl.addWidget(self.ipa_button)
-            vl.addLayout(hl)
-
-        if lang:
-            from .config import prefs
+                self.ipa_button.currentIndexChanged.connect(self.change_ipa)
+                hl.addWidget(self.ipa_button)
+                vl.addLayout(hl)
 
             hl = QHBoxLayout()
             difficulty_label = QLabel(_("Difficulty limit"))
@@ -127,10 +136,7 @@ class CustomLemmasDialog(QDialog):
             self.difficulty_limit_box = QComboBox()
             self.difficulty_limit_box.addItems(map(str, range(5, 0, -1)))
             self.difficulty_limit_box.setCurrentText(
-                str(prefs[f"{lang}_wiktionary_difficulty_limit"])
-            )
-            self.difficulty_limit_box.currentIndexChanged.connect(
-                self.change_difficulty_limit
+                str(prefs[f"{lemma_lang}_wiktionary_difficulty_limit"])
             )
             hl.addWidget(self.difficulty_limit_box)
             vl.addLayout(hl)
@@ -193,30 +199,14 @@ class CustomLemmasDialog(QDialog):
 
     def reset_lemmas(self):
         plugin_path = get_plugin_path()
-        if self.lang is None:
-            custom_path = custom_kindle_dump_path(plugin_path)
-            if custom_path.exists():
-                custom_path.unlink()
-                self.reject()
-        else:
-            from .config import prefs
-
-            custom_folder = custom_lemmas_folder(plugin_path).joinpath(self.lang)
-            for path in custom_folder.glob(
-                f"wiktionary_{self.lang}_{prefs['wiktionary_gloss_lang']}_*"
-            ):
-                path.unlink()
-            self.reject()
+        self.lemmas_model.database().close()
+        self.db_path.unlink()
+        self.reject()
 
     def change_ipa(self):
         from .config import prefs
 
-        if self.lang == "en":
-            prefs["en_ipa"] = self.ipa_button.currentText()
-        elif self.lang == "zh":
-            prefs["zh_ipa"] = self.ipa_button.currentData()
-
-        self.lemmas_model.change_ipa()
+        prefs[f"{self.lemma_lang}_ipa"] = self.ipa_button.currentData()
 
     def set_export_options(self):
         option_dialog = ExportOptionsDialog(self)
@@ -240,82 +230,66 @@ class CustomLemmasDialog(QDialog):
 
         limit = int(self.difficulty_limit_box.currentText())
         prefs[f"{self.lang}_wiktionary_difficulty_limit"] = limit
-        self.lemmas_model.change_difficulty_limit(limit)
 
 
-class LemmasTableModel(QAbstractTableModel):
-    def rowCount(self, index):
-        return len(self.lemmas)
+class LemmasTableModel(QSqlTableModel):
+    def __init__(self, db: QSqlDatabase) -> None:
+        super().__init__(db=db)
 
-    def columnCount(self, index):
-        return len(self.headers)
-
-    def headerData(self, section, orientation, role):
+    def headerData(
+        self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole
+    ) -> QVariant:
         if (
             role == Qt.ItemDataRole.DisplayRole
             and orientation == Qt.Orientation.Horizontal
         ):
             return self.headers[section]
+        return super().headerData(section, orientation, role)
 
-    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
-        if not index.isValid():
-            return QVariant()
+    def flags(self, index: QModelIndex) -> Qt.ItemFlag:
+        flag = super().flags(index)
         column = index.column()
-        value = self.lemmas[index.row()][column]
-        if role == Qt.ItemDataRole.CheckStateRole and column == 0:
-            new_value = Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
-            if isinstance(new_value, int):  # PyQt5
-                return new_value
-            else:  # PyQt6 Enum
-                return new_value.value
-        elif (
-            isinstance(self, KindleLemmasTableModel)
-            and role == Qt.ItemDataRole.DisplayRole
-            and column == 3
-        ):
-            return self.pos_types[value]
-        elif (
-            isinstance(self, WiktionaryTableModel)
-            and role == Qt.ItemDataRole.DisplayRole
-            and column == 7
-        ):
-            return get_ipa(self.lang, value)
-        elif role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
-            return value
-        elif role == Qt.ItemDataRole.ToolTipRole and column in self.tooltip_columns:
-            return value
-
-    def flags(self, index):
-        if not index.isValid():
-            return Qt.ItemFlag.ItemIsEnabled
-        flag = QAbstractTableModel.flags(self, index)
-        column = index.column()
-        if column == 0:
+        if column == self.checkable_column:
             flag |= Qt.ItemFlag.ItemIsUserCheckable
         elif column in self.editable_columns:
             flag |= Qt.ItemFlag.ItemIsEditable
+        else:
+            flag &= ~Qt.ItemFlag.ItemIsEditable
         return flag
 
-    def setData(self, index, value, role):
+    def data(
+        self, index: QModelIndex, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole
+    ) -> QVariant:
+        column = index.column()
+        if role == Qt.ItemDataRole.CheckStateRole and column == self.checkable_column:
+            value = self.record(index.row()).value(column)
+            return (
+                Qt.CheckState.Checked.value
+                if value == 1
+                else Qt.CheckState.Unchecked.value
+            )
+        elif role == Qt.ItemDataRole.ToolTipRole and column in self.tooltip_columns:
+            return self.record(index.row()).value(column)
+        return super().data(index, role)
+
+    def setData(
+        self,
+        index: QModelIndex,
+        value: QVariant,
+        role: Qt.ItemDataRole = Qt.ItemDataRole.EditRole,
+    ) -> bool:
         if not index.isValid():
             return False
         column = index.column()
-        if role == Qt.ItemDataRole.CheckStateRole and column == 0:
-            checked_value = (
-                Qt.CheckState.Checked
-                if isinstance(Qt.CheckState.Checked, int)
-                else Qt.CheckState.Checked.value
-            )
-            self.lemmas[index.row()][0] = value == checked_value
+        if role == Qt.ItemDataRole.CheckStateRole and column == self.checkable_column:
+            row = index.row()
+            record = self.record(row)
+            record.setValue(column, 1 if value == Qt.CheckState.Checked.value else 0)
+            record.setGenerated(column, True)
+            self.setRecord(row, record)
             self.dataChanged.emit(index, index, [role])
             return True
-        elif role == Qt.ItemDataRole.EditRole and column in self.editable_columns:
-            if isinstance(self, KindleLemmasTableModel) or column == 8:
-                value = int(value)
-            self.lemmas[index.row()][column] = value
-            self.dataChanged.emit(index, index, [role])
-            return True
-        return False
+        return super().setData(index, value, role)
 
     def import_lemmas(self, lemmas_dict: dict[str, int], retain_lemmas: bool) -> None:
         if isinstance(self, KindleLemmasTableModel):
@@ -353,82 +327,29 @@ class LemmasTableModel(QAbstractTableModel):
 
 
 class KindleLemmasTableModel(LemmasTableModel):
-    def __init__(self):
-        super().__init__()
-        plugin_path = get_plugin_path()
-        kw_processor = load_lemmas_dump(plugin_path, None, None)
-        self.lemmas = []
-        klld_conn = sqlite3.connect(get_klld_path(plugin_path))
-        sense_ids = set()
-        for ignore, sense_id in kw_processor.get_all_keywords().values():
-            sense_ids.add(sense_id)
-
-        self.pos_types = {}
-        for pos_type_id, pos_type_lable in klld_conn.execute("SELECT * FROM pos_types"):
-            self.pos_types[pos_type_id] = pos_type_lable
-
-        lemmas_tst_path = get_lemmas_tst_path(plugin_path, None, None)
-        if lemmas_tst_path.exists():
-            self.lemmas_tst = load_json_or_pickle(None, lemmas_tst_path)
-        else:
-            from tst import TST
-
-            self.lemmas_tst = TST()
-            row_num = 0
-            lemmas_row = []
-            added_lemmas = set()
-
-        for (
-            lemma,
-            sense_id,
-            short_def,
-            full_def,
-            pos_type,
-            sentence,
-        ) in klld_conn.execute(
-            'SELECT lemma, senses.id, short_def, full_def, pos_type, example_sentence FROM lemmas JOIN senses ON lemmas.id = display_lemma_id WHERE (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like "-%" ORDER BY lemma'
-        ):
-            enabled = False
-            difficulty = 1
-            if sense_id in sense_ids:
-                enabled = True
-            if lemma in kw_processor:
-                difficulty = kw_processor.get_keyword(lemma)[0]
-            self.lemmas.append(
-                [
-                    enabled,
-                    lemma,
-                    sense_id,
-                    pos_type,
-                    base64.b64decode(short_def if short_def else full_def).decode(
-                        "utf-8"
-                    ),
-                    difficulty,
-                    sentence,
-                ]
-            )
-            if not lemmas_tst_path.exists():
-                if lemma not in added_lemmas:
-                    lemmas_row.append((lemma, row_num))
-                    added_lemmas.add(lemma)
-                row_num += 1
-
-        klld_conn.close()
+    def __init__(self, db: QSqlDatabase, lemma_lang: str) -> None:
+        super().__init__(db)
         self.headers = [
+            "Sense id",
             _("Enabled"),
             _("Lemma"),
-            "Sense id",
             _("POS"),
-            _("Definition"),
+            _("Gloss"),
             _("Difficulty"),
             "Example sentence",
+            _("Forms"),
         ]
-        self.editable_columns = [5]
-        self.tooltip_columns = [4]
-        if not lemmas_tst_path.exists():
-            self.lemmas_tst.put_values(lemmas_row)
-            with lemmas_tst_path.open("wb") as f:
-                pickle.dump(self.lemmas_tst, f)
+        self.checkable_column = 1
+        self.lemma_column = 2
+        self.difficulty_column = 5
+        self.hide_columns = [0, 6, 7]
+        self.tooltip_columns = [2, 4]
+        if lemma_lang != "en":
+            self.headers.append("display_lemma_id")
+            self.editable_columns = [2, 5]
+            self.hide_columns.append(8)
+        else:
+            self.editable_columns = [5]
 
     def export(
         self, export_path: str, only_enabled: bool, difficulty_limit: int
@@ -443,6 +364,56 @@ class KindleLemmasTableModel(LemmasTableModel):
                 back_text = f"<p>{gloss}</p>"
                 if sentence:
                     back_text += f"<i>{base64.b64decode(sentence).decode('utf-8')}</i>"
+                f.write(f"{lemma}\t{back_text}\n")
+
+
+class WiktionaryTableModel(LemmasTableModel):
+    def __init__(self, db: QSqlDatabase, lemma_lang: str):
+        super().__init__(db)
+        self.headers = [
+            "id",
+            _("Enabled"),
+            _("Lemma"),
+            _("POS"),
+            _("Gloss"),
+            "full_def",
+            _("Difficulty"),
+            "Forms",
+            "Example",
+        ]
+        self.checkable_column = 1
+        self.lemma_column = 2
+        self.difficulty_column = 6
+        self.hide_columns = [0, 5, 7, 8]
+        self.editable_columns = [4, 6]
+        self.tooltip_columns = [2, 4]
+        if lemma_lang == "en":
+            self.headers.extend(["General American", "Received Pronunciation"])
+            self.hide_columns.extend([9, 10])
+        elif lemma_lang == "zh":
+            self.headers.extend(["Pinyin", "Bopomofo"])
+            self.hide_columns.extend([9, 10])
+        else:
+            self.headers.append("IPA")
+            self.hide_columns.append(9)
+
+    def export(
+        self, export_path: str, only_enabled: bool, difficulty_limit: int
+    ) -> None:
+        with open(export_path, "w", encoding="utf-8") as f:
+            for enabled, lemma, *_, gloss, example, _, ipas, difficulty in self.lemmas:
+                if only_enabled and not enabled:
+                    continue
+                if difficulty > difficulty_limit:
+                    continue
+                back_text = ""
+                # if ipas:
+                #     back_text += f"<p>{escape(get_ipa(self.lang, ipas))}</p>"
+                gloss = escape(re.sub(r"\t|\n", " ", gloss))
+                back_text += f"<p>{gloss}</p>"
+                if example:
+                    example = escape(re.sub(r"\t|\n", " ", example))
+                    back_text += f"<i>{example}</i>"
                 f.write(f"{lemma}\t{back_text}\n")
 
 
@@ -486,80 +457,6 @@ class ComboBoxDelegate(QStyledItemDelegate):
         if isinstance(self.parent(), QAbstractItemView):
             self.parent().openPersistentEditor(index)
         super().paint(painter, option, index)
-
-
-class WiktionaryTableModel(LemmasTableModel):
-    def __init__(self, lang):
-        from .config import prefs
-
-        super().__init__()
-        self.lang = lang
-        self.headers = [
-            _("Enabled"),
-            _("Lemma"),
-            _("POS"),
-            _("Gloss"),
-            _("Definition"),
-            "Example",
-            _("Forms"),
-            "IPA",
-            _("Difficulty"),
-        ]
-        self.editable_columns = [3, 4, 8]
-        self.tooltip_columns = [4]
-        plugin_path = get_plugin_path()
-        self.json_path = wiktionary_json_path(
-            plugin_path, lang, prefs["wiktionary_gloss_lang"]
-        )
-        with open(self.json_path, encoding="utf-8") as f:
-            self.lemmas = json.load(f)
-        self.lemmas_tst = load_json_or_pickle(
-            None, get_lemmas_tst_path(plugin_path, lang, prefs["wiktionary_gloss_lang"])
-        )
-
-    def save_json_file(self):
-        with open(self.json_path, "w", encoding="utf-8") as f:
-            json.dump(self.lemmas, f)
-
-    def change_ipa(self):
-        for row in range(self.rowCount(None)):
-            if self.lemmas[row][7]:
-                index = self.createIndex(row, 7)
-                self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole])
-
-    def export(
-        self, export_path: str, only_enabled: bool, difficulty_limit: int
-    ) -> None:
-        with open(export_path, "w", encoding="utf-8") as f:
-            for enabled, lemma, *_, gloss, example, _, ipas, difficulty in self.lemmas:
-                if only_enabled and not enabled:
-                    continue
-                if difficulty > difficulty_limit:
-                    continue
-                back_text = ""
-                if ipas:
-                    back_text += f"<p>{escape(get_ipa(self.lang, ipas))}</p>"
-                gloss = escape(re.sub(r"\t|\n", " ", gloss))
-                back_text += f"<p>{gloss}</p>"
-                if example:
-                    example = escape(re.sub(r"\t|\n", " ", example))
-                    back_text += f"<i>{example}</i>"
-                f.write(f"{lemma}\t{back_text}\n")
-
-    def change_difficulty_limit(self, limit: int) -> None:
-        for row in range(self.rowCount(None)):
-            currently_enabled = self.lemmas[row][0]
-            difficulty = self.lemmas[row][8]
-            enabled = currently_enabled
-            if difficulty > limit:
-                enabled = False
-            elif not currently_enabled and difficulty > 1:
-                enabled = True
-
-            if currently_enabled != enabled:
-                self.lemmas[row][0] = enabled
-                index = self.createIndex(row, 0)
-                self.dataChanged.emit(index, index, [Qt.ItemDataRole.CheckStateRole])
 
 
 class ExportOptionsDialog(QDialog):

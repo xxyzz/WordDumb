@@ -9,7 +9,7 @@ from calibre.gui2.threaded_jobs import ThreadedJob
 from PyQt6.QtGui import QIcon
 
 from .custom_x_ray import CustomXRayDialog
-from .error_dialogs import job_failed, non_english_book_dialog
+from .error_dialogs import job_failed
 from .metadata import check_metadata
 from .parse_job import do_job
 from .send_file import SendFile, device_connected

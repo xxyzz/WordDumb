@@ -9,7 +9,7 @@ from calibre.constants import ismacos
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig
-from PyQt6.QtCore import QRegularExpression, Qt
+from PyQt6.QtCore import QObject, QRegularExpression, Qt
 from PyQt6.QtGui import QIcon, QRegularExpressionValidator
 from PyQt6.QtWidgets import (
     QAbstractItemView,
@@ -28,7 +28,7 @@ from PyQt6.QtWidgets import (
 )
 
 from .custom_lemmas import CustomLemmasDialog
-from .deps import download_wiktionary, install_deps, mac_python
+from .deps import download_word_wise_file, install_deps, mac_python
 from .dump_kindle_lemmas import dump_kindle_lemmas
 from .dump_wiktionary import dump_wiktionary
 from .error_dialogs import (
@@ -40,17 +40,18 @@ from .error_dialogs import (
 from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
 from .utils import (
     CJK_LANGS,
-    custom_kindle_dump_path,
     custom_lemmas_folder,
     donate,
     get_klld_path,
     get_plugin_path,
     insert_installed_libs,
     insert_plugin_libs,
+    kindle_db_path,
+    kindle_dump_path,
     load_json_or_pickle,
     run_subprocess,
+    wiktionary_db_path,
     wiktionary_dump_path,
-    wiktionary_json_path,
 )
 
 prefs = JSONConfig("plugins/worddumb")
@@ -62,8 +63,8 @@ prefs.defaults["add_locator_map"] = False
 prefs.defaults["preferred_formats"] = ["KFX", "AZW3", "AZW", "MOBI", "EPUB"]
 prefs.defaults["use_all_formats"] = False
 prefs.defaults["minimal_x_ray_count"] = 1
-prefs.defaults["en_ipa"] = "US"
-prefs.defaults["zh_ipa"] = "Pinyin"
+prefs.defaults["en_ipa"] = "ga_ipa"
+prefs.defaults["zh_ipa"] = "pinyin"
 prefs.defaults["choose_format_manually"] = True
 prefs.defaults["wiktionary_gloss_lang"] = "en"
 prefs.defaults["use_gpu"] = False
@@ -89,11 +90,15 @@ class ConfigWidget(QWidget):
         vl.addWidget(format_order_button)
 
         customize_ww_button = QPushButton(_("Customize Kindle Word Wise"))
-        customize_ww_button.clicked.connect(self.open_kindle_lemmas_dialog)
+        customize_ww_button.clicked.connect(
+            partial(self.open_choose_lemma_lang_dialog, is_kindle=True)
+        )
         vl.addWidget(customize_ww_button)
 
         custom_wiktionary_button = QPushButton(_("Customize EPUB Wiktionary"))
-        custom_wiktionary_button.clicked.connect(self.open_wiktionary_dialog)
+        custom_wiktionary_button.clicked.connect(
+            partial(self.open_choose_lemma_lang_dialog, is_kindle=False)
+        )
         vl.addWidget(custom_wiktionary_button)
 
         self.search_people_box = QCheckBox(
@@ -209,142 +214,102 @@ class ConfigWidget(QWidget):
             prefs["use_gpu"] = self.use_gpu_box.isChecked()
             prefs["cuda"] = self.cuda_version_box.currentData()
 
-    def open_kindle_lemmas_dialog(self) -> None:
-        klld_path = get_klld_path(self.plugin_path)
-        gui = self.parent().parent()
-        if klld_path is None:
-            package_name = device_connected(gui, "KFX")
-            if not package_name:
-                device_not_found_dialog(self)
-                return
-            custom_folder = custom_lemmas_folder(self.plugin_path)
-            if not custom_folder.exists():
-                custom_folder.mkdir()
-            if isinstance(package_name, str):
-                copy_klld_from_android(package_name, custom_folder)
-            else:
-                copy_klld_from_kindle(gui, custom_folder)
-
-        klld_path = get_klld_path(self.plugin_path)
-        if klld_path is None:
-            ww_db_not_found_dialog(self)
-            return
-        custom_lemmas_dlg = CustomLemmasDialog(self)
-        if custom_lemmas_dlg.exec():
-            job = ThreadedJob(
-                "WordDumb's dumb job",
-                _("Saving customized lemmas"),
-                self.save_kindle_lemmas,
-                (
-                    {
-                        lemma: (difficulty, sense_id, pos_type)
-                        for enabled, lemma, sense_id, pos_type, gloss, difficulty, sent in custom_lemmas_dlg.lemmas_model.lemmas
-                        if enabled
-                    },
-                ),
-                {},
-                Dispatcher(partial(job_failed, parent=gui)),
-                killable=False,
-            )
-            gui.job_manager.run_threaded_job(job)
-
-    def save_kindle_lemmas(self, lemmas, abort=None, log=None, notifications=None):
-        install_deps("lemminflect", notifications)
-        notifications.put((0, _("Saving customized lemmas")))
-        custom_path = custom_kindle_dump_path(self.plugin_path)
-        if ismacos:
-            plugin_path = str(self.plugin_path)
-            args = [mac_python(), plugin_path]
-            args.extend([""] * 12 + [plugin_path, str(custom_path)])
-            run_subprocess(args, json.dumps(lemmas))
-        else:
-            insert_plugin_libs(self.plugin_path)
-            insert_installed_libs(self.plugin_path)
-            dump_kindle_lemmas(lemmas, custom_path)
-
     def open_format_order_dialog(self):
         format_order_dialog = FormatOrderDialog(self)
         if format_order_dialog.exec():
             format_order_dialog.save()
 
-    def open_wiktionary_dialog(self):
-        choose_lang_dlg = WiktionaryLangDialog(self)
+    def open_choose_lemma_lang_dialog(self, is_kindle: bool = True) -> None:
+        choose_lang_dlg = ChooseLemmaLangDialog(self, is_kindle)
         if choose_lang_dlg.exec():
             lemma_lang = choose_lang_dlg.lemma_lang.currentData()
             gloss_lang = choose_lang_dlg.gloss_lang.currentData()
             prefs["wiktionary_gloss_lang"] = gloss_lang
-        else:
-            return
 
-        wiktionary_path = wiktionary_json_path(self.plugin_path, lemma_lang, gloss_lang)
-        if wiktionary_path.exists():
-            custom_lemmas_dlg = CustomLemmasDialog(self, lemma_lang)
-            if custom_lemmas_dlg.exec():
-                self.run_dump_wiktionary_job(lemma_lang, custom_lemmas_dlg.lemmas_model)
-        else:
-            self.run_download_wiktionary_job(lemma_lang)
+            db_path = (
+                kindle_db_path(self.plugin_path, lemma_lang)
+                if is_kindle
+                else wiktionary_db_path(self.plugin_path, lemma_lang, gloss_lang)
+            )
+            if not db_path.exists():
+                self.run_threaded_job(
+                    download_word_wise_file,
+                    (is_kindle, lemma_lang, gloss_lang),
+                    _("Downloading Word Wise file"),
+                )
+            else:
+                custom_lemmas_dlg = CustomLemmasDialog(
+                    self, is_kindle, lemma_lang, db_path
+                )
+                if custom_lemmas_dlg.exec():
+                    self.run_threaded_job(
+                        self.dump_lemmas_job,
+                        (is_kindle, lemma_lang, gloss_lang),
+                        _("Saving customized lemmas"),
+                    )
 
-    def run_download_wiktionary_job(self, lang):
+    def run_threaded_job(self, func, args, job_title):
         gui = self.parent().parent()
         job = ThreadedJob(
             "WordDumb's dumb job",
-            _("Downloading Wiktionary"),
-            download_wiktionary,
-            (lang, prefs["wiktionary_gloss_lang"]),
+            job_title,
+            func,
+            args,
             {},
             Dispatcher(partial(job_failed, parent=gui)),
             killable=False,
         )
         gui.job_manager.run_threaded_job(job)
 
-    def run_dump_wiktionary_job(self, lemma_lang, table_model):
-        gui = self.parent().parent()
-        job = ThreadedJob(
-            "WordDumb's dumb dump job",
-            _("Saving customized lemmas"),
-            self.dump_wiktionary_job,
-            (lemma_lang, table_model),
-            {},
-            Dispatcher(partial(job_failed, parent=gui)),
-            killable=False,
+    def dump_lemmas_job(
+        self,
+        is_kindle: bool,
+        lemma_lang: str,
+        gloss_lang: str,
+        abort=None,
+        log=None,
+        notifications=None,
+    ) -> None:
+        db_path = (
+            kindle_db_path(self.plugin_path, lemma_lang)
+            if is_kindle
+            else wiktionary_db_path(self.plugin_path, lemma_lang, gloss_lang)
         )
-        gui.job_manager.run_threaded_job(job)
-
-    def dump_wiktionary_job(
-        self, lemma_lang, table_model, abort=None, log=None, notifications=None
-    ):
-        if table_model:
-            table_model.save_json_file()
-        insert_plugin_libs(self.plugin_path)
-        insert_installed_libs(self.plugin_path)
-        json_path = wiktionary_json_path(
-            self.plugin_path, lemma_lang, prefs["wiktionary_gloss_lang"]
+        dump_path = (
+            kindle_dump_path(self.plugin_path, lemma_lang)
+            if is_kindle
+            else wiktionary_dump_path(self.plugin_path, lemma_lang, gloss_lang)
         )
-        dump_path = wiktionary_dump_path(
-            self.plugin_path, lemma_lang, prefs["wiktionary_gloss_lang"]
-        )
-        if ismacos and lemma_lang in CJK_LANGS:
+        is_cjk = lemma_lang in CJK_LANGS
+        if ismacos and is_cjk:
             args = [
                 mac_python(),
                 str(self.plugin_path),
                 "",
-                str(json_path),
+                str(db_path),
                 "",
                 "",
                 "",
                 lemma_lang,
-                prefs["wiktionary_gloss_lang"],
+                gloss_lang,
             ]
-            args.extend([""] * 6)
+            args.extend([""] * 4)
             args.extend(
                 [
+                    "" if is_kindle else "EPUB",
+                    "",
                     str(self.plugin_path),
                     str(dump_path),
                 ]
             )
             run_subprocess(args)
         else:
-            dump_wiktionary(json_path, dump_path, lemma_lang)
+            insert_plugin_libs(self.plugin_path)
+            if is_kindle:
+                dump_kindle_lemmas(is_cjk, db_path, dump_path)
+            else:
+                insert_installed_libs(self.plugin_path)
+                dump_wiktionary(lemma_lang, db_path, dump_path)
 
 
 class FormatOrderDialog(QDialog):
@@ -437,10 +402,10 @@ class ChooseFormatDialog(QDialog):
         self.accept()
 
 
-class WiktionaryLangDialog(QDialog):
-    def __init__(self, parent=None):
+class ChooseLemmaLangDialog(QDialog):
+    def __init__(self, parent: QObject, is_kindle: bool):
         super().__init__(parent)
-        self.setWindowTitle(_("Choose Wiktionary language"))
+        self.setWindowTitle(_("Choose language"))
 
         form_layout = QFormLayout()
         form_layout.setFieldGrowthPolicy(
@@ -448,32 +413,37 @@ class WiktionaryLangDialog(QDialog):
         )
 
         language_dict = load_json_or_pickle(get_plugin_path(), "data/languages.json")
-        lemma_languages = {
+        lemma_language_to_code = {
             _(val["kaikki"]): val["wiki"] for val in language_dict.values()
         }
-        gloss_languages = {
+
+        self.lemma_lang = QComboBox()
+        for text, val in lemma_language_to_code.items():
+            self.lemma_lang.addItem(text, val)
+        form_layout.addRow(_("Lemma language"), self.lemma_lang)
+
+        gloss_language_to_code = {
             _(val["kaikki"]): val["wiki"]
             for val in language_dict.values()
             if val["gloss"]
         }
-        gloss_codes = {
+        gloss_code_to_language = {
             (val["wiki"]): _(val["kaikki"])
             for val in language_dict.values()
             if val["gloss"]
         }
-        gloss_languages[_("Simplified Chinese")] = "zh_cn"
-        gloss_codes["zh_cn"] = _("Simplified Chinese")
-
-        self.lemma_lang = QComboBox()
-        for text, val in lemma_languages.items():
-            self.lemma_lang.addItem(text, val)
-        form_layout.addRow(_("Lemma language"), self.lemma_lang)
-
+        gloss_language_to_code[_("Simplified Chinese")] = "zh_cn"
+        gloss_code_to_language["zh_cn"] = _("Simplified Chinese")
         self.gloss_lang = QComboBox()
-        for text, val in gloss_languages.items():
+        for text, val in gloss_language_to_code.items():
             self.gloss_lang.addItem(text, val)
-        self.gloss_lang.setCurrentText(gloss_codes[prefs["wiktionary_gloss_lang"]])
-        form_layout.addRow(_("Gloss language"), self.gloss_lang)
+        self.gloss_lang.setCurrentText(
+            gloss_code_to_language[prefs["wiktionary_gloss_lang"]]
+        )
+        if not is_kindle:
+            form_layout.addRow(_("Gloss language"), self.gloss_lang)
+        else:
+            self.gloss_lang.setCurrentText(gloss_code_to_language["en"])
 
         confirm_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel

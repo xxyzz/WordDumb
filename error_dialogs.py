@@ -69,6 +69,15 @@ def subprocess_error(job: Any, parent: Any) -> None:
         )
     elif "ModuleNotFoundError" in exception:
         module_not_found_error(job.details + exception, parent)
+    elif "Unable to detect NVIDIA CUDA" in exception:
+        error_dialog(
+            _("Can't find CUDA"),
+            _(
+                "'Run spaCy with GPU' feature requires <a href='https://developer.nvidia.com/cuda-downloads'>CUDA</a>"
+            ),
+            job.details + exception,
+            parent,
+        )
     else:
         check_network_error(job.details + exception, parent)
 

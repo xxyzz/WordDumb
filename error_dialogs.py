@@ -141,7 +141,9 @@ def unsupported_format_dialog() -> None:
 def device_not_found_dialog(parent: Any) -> None:
     warning_dialog(
         _("Device not found"),
-        _("Definition data will be added when Kindle or Android(requires adb) device is connected."),
+        _(
+            "Definition data will be added when Kindle or Android(requires adb) device is connected."
+        ),
         parent,
     )
 

@@ -37,7 +37,7 @@ def card_type_to_difficult_level(card_type: int) -> int:
             return 1
 
 
-def extract_csv(csv_path: str) -> dict[str, int]:
+def extract_csv(csv_path: Path) -> dict[str, int]:
     csv_words = {}
     with open(csv_path, newline="") as f:
         for row in csv.reader(f):
@@ -55,7 +55,7 @@ def extract_csv(csv_path: str) -> dict[str, int]:
     return csv_words
 
 
-def query_vocabulary_builder(lang: str, db_path: str) -> dict[str, int]:
+def query_vocabulary_builder(lang: str, db_path: Path) -> dict[str, int]:
     conn = sqlite3.connect(db_path)
     words = {}
     for stem, category, lookups in conn.execute(
@@ -81,3 +81,30 @@ def lookups_to_difficulty(lookups: int, category: int) -> int:
             return 2
         case _:
             return 1
+
+
+def apply_imported_lemmas_data(
+    db_path: Path, import_path: Path, retain_lemmas: bool, lemma_lang: str
+) -> None:
+    lemmas_dict = {}
+    match import_path.suffix:
+        case ".apkg":
+            lemmas_dict = extract_apkg(import_path)
+        case ".csv":
+            lemmas_dict = extract_csv(import_path)
+        case ".db":
+            lemmas_dict = query_vocabulary_builder(lemma_lang, import_path)
+        case _:
+            return
+
+    conn = sqlite3.connect(db_path)
+    for (lemma,) in conn.execute("SELECT DISTINCT lemma FROM lemmas"):
+        if lemma in lemmas_dict:
+            conn.execute(
+                "UPDATE lemmas SET enabled = 1, difficulty = ? WHERE lemma = ?",
+                (lemmas_dict.get(lemma), lemma),
+            )
+        elif not retain_lemmas:
+            conn.execute("UPDATE lemmas SET enabled = 0, difficulty = 1 WHERE lemma = ?", (lemma,))
+    conn.commit()
+    conn.close()

@@ -38,6 +38,7 @@ parser.add_argument("dump_path")
 args = parser.parse_args()
 
 if args.dump_path:
+    insert_plugin_libs(Path(args.plugin_path))
     insert_installed_libs(Path(args.plugin_path))
     if args.book_fmt == "EPUB":
         dump_wiktionary(args.wiki_lang, Path(args.book_path), Path(args.dump_path))

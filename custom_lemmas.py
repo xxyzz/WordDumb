@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 
 import base64
-import json
-import pickle
 import re
 import sqlite3
 from html import escape
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from PyQt6.QtCore import QAbstractTableModel, QModelIndex, QObject, Qt, QVariant
+from PyQt6.QtCore import QModelIndex, QObject, Qt, QVariant
 from PyQt6.QtGui import QIcon
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt6.QtWidgets import (
@@ -31,16 +29,8 @@ from PyQt6.QtWidgets import (
 )
 
 from .error_dialogs import device_not_found_dialog, ww_db_not_found_dialog
-from .import_lemmas import extract_apkg, extract_csv, query_vocabulary_builder
 from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
-from .utils import (
-    custom_lemmas_folder,
-    get_klld_path,
-    get_plugin_path,
-    kindle_dump_path,
-    load_json_or_pickle,
-    load_lemmas_dump,
-)
+from .utils import custom_lemmas_folder, get_klld_path, get_plugin_path
 
 load_translations()  # type: ignore
 if TYPE_CHECKING:
@@ -189,9 +179,10 @@ class CustomLemmasDialog(QDialog):
 
     def check_empty_kindle_gloss(self) -> None:
         custom_db_conn = sqlite3.connect(self.db_path)
-        for gloss in custom_db_conn.execute("SELECT short_def FROM lemmas LIMIT 1"):
+        for (gloss,) in custom_db_conn.execute("SELECT short_def FROM lemmas LIMIT 1"):
             empty_gloss = len(gloss) == 0
         if not empty_gloss:
+            custom_db_conn.close()
             return
         plugin_path = get_plugin_path()
         klld_path = get_klld_path(plugin_path)
@@ -256,21 +247,11 @@ class CustomLemmasDialog(QDialog):
             str(Path.home()),
             "Anki Deck Package (*.apkg);;CSV (*.csv);;Kindle Vocabulary Builder (*.db)",
         )
-        lemmas_dict = {}
-        if file_path.endswith(".apkg"):
-            lemmas_dict = extract_apkg(Path(file_path))
-        elif file_path.endswith(".csv"):
-            lemmas_dict = extract_csv(file_path)
-        elif file_path.endswith(".db"):
-            lemmas_dict = query_vocabulary_builder(
-                self.lang if self.lang else "en", file_path
-            )
-        else:
-            return
-
-        self.lemmas_model.import_lemmas(
-            lemmas_dict, import_options_dialog.retain_enabled_lemmas.isChecked()
+        self.import_lemmas_path = file_path
+        self.retain_enabled_lemmas = (
+            import_options_dialog.retain_enabled_lemmas.isChecked()
         )
+        self.reject()
 
     def reset_lemmas(self):
         QSqlDatabase.removeDatabase(self.db_connection_name)
@@ -364,40 +345,6 @@ class LemmasTableModel(QSqlTableModel):
             self.dataChanged.emit(index, index, [role])
             return True
         return super().setData(index, value, role)
-
-    def import_lemmas(self, lemmas_dict: dict[str, int], retain_lemmas: bool) -> None:
-        if isinstance(self, KindleLemmasTableModel):
-            difficulty_column = 5
-        else:
-            difficulty_column = 8
-
-        for row in range(self.rowCount(None)):
-            lemma = self.lemmas[row][1]
-            origin_enable = self.lemmas[row][0]
-            origin_difficulty = self.lemmas[row][difficulty_column]
-            enable = origin_enable
-            difficulty = origin_difficulty
-
-            if imported_difficulty := lemmas_dict.get(lemma):
-                enable = True
-                difficulty = imported_difficulty
-            elif not retain_lemmas:
-                enable = False
-
-            if origin_enable != enable:
-                self.setData(
-                    self.createIndex(row, 0),
-                    Qt.CheckState.Checked.value
-                    if enable
-                    else Qt.CheckState.Unchecked.value,
-                    Qt.ItemDataRole.CheckStateRole,
-                )
-            if origin_difficulty != difficulty:
-                self.setData(
-                    self.createIndex(row, difficulty_column),
-                    difficulty,
-                    Qt.ItemDataRole.EditRole,
-                )
 
 
 class KindleLemmasTableModel(LemmasTableModel):
@@ -578,6 +525,7 @@ class ImportOptionsDialog(QDialog):
         self.setLayout(vl)
 
         self.retain_enabled_lemmas = QCheckBox(_("Retain current enabled lemmas"))
+        self.retain_enabled_lemmas.setCheckState(Qt.CheckState.Checked)
         vl.addWidget(self.retain_enabled_lemmas)
 
         dialog_button_box = QDialogButtonBox(

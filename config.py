@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import json
 import webbrowser
 from functools import partial
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from calibre.constants import ismacos
@@ -29,16 +29,14 @@ from PyQt6.QtWidgets import (
 )
 
 from .custom_lemmas import CustomLemmasDialog
-from .deps import download_word_wise_file, install_deps, mac_python
+from .deps import download_word_wise_file, mac_python
 from .dump_kindle_lemmas import dump_kindle_lemmas
 from .dump_wiktionary import dump_wiktionary
 from .error_dialogs import GITHUB_URL, job_failed
-from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
+from .import_lemmas import apply_imported_lemmas_data
 from .utils import (
     CJK_LANGS,
-    custom_lemmas_folder,
     donate,
-    get_klld_path,
     get_plugin_path,
     insert_installed_libs,
     insert_plugin_libs,
@@ -227,6 +225,11 @@ class ConfigWidget(QWidget):
                 if is_kindle
                 else wiktionary_db_path(self.plugin_path, lemma_lang, gloss_lang)
             )
+            dump_path = (
+                kindle_dump_path(self.plugin_path, lemma_lang)
+                if is_kindle
+                else wiktionary_dump_path(self.plugin_path, lemma_lang, gloss_lang)
+            )
             if not db_path.exists():
                 self.run_threaded_job(
                     download_word_wise_file,
@@ -238,12 +241,27 @@ class ConfigWidget(QWidget):
                     self, is_kindle, lemma_lang, db_path
                 )
                 if custom_lemmas_dlg.exec():
+                    QSqlDatabase.removeDatabase(custom_lemmas_dlg.db_connection_name)
                     self.run_threaded_job(
-                        self.dump_lemmas_job,
-                        (is_kindle, lemma_lang, gloss_lang),
+                        dump_lemmas_job,
+                        (is_kindle, db_path, dump_path, lemma_lang, gloss_lang),
                         _("Saving customized lemmas"),
                     )
-                QSqlDatabase.removeDatabase(custom_lemmas_dlg.db_connection_name)
+                elif hasattr(custom_lemmas_dlg, "import_lemmas_path"):
+                    QSqlDatabase.removeDatabase(custom_lemmas_dlg.db_connection_name)
+                    self.run_threaded_job(
+                        import_lemmas_job,
+                        (
+                            Path(custom_lemmas_dlg.import_lemmas_path),
+                            db_path,
+                            dump_path,
+                            custom_lemmas_dlg.retain_enabled_lemmas,
+                            is_kindle,
+                            lemma_lang,
+                            gloss_lang,
+                        ),
+                        _("Saving customized lemmas"),
+                    )
 
     def run_threaded_job(self, func, args, job_title):
         gui = self.parent().parent()
@@ -258,55 +276,64 @@ class ConfigWidget(QWidget):
         )
         gui.job_manager.run_threaded_job(job)
 
-    def dump_lemmas_job(
-        self,
-        is_kindle: bool,
-        lemma_lang: str,
-        gloss_lang: str,
-        abort=None,
-        log=None,
-        notifications=None,
-    ) -> None:
-        db_path = (
-            kindle_db_path(self.plugin_path, lemma_lang)
-            if is_kindle
-            else wiktionary_db_path(self.plugin_path, lemma_lang, gloss_lang)
-        )
-        dump_path = (
-            kindle_dump_path(self.plugin_path, lemma_lang)
-            if is_kindle
-            else wiktionary_dump_path(self.plugin_path, lemma_lang, gloss_lang)
-        )
-        is_cjk = lemma_lang in CJK_LANGS
-        if ismacos and is_cjk:
-            args = [
-                mac_python(),
-                str(self.plugin_path),
+
+def import_lemmas_job(
+    import_path: Path,
+    db_path: Path,
+    dump_path: Path,
+    retain_lemmas: bool,
+    is_kindle: bool,
+    lemma_lang: str,
+    gloss_lang: str,
+    abort: Any = None,
+    log: Any = None,
+    notifications: Any = None,
+) -> None:
+    apply_imported_lemmas_data(db_path, import_path, retain_lemmas, lemma_lang)
+    dump_lemmas_job(is_kindle, db_path, dump_path, lemma_lang, gloss_lang)
+
+
+def dump_lemmas_job(
+    is_kindle: bool,
+    db_path: Path,
+    dump_path: Path,
+    lemma_lang: str,
+    gloss_lang: str,
+    abort: Any = None,
+    log: Any = None,
+    notifications: Any = None,
+) -> None:
+    is_cjk = lemma_lang in CJK_LANGS
+    plugin_path = get_plugin_path()
+    if ismacos and is_cjk:
+        args = [
+            mac_python(),
+            str(plugin_path),
+            "",
+            str(db_path),
+            "",
+            "",
+            "",
+            lemma_lang,
+            gloss_lang,
+        ]
+        args.extend([""] * 4)
+        args.extend(
+            [
+                "" if is_kindle else "EPUB",
                 "",
-                str(db_path),
-                "",
-                "",
-                "",
-                lemma_lang,
-                gloss_lang,
+                str(plugin_path),
+                str(dump_path),
             ]
-            args.extend([""] * 4)
-            args.extend(
-                [
-                    "" if is_kindle else "EPUB",
-                    "",
-                    str(self.plugin_path),
-                    str(dump_path),
-                ]
-            )
-            run_subprocess(args)
+        )
+        run_subprocess(args)
+    else:
+        insert_plugin_libs(plugin_path)
+        if is_kindle:
+            dump_kindle_lemmas(is_cjk, db_path, dump_path)
         else:
-            insert_plugin_libs(self.plugin_path)
-            if is_kindle:
-                dump_kindle_lemmas(is_cjk, db_path, dump_path)
-            else:
-                insert_installed_libs(self.plugin_path)
-                dump_wiktionary(lemma_lang, db_path, dump_path)
+            insert_installed_libs(plugin_path)
+            dump_wiktionary(lemma_lang, db_path, dump_path)
 
 
 class FormatOrderDialog(QDialog):

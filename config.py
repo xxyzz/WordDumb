@@ -33,7 +33,7 @@ from .deps import download_word_wise_file, mac_python
 from .dump_kindle_lemmas import dump_kindle_lemmas
 from .dump_wiktionary import dump_wiktionary
 from .error_dialogs import GITHUB_URL, job_failed
-from .import_lemmas import apply_imported_lemmas_data
+from .import_lemmas import apply_imported_lemmas_data, export_lemmas_job
 from .utils import (
     CJK_LANGS,
     donate,
@@ -238,7 +238,7 @@ class ConfigWidget(QWidget):
                 )
             else:
                 custom_lemmas_dlg = CustomLemmasDialog(
-                    self, is_kindle, lemma_lang, db_path
+                    self, is_kindle, lemma_lang, db_path, dump_path
                 )
                 if custom_lemmas_dlg.exec():
                     QSqlDatabase.removeDatabase(custom_lemmas_dlg.db_connection_name)
@@ -262,6 +262,22 @@ class ConfigWidget(QWidget):
                         ),
                         _("Saving customized lemmas"),
                     )
+                elif hasattr(custom_lemmas_dlg, "export_path"):
+                    QSqlDatabase.removeDatabase(custom_lemmas_dlg.db_connection_name)
+                    self.run_threaded_job(
+                        export_lemmas_job,
+                        (
+                            db_path,
+                            Path(custom_lemmas_dlg.export_path),
+                            custom_lemmas_dlg.only_export_enabled,
+                            custom_lemmas_dlg.export_difficulty_limit,
+                            is_kindle,
+                            lemma_lang,
+                        ),
+                        _("Exporting customized lemmas"),
+                    )
+                else:
+                    QSqlDatabase.removeDatabase(custom_lemmas_dlg.db_connection_name)
 
     def run_threaded_job(self, func, args, job_title):
         gui = self.parent().parent()

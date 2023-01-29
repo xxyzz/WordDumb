@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
 import base64
-import re
 import sqlite3
-from html import escape
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -39,11 +37,17 @@ if TYPE_CHECKING:
 
 class CustomLemmasDialog(QDialog):
     def __init__(
-        self, parent: QObject, is_kindle: bool, lemma_lang: str, db_path: Path
+        self,
+        parent: QObject,
+        is_kindle: bool,
+        lemma_lang: str,
+        db_path: Path,
+        dump_path: Path,
     ) -> None:
         super().__init__(parent)
         self.lemma_lang = lemma_lang
         self.db_path = db_path
+        self.dump_path = dump_path
         if is_kindle:
             window_title = _("Customize Kindle Word Wise")
         else:
@@ -256,6 +260,7 @@ class CustomLemmasDialog(QDialog):
     def reset_lemmas(self):
         QSqlDatabase.removeDatabase(self.db_connection_name)
         self.db_path.unlink()
+        self.dump_path.unlink()
         self.reject()
 
     def change_ipa(self):
@@ -274,11 +279,12 @@ class CustomLemmasDialog(QDialog):
         if not export_path:
             return
 
-        self.lemmas_model.export(
-            export_path,
-            option_dialog.only_enabled_box.isChecked(),
-            int(option_dialog.difficulty_limit_box.currentText()),
+        self.export_path = export_path
+        self.only_export_enabled = option_dialog.only_enabled_box.isChecked()
+        self.export_difficulty_limit = int(
+            option_dialog.difficulty_limit_box.currentText()
         )
+        self.reject()
 
     def change_difficulty_limit(self):
         from .config import prefs
@@ -373,21 +379,6 @@ class KindleLemmasTableModel(LemmasTableModel):
         else:
             self.editable_columns = [6]
 
-    def export(
-        self, export_path: str, only_enabled: bool, difficulty_limit: int
-    ) -> None:
-        with open(export_path, "w", encoding="utf-8") as f:
-            for enabled, lemma, *_, gloss, difficulty, sentence in self.lemmas:
-                if only_enabled and not enabled:
-                    continue
-                if difficulty > difficulty_limit:
-                    continue
-
-                back_text = f"<p>{gloss}</p>"
-                if sentence:
-                    back_text += f"<i>{base64.b64decode(sentence).decode('utf-8')}</i>"
-                f.write(f"{lemma}\t{back_text}\n")
-
 
 class WiktionaryTableModel(LemmasTableModel):
     def __init__(self, db: QSqlDatabase, lemma_lang: str):
@@ -418,25 +409,6 @@ class WiktionaryTableModel(LemmasTableModel):
         else:
             self.headers.append("IPA")
             self.hide_columns.append(9)
-
-    def export(
-        self, export_path: str, only_enabled: bool, difficulty_limit: int
-    ) -> None:
-        with open(export_path, "w", encoding="utf-8") as f:
-            for enabled, lemma, *_, gloss, example, _, ipas, difficulty in self.lemmas:
-                if only_enabled and not enabled:
-                    continue
-                if difficulty > difficulty_limit:
-                    continue
-                back_text = ""
-                # if ipas:
-                #     back_text += f"<p>{escape(get_ipa(self.lang, ipas))}</p>"
-                gloss = escape(re.sub(r"\t|\n", " ", gloss))
-                back_text += f"<p>{gloss}</p>"
-                if example:
-                    example = escape(re.sub(r"\t|\n", " ", example))
-                    back_text += f"<i>{example}</i>"
-                f.write(f"{lemma}\t{back_text}\n")
 
 
 class ComboBoxDelegate(QStyledItemDelegate):

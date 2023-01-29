@@ -1,7 +1,10 @@
 import csv
+import re
 import sqlite3
 import zipfile
+from html import escape
 from pathlib import Path
+from typing import Any
 
 
 def extract_apkg(apkg_path: Path) -> dict[str, int]:
@@ -105,6 +108,61 @@ def apply_imported_lemmas_data(
                 (lemmas_dict.get(lemma), lemma),
             )
         elif not retain_lemmas:
-            conn.execute("UPDATE lemmas SET enabled = 0, difficulty = 1 WHERE lemma = ?", (lemma,))
+            conn.execute(
+                "UPDATE lemmas SET enabled = 0, difficulty = 1 WHERE lemma = ?",
+                (lemma,),
+            )
     conn.commit()
     conn.close()
+
+
+def export_lemmas_job(
+    db_path: Path,
+    export_path: Path,
+    only_enabled: bool,
+    difficulty_limit: int,
+    is_kindle: bool,
+    lemma_lang: str,
+    abort: Any = None,
+    log: Any = None,
+    notifications: Any = None,
+) -> None:
+    from .config import prefs
+
+    conn = sqlite3.connect(db_path)
+    with open(export_path, "w", encoding="utf-8") as f:
+        if is_kindle:
+            query_sql = "SELECT lemma, pos_type, full_def, example FROM lemmas WHERE difficulty <= ?"
+        else:
+            if lemma_lang == "en":
+                query_sql = f"SELECT lemma, pos_type, full_def, example, {prefs['en_ipa']} FROM lemmas WHERE difficulty <= ?"
+            elif lemma_lang == "zh":
+                query_sql = f"SELECT lemma, pos_type, full_def, example, {prefs['zh_ipa']} FROM lemmas WHERE difficulty <= ?"
+            else:
+                query_sql = "SELECT lemma, pos_type, full_def, example, ipa FROM lemmas WHERE difficulty <= ?"
+
+        if only_enabled:
+            query_sql += " AND enabled = 1"
+
+        if is_kindle:
+            for lemma, pos_type, full_def, example in conn.execute(
+                query_sql, (difficulty_limit,)
+            ):
+                back_text = f"<p>{pos_type}</p><p>{full_def}</p>"
+                if example:
+                    back_text += f"<i>{example}</i>"
+                f.write(f"{lemma}\t{back_text}\n")
+        else:
+            for lemma, pos_type, full_def, example, ipa in conn.execute(
+                query_sql, (difficulty_limit,)
+            ):
+                back_text = f"<p>{pos_type}</p>"
+                if ipa:
+                    ipa = escape(re.sub(r"\t|\n", " ", ipa))
+                    back_text += f"<p>{ipa}</p>"
+                full_def = escape(re.sub(r"\t|\n", " ", full_def))
+                back_text += f"<p>{full_def}</p>"
+                if example:
+                    example = escape(re.sub(r"\t|\n", " ", example))
+                    back_text += f"<i>{example}</i>"
+                f.write(f"{lemma}\t{back_text}\n")

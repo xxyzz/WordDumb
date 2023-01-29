@@ -24,6 +24,7 @@ PY_PATH = None
 LIBS_PATH = Path()
 RUNNABLE_PIP = None
 USE_SYSTEM_PYTHON = False
+SPACY_MODEL_VERSION = "3.5.0"
 
 
 def install_deps(pkg: str, notif: Any) -> None:
@@ -47,9 +48,8 @@ def install_deps(pkg: str, notif: Any) -> None:
         # Install X-Ray dependencies
         pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
 
-        spacy_model_version = "3.4.1" if pkg.startswith("en") else "3.4.0"
-        url = f"https://github.com/explosion/spacy-models/releases/download/{pkg}-{spacy_model_version}/{pkg}-{spacy_model_version}-py3-none-any.whl"
-        pip_install(pkg, spacy_model_version, url=url, notif=notif)
+        url = f"https://github.com/explosion/spacy-models/releases/download/{pkg}-{SPACY_MODEL_VERSION}/{pkg}-{SPACY_MODEL_VERSION}-py3-none-any.whl"
+        pip_install(pkg, SPACY_MODEL_VERSION, url=url, notif=notif)
         if pkg.endswith("_trf"):
             from .config import prefs
 

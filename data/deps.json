@@ -1,5 +1,5 @@
 {
-  "cupy": "11.4.0",
+  "cupy": "11.5.0",
   "lxml": "4.9.2",
   "pyahocorasick": "2.0.0",
   "thinc-apple-ops": "0.1.3",

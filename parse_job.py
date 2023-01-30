@@ -144,7 +144,7 @@ def do_job(
     # and calibre-debug can't be used as Python interpreter for pip
     if isfrozen:
         plugin_path = str(plugin_path)
-        py_path, _ = which_python(True)
+        py_path, _ = which_python()
         args = [
             py_path,
             plugin_path,

@@ -25,11 +25,17 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      PY_VERSION: 3.11
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           submodules: 'true'
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PY_VERSION }}
 
       - name: Install calibre on Ubuntu
         if: matrix.os == 'ubuntu-latest'
@@ -94,37 +100,32 @@ jobs:
           calibre-customize -a worddumb-${{ github.sha }}.zip
           rm worddumb-${{ github.sha }}.zip
 
-      - name: Get calibre python version
-        if: matrix.os != 'macos-latest'
-        run: echo "CALIBRE_PY=$(calibre-debug -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
-
-      - name: Get macOS python version
-        if: matrix.os == 'macos-latest'
-        run: echo "MACOS_PY=$(python3 -c 'import platform; print(".".join(platform.python_version_tuple()[:2]))')" >> $GITHUB_ENV
-
       - name: Restore dependencies and Wikipedia cache(Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         uses: actions/cache@v3
         with:
           path: |
-            ~/.config/calibre/plugins/worddumb-*
-          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ env.CALIBRE_PY }}
+            ~/.config/calibre/plugins/worddumb-libs-py*
+            ~/.config/calibre/plugins/worddumb-wikimedia
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ env.PY_VERSION }}
 
       - name: Restore dependencies and Wikipedia cache(macOS)
         if: matrix.os == 'macos-latest'
         uses: actions/cache@v3
         with:
           path: |
-            ~/Library/Preferences/calibre/plugins/worddumb-*
-          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ env.MACOS_PY }}
+            ~/Library/Preferences/calibre/plugins/worddumb-libs-py*
+            ~/Library/Preferences/calibre/plugins/worddumb-wikimedia
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ env.PY_VERSION }}
 
       - name: Restore dependencies and Wikipedia cache(Windows)
         if: matrix.os == 'windows-latest'
         uses: actions/cache@v3
         with:
           path: |
-            ~/AppData/Roaming/calibre/plugins/worddumb-*
-          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ env.CALIBRE_PY }}
+            ~/AppData/Roaming/calibre/plugins/worddumb-libs-py*
+            ~/AppData/Roaming/calibre/plugins/worddumb-wikimedia
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ env.PY_VERSION }}
 
       - name: Run test
         run: cd tests && calibre-debug test.py

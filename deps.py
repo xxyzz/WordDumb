@@ -32,6 +32,9 @@ def install_deps(pkg: str, notif: Any) -> None:
         PY_PATH, py_version = which_python()
         upgrade_pip(PY_PATH)
         LIBS_PATH = plugin_path.parent.joinpath(f"worddumb-libs-py{py_version}")
+        if not LIBS_PATH.is_dir():
+            for old_libs_path in LIBS_PATH.parent.glob("worddumb-libs-py*"):
+                shutil.rmtree(old_libs_path)
 
     dep_versions = load_json_or_pickle(plugin_path, "data/deps.json")
     if pkg == "pyahocorasick":
@@ -68,7 +71,6 @@ def install_deps(pkg: str, notif: Any) -> None:
 
 def which_python() -> tuple[str, str]:
     py = "python3"
-    py_v = ".".join(platform.python_version_tuple()[:2])
     if iswindows:
         py = "py" if shutil.which("py") else "python"
     elif ismacos:
@@ -83,6 +85,8 @@ def which_python() -> tuple[str, str]:
             ]
         )
         py_v = r.stdout.strip()
+    else:
+        py_v = ".".join(platform.python_version_tuple()[:2])
     return py, py_v
 
 

@@ -20,24 +20,18 @@ from .utils import (
     run_subprocess,
 )
 
-PY_PATH = None
+PY_PATH = ""
 LIBS_PATH = Path()
-RUNNABLE_PIP = None
-USE_SYSTEM_PYTHON = False
-SPACY_MODEL_VERSION = "3.5.0"
 
 
 def install_deps(pkg: str, notif: Any) -> None:
-    global PY_PATH, LIBS_PATH, CALIBRE_DEBUG_PATH, RUNNABLE_PIP, USE_SYSTEM_PYTHON
+    global PY_PATH, LIBS_PATH
     plugin_path = get_plugin_path()
-    USE_SYSTEM_PYTHON = ismacos or (isfrozen and pkg.endswith("_trf"))
 
-    if PY_PATH is None:
-        PY_PATH, py_version = which_python(USE_SYSTEM_PYTHON)
+    if len(PY_PATH) == 0:
+        PY_PATH, py_version = which_python()
         upgrade_pip(PY_PATH)
         LIBS_PATH = plugin_path.parent.joinpath(f"worddumb-libs-py{py_version}")
-        if not USE_SYSTEM_PYTHON:
-            RUNNABLE_PIP = get_runnable_pip(PY_PATH)
 
     dep_versions = load_json_or_pickle(plugin_path, "data/deps.json")
     if pkg == "pyahocorasick":
@@ -48,8 +42,8 @@ def install_deps(pkg: str, notif: Any) -> None:
         # Install X-Ray dependencies
         pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
 
-        url = f"https://github.com/explosion/spacy-models/releases/download/{pkg}-{SPACY_MODEL_VERSION}/{pkg}-{SPACY_MODEL_VERSION}-py3-none-any.whl"
-        pip_install(pkg, SPACY_MODEL_VERSION, url=url, notif=notif)
+        url = f"https://github.com/explosion/spacy-models/releases/download/{pkg}-{dep_versions['spacy_model']}/{pkg}-{dep_versions['spacy_model']}-py3-none-any.whl"
+        pip_install(pkg, dep_versions["spacy_model"], url=url, notif=notif)
         if pkg.endswith("_trf"):
             from .config import prefs
 
@@ -70,20 +64,17 @@ def install_deps(pkg: str, notif: Any) -> None:
                 no_deps=True,
                 notif=notif,
             )
-        if USE_SYSTEM_PYTHON:
-            pip_install("lxml", dep_versions["lxml"], notif=notif)
 
 
-def which_python(use_system_python: bool = False) -> tuple[str, str]:
+def which_python() -> tuple[str, str]:
     py = "python3"
     py_v = ".".join(platform.python_version_tuple()[:2])
     if iswindows:
         py = "py" if shutil.which("py") else "python"
     elif ismacos:
         py = mac_python()
-        use_system_python = True
 
-    if use_system_python:
+    if isfrozen:
         r = run_subprocess(
             [
                 py,
@@ -102,23 +93,6 @@ def mac_python() -> str:
     return py
 
 
-def get_runnable_pip(py_path: str) -> str:
-    r = run_subprocess(
-        [py_path, "-m", "pip", "--disable-pip-version-check", "show", "pip"]
-    )
-    # pip "--python" option
-    # https://github.com/pypa/pip/blob/6d131137cf7aa8c1c64f1fadca4770879e9f407f/src/pip/_internal/cli/main_parser.py#L82-L105
-    # https://github.com/pypa/pip/blob/6d131137cf7aa8c1c64f1fadca4770879e9f407f/src/pip/_internal/build_env.py#L43-L56
-    pip_path = ""
-    for line in r.stdout.splitlines():
-        if line.startswith("Location: "):
-            pip_path = line[10:]
-            break
-    if iswindows:
-        pip_path = pip_path.replace("\\", "/")
-    return pip_path + "/pip/__pip-runner__.py"
-
-
 def pip_install(
     pkg: str,
     pkg_version: str,
@@ -134,20 +108,17 @@ def pip_install(
         if notif:
             notif.put((0, f"Installing {pkg}"))
 
-        if USE_SYSTEM_PYTHON:
-            args = [PY_PATH, "-m", "pip"]
-        else:
-            args = ["calibre-debug", "-e", RUNNABLE_PIP, "--"]
-        args.extend(
-            [
-                "--disable-pip-version-check",
-                "install",
-                "-U",
-                "-t",
-                str(LIBS_PATH),
-                "--no-user",  # disable "--user" option which conflicts with "-t"
-            ]
-        )
+        args = [
+            PY_PATH,
+            "-m",
+            "pip",
+            "--disable-pip-version-check",
+            "install",
+            "-U",
+            "-t",
+            str(LIBS_PATH),
+            "--no-user",  # disable "--user" option which conflicts with "-t"
+        ]
 
         if no_deps:
             args.append("--no-deps")

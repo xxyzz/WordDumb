@@ -9,7 +9,7 @@ from sqlite3 import Connection
 from typing import Any, Iterator
 
 try:
-    from calibre.constants import isfrozen, ismacos
+    from calibre.constants import isfrozen
 
     from .database import (
         create_lang_layer,
@@ -129,8 +129,7 @@ def do_job(
     if not create_ww and not create_x:
         return return_values
 
-    cjk_ww = create_ww and lang["wiki"] in CJK_LANGS
-    if ismacos and cjk_ww and book_fmt == "EPUB":
+    if isfrozen and book_fmt == "EPUB":
         install_deps("lxml", notifications)
     if create_x:
         install_deps(model, notifications)
@@ -142,9 +141,8 @@ def do_job(
     # macOS: bypass library validation
     # official calibre build: calibre's optimize level is 2 which removes docstring,
     # but the "transformers" package formats docstrings in their code
-    if (ismacos and (create_x or cjk_ww)) or (
-        create_x and isfrozen and model.endswith("_trf")
-    ):
+    # and calibre-debug can't be used as Python interpreter for pip
+    if isfrozen:
         plugin_path = str(plugin_path)
         py_path, _ = which_python(True)
         args = [
@@ -636,11 +634,6 @@ def find_named_entity(
 
 
 def load_spacy(model: str, book_path: str) -> Any:
-    if not model.endswith("_trf") and isfrozen:
-        import importlib.metadata
-
-        importlib.metadata.distributions = hide_spacy_transformers
-
     import spacy
 
     excluded_components = [
@@ -670,16 +663,3 @@ def load_spacy(model: str, book_path: str) -> Any:
                     patterns.append({"label": label, "pattern": alias, "id": name})
         ruler.add_patterns(patterns)
     return nlp
-
-
-def hide_spacy_transformers(**kwargs):
-    """
-    Remove spacy-transfomers package from the results of importlib.metadata.entry_points().
-    spaCy loads the spacy-transfomers packge even when loading a CPU model, which loads
-    code from the transformers library and causes error in calibre's Python interpreter.
-    Traceback log can be found in GitHub issue #91.
-    """
-    from importlib.metadata import Distribution
-
-    pkgs = Distribution.discover(**kwargs)
-    return [pkg for pkg in pkgs if pkg.name != "spacy-transformers"]

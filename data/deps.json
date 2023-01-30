@@ -4,5 +4,6 @@
   "pyahocorasick": "2.0.0",
   "thinc-apple-ops": "0.1.3",
   "torch": "1.13.1",
-  "rapidfuzz": "2.13.7"
+  "rapidfuzz": "2.13.7",
+  "spacy_model": "3.5.0"
 }

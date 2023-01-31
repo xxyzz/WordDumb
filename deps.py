@@ -30,7 +30,6 @@ def install_deps(pkg: str, notif: Any) -> None:
 
     if len(PY_PATH) == 0:
         PY_PATH, py_version = which_python()
-        upgrade_pip(PY_PATH)
         LIBS_PATH = plugin_path.parent.joinpath(f"worddumb-libs-py{py_version}")
         if not LIBS_PATH.is_dir():
             for old_libs_path in LIBS_PATH.parent.glob("worddumb-libs-py*"):
@@ -138,31 +137,6 @@ def pip_install(
             args.extend(["--extra-index-url", extra_index])
 
         run_subprocess(args)
-
-
-def upgrade_pip(py_path: str) -> None:
-    r = run_subprocess(
-        [py_path, "-m", "pip", "--disable-pip-version-check", "show", "pip"]
-    )
-    pip_version = ""
-    for line in r.stdout.decode().splitlines():
-        if line.startswith("Version: "):
-            pip_version = line[9:]
-            break
-    # Upgrade pip if its version is lower than 22.3
-    # pip 22.3 introduced the "--python" option
-    if [int(x) for x in pip_version.split(".")] < [22, 3]:
-        run_subprocess(
-            [
-                py_path,
-                "-m",
-                "pip",
-                "install",
-                "--user",
-                "-U",
-                "pip",
-            ]
-        )
 
 
 def download_word_wise_file(

@@ -10,8 +10,7 @@ import json
 import sys
 from pathlib import Path
 
-from dump_kindle_lemmas import dump_kindle_lemmas
-from dump_wiktionary import dump_wiktionary
+from dump_lemmas import dump_kindle_lemmas, dump_wiktionary
 from parse_job import create_files
 from utils import insert_installed_libs, insert_plugin_libs
 

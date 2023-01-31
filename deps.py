@@ -16,7 +16,7 @@ from .utils import (
     custom_lemmas_folder,
     get_plugin_path,
     homebrew_mac_bin_path,
-    load_json_or_pickle,
+    load_plugin_json,
     run_subprocess,
 )
 
@@ -35,7 +35,7 @@ def install_deps(pkg: str, notif: Any) -> None:
             for old_libs_path in LIBS_PATH.parent.glob("worddumb-libs-py*"):
                 shutil.rmtree(old_libs_path)
 
-    dep_versions = load_json_or_pickle(plugin_path, "data/deps.json")
+    dep_versions = load_plugin_json(plugin_path, "data/deps.json")
     if pkg == "pyahocorasick":
         pip_install("pyahocorasick", dep_versions["pyahocorasick"], notif=notif)
     elif pkg == "lxml":

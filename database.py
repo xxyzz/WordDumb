@@ -4,9 +4,9 @@ from pathlib import Path
 from typing import Iterator
 
 try:
-    from .utils import load_json_or_pickle
+    from .utils import load_plugin_json
 except ImportError:
-    from utils import load_json_or_pickle
+    from utils import load_plugin_json
 
 
 def get_ll_path(asin: str, book_path: str) -> Path:
@@ -137,7 +137,7 @@ def create_x_ray_db(
     """
     )
 
-    str_list = load_json_or_pickle(plugin_path, "data/x_ray_strings.json")
+    str_list = load_plugin_json(plugin_path, "data/x_ray_strings.json")
     str_list.append(
         [
             21,

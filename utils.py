@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import json
-import pickle
 import platform
 import subprocess
 import sys
@@ -11,33 +10,14 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 CJK_LANGS = ["zh", "ja", "ko"]
-PROFICIENCY_VERSION = "0.5.0dev"
-PROFICIENCY_MAJOR_VERSION = "0"
+PROFICIENCY_VERSION = "0.5.1dev"
+PROFICIENCY_MAJOR_VERSION = PROFICIENCY_VERSION.split(".", 1)[0]
 
 
-def load_json_or_pickle(plugin_path: Path | None, filepath: str | Path) -> Any:
-    if "_tst_" in str(filepath):
-        insert_plugin_libs(get_plugin_path())
-
-    if not plugin_path and isinstance(filepath, Path):
-        if not filepath.exists():
-            return None
-        if filepath.name.endswith(".json"):
-            with open(filepath, encoding="utf-8") as f:
-                return json.load(f)
-        else:
-            with open(filepath, "rb") as f:
-                return pickle.load(f)
-    elif plugin_path and isinstance(filepath, str):
-        with zipfile.ZipFile(plugin_path) as zf:
-            if filepath.endswith(".json"):
-                path = zipfile.Path(zf, filepath)
-                if path.exists():
-                    with path.open(encoding="utf-8") as f:
-                        return json.load(f)
-                return None
-            with zf.open(filepath) as f:
-                return pickle.load(f)
+def load_plugin_json(plugin_path: Path, filepath: str) -> Any:
+    with zipfile.ZipFile(plugin_path) as zf:
+        with zipfile.Path(zf, filepath).open(encoding="utf-8") as f:
+            return json.load(f)
 
 
 def run_subprocess(
@@ -77,24 +57,6 @@ def insert_plugin_libs(plugin_path: Path) -> None:
     insert_lib_path(str(plugin_path.joinpath("libs")))
 
 
-def load_lemmas_dump(
-    is_kindle: bool, lemma_lang: str, gloss_lang: str, plugin_path: Path
-) -> Any:
-    insert_plugin_libs(plugin_path)
-    if is_kindle:
-        dump_path = kindle_dump_path(plugin_path, lemma_lang)
-    else:
-        dump_path = wiktionary_dump_path(plugin_path, lemma_lang, gloss_lang)
-
-    if lemma_lang in CJK_LANGS:
-        insert_installed_libs(plugin_path)
-        import ahocorasick
-
-        return ahocorasick.load(str(dump_path), pickle.loads)
-    elif dump_path.exists():
-        return load_json_or_pickle(None, dump_path)
-
-
 def get_plugin_path() -> Path:
     from calibre.utils.config import config_dir
 
@@ -111,21 +73,9 @@ def kindle_db_path(plugin_path: Path, lemma_lang: str) -> Path:
     )
 
 
-def kindle_dump_path(plugin_path: Path, lemma_lang: str) -> Path:
-    return custom_lemmas_folder(plugin_path).joinpath(
-        f"{lemma_lang}/kindle_{lemma_lang}_en_dump_v{PROFICIENCY_MAJOR_VERSION}"
-    )
-
-
 def wiktionary_db_path(plugin_path: Path, lemma_lang: str, gloss_lang: str) -> Path:
     return custom_lemmas_folder(plugin_path).joinpath(
         f"{lemma_lang}/wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.db"
-    )
-
-
-def wiktionary_dump_path(plugin_path: Path, lemma_lang: str, gloss_lang: str) -> Path:
-    return custom_lemmas_folder(plugin_path).joinpath(
-        f"{lemma_lang}/wiktionary_{lemma_lang}_{gloss_lang}_dump_v{PROFICIENCY_MAJOR_VERSION}"
     )
 
 

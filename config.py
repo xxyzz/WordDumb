@@ -30,22 +30,22 @@ from PyQt6.QtWidgets import (
 
 from .custom_lemmas import CustomLemmasDialog
 from .deps import download_word_wise_file, which_python
-from .dump_kindle_lemmas import dump_kindle_lemmas
-from .dump_wiktionary import dump_wiktionary
+from .dump_lemmas import (
+    dump_kindle_lemmas,
+    dump_wiktionary,
+    kindle_dump_path,
+    wiktionary_dump_path,
+)
 from .error_dialogs import GITHUB_URL, job_failed
 from .import_lemmas import apply_imported_lemmas_data, export_lemmas_job
 from .utils import (
     CJK_LANGS,
     donate,
     get_plugin_path,
-    insert_installed_libs,
-    insert_plugin_libs,
     kindle_db_path,
-    kindle_dump_path,
-    load_json_or_pickle,
+    load_plugin_json,
     run_subprocess,
     wiktionary_db_path,
-    wiktionary_dump_path,
 )
 
 prefs = JSONConfig("plugins/worddumb")
@@ -63,7 +63,7 @@ prefs.defaults["choose_format_manually"] = True
 prefs.defaults["wiktionary_gloss_lang"] = "en"
 prefs.defaults["use_gpu"] = False
 prefs.defaults["cuda"] = "cu117"
-for data in load_json_or_pickle(get_plugin_path(), "data/languages.json").values():
+for data in load_plugin_json(get_plugin_path(), "data/languages.json").values():
     prefs.defaults[f"{data['wiki']}_wiktionary_difficulty_limit"] = 5
 
 load_translations()  # type: ignore
@@ -343,13 +343,10 @@ def dump_lemmas_job(
             ]
         )
         run_subprocess(args)
+    elif is_kindle:
+        dump_kindle_lemmas(is_cjk, db_path, dump_path, plugin_path)
     else:
-        insert_plugin_libs(plugin_path)
-        if is_kindle:
-            dump_kindle_lemmas(is_cjk, db_path, dump_path)
-        else:
-            insert_installed_libs(plugin_path)
-            dump_wiktionary(lemma_lang, db_path, dump_path)
+        dump_wiktionary(lemma_lang, db_path, dump_path, plugin_path)
 
 
 class FormatOrderDialog(QDialog):
@@ -452,7 +449,7 @@ class ChooseLemmaLangDialog(QDialog):
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
         )
 
-        language_dict = load_json_or_pickle(get_plugin_path(), "data/languages.json")
+        language_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
         lemma_language_to_code = {
             _(val["kaikki"]): val["wiki"] for val in language_dict.values()
         }

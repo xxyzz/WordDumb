@@ -20,6 +20,13 @@ try:
         save_db,
     )
     from .deps import download_word_wise_file, install_deps, which_python
+    from .dump_lemmas import (
+        dump_kindle_lemmas,
+        dump_wiktionary,
+        kindle_dump_path,
+        load_lemmas_dump,
+        wiktionary_dump_path,
+    )
     from .epub import EPUB
     from .interval import Interval, IntervalTree
     from .mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
@@ -30,10 +37,9 @@ try:
         get_plugin_path,
         get_user_agent,
         insert_installed_libs,
-        kindle_dump_path,
-        load_lemmas_dump,
+        kindle_db_path,
         run_subprocess,
-        wiktionary_dump_path,
+        wiktionary_db_path,
     )
     from .x_ray import X_Ray
     from .x_ray_share import NER_LABELS, CustomX, get_custom_x_path, load_custom_x_desc
@@ -47,11 +53,24 @@ except ImportError:
         insert_lemma,
         save_db,
     )
+    from dump_lemmas import (
+        dump_kindle_lemmas,
+        dump_wiktionary,
+        kindle_dump_path,
+        load_lemmas_dump,
+        wiktionary_dump_path,
+    )
     from epub import EPUB
     from interval import Interval, IntervalTree
     from mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
     from metadata import KFXJson
-    from utils import CJK_LANGS, Prefs, insert_installed_libs, load_lemmas_dump
+    from utils import (
+        CJK_LANGS,
+        Prefs,
+        insert_installed_libs,
+        kindle_db_path,
+        wiktionary_db_path,
+    )
     from x_ray import X_Ray
     from x_ray_share import NER_LABELS, CustomX, get_custom_x_path, load_custom_x_desc
 
@@ -99,7 +118,7 @@ def do_job(
         create_ww = create_ww and not new_epub_path.exists()
         if (
             create_ww
-            and not wiktionary_dump_path(
+            and not wiktionary_db_path(
                 plugin_path, lang["wiki"], prefs["wiktionary_gloss_lang"]
             ).exists()
         ):
@@ -112,7 +131,7 @@ def do_job(
     else:
         create_ww = create_ww and not get_ll_path(asin, book_path_str).exists()
         create_x = create_x and not get_x_ray_path(asin, book_path_str).exists()
-        if create_ww and not kindle_dump_path(plugin_path, lang["wiki"]).exists():
+        if create_ww and not kindle_db_path(plugin_path, lang["wiki"]).exists():
             download_word_wise_file(
                 True, lang["wiki"], "en", notifications=notifications
             )
@@ -229,9 +248,29 @@ def create_files(
     notif: Any,
 ) -> None:
     is_epub = not kfx_json and not mobi_codec
+    is_cjk = wiki_lang in CJK_LANGS
     plugin_path = Path(plugin_path_str)
     kw_processor = None
     if create_ww:
+        lemmas_dump_path = (
+            wiktionary_dump_path(plugin_path, wiki_lang, prefs["wiktionary_gloss_lang"])
+            if is_epub
+            else kindle_dump_path(plugin_path, wiki_lang)
+        )
+        lemmas_db_path = (
+            wiktionary_db_path(plugin_path, wiki_lang, prefs["wiktionary_gloss_lang"])
+            if is_epub
+            else kindle_db_path(plugin_path, wiki_lang)
+        )
+        if not lemmas_dump_path.exists():
+            if is_epub:
+                dump_wiktionary(
+                    wiki_lang, lemmas_db_path, lemmas_dump_path, plugin_path
+                )
+            else:
+                dump_kindle_lemmas(
+                    is_cjk, lemmas_db_path, lemmas_dump_path, plugin_path
+                )
         kw_processor = load_lemmas_dump(
             not is_epub,
             wiki_lang,

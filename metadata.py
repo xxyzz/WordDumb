@@ -13,10 +13,10 @@ def check_metadata(
 ) -> tuple[int, list[str], list[str], Any, dict[str, str]] | None:
     from .config import prefs
     from .error_dialogs import unsupported_format_dialog, unsupported_language_dialog
-    from .utils import get_plugin_path, load_json_or_pickle
+    from .utils import get_plugin_path, load_plugin_json
 
     db = gui.current_db.new_api
-    supported_languages = load_json_or_pickle(get_plugin_path(), "data/languages.json")
+    supported_languages = load_plugin_json(get_plugin_path(), "data/languages.json")
     mi = db.get_metadata(book_id, get_cover=True)
     # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     book_language = mi.get("language")
@@ -52,9 +52,9 @@ def check_metadata(
 def cli_check_metadata(
     book_path_str: str, log: Any
 ) -> tuple[str, Any, dict[str, str]] | None:
-    from .utils import get_plugin_path, load_json_or_pickle
+    from .utils import get_plugin_path, load_plugin_json
 
-    supported_languages = load_json_or_pickle(get_plugin_path(), "data/languages.json")
+    supported_languages = load_plugin_json(get_plugin_path(), "data/languages.json")
     book_path = Path(book_path_str)
     book_fmt = book_path.suffix.upper()[1:]
     mi = None

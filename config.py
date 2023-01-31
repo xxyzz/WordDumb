@@ -5,7 +5,7 @@ from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from calibre.constants import ismacos
+from calibre.constants import isfrozen, ismacos
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig
@@ -29,7 +29,7 @@ from PyQt6.QtWidgets import (
 )
 
 from .custom_lemmas import CustomLemmasDialog
-from .deps import download_word_wise_file, mac_python
+from .deps import download_word_wise_file, which_python
 from .dump_kindle_lemmas import dump_kindle_lemmas
 from .dump_wiktionary import dump_wiktionary
 from .error_dialogs import GITHUB_URL, job_failed
@@ -321,9 +321,9 @@ def dump_lemmas_job(
 ) -> None:
     is_cjk = lemma_lang in CJK_LANGS
     plugin_path = get_plugin_path()
-    if ismacos and is_cjk:
+    if isfrozen:
         args = [
-            mac_python(),
+            which_python(),
             str(plugin_path),
             "",
             str(db_path),

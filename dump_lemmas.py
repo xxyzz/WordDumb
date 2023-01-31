@@ -6,16 +6,22 @@ from typing import Any
 try:
     from .utils import (
         CJK_LANGS,
+        Prefs,
         custom_lemmas_folder,
         insert_installed_libs,
         insert_plugin_libs,
+        kindle_db_path,
+        wiktionary_db_path,
     )
 except ImportError:
     from utils import (
         CJK_LANGS,
+        Prefs,
         custom_lemmas_folder,
         insert_installed_libs,
         insert_plugin_libs,
+        kindle_db_path,
+        wiktionary_db_path,
     )
 
 LEMMAS_DUMP_VERSION = "0"
@@ -34,27 +40,48 @@ def wiktionary_dump_path(plugin_path: Path, lemma_lang: str, gloss_lang: str) ->
 
 
 def load_lemmas_dump(
-    is_kindle: bool, lemma_lang: str, gloss_lang: str, plugin_path: Path
+    is_kindle: bool, lemma_lang: str, gloss_lang: str, plugin_path: Path, prefs: Prefs
 ) -> Any:
-    if is_kindle:
-        dump_path = kindle_dump_path(plugin_path, lemma_lang)
-    else:
-        dump_path = wiktionary_dump_path(plugin_path, lemma_lang, gloss_lang)
-
     if lemma_lang in CJK_LANGS:
         insert_installed_libs(plugin_path)
+    else:
+        insert_plugin_libs(plugin_path)
+
+    dump_path = (
+        kindle_dump_path(plugin_path, lemma_lang)
+        if is_kindle
+        else wiktionary_dump_path(plugin_path, lemma_lang, gloss_lang)
+    )
+    if not dump_path.exists():
+        if is_kindle:
+            dump_kindle_lemmas(
+                lemma_lang,
+                kindle_db_path(plugin_path, lemma_lang),
+                dump_path,
+                plugin_path,
+            )
+        else:
+            dump_wiktionary(
+                lemma_lang,
+                wiktionary_db_path(plugin_path, lemma_lang, gloss_lang),
+                dump_path,
+                plugin_path,
+                prefs,
+            )
+
+    if lemma_lang in CJK_LANGS:
         import ahocorasick
 
         return ahocorasick.load(str(dump_path), pickle.loads)
     elif dump_path.exists():
-        insert_plugin_libs(plugin_path)
         with open(dump_path, "rb") as f:
             return pickle.load(f)
 
 
 def dump_kindle_lemmas(
-    is_cjk: bool, db_path: Path, dump_path: Path, plugin_path: Path
+    lemma_lang: str, db_path: Path, dump_path: Path, plugin_path: Path
 ) -> None:
+    is_cjk = lemma_lang in CJK_LANGS
     if is_cjk:
         insert_installed_libs(plugin_path)
         import ahocorasick
@@ -90,9 +117,9 @@ def dump_kindle_lemmas(
 
 
 def dump_wiktionary(
-    lemma_lang: str, db_path: Path, dump_path: Path, plugin_path: Path
+    lemma_lang: str, db_path: Path, dump_path: Path, plugin_path: Path, prefs: Prefs
 ) -> None:
-    is_cjk = lemma_lang in ["zh", "ja", "ko"]
+    is_cjk = lemma_lang in CJK_LANGS
     if is_cjk:
         insert_installed_libs(plugin_path)
         import ahocorasick
@@ -104,17 +131,9 @@ def dump_wiktionary(
 
         kw_processor = KeywordProcessor()
 
-    try:
-        from .config import prefs  # type: ignore
-
-        prefered_en_ipa = prefs["en_ipa"]
-        prefered_zh_ipa = prefs["zh_ipa"]
-        difficulty_limit = prefs[f"{lemma_lang}_wiktionary_difficulty_limit"]
-    except ImportError:
-        prefered_en_ipa = "ga_ipa"
-        prefered_zh_ipa = "pinyin"
-        difficulty_limit = 5
-
+    prefered_en_ipa = prefs.get("en_ipa", "ga_ipa")
+    prefered_zh_ipa = prefs.get("zh_ipa", "pinyin")
+    difficulty_limit = prefs.get(f"{lemma_lang}_wiktionary_difficulty_limit", 5)
     conn = sqlite3.connect(db_path)
     if lemma_lang == "en":
         query_sql = "SELECT lemma, short_def, full_def, forms, example, ga_ipa, rp_ipa FROM lemmas WHERE enabled = 1 AND difficulty <= ? ORDER BY lemma"

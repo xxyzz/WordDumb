@@ -20,13 +20,7 @@ try:
         save_db,
     )
     from .deps import download_word_wise_file, install_deps, which_python
-    from .dump_lemmas import (
-        dump_kindle_lemmas,
-        dump_wiktionary,
-        kindle_dump_path,
-        load_lemmas_dump,
-        wiktionary_dump_path,
-    )
+    from .dump_lemmas import load_lemmas_dump
     from .epub import EPUB
     from .interval import Interval, IntervalTree
     from .mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
@@ -53,13 +47,7 @@ except ImportError:
         insert_lemma,
         save_db,
     )
-    from dump_lemmas import (
-        dump_kindle_lemmas,
-        dump_wiktionary,
-        kindle_dump_path,
-        load_lemmas_dump,
-        wiktionary_dump_path,
-    )
+    from dump_lemmas import load_lemmas_dump
     from epub import EPUB
     from interval import Interval, IntervalTree
     from mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
@@ -165,33 +153,21 @@ def do_job(
     if isfrozen:
         plugin_path = str(plugin_path)
         py_path, _ = which_python()
-        args = [
-            py_path,
-            plugin_path,
-            asin,
-            book_path_str,
-            acr,
-            revision,
-            model,
-            lang["wiki"],
-            prefs["wiktionary_gloss_lang"],
-            mobi_codec,
-            useragent,
-            prefs["zh_wiki_variant"],
-            prefs["fandom"],
-            book_fmt,
-            str(prefs["minimal_x_ray_count"]),
-            plugin_path,
-            "",
-        ]
-        if create_ww:
-            args.append("-l")
-        if create_x:
-            args.append("-x")
-        if prefs["search_people"]:
-            args.append("-s")
-        if prefs["add_locator_map"]:
-            args.append("-m")
+        options = {
+            "create_ww": create_ww,
+            "create_x": create_x,
+            "asin": asin,
+            "book_path": book_path_str,
+            "acr": acr,
+            "revision": revision,
+            "model": model,
+            "lemma_lang": lang["wiki"],
+            "mobi_codec": mobi_codec,
+            "useragent": useragent,
+            "book_fmt": book_fmt,
+            "plugin_path": plugin_path,
+        }
+        args = [py_path, plugin_path, json.dumps(options), json.dumps(prefs)]
         if book_fmt == "KFX":
             input_str = json.dumps(kfx_json).encode("utf-8")
         elif book_fmt == "EPUB":
@@ -248,50 +224,31 @@ def create_files(
     notif: Any,
 ) -> None:
     is_epub = not kfx_json and not mobi_codec
-    is_cjk = wiki_lang in CJK_LANGS
     plugin_path = Path(plugin_path_str)
     kw_processor = None
     if create_ww:
-        lemmas_dump_path = (
-            wiktionary_dump_path(plugin_path, wiki_lang, prefs["wiktionary_gloss_lang"])
-            if is_epub
-            else kindle_dump_path(plugin_path, wiki_lang)
-        )
-        lemmas_db_path = (
-            wiktionary_db_path(plugin_path, wiki_lang, prefs["wiktionary_gloss_lang"])
-            if is_epub
-            else kindle_db_path(plugin_path, wiki_lang)
-        )
-        if not lemmas_dump_path.exists():
-            if is_epub:
-                dump_wiktionary(
-                    wiki_lang, lemmas_db_path, lemmas_dump_path, plugin_path
-                )
-            else:
-                dump_kindle_lemmas(
-                    is_cjk, lemmas_db_path, lemmas_dump_path, plugin_path
-                )
         kw_processor = load_lemmas_dump(
             not is_epub,
             wiki_lang,
-            prefs["wiktionary_gloss_lang"] if is_epub else "en",
+            prefs.get("wiktionary_gloss_lang", "en") if is_epub else "en",
             plugin_path,
+            prefs,
         )
 
     if create_x:
         insert_installed_libs(plugin_path)
         nlp = load_spacy(model, book_path)
-        if prefs["fandom"]:
+        if prefs.get("fandom"):
             mediawiki = Fandom(useragent, plugin_path, prefs)
         else:
             mediawiki = Wikipedia(wiki_lang, useragent, plugin_path, prefs)
-        wikidata = None if prefs["fandom"] else Wikidata(plugin_path, useragent)
+        wikidata = None if prefs.get("fandom") else Wikidata(plugin_path, useragent)
         custom_x_ray = load_custom_x_desc(book_path)
 
     if is_epub:
         if create_x:
             wiki_commons = None
-            if not prefs["fandom"] and prefs["add_locator_map"]:
+            if not prefs.get("fandom") and prefs.get("add_locator_map"):
                 wiki_commons = Wikimedia_Commons(plugin_path, useragent)
             epub = EPUB(
                 book_path, mediawiki, wiki_commons, wikidata, custom_x_ray, kw_processor

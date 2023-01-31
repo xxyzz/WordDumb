@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import webbrowser
 from functools import partial
 from pathlib import Path
@@ -39,7 +40,6 @@ from .dump_lemmas import (
 from .error_dialogs import GITHUB_URL, job_failed
 from .import_lemmas import apply_imported_lemmas_data, export_lemmas_job
 from .utils import (
-    CJK_LANGS,
     donate,
     get_plugin_path,
     kindle_db_path,
@@ -319,34 +319,21 @@ def dump_lemmas_job(
     log: Any = None,
     notifications: Any = None,
 ) -> None:
-    is_cjk = lemma_lang in CJK_LANGS
     plugin_path = get_plugin_path()
     if isfrozen:
-        args = [
-            which_python(),
-            str(plugin_path),
-            "",
-            str(db_path),
-            "",
-            "",
-            "",
-            lemma_lang,
-            gloss_lang,
-        ]
-        args.extend([""] * 4)
-        args.extend(
-            [
-                "" if is_kindle else "EPUB",
-                "",
-                str(plugin_path),
-                str(dump_path),
-            ]
-        )
+        options = {
+            "is_kindle": is_kindle,
+            "db_path": str(db_path),
+            "dump_path": str(dump_path),
+            "lemma_lang": lemma_lang,
+            "plugin_path": str(plugin_path),
+        }
+        args = [which_python(), str(plugin_path), json.dumps(options)]
         run_subprocess(args)
     elif is_kindle:
-        dump_kindle_lemmas(is_cjk, db_path, dump_path, plugin_path)
+        dump_kindle_lemmas(lemma_lang, db_path, dump_path, plugin_path)
     else:
-        dump_wiktionary(lemma_lang, db_path, dump_path, plugin_path)
+        dump_wiktionary(lemma_lang, db_path, dump_path, plugin_path, prefs)
 
 
 class FormatOrderDialog(QDialog):

@@ -1,4 +1,0 @@
-[submodule "Proficiency"]
-	path = Proficiency
-	url = git@github.com:xxyzz/Proficiency.git
-	shallow = true

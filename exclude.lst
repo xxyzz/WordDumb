@@ -5,6 +5,5 @@ __pycache__/*
 exclude.lst
 klld/*
 translations/*.po
-Proficiency/*
 build_plugin.sh
 mypy.ini

@@ -17,8 +17,5 @@ else
     pip_install
 fi
 
-cp Proficiency/en/dump_kindle_lemmas.py ./
-cp Proficiency/dump_wiktionary.py ./
-
 # Compile translation files
 calibre-debug -c "from calibre.translations.msgfmt import main; main()" translations/*.po

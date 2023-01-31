@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 import json
+import logging
 import sqlite3
+import subprocess
 import sys
 import unittest
 from itertools import zip_longest
@@ -32,15 +34,20 @@ class TestDumbCode(unittest.TestCase):
         for fmt in lib_db.formats(book_id):
             book_path = lib_db.format_abspath(book_id, fmt)
             cls.book_folder = Path(book_path).parent
-            do_job(
-                (
-                    text_book_id,
-                    fmt,
-                    book_path,
-                    mi,
-                    {"spacy": "en_core_web_", "wiki": "en", "kaikki": "English"},
+            try:
+                do_job(
+                    (
+                        text_book_id,
+                        fmt,
+                        book_path,
+                        mi,
+                        {"spacy": "en_core_web_", "wiki": "en", "kaikki": "English"},
+                    )
                 )
-            )
+            except subprocess.CalledProcessError as e:
+                logging.error(e.stderr)
+                raise e
+
             if fmt != "EPUB":
                 kll_path = cls.get_db_path(cls, ".kll")
                 kll_path.rename(kll_path.with_suffix(f".kll_{fmt}"))

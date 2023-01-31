@@ -174,11 +174,11 @@ def do_job(
         if prefs["add_locator_map"]:
             args.append("-m")
         if book_fmt == "KFX":
-            input_str = json.dumps(kfx_json)
+            input_str = json.dumps(kfx_json).encode("utf-8")
         elif book_fmt == "EPUB":
-            input_str = ""
+            input_str = b""
         else:
-            input_str = mobi_html.decode(mobi_codec)
+            input_str = mobi_html
 
         run_subprocess(args, input_str)
     else:

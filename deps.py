@@ -84,7 +84,7 @@ def which_python() -> tuple[str, str]:
                 'import platform; print(".".join(platform.python_version_tuple()[:2]))',
             ]
         )
-        py_v = r.stdout.strip()
+        py_v = r.stdout.decode().strip()
     else:
         py_v = ".".join(platform.python_version_tuple()[:2])
     return py, py_v
@@ -145,7 +145,7 @@ def upgrade_pip(py_path: str) -> None:
         [py_path, "-m", "pip", "--disable-pip-version-check", "show", "pip"]
     )
     pip_version = ""
-    for line in r.stdout.splitlines():
+    for line in r.stdout.decode().splitlines():
         if line.startswith("Version: "):
             pip_version = line[9:]
             break

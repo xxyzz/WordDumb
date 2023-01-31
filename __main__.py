@@ -54,7 +54,7 @@ else:
     if args.book_fmt == "KFX":
         kfx_json = json.load(sys.stdin)
     elif args.book_fmt != "EPUB":
-        mobi_html = sys.stdin.read().encode(args.mobi_codec)
+        mobi_html = sys.stdin.buffer.read()
 
     create_files(
         args.l,

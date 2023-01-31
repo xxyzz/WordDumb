@@ -183,7 +183,7 @@ def device_connected(gui: Any, book_fmt: str) -> str | bool:
 
 def adb_connected(adb_path: str) -> bool:
     r = run_subprocess([adb_path, "devices"])
-    return r.stdout.strip().endswith("device") if r else False
+    return r.stdout.decode().strip().endswith("device") if r else False
 
 
 def which_adb() -> str | None:
@@ -194,7 +194,7 @@ def get_package_name(adb_path: str) -> str | None:
     r = run_subprocess(
         [adb_path, "shell", "pm", "list", "packages", "com.amazon.kindle"]
     )
-    result = r.stdout.strip()
+    result = r.stdout.decode().strip()
     if len(result.split(":")) > 1:
         return result.split(":")[1]  # China version: com.amazon.kindlefc
     return None

@@ -40,6 +40,7 @@ jobs:
       - name: Install calibre on Ubuntu
         if: matrix.os == 'ubuntu-latest'
         run: |
+          sudo apt update
           sudo apt install libegl1 libopengl0
           sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 

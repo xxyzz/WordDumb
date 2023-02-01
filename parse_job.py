@@ -651,7 +651,9 @@ def load_spacy(model: str, book_path: str) -> Any:
 
     custom_x_path = get_custom_x_path(book_path)
     if custom_x_path.exists():
-        ruler = nlp.add_pipe("entity_ruler", before="ner")
+        ruler = nlp.add_pipe(
+            "entity_ruler", before="ner", config={"phrase_matcher_attr": "LOWER"}
+        )
         patterns = []
         with custom_x_path.open(encoding="utf-8") as f:
             for name, label, aliases, *_ in json.load(f):

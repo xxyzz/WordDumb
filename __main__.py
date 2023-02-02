@@ -35,7 +35,7 @@ if "dump_path" in options:
             Path(options["db_path"]),
             Path(options["dump_path"]),
             plugin_path,
-            prefs
+            prefs,
         )
 else:
     kfx_json = None

@@ -41,6 +41,7 @@ from .error_dialogs import GITHUB_URL, job_failed
 from .import_lemmas import apply_imported_lemmas_data, export_lemmas_job
 from .utils import (
     donate,
+    dump_prefs,
     get_plugin_path,
     kindle_db_path,
     load_plugin_json,
@@ -339,7 +340,7 @@ def dump_lemmas_job(
             which_python()[0],
             str(plugin_path),
             json.dumps(options),
-            json.dumps(prefs),
+            dump_prefs(prefs),
         ]
         run_subprocess(args)
     elif is_kindle:

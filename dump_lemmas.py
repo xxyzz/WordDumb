@@ -131,9 +131,9 @@ def dump_wiktionary(
 
         kw_processor = KeywordProcessor()
 
-    prefered_en_ipa = prefs.get("en_ipa", "ga_ipa")
-    prefered_zh_ipa = prefs.get("zh_ipa", "pinyin")
-    difficulty_limit = prefs.get(f"{lemma_lang}_wiktionary_difficulty_limit", 5)
+    prefered_en_ipa = prefs["en_ipa"]
+    prefered_zh_ipa = prefs["zh_ipa"]
+    difficulty_limit = prefs[f"{lemma_lang}_wiktionary_difficulty_limit"]
     conn = sqlite3.connect(db_path)
     if lemma_lang == "en":
         query_sql = "SELECT lemma, short_def, full_def, forms, example, ga_ipa, rp_ipa FROM lemmas WHERE enabled = 1 AND difficulty <= ? ORDER BY lemma"

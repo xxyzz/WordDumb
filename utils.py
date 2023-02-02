@@ -115,3 +115,11 @@ class Prefs(TypedDict):
     wiktionary_gloss_lang: str
     use_cpu: bool
     cuda: str
+    last_opened_kindle_lemmas_language: str
+    last_opened_wiktionary_lemmas_language: str
+
+
+def dump_prefs(prefs: Any) -> str:
+    prefs_dict = prefs.defaults
+    prefs_dict.update(prefs)
+    return json.dumps(prefs_dict)

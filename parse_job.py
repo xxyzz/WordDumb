@@ -28,6 +28,7 @@ try:
     from .utils import (
         CJK_LANGS,
         Prefs,
+        dump_prefs,
         get_plugin_path,
         get_user_agent,
         insert_installed_libs,
@@ -167,7 +168,7 @@ def do_job(
             "book_fmt": book_fmt,
             "plugin_path": plugin_path,
         }
-        args = [py_path, plugin_path, json.dumps(options), json.dumps(prefs)]
+        args = [py_path, plugin_path, json.dumps(options), dump_prefs(prefs)]
         if book_fmt == "KFX":
             input_str = json.dumps(kfx_json).encode("utf-8")
         elif book_fmt == "EPUB":

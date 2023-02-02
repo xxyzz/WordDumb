@@ -328,7 +328,7 @@ def dump_lemmas_job(
             "lemma_lang": lemma_lang,
             "plugin_path": str(plugin_path),
         }
-        args = [which_python(), str(plugin_path), json.dumps(options)]
+        args = [which_python()[0], str(plugin_path), json.dumps(options), json.dumps(prefs)]
         run_subprocess(args)
     elif is_kindle:
         dump_kindle_lemmas(lemma_lang, db_path, dump_path, plugin_path)

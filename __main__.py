@@ -19,6 +19,7 @@ parser.add_argument("prefs")
 args = parser.parse_args()
 
 options = json.loads(args.options)
+prefs = json.loads(args.prefs)
 if "dump_path" in options:
     plugin_path = Path(options["plugin_path"])
     if options["is_kindle"]:
@@ -34,6 +35,7 @@ if "dump_path" in options:
             Path(options["db_path"]),
             Path(options["dump_path"]),
             plugin_path,
+            prefs
         )
 else:
     kfx_json = None
@@ -57,6 +59,6 @@ else:
         options["mobi_codec"],
         options["plugin_path"],
         options["useragent"],
-        json.loads(args.prefs),
+        prefs,
         None,
     )

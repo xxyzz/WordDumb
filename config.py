@@ -63,6 +63,8 @@ prefs.defaults["choose_format_manually"] = True
 prefs.defaults["wiktionary_gloss_lang"] = "en"
 prefs.defaults["use_gpu"] = False
 prefs.defaults["cuda"] = "cu117"
+prefs.defaults["last_opened_kindle_lemmas_language"] = "ca"
+prefs.defaults["last_opened_wiktionary_lemmas_language"] = "ca"
 for data in load_plugin_json(get_plugin_path(), "data/languages.json").values():
     prefs.defaults[f"{data['wiki']}_wiktionary_difficulty_limit"] = 5
 
@@ -219,6 +221,11 @@ class ConfigWidget(QWidget):
             lemma_lang = choose_lang_dlg.lemma_lang.currentData()
             gloss_lang = choose_lang_dlg.gloss_lang.currentData()
             prefs["wiktionary_gloss_lang"] = gloss_lang
+            prefs[
+                "last_opened_kindle_lemmas_language"
+                if is_kindle
+                else "last_opened_wiktionary_lemmas_language"
+            ] = lemma_lang
 
             db_path = (
                 kindle_db_path(self.plugin_path, lemma_lang)
@@ -328,7 +335,12 @@ def dump_lemmas_job(
             "lemma_lang": lemma_lang,
             "plugin_path": str(plugin_path),
         }
-        args = [which_python()[0], str(plugin_path), json.dumps(options), json.dumps(prefs)]
+        args = [
+            which_python()[0],
+            str(plugin_path),
+            json.dumps(options),
+            json.dumps(prefs),
+        ]
         run_subprocess(args)
     elif is_kindle:
         dump_kindle_lemmas(lemma_lang, db_path, dump_path, plugin_path)
@@ -440,10 +452,22 @@ class ChooseLemmaLangDialog(QDialog):
         lemma_language_to_code = {
             _(val["kaikki"]): val["wiki"] for val in language_dict.values()
         }
+        lemma_code_to_language = {
+            _(val["wiki"]): _(val["kaikki"]) for val in language_dict.values()
+        }
 
         self.lemma_lang = QComboBox()
         for text, val in lemma_language_to_code.items():
             self.lemma_lang.addItem(text, val)
+        self.lemma_lang.setCurrentText(
+            lemma_code_to_language[
+                prefs[
+                    "last_opened_kindle_lemmas_language"
+                    if is_kindle
+                    else "last_opened_wiktionary_lemmas_language"
+                ]
+            ]
+        )
         form_layout.addRow(_("Lemma language"), self.lemma_lang)
 
         gloss_language_to_code = {

@@ -82,7 +82,7 @@ class Wikipedia(MediaWiki):
                 "explaintext": 1,
                 "redirects": 1,
                 "exsentences": 7,
-                "ppprop": "wikibase_item",
+                "ppprop": "wikibase_item|disambiguation",
                 "titles": "|".join(titles),
             },
         )
@@ -104,8 +104,8 @@ class Wikipedia(MediaWiki):
             summary = v["extract"]
             if title in redirect_to_sections and title not in titles:
                 continue
-            if not any(period in summary for period in [".", "。"]):
-                continue  # very likely a disambiguation page
+            if "pageprops" in v and "disambiguation" in v["pageprops"]:
+                continue
             self.add_cache(
                 title,
                 {

@@ -101,6 +101,7 @@ def get_user_agent() -> str:
 
 
 class Prefs(TypedDict):
+    use_pos: bool
     search_people: bool
     model_size: str
     zh_wiki_variant: str

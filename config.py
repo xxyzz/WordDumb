@@ -50,6 +50,7 @@ from .utils import (
 )
 
 prefs = JSONConfig("plugins/worddumb")
+prefs.defaults["use_pos"] = False
 prefs.defaults["search_people"] = False
 prefs.defaults["model_size"] = "md"
 prefs.defaults["zh_wiki_variant"] = "cn"
@@ -97,6 +98,10 @@ class ConfigWidget(QWidget):
             partial(self.open_choose_lemma_lang_dialog, is_kindle=False)
         )
         vl.addWidget(custom_wiktionary_button)
+
+        self.use_pos_box = QCheckBox(_("Use POS type to find Word Wise definition"))
+        self.use_pos_box.setChecked(prefs["use_pos"])
+        vl.addWidget(self.use_pos_box)
 
         self.search_people_box = QCheckBox(
             _("Fetch X-Ray people descriptions from Wikipedia/Fandom")
@@ -201,6 +206,7 @@ class ConfigWidget(QWidget):
         webbrowser.open(GITHUB_URL)
 
     def save_settings(self) -> None:
+        prefs["use_pos"] = self.use_pos_box.isChecked()
         prefs["search_people"] = self.search_people_box.isChecked()
         prefs["model_size"] = self.model_size_box.currentData()
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
@@ -248,7 +254,7 @@ class ConfigWidget(QWidget):
                 custom_lemmas_dlg = CustomLemmasDialog(
                     self, is_kindle, lemma_lang, db_path, dump_path
                 )
-                if custom_lemmas_dlg.exec():
+                if custom_lemmas_dlg.exec() and not prefs["use_pos"]:
                     QSqlDatabase.removeDatabase(custom_lemmas_dlg.db_connection_name)
                     self.run_threaded_job(
                         dump_lemmas_job,
@@ -314,7 +320,8 @@ def import_lemmas_job(
     notifications: Any = None,
 ) -> None:
     apply_imported_lemmas_data(db_path, import_path, retain_lemmas, lemma_lang)
-    dump_lemmas_job(is_kindle, db_path, dump_path, lemma_lang, gloss_lang)
+    if not prefs["use_pos"]:
+        dump_lemmas_job(is_kindle, db_path, dump_path, lemma_lang, gloss_lang)
 
 
 def dump_lemmas_job(

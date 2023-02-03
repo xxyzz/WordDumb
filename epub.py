@@ -92,7 +92,6 @@ class EPUB:
         self.lemmas: dict[str, int] = {}
         self.lemma_id = 0
         self.lemmas_conn: sqlite3.Connection | None = None
-        self.lemmas_data: dict[str, list[tuple[str, str, str, str]]] = {}
         self.prefs: Prefs = {}
 
     def extract_epub(self) -> Iterator[tuple[str, tuple[int, str, Path]]]:
@@ -276,14 +275,11 @@ class EPUB:
         if self.lemmas_conn:
             if word not in self.lemmas:
                 return ""
-            if word in self.lemmas_data:
-                data = self.lemmas_data[word]
             else:
                 data = self.get_lemma_gloss(word, lang)
                 if not data:
                     del self.lemmas[word]
                     return ""
-                self.lemmas_data[word] = data
             short_def = data[0][0]
         else:
             short_def, *_ = self.get_lemma_gloss(word, lang)[0]
@@ -378,10 +374,7 @@ class EPUB:
             f.write(s)
 
     def create_ww_aside_tag(self, lemma: str, lemma_id: int, lemma_lang: str) -> str:
-        if self.lemmas_conn is not None:
-            data = self.lemmas_data[lemma]
-        else:
-            data = self.get_lemma_gloss(lemma, lemma_lang)
+        data = self.get_lemma_gloss(lemma, lemma_lang)
         tag_str = ""
         added_ipa = False
         tag_str += f'<aside id="{lemma_id}" epub:type="footnote">'

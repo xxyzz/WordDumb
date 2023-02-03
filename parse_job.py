@@ -631,35 +631,92 @@ def find_named_entity(
     return intervals
 
 
-def load_spacy(model: str, book_path: str) -> Any:
+def load_spacy(
+    model: str,
+    book_path: str | None,
+    lemmas_conn: sqlite3.Connection | None,
+    lemma_lang: str,
+):
     import spacy
 
-    excluded_components = [
-        "tok2vec",
-        "morphologizer",
-        "tagger",
-        "attribute_ruler",
-        "lemmatizer",
-    ]
+    excluded_components = []
+    if lemmas_conn is None:
+        excluded_components.extend(
+            ["tok2vec", "morphologizer", "tagger", "attribute_ruler", "lemmatizer"]
+        )
+    if book_path is None:
+        excluded_components.append("ner")
+
     if model.endswith("_trf"):
         spacy.require_gpu()
     else:
         excluded_components.append("parser")
+
     nlp = spacy.load(model, exclude=excluded_components)
-    if not model.endswith("_trf"):
+    if not model.endswith("_trf") and book_path is not None:
         # simpler and faster https://spacy.io/usage/linguistic-features#sbd
         nlp.enable_pipe("senter")
 
-    custom_x_path = get_custom_x_path(book_path)
-    if custom_x_path.exists():
-        ruler = nlp.add_pipe(
-            "entity_ruler", before="ner", config={"phrase_matcher_attr": "LOWER"}
+    if book_path is not None:
+        custom_x_path = get_custom_x_path(book_path)
+        if custom_x_path.exists():
+            ruler = nlp.add_pipe(
+                "entity_ruler", before="ner", config={"phrase_matcher_attr": "LOWER"}
+            )
+            patterns = []
+            with custom_x_path.open(encoding="utf-8") as f:
+                for name, label, aliases, *_ in json.load(f):
+                    patterns.append({"label": label, "pattern": name, "id": name})
+                    for alias in [x.strip() for x in aliases.split(",")]:
+                        patterns.append({"label": label, "pattern": alias, "id": name})
+            ruler.add_patterns(patterns)
+
+    lemma_matcher = None
+    phrase_matcher = None
+    if lemmas_conn is not None:
+        from spacy.matcher import PhraseMatcher
+
+        has_lemmatizer = "lemmatizer" in nlp.component_names
+        lemma_matcher = PhraseMatcher(
+            nlp.vocab, attr="LEMMA" if has_lemmatizer else "TEXT"
         )
-        patterns = []
-        with custom_x_path.open(encoding="utf-8") as f:
-            for name, label, aliases, *_ in json.load(f):
-                patterns.append({"label": label, "pattern": name, "id": name})
-                for alias in [x.strip() for x in aliases.split(",")]:
-                    patterns.append({"label": label, "pattern": alias, "id": name})
-        ruler.add_patterns(patterns)
-    return nlp
+        if lemma_lang not in CJK_LANGS:
+            phrase_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
+        disabled_pipes = ["ner", "parser", "senter"]
+        if "lemmatizer" not in nlp.component_names:
+            disabled_pipes.extend(
+                ["tok2vec", "morphologizer", "tagger", "attribute_ruler", "lemmatizer"]
+            )
+        disabled_pipes = list(set(disabled_pipes) & set(nlp.pipe_names))
+        with nlp.select_pipes(disable=disabled_pipes):
+            lemma_matcher.add(
+                "lemmas",
+                create_lemma_patterns(
+                    lemma_lang, lemmas_conn, nlp, False, has_lemmatizer
+                ),
+            )
+            if phrase_matcher is not None:
+                phrase_matcher.add(
+                    "phrases",
+                    create_lemma_patterns(
+                        lemma_lang, lemmas_conn, nlp, True, has_lemmatizer
+                    ),
+                )
+
+    return nlp, lemma_matcher, phrase_matcher
+
+
+def create_lemma_patterns(lemma_lang, conn, nlp, add_phrases, has_lemmatizer):
+    query_sql = "SELECT DISTINCT lemma, forms FROM lemmas WHERE enabled = 1"
+    if add_phrases:
+        query_sql += " AND lemma LIKE '% %'"
+    else:
+        query_sql += " AND lemma NOT LIKE '% %'"
+    for lemma, forms in conn.execute(query_sql):
+        if add_phrases or not has_lemmatizer or lemma_lang == "zh":
+            if lemma_lang == "zh":
+                yield nlp(lemma)  # Traditional Chinese
+            for form in forms.split(","):
+                yield nlp(form)
+        else:
+            yield nlp(lemma)

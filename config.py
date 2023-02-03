@@ -254,7 +254,7 @@ class ConfigWidget(QWidget):
                 custom_lemmas_dlg = CustomLemmasDialog(
                     self, is_kindle, lemma_lang, db_path, dump_path
                 )
-                if custom_lemmas_dlg.exec() and not prefs["use_pos"]:
+                if custom_lemmas_dlg.exec():
                     QSqlDatabase.removeDatabase(custom_lemmas_dlg.db_connection_name)
                     self.run_threaded_job(
                         dump_lemmas_job,
@@ -320,8 +320,7 @@ def import_lemmas_job(
     notifications: Any = None,
 ) -> None:
     apply_imported_lemmas_data(db_path, import_path, retain_lemmas, lemma_lang)
-    if not prefs["use_pos"]:
-        dump_lemmas_job(is_kindle, db_path, dump_path, lemma_lang, gloss_lang)
+    dump_lemmas_job(is_kindle, db_path, dump_path, lemma_lang, gloss_lang)
 
 
 def dump_lemmas_job(
@@ -341,7 +340,9 @@ def dump_lemmas_job(
             "db_path": str(db_path),
             "dump_path": str(dump_path),
             "lemma_lang": lemma_lang,
+            "gloss_lang": gloss_lang,
             "plugin_path": str(plugin_path),
+            "languages": load_plugin_json(plugin_path, "data/languages.json"),
         }
         args = [
             which_python()[0],

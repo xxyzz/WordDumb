@@ -13,11 +13,13 @@ from calibre.constants import isfrozen, ismacos, iswindows
 from .utils import (
     CJK_LANGS,
     PROFICIENCY_VERSION,
+    Prefs,
     custom_lemmas_folder,
     get_plugin_path,
     homebrew_mac_bin_path,
     load_plugin_json,
     run_subprocess,
+    spacy_model_name,
 )
 
 PY_PATH = ""
@@ -143,12 +145,20 @@ def download_word_wise_file(
     is_kindle: bool,
     lemma_lang: str,
     gloss_lang: str,
+    prefs: Prefs,
     abort=None,
     log=None,
     notifications=None,
 ) -> None:
-    if lemma_lang in CJK_LANGS:
+    if lemma_lang in CJK_LANGS and not prefs["use_pos"]:
         install_deps("pyahocorasick", notifications)
+    if prefs["use_pos"]:
+        install_deps(
+            spacy_model_name(
+                lemma_lang, load_plugin_json(get_plugin_path(), "data/languages.json")
+            ),
+            notifications,
+        )
 
     if notifications:
         notifications.put(

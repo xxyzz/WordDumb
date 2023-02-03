@@ -170,3 +170,140 @@ def dump_wiktionary(
     else:
         with open(dump_path, "wb") as f:
             pickle.dump(kw_processor, f)
+
+
+def spacy_doc_path(
+    spacy_model: str,
+    model_version: str,
+    lemma_lang: str,
+    gloss_lang: str,
+    is_kindle: bool,
+    is_phrase: bool,
+    plugin_path: Path,
+):
+    import platform
+
+    py_version = ".".join(platform.python_version_tuple()[:2])
+    return custom_lemmas_folder(plugin_path).joinpath(
+        f"{lemma_lang}/{spacy_model}_{'kindle' if is_kindle else 'wiktionary'}_{gloss_lang}_{model_version}_{py_version}{'_phrase' if is_phrase else ''}"
+    )
+
+
+def dump_lemmas_pos(
+    spacy_model: str,
+    is_kindle: bool,
+    lemma_lang: str,
+    gloss_lang: str,
+    db_path: Path,
+    plugin_path: Path,
+    prefs: Prefs,
+):
+    insert_installed_libs(plugin_path)
+    import spacy
+    from spacy.util import get_package_version
+
+    excluded_components = ["ner", "parser"]
+    if lemma_lang == "zh":
+        excluded_components.extend(
+            ["tok2vec", "morphologizer", "tagger", "attribute_ruler", "lemmatizer"]
+        )
+    nlp = spacy.load(spacy_model, exclude=excluded_components)
+    lemmas_conn = sqlite3.connect(db_path)
+    dump_spacy_docs(
+        nlp,
+        spacy_model,
+        get_package_version(spacy_model),
+        lemma_lang,
+        gloss_lang,
+        is_kindle,
+        lemmas_conn,
+        plugin_path,
+        prefs,
+    )
+    lemmas_conn.close()
+
+
+def dump_spacy_docs(
+    nlp,
+    spacy_model: str,
+    model_version: str,
+    lemma_lang: str,
+    gloss_lang: str,
+    is_kindle: bool,
+    lemmas_conn: sqlite3.Connection,
+    plugin_path: Path,
+    prefs: Prefs,
+):
+    from spacy.tokens import DocBin
+
+    has_lemmatizer = "lemmatizer" in nlp.component_names
+    disabled_pipes = ["ner", "parser", "senter"]
+    if not has_lemmatizer:
+        disabled_pipes.extend(
+            ["tok2vec", "morphologizer", "tagger", "attribute_ruler", "lemmatizer"]
+        )
+    lemmas_doc_bin = DocBin(attrs=["LEMMA"])
+    if lemma_lang not in CJK_LANGS:
+        phrases_doc_bin = DocBin(attrs=["LOWER"])
+    disabled_pipes = list(set(disabled_pipes) & set(nlp.pipe_names))
+    difficulty_limit = (
+        None if is_kindle else prefs[f"{lemma_lang}_wiktionary_difficulty_limit"]
+    )
+    with nlp.select_pipes(disable=disabled_pipes):
+        for lemma_doc in create_lemma_patterns(
+            lemma_lang, lemmas_conn, nlp, False, has_lemmatizer, difficulty_limit
+        ):
+            lemmas_doc_bin.add(lemma_doc)
+        if lemma_lang not in CJK_LANGS:
+            for phrase_doc in create_lemma_patterns(
+                lemma_lang, lemmas_conn, nlp, True, has_lemmatizer, difficulty_limit
+            ):
+                phrases_doc_bin.add(phrase_doc)
+
+    with open(
+        spacy_doc_path(
+            spacy_model,
+            model_version,
+            lemma_lang,
+            gloss_lang,
+            is_kindle,
+            False,
+            plugin_path,
+        ),
+        "wb",
+    ) as f:
+        f.write(lemmas_doc_bin.to_bytes())
+    if lemma_lang not in CJK_LANGS:
+        with open(
+            spacy_doc_path(
+                spacy_model,
+                model_version,
+                lemma_lang,
+                gloss_lang,
+                is_kindle,
+                True,
+                plugin_path,
+            ),
+            "wb",
+        ) as f:
+            f.write(phrases_doc_bin.to_bytes())
+
+
+def create_lemma_patterns(
+    lemma_lang, conn, nlp, add_phrases, has_lemmatizer, difficulty_limit
+):
+    query_sql = "SELECT DISTINCT lemma, forms FROM lemmas WHERE enabled = 1"
+    if add_phrases:
+        query_sql += " AND lemma LIKE '% %'"
+    else:
+        query_sql += " AND lemma NOT LIKE '% %'"
+    if difficulty_limit is not None:
+        query_sql += f" AND difficulty <= {difficulty_limit}"
+    for lemma, forms in conn.execute(query_sql):
+        if add_phrases or not has_lemmatizer or lemma_lang == "zh":
+            if lemma_lang == "zh":
+                yield nlp(lemma)  # Traditional Chinese
+            for form in forms.split(","):
+                yield nlp(form)
+        else:
+            yield nlp(lemma)

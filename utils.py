@@ -124,3 +124,16 @@ def dump_prefs(prefs: Any) -> str:
     prefs_dict = prefs.defaults
     prefs_dict.update(prefs)
     return json.dumps(prefs_dict)
+
+
+def spacy_model_name(lemma_lang, languages, prefs):
+    for value in languages.values():
+        if value["wiki"] == lemma_lang:
+            spacy_model = value["spacy"]
+            has_trf = value["has_trf"]
+            break
+    if prefs["use_gpu"] and has_trf:
+        spacy_model += "trf"
+    else:
+        spacy_model += prefs["model_size"]
+    return spacy_model

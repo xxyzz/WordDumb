@@ -22,7 +22,7 @@ try:
         save_db,
     )
     from .deps import download_word_wise_file, install_deps, which_python
-    from .dump_lemmas import load_lemmas_dump
+    from .dump_lemmas import dump_spacy_docs, load_lemmas_dump, spacy_doc_path
     from .epub import EPUB
     from .interval import Interval, IntervalTree
     from .mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
@@ -50,7 +50,7 @@ except ImportError:
         insert_lemma,
         save_db,
     )
-    from dump_lemmas import load_lemmas_dump
+    from dump_lemmas import dump_spacy_docs, load_lemmas_dump, spacy_doc_path
     from epub import EPUB
     from interval import Interval, IntervalTree
     from mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
@@ -117,6 +117,7 @@ def do_job(
                 False,
                 lang["wiki"],
                 prefs["wiktionary_gloss_lang"],
+                prefs,
                 notifications=notifications,
             )
     else:
@@ -124,7 +125,7 @@ def do_job(
         create_x = create_x and not get_x_ray_path(asin, book_path_str).exists()
         if create_ww and not kindle_db_path(plugin_path, lang["wiki"]).exists():
             download_word_wise_file(
-                True, lang["wiki"], "en", notifications=notifications
+                True, lang["wiki"], "en", prefs, notifications=notifications
             )
 
     return_values = (
@@ -231,12 +232,13 @@ def create_files(
     plugin_path = Path(plugin_path_str)
     kw_processor = None
     lemmas_conn = None
+    gloss_lang = prefs["wiktionary_gloss_lang"] if is_epub else "en"
     if create_ww:
         if not prefs["use_pos"]:
             kw_processor = load_lemmas_dump(
                 not is_epub,
                 wiki_lang,
-                prefs["wiktionary_gloss_lang"] if is_epub else "en",
+                gloss_lang,
                 plugin_path,
                 prefs,
             )
@@ -252,9 +254,18 @@ def create_files(
 
     if create_x or create_ww_pos:
         insert_installed_libs(plugin_path)
-        nlp, lemma_matcher, phrase_matcher = load_spacy(
-            model, book_path if create_x else None, lemmas_conn, wiki_lang
-        )
+        nlp = load_spacy(model, book_path if create_x else None, create_ww_pos)
+        if create_ww_pos:
+            lemma_matcher, phrase_matcher = create_spacy_matcher(
+                nlp,
+                model,
+                wiki_lang,
+                gloss_lang,
+                not is_epub,
+                lemmas_conn,
+                plugin_path,
+                prefs,
+            )
 
     if create_x:
         mediawiki = (
@@ -809,16 +820,11 @@ def find_named_entity(
     return intervals
 
 
-def load_spacy(
-    model: str,
-    book_path: str | None,
-    lemmas_conn: sqlite3.Connection | None,
-    lemma_lang: str,
-):
+def load_spacy(model: str, book_path: str | None, use_pos: bool):
     import spacy
 
     excluded_components = []
-    if lemmas_conn is None:
+    if not use_pos:
         excluded_components.extend(
             ["tok2vec", "morphologizer", "tagger", "attribute_ruler", "lemmatizer"]
         )
@@ -849,52 +855,58 @@ def load_spacy(
                         patterns.append({"label": label, "pattern": alias, "id": name})
             ruler.add_patterns(patterns)
 
-    lemma_matcher = None
-    phrase_matcher = None
-    if lemmas_conn is not None:
-        from spacy.matcher import PhraseMatcher
+    return nlp
 
-        has_lemmatizer = "lemmatizer" in nlp.component_names
-        lemma_matcher = PhraseMatcher(
-            nlp.vocab, attr="LEMMA" if has_lemmatizer else "TEXT"
+
+def create_spacy_matcher(
+    nlp, model, lemma_lang, gloss_lang, is_kindle, lemmas_conn, plugin_path, prefs
+):
+    from spacy.matcher import PhraseMatcher
+    from spacy.tokens import DocBin
+    from spacy.util import get_package_version
+
+    has_lemmatizer = "lemmatizer" in nlp.component_names
+    lemma_matcher = PhraseMatcher(nlp.vocab, attr="LEMMA" if has_lemmatizer else "TEXT")
+    if lemma_lang not in CJK_LANGS:
+        phrase_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
+    disabled_pipes = ["ner", "parser", "senter"]
+    if "lemmatizer" not in nlp.component_names:
+        disabled_pipes.extend(
+            ["tok2vec", "morphologizer", "tagger", "attribute_ruler", "lemmatizer"]
         )
-        if lemma_lang not in CJK_LANGS:
-            phrase_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
-        disabled_pipes = ["ner", "parser", "senter"]
-        if "lemmatizer" not in nlp.component_names:
-            disabled_pipes.extend(
-                ["tok2vec", "morphologizer", "tagger", "attribute_ruler", "lemmatizer"]
-            )
-        disabled_pipes = list(set(disabled_pipes) & set(nlp.pipe_names))
-        with nlp.select_pipes(disable=disabled_pipes):
-            lemma_matcher.add(
-                "lemmas",
-                create_lemma_patterns(
-                    lemma_lang, lemmas_conn, nlp, False, has_lemmatizer
-                ),
-            )
-            if phrase_matcher is not None:
-                phrase_matcher.add(
-                    "phrases",
-                    create_lemma_patterns(
-                        lemma_lang, lemmas_conn, nlp, True, has_lemmatizer
-                    ),
-                )
+    model_version = get_package_version(model)
+    lemmas_doc_path = spacy_doc_path(
+        model, model_version, lemma_lang, gloss_lang, is_kindle, False, plugin_path
+    )
+    if not lemmas_doc_path.exists():
+        dump_spacy_docs(
+            nlp,
+            model,
+            model_version,
+            lemma_lang,
+            gloss_lang,
+            is_kindle,
+            lemmas_conn,
+            plugin_path,
+            prefs,
+        )
 
-    return nlp, lemma_matcher, phrase_matcher
+    with lemmas_doc_path.open("rb") as f:
+        lemmas_doc_bin = DocBin().from_bytes(f.read())
+    if lemma_lang not in CJK_LANGS:
+        phrases_doc_path = spacy_doc_path(
+            model, model_version, lemma_lang, gloss_lang, is_kindle, True, plugin_path
+        )
+        with phrases_doc_path.open("rb") as f:
+            phrases_doc_bin = DocBin().from_bytes(f.read())
 
+    disabled_pipes = list(set(disabled_pipes) & set(nlp.pipe_names))
+    with nlp.select_pipes(disable=disabled_pipes):
+        lemma_matcher.add("lemmas", lemmas_doc_bin.get_docs(nlp.vocab))
+        if phrase_matcher is not None:
+            phrase_matcher.add("phrases", phrases_doc_bin.get_docs(nlp.vocab))
 
-def create_lemma_patterns(lemma_lang, conn, nlp, add_phrases, has_lemmatizer):
-    query_sql = "SELECT DISTINCT lemma, forms FROM lemmas WHERE enabled = 1"
-    if add_phrases:
-        query_sql += " AND lemma LIKE '% %'"
+    if lemma_lang not in CJK_LANGS:
+        return lemma_matcher, phrase_matcher
     else:
-        query_sql += " AND lemma NOT LIKE '% %'"
-    for lemma, forms in conn.execute(query_sql):
-        if add_phrases or not has_lemmatizer or lemma_lang == "zh":
-            if lemma_lang == "zh":
-                yield nlp(lemma)  # Traditional Chinese
-            for form in forms.split(","):
-                yield nlp(form)
-        else:
-            yield nlp(lemma)
+        return lemma_matcher, None

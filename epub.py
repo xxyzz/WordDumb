@@ -3,6 +3,7 @@
 import operator
 import re
 import shutil
+import sqlite3
 import zipfile
 from collections import defaultdict
 from html import escape, unescape
@@ -90,6 +91,9 @@ class EPUB:
         self.lemma_glosses = lemma_glosses
         self.lemmas: dict[str, int] = {}
         self.lemma_id = 0
+        self.lemmas_conn: sqlite3.Connection | None = None
+        self.lemmas_data: dict[str, list[tuple[str, str, str, str]]] = {}
+        self.prefs: Prefs = {}
 
     def extract_epub(self) -> Iterator[tuple[str, tuple[int, str, Path]]]:
         from lxml import etree
@@ -213,7 +217,11 @@ class EPUB:
                 del self.entities[entity]
                 self.removed_entity_ids.add(data["id"])
 
-    def modify_epub(self, prefs: Prefs, lang: str) -> None:
+    def modify_epub(
+        self, prefs: Prefs, lang: str, lemmas_conn: sqlite3.Connection | None
+    ) -> None:
+        self.lemmas_conn = lemmas_conn
+        self.prefs = prefs
         if self.entities:
             query_mediawiki(self.entities, self.mediawiki, prefs["search_people"])
             if self.wikidata:
@@ -226,6 +234,8 @@ class EPUB:
             self.create_word_wise_footnotes(lang)
         self.modify_opf()
         self.zip_extract_folder()
+        if lemmas_conn is not None:
+            lemmas_conn.close()
 
     def insert_anchor_elements(self, lang: str) -> None:
         for xhtml_path, entity_list in self.entity_occurrences.items():
@@ -263,7 +273,21 @@ class EPUB:
                 f.write(new_xhtml_str)
 
     def build_word_wise_tag(self, word: str, origin_word: str, lang: str) -> str:
-        short_def, *_ = self.get_lemma_gloss(word, lang)
+        if self.lemmas_conn:
+            if word not in self.lemmas:
+                return ""
+            if word in self.lemmas_data:
+                data = self.lemmas_data[word]
+            else:
+                data = self.get_lemma_gloss(word, lang)
+                if not data:
+                    del self.lemmas[word]
+                    return ""
+                self.lemmas_data[word] = data
+            short_def = data[0][0]
+        else:
+            short_def, *_ = self.get_lemma_gloss(word, lang)[0]
+
         len_ratio = 5 if lang in CJK_LANGS else 2.5
         word_id = self.lemmas[word]
         if len(short_def) / len(word) > len_ratio:
@@ -346,20 +370,34 @@ class EPUB:
         <body>
         """
         for lemma, lemma_id in self.lemmas.items():
-            s += f'<aside id="{lemma_id}" epub:type="footnote">'
-            _, gloss, example, ipa = self.get_lemma_gloss(lemma, lang)
-            if ipa:
-                s += f"<p>{escape(ipa)}</p>"
-            s += f"<p>{escape(gloss)}</p>"
-            if example:
-                s += f"<p><i>{escape(example)}</i></p>"
-            s += f"<p>Source: <a href='https://en.wiktionary.org/wiki/{quote(lemma)}'>Wiktionary</a></p></aside>"
-
+            s += self.create_ww_aside_tag(lemma, lemma_id, lang)
         s += "</body></html>"
         with self.xhtml_folder.joinpath("word_wise.xhtml").open(
             "w", encoding="utf-8"
         ) as f:
             f.write(s)
+
+    def create_ww_aside_tag(self, lemma: str, lemma_id: int, lemma_lang: str) -> str:
+        if self.lemmas_conn is not None:
+            data = self.lemmas_data[lemma]
+        else:
+            data = self.get_lemma_gloss(lemma, lemma_lang)
+        tag_str = ""
+        added_ipa = False
+        tag_str += f'<aside id="{lemma_id}" epub:type="footnote">'
+        if self.lemmas_conn is not None:
+            _, pos = lemma.rsplit("_", 1)
+            tag_str += f"<p>{pos}</p>"
+        for _, full_def, example, ipa in data:
+            if ipa and not added_ipa:
+                tag_str += f"<p>{escape(ipa)}</p>"
+                added_ipa = True
+            tag_str += f"<p>{escape(full_def)}</p>"
+            if example:
+                tag_str += f"<p><i>{escape(example)}</i></p>"
+            tag_str += "<hr>"
+        tag_str += f"<p>Source: <a href='https://en.wiktionary.org/wiki/{quote(lemma)}'>Wiktionary</a></p></aside>"
+        return tag_str
 
     def modify_opf(self) -> None:
         from lxml import etree
@@ -413,8 +451,74 @@ class EPUB:
         )
         shutil.rmtree(self.extract_folder)
 
-    def get_lemma_gloss(self, lemma: str, lang: str) -> tuple[str, str, str, str]:
-        if lang in CJK_LANGS:  # pyahocorasick
-            return self.lemma_glosses.get(lemma)[1:]
-        else:  # flashtext
-            return self.lemma_glosses.get_keyword(lemma)
+    def get_lemma_gloss(self, lemma: str, lang: str) -> list[tuple[str, str, str, str]]:
+        if self.lemmas_conn is None:
+            if lang in CJK_LANGS:  # pyahocorasick
+                return [self.lemma_glosses.get(lemma)[1:]]
+            else:  # flashtext
+                return [self.lemma_glosses.get_keyword(lemma)]
+        else:
+            lemma, pos = lemma.rsplit("_", 1)
+            pos = self.spacy_to_wiktionary_pos(pos)
+            if lang == "en":
+                select_sql = f"SELECT short_def, full_def, example, {self.prefs['en_ipa']} FROM lemmas "
+            elif lang == "zh":
+                select_sql = f"SELECT short_def, full_def, example, {self.prefs['zh_ipa']} FROM lemmas "
+            else:
+                select_sql = f"SELECT short_def, full_def, example, ipa FROM lemmas "
+            lemmas_data = []
+            for data in self.lemmas_conn.execute(
+                select_sql + "WHERE lemma = ? AND pos_type = ?", (lemma, pos)
+            ):
+                lemmas_data.append(data)
+            if lemmas_data:
+                return lemmas_data
+
+            if " " in lemma:
+                for data in self.lemmas_conn.execute(
+                    select_sql + "WHERE forms LIKE ?", (lemma,)
+                ):
+                    lemmas_data.append(data)
+            elif lang == "zh":
+                for data in self.lemmas_conn.execute(
+                    select_sql + "WHERE forms LIKE ? AND pos_type = ?",
+                    (f"%{lemma}%", pos),
+                ):
+                    lemmas_data.append(data)
+
+            return lemmas_data
+
+    def spacy_to_wiktionary_pos(self, pos: str) -> str:
+        # spaCy POS: https://universaldependencies.org/u/pos
+        # Wiktioanry POS: https://github.com/tatuylonen/wiktextract/blob/master/wiktextract/data/en/pos_subtitles.json
+        match pos:
+            case "NOUN":
+                return "noun"
+            case "ADJ":
+                return "adj"
+            case "VERB":
+                return "verb"
+            case "ADV":
+                return "adv"
+            case "ADP":
+                return "prep"
+            case "CCONJ" | "SCONJ":
+                return "conj"
+            case "DET":
+                return "det"
+            case "INTJ":
+                return "intj"
+            case "NUM":
+                return "num"
+            case "PART":
+                return "particle"
+            case "PRON":
+                return "pron"
+            case "PROPN":
+                return "name"
+            case "PUNCT":
+                return "punct"
+            case "SYM":
+                return "symbol"
+            case _:
+                return "other"

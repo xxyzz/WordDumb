@@ -8,9 +8,9 @@ from typing import Any
 from urllib.parse import unquote
 
 try:
-    from .x_ray_share import PERSON_LABELS, XRayEntity
+    from .x_ray_share import FUZZ_THRESHOLD, PERSON_LABELS, XRayEntity
 except ImportError:
-    from x_ray_share import PERSON_LABELS, XRayEntity
+    from x_ray_share import FUZZ_THRESHOLD, PERSON_LABELS, XRayEntity
 
 # https://www.mediawiki.org/wiki/API:Get_the_contents_of_a_page
 # https://www.mediawiki.org/wiki/Extension:TextExtracts#API
@@ -199,20 +199,48 @@ class Fandom(MediaWiki):
         self.session.params = {
             "format": "json",
             "action": "parse",
-            "prop": "text",
+            "prop": "text|properties|links",
             "section": 0,
             "redirects": 1,
             "disablelimitreport": 1,
             "formatversion": 2,
         }
 
-    def query(self, page: str) -> None:
+    def query(self, page: str, from_disambiguation: bool = False) -> None:
         from lxml import etree
+        from rapidfuzz.fuzz import token_set_ratio
+        from rapidfuzz.process import extractOne
 
         result = self.session.get(self.wiki_api, params={"page": page})
         data = result.json()
         if "parse" in data:
             data = data["parse"]
+            if (
+                "properties" in data
+                and "disambiguation" in data["properties"]
+                and not from_disambiguation
+            ):
+                # Choose the most similar title in disambiguation page
+                disambiguation_titles = [
+                    link["title"]
+                    for link in data.get("links", [])
+                    if link["ns"] == 0 and link["exists"]
+                ]
+                r = extractOne(
+                    page,
+                    disambiguation_titles,
+                    score_cutoff=FUZZ_THRESHOLD,
+                    scorer=token_set_ratio,
+                )
+                if r is not None:
+                    chosen_title = r[0]
+                    self.query(chosen_title, True)
+                    if self.get_cache(chosen_title):
+                        self.add_cache(page, chosen_title)
+                        return
+                self.add_cache(page, None)
+                return
+
             text = data["text"]
             html = etree.HTML(text)
             # Remove infobox, quote, references, error

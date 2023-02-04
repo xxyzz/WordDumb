@@ -644,30 +644,3 @@ msgstr "Ukrainien"
 
 msgid "Chinese"
 msgstr "Chinois"
-
-msgid "Choose Wiktionary language"
-msgstr "Sélectionnez la langue du Wiktionary"
-
-msgid "Customize"
-msgstr "Personaliser"
-
-msgid "Wiktionary"
-msgstr "Wiktionary"
-
-msgid "Kindle Word Wise"
-msgstr "Word Wise Kindle"
-
-msgid "Definition"
-msgstr "Définition"
-
-msgid "Forms"
-msgstr "Formes"
-
-msgid "Non-English book"
-msgstr "Livre non-Anglais"
-
-msgid ""
-"For Kindle format books, Word Wise is only available in books in English."
-msgstr ""
-"Pour les formats de livres sur Kindle. Word Wise n'est disponible que pour "
-"les livres en Anglais."

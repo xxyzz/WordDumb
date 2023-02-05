@@ -247,7 +247,7 @@ class ConfigWidget(QWidget):
             if not db_path.exists():
                 self.run_threaded_job(
                     download_word_wise_file,
-                    (is_kindle, lemma_lang, gloss_lang),
+                    (is_kindle, lemma_lang, gloss_lang, prefs),
                     _("Downloading Word Wise file"),
                 )
             else:

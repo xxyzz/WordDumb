@@ -245,7 +245,7 @@ class CustomLemmasDialog(QDialog):
         if not import_options_dialog.exec():
             return
 
-        file_path, ignore = QFileDialog.getOpenFileName(
+        file_path, ignored_ = QFileDialog.getOpenFileName(
             self,
             _("Select import file"),
             str(Path.home()),
@@ -273,7 +273,7 @@ class CustomLemmasDialog(QDialog):
         if not option_dialog.exec():
             return
 
-        export_path, ignore = QFileDialog.getSaveFileName(
+        export_path, ignored_ = QFileDialog.getSaveFileName(
             self, _("Set export file path"), str(Path.home())
         )
         if not export_path:

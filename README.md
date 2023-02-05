@@ -119,8 +119,6 @@ https://user-images.githubusercontent.com/21101839/202723395-c84ed588-5fba-43f7-
 
 - Don't add soft hyphens to AZW3, AZW and MOBI books, it will cause the plugin to produce mediocre Word Wise and X-Ray files.
 
-- [Display Word Wise in other languages](./klld)
-
 - For Android users:
 
   Currently, only KFX is supported.

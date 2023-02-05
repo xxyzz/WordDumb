@@ -6,14 +6,12 @@ on:
       - '**'
     paths-ignore:
       - '**.md'
-      - 'klld/**'
       - 'translations/**'
   pull_request:
     branches:
       - '**'
     paths-ignore:
       - '**.md'
-      - 'klld/**'
       - 'translations/**'
 
 jobs:
@@ -148,7 +146,6 @@ jobs:
             !**/__pycache__/*
             !__pycache__/*
             !exclude.lst
-            !klld/*
             !translations/*.po
             !build_plugin.sh
             !mypy.ini

@@ -3,7 +3,6 @@ tests/*
 **/__pycache__/*
 __pycache__/*
 exclude.lst
-klld/*
 translations/*.po
 build_plugin.sh
 mypy.ini

@@ -155,7 +155,9 @@ def download_word_wise_file(
     if prefs["use_pos"]:
         install_deps(
             spacy_model_name(
-                lemma_lang, load_plugin_json(get_plugin_path(), "data/languages.json")
+                lemma_lang,
+                load_plugin_json(get_plugin_path(), "data/languages.json"),
+                prefs,
             ),
             notifications,
         )

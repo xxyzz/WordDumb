@@ -114,7 +114,7 @@ class Prefs(TypedDict):
     zh_ipa: str
     choose_format_manually: bool
     wiktionary_gloss_lang: str
-    use_cpu: bool
+    use_gpu: bool
     cuda: str
     last_opened_kindle_lemmas_language: str
     last_opened_wiktionary_lemmas_language: str
@@ -126,7 +126,9 @@ def dump_prefs(prefs: Any) -> str:
     return json.dumps(prefs_dict)
 
 
-def spacy_model_name(lemma_lang, languages, prefs):
+def spacy_model_name(
+    lemma_lang: str, languages: dict[str, dict[str, str]], prefs: Prefs
+) -> str:
     for value in languages.values():
         if value["wiki"] == lemma_lang:
             spacy_model = value["spacy"]

@@ -274,12 +274,12 @@ class EPUB:
     def build_word_wise_tag(self, word: str, origin_word: str, lang: str) -> str:
         if self.lemmas_conn:
             if word not in self.lemmas:
-                return ""
+                return origin_word
             else:
                 data = self.get_lemma_gloss(word, lang)
                 if not data:
                     del self.lemmas[word]
-                    return ""
+                    return origin_word
             short_def = data[0][0]
         else:
             short_def, *_ = self.get_lemma_gloss(word, lang)[0]

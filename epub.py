@@ -284,7 +284,7 @@ class EPUB:
         else:
             short_def, *_ = self.get_lemma_gloss(word, lang)[0]
 
-        len_ratio = 5 if lang in CJK_LANGS else 2.5
+        len_ratio = 3 if lang in CJK_LANGS else 2.5
         word_id = self.lemmas[word]
         if len(short_def) / len(word) > len_ratio:
             return f'<a epub:type="noteref" href="word_wise.xhtml#{word_id}">{origin_word}</a>'

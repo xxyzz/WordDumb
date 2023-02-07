@@ -143,7 +143,7 @@ def do_job(
     if isfrozen and (book_fmt == "EPUB" or create_x):
         # parse Fandom page and Wikipedia section requires lxml
         install_deps("lxml", notifications)
-    if create_x:
+    if create_x or (create_ww and prefs["use_pos"]):
         install_deps(model, notifications)
 
     if notifications:

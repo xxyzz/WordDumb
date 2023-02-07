@@ -505,7 +505,7 @@ def epub_find_lemma_pos(
             lemma_starts,
             epub,
             xhtml_path,
-            span.doc[span.start].pos_,
+            f"{span.lemma_}_{span.doc[span.start].pos_}",
         )
 
 
@@ -684,25 +684,25 @@ def epub_add_lemma(
     starts: set[int],
     epub: EPUB,
     xhtml_path: Path,
-    pos: str | None = None,
+    lemma_pos: str | None = None,
 ) -> None:
-    lemma = text[token_start:token_end]
-    result = index_in_escaped_text(lemma, escaped_text, token_start)
+    word = text[token_start:token_end]
+    result = index_in_escaped_text(word, escaped_text, token_start)
     if result is None:
         return
-    lemma_start, lemma_end = result
-    if lemma_start in starts:
+    word_start, word_end = result
+    if word_start in starts:
         return
-    if interval_tree and interval_tree.is_overlap(Interval(lemma_start, lemma_end - 1)):
+    if interval_tree and interval_tree.is_overlap(Interval(word_start, word_end - 1)):
         return
 
-    starts.add(lemma_start)
+    starts.add(word_start)
     epub.add_lemma(
-        f"{lemma}_{pos}" if pos is not None else lemma,
-        start + lemma_start,
-        start + lemma_end,
+        lemma_pos if lemma_pos is not None else word,
+        start + word_start,
+        start + word_end,
         xhtml_path,
-        escaped_text[lemma_start:lemma_end],
+        escaped_text[word_start:word_end],
     )
 
 

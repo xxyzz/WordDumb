@@ -372,12 +372,7 @@ class KindleLemmasTableModel(LemmasTableModel):
         self.difficulty_column = 6
         self.hide_columns = [0, 5, 7, 8]
         self.tooltip_columns = [2, 4]
-        if lemma_lang != "en":
-            self.headers.append("display_lemma_id")
-            self.editable_columns = [2, 6]
-            self.hide_columns.append(9)
-        else:
-            self.editable_columns = [6]
+        self.editable_columns = [2, 6] if lemma_lang != "en" else [6]
 
 
 class WiktionaryTableModel(LemmasTableModel):

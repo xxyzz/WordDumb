@@ -388,7 +388,7 @@ class EPUB:
             tag_str += f"<p>{escape(full_def)}</p>"
             if example:
                 tag_str += f"<p><i>{escape(example)}</i></p>"
-            tag_str += "<hr>"
+            tag_str += "<hr/>"
         tag_str += f"<p>Source: <a href='https://en.wiktionary.org/wiki/{quote(lemma)}'>Wiktionary</a></p></aside>"
         return tag_str
 

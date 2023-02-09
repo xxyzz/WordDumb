@@ -286,7 +286,7 @@ class EPUB:
 
         len_ratio = 3 if lang in CJK_LANGS else 2.5
         word_id = self.lemmas[word]
-        if len(short_def) / len(word) > len_ratio:
+        if len(short_def) / len(origin_word) > len_ratio:
             return f'<a epub:type="noteref" href="word_wise.xhtml#{word_id}">{origin_word}</a>'
         else:
             return f'<ruby><a epub:type="noteref" href="word_wise.xhtml#{word_id}">{origin_word}</a><rp>(</rp><rt>{short_def}</rt><rp>)</rp></ruby>'

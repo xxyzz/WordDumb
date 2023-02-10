@@ -7,7 +7,12 @@ from typing import TYPE_CHECKING, Any
 
 from PyQt6.QtCore import QModelIndex, QObject, Qt, QVariant
 from PyQt6.QtGui import QIcon
-from PyQt6.QtSql import QSqlDatabase, QSqlTableModel
+from PyQt6.QtSql import (
+    QSqlDatabase,
+    QSqlRelation,
+    QSqlRelationalTableModel,
+    QSqlTableModel,
+)
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
@@ -76,13 +81,12 @@ class CustomLemmasDialog(QDialog):
         db = QSqlDatabase.addDatabase("QSQLITE", self.db_connection_name)
         db.setDatabaseName(str(self.db_path))
         db.open()
-        self.lemmas_model: WiktionaryTableModel | KindleLemmasTableModel = (
-            KindleLemmasTableModel(db, self.lemma_lang)
-            if is_kindle
-            else WiktionaryTableModel(db, self.lemma_lang)
-        )
+        self.lemmas_model: LemmasTableModel = LemmasTableModel(db, is_kindle)
         self.lemmas_model.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
-        self.lemmas_model.setTable("lemmas")
+        self.lemmas_model.setTable("senses")
+        self.lemmas_model.setRelation(
+            self.lemmas_model.lemma_column, QSqlRelation("lemmas", "id", "lemma")
+        )
         self.lemmas_model.setSort(
             self.lemmas_model.lemma_column, Qt.SortOrder.AscendingOrder
         )
@@ -183,7 +187,7 @@ class CustomLemmasDialog(QDialog):
 
     def check_empty_kindle_gloss(self) -> None:
         custom_db_conn = sqlite3.connect(self.db_path)
-        for (gloss,) in custom_db_conn.execute("SELECT short_def FROM lemmas LIMIT 1"):
+        for (gloss,) in custom_db_conn.execute("SELECT short_def FROM senses LIMIT 1"):
             empty_gloss = len(gloss) == 0
         if not empty_gloss:
             custom_db_conn.close()
@@ -217,7 +221,7 @@ class CustomLemmasDialog(QDialog):
             full_def = base64.b64decode(full_def).decode("utf-8") if full_def else ""
             example = base64.b64decode(example).decode("utf-8") if example else ""
             custom_db_conn.execute(
-                "UPDATE lemmas SET short_def = ?, full_def = ?, example = ? WHERE sense_id = ?",
+                "UPDATE senses SET short_def = ?, full_def = ?, example = ? WHERE sense_id = ?",
                 (short_def, full_def, example, sense_id),
             )
         klld_conn.close()
@@ -228,7 +232,11 @@ class CustomLemmasDialog(QDialog):
         filter_lemma = self.filter_lemma_line.text()
         filter_enabled = self.filter_enabled_box.currentData()
         filter_difficulty = self.filter_difficulty_box.currentData()
-        filter_sql = f"lemma LIKE '{filter_lemma}%'" if filter_lemma else ""
+        filter_sql = (
+            f"relTblAl_{self.lemmas_model.lemma_column}.lemma LIKE '{filter_lemma}%'"
+            if filter_lemma
+            else ""
+        )
         if filter_enabled != "all":
             if filter_sql:
                 filter_sql += " AND "
@@ -293,9 +301,25 @@ class CustomLemmasDialog(QDialog):
         prefs[f"{self.lang}_wiktionary_difficulty_limit"] = limit
 
 
-class LemmasTableModel(QSqlTableModel):
-    def __init__(self, db: QSqlDatabase) -> None:
+class LemmasTableModel(QSqlRelationalTableModel):
+    def __init__(self, db: QSqlDatabase, is_kindle: bool) -> None:
         super().__init__(db=db)
+        self.headers = [
+            "sense_id",
+            _("Enabled"),
+            _("Lemma"),
+            _("POS"),
+            _("Gloss"),
+            "full_def",
+            "example",
+            _("Difficulty"),
+        ]
+        self.checkable_column = 1
+        self.lemma_column = 2
+        self.difficulty_column = 7
+        self.hide_columns = [0, 5, 6]
+        self.tooltip_columns = [2, 4]
+        self.editable_columns = [7] if is_kindle else [4, 7]
 
     def headerData(
         self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole
@@ -351,59 +375,6 @@ class LemmasTableModel(QSqlTableModel):
             self.dataChanged.emit(index, index, [role])
             return True
         return super().setData(index, value, role)
-
-
-class KindleLemmasTableModel(LemmasTableModel):
-    def __init__(self, db: QSqlDatabase, lemma_lang: str) -> None:
-        super().__init__(db)
-        self.headers = [
-            "sense_id",
-            _("Enabled"),
-            _("Lemma"),
-            _("POS"),
-            _("Gloss"),
-            "full_def",
-            _("Difficulty"),
-            "example_sentence",
-            "forms",
-        ]
-        self.checkable_column = 1
-        self.lemma_column = 2
-        self.difficulty_column = 6
-        self.hide_columns = [0, 5, 7, 8]
-        self.tooltip_columns = [2, 4]
-        self.editable_columns = [2, 6] if lemma_lang != "en" else [6]
-
-
-class WiktionaryTableModel(LemmasTableModel):
-    def __init__(self, db: QSqlDatabase, lemma_lang: str):
-        super().__init__(db)
-        self.headers = [
-            "id",
-            _("Enabled"),
-            _("Lemma"),
-            _("POS"),
-            _("Gloss"),
-            "full_def",
-            _("Difficulty"),
-            "Forms",
-            "Example",
-        ]
-        self.checkable_column = 1
-        self.lemma_column = 2
-        self.difficulty_column = 6
-        self.hide_columns = [0, 5, 7, 8]
-        self.editable_columns = [4, 6]
-        self.tooltip_columns = [2, 4]
-        if lemma_lang == "en":
-            self.headers.extend(["General American", "Received Pronunciation"])
-            self.hide_columns.extend([9, 10])
-        elif lemma_lang == "zh":
-            self.headers.extend(["Pinyin", "Bopomofo"])
-            self.hide_columns.extend([9, 10])
-        else:
-            self.headers.append("IPA")
-            self.hide_columns.append(9)
 
 
 class ComboBoxDelegate(QStyledItemDelegate):

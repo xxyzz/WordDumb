@@ -534,22 +534,21 @@ def get_kindle_lemma_data(
     lemma: str, pos: str, conn: sqlite3.Connection, lemma_lang: str
 ) -> tuple[int, int] | None:
     pos = spacy_to_kindle_pos(pos)
-    if lemma_lang == "zh":
-        for data in conn.execute(
-            "SELECT difficulty, sense_id FROM lemmas WHERE (lemma = ? OR forms LIKE ?) AND pos_type = ? LIMIT 1",
-            (lemma, f"%{lemma}%", pos),
-        ):
-            return data
-    else:
-        for data in conn.execute(
-            "SELECT difficulty, sense_id FROM lemmas WHERE lemma = ? AND pos_type = ? LIMIT 1",
-            (lemma, pos),
-        ):
-            return data
+    for data in conn.execute(
+        "SELECT difficulty, senses.id FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE lemma = ? AND pos = ? LIMIT 1",
+        (lemma, pos),
+    ):
+        return data
     if " " in lemma:
         for data in conn.execute(
-            "SELECT difficulty, sense_id FROM lemmas WHERE forms LIKE ? LIMIT 1",
-            (f"%{lemma}%",),
+            "SELECT difficulty, senses.id FROM senses JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ? LIMIT 1",
+            (lemma,),
+        ):
+            return data
+    if lemma_lang == "zh":  # Check simplified form
+        for data in conn.execute(
+            "SELECT difficulty, senses.id FROM senses JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ? AND senses.pos = ? LIMIT 1",
+            (lemma, pos),
         ):
             return data
 

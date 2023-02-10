@@ -453,15 +453,17 @@ class EPUB:
         else:
             lemma, pos = lemma.rsplit("_", 1)
             pos = self.spacy_to_wiktionary_pos(pos)
+            select_sql = f"SELECT short_def, full_def, example, "
             if lang == "en":
-                select_sql = f"SELECT short_def, full_def, example, {self.prefs['en_ipa']} FROM lemmas "
+                select_sql += self.prefs["en_ipa"]
             elif lang == "zh":
-                select_sql = f"SELECT short_def, full_def, example, {self.prefs['zh_ipa']} FROM lemmas "
+                select_sql += self.prefs["zh_ipa"]
             else:
-                select_sql = f"SELECT short_def, full_def, example, ipa FROM lemmas "
+                select_sql += "ipa"
+            select_sql += " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id "
             lemmas_data = []
             for data in self.lemmas_conn.execute(
-                select_sql + "WHERE lemma = ? AND pos_type = ?", (lemma, pos)
+                select_sql + "WHERE lemma = ? AND pos = ?", (lemma, pos)
             ):
                 lemmas_data.append(data)
             if lemmas_data:
@@ -469,13 +471,16 @@ class EPUB:
 
             if " " in lemma:
                 for data in self.lemmas_conn.execute(
-                    select_sql + "WHERE forms LIKE ?", (lemma,)
+                    select_sql
+                    + "JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ?",
+                    (lemma,),
                 ):
                     lemmas_data.append(data)
             elif lang == "zh":
                 for data in self.lemmas_conn.execute(
-                    select_sql + "WHERE forms LIKE ? AND pos_type = ?",
-                    (f"%{lemma}%", pos),
+                    select_sql
+                    + "JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ? AND forms.pos = ?",
+                    (lemma, pos),
                 ):
                     lemmas_data.append(data)
 
@@ -484,6 +489,7 @@ class EPUB:
     def spacy_to_wiktionary_pos(self, pos: str) -> str:
         # spaCy POS: https://universaldependencies.org/u/pos
         # Wiktioanry POS: https://github.com/tatuylonen/wiktextract/blob/master/wiktextract/data/en/pos_subtitles.json
+        # Proficiency POS: https://github.com/xxyzz/Proficiency/blob/master/extract_wiktionary.py#L31
         match pos:
             case "NOUN":
                 return "noun"
@@ -493,25 +499,25 @@ class EPUB:
                 return "verb"
             case "ADV":
                 return "adv"
-            case "ADP":
-                return "prep"
-            case "CCONJ" | "SCONJ":
-                return "conj"
-            case "DET":
-                return "det"
-            case "INTJ":
-                return "intj"
-            case "NUM":
-                return "num"
-            case "PART":
-                return "particle"
-            case "PRON":
-                return "pron"
-            case "PROPN":
-                return "name"
-            case "PUNCT":
-                return "punct"
-            case "SYM":
-                return "symbol"
+            # case "ADP":
+            #     return "prep"
+            # case "CCONJ" | "SCONJ":
+            #     return "conj"
+            # case "DET":
+            #     return "det"
+            # case "INTJ":
+            #     return "intj"
+            # case "NUM":
+            #     return "num"
+            # case "PART":
+            #     return "particle"
+            # case "PRON":
+            #     return "pron"
+            # case "PROPN":
+            #     return "name"
+            # case "PUNCT":
+            #     return "punct"
+            # case "SYM":
+            #     return "symbol"
             case _:
                 return "other"

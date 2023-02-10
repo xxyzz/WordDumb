@@ -101,16 +101,16 @@ def apply_imported_lemmas_data(
             return
 
     conn = sqlite3.connect(db_path)
-    for (lemma,) in conn.execute("SELECT DISTINCT lemma FROM lemmas"):
+    for lemma_id, lemma in conn.execute("SELECT id, lemma FROM lemmas"):
         if lemma in lemmas_dict:
             conn.execute(
-                "UPDATE lemmas SET enabled = 1, difficulty = ? WHERE lemma = ?",
-                (lemmas_dict.get(lemma), lemma),
+                "UPDATE senses SET enabled = 1, difficulty = ? WHERE lemma_id = ?",
+                (lemmas_dict.get(lemma), lemma_id),
             )
         elif not retain_lemmas:
             conn.execute(
-                "UPDATE lemmas SET enabled = 0, difficulty = 1 WHERE lemma = ?",
-                (lemma,),
+                "UPDATE senses SET enabled = 0, difficulty = 1 WHERE lemma_id = ?",
+                (lemma_id,),
             )
     conn.commit()
     conn.close()
@@ -131,15 +131,15 @@ def export_lemmas_job(
 
     conn = sqlite3.connect(db_path)
     with open(export_path, "w", encoding="utf-8") as f:
-        if is_kindle:
-            query_sql = "SELECT lemma, pos_type, full_def, example FROM lemmas WHERE difficulty <= ?"
-        else:
+        query_sql = "SELECT lemma, pos, full_def, example"
+        if not is_kindle:
             if lemma_lang == "en":
-                query_sql = f"SELECT lemma, pos_type, full_def, example, {prefs['en_ipa']} FROM lemmas WHERE difficulty <= ?"
+                query_sql = f", {prefs['en_ipa']}"
             elif lemma_lang == "zh":
-                query_sql = f"SELECT lemma, pos_type, full_def, example, {prefs['zh_ipa']} FROM lemmas WHERE difficulty <= ?"
+                query_sql = f", {prefs['zh_ipa']}"
             else:
-                query_sql = "SELECT lemma, pos_type, full_def, example, ipa FROM lemmas WHERE difficulty <= ?"
+                query_sql = ", ipa"
+        query_sql += " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE difficulty <= ?"
 
         if only_enabled:
             query_sql += " AND enabled = 1"

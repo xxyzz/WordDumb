@@ -94,14 +94,16 @@ def dump_kindle_lemmas(
         kw_processor = KeywordProcessor()
 
     conn = sqlite3.connect(db_path)
-    for lemma, difficulty, sense_id, forms_str in conn.execute(
-        "SELECT lemma, difficulty, sense_id, forms FROM lemmas WHERE enabled = 1 ORDER BY lemma"
+    for lemma, difficulty, sense_id, lemma_id in conn.execute(
+        "SELECT lemma, difficulty, sense_id, lemma_id FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE enabled = 1 ORDER BY lemma"
     ):
         if is_cjk:
             kw_processor.add_word(lemma, (lemma, difficulty, sense_id))
         else:
             kw_processor.add_keyword(lemma, (difficulty, sense_id))
-        for form in forms_str.split(","):
+        for form in conn.execute(
+            "SELECT form FROM forms WHERE lemma_id = ?", (lemma_id,)
+        ):
             if is_cjk:
                 kw_processor.add_word(form, (form, difficulty, sense_id))
             else:
@@ -131,33 +133,26 @@ def dump_wiktionary(
 
         kw_processor = KeywordProcessor()
 
-    prefered_en_ipa = prefs["en_ipa"]
-    prefered_zh_ipa = prefs["zh_ipa"]
     difficulty_limit = prefs[f"{lemma_lang}_wiktionary_difficulty_limit"]
     conn = sqlite3.connect(db_path)
+    query_sql = "SELECT lemma, lemma_id, short_def, full_def, example, "
     if lemma_lang == "en":
-        query_sql = "SELECT lemma, short_def, full_def, forms, example, ga_ipa, rp_ipa FROM lemmas WHERE enabled = 1 AND difficulty <= ? ORDER BY lemma"
+        query_sql += prefs["en_ipa"]
     elif lemma_lang == "zh":
-        query_sql = "SELECT lemma, short_def, full_def, forms, example, pinyin, bopomofo FROM lemmas WHERE enabled = 1 AND difficulty <= ? ORDER BY lemma"
+        query_sql += prefs["zh_ipa"]
     else:
-        query_sql = "SELECT lemma, short_def, full_def, forms, example, ipa FROM lemmas WHERE enabled = 1 AND difficulty <= ? ORDER BY lemma"
-    for lemma, short_def, full_def, forms, example, *ipas in conn.execute(
+        query_sql += "ipa"
+    query_sql += " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE enabled = 1 AND difficulty <= ? ORDER BY lemma"
+    for lemma, lemma_id, short_def, full_def, example, ipa in conn.execute(
         query_sql, (difficulty_limit,)
     ):
-        if lemma_lang == "en":
-            ga_ipa, rp_ipa = ipas
-            ipa = ga_ipa if prefered_en_ipa == "ga_ipa" else rp_ipa
-        elif lemma_lang == "zh":
-            pinyin, bopomofo = ipas
-            ipa = pinyin if prefered_zh_ipa == "pinyin" else bopomofo
-        else:
-            ipa = ipas[0]
-
         if is_cjk:
             kw_processor.add_word(lemma, (lemma, short_def, full_def, example, ipa))
         else:
             kw_processor.add_keyword(lemma, (short_def, full_def, example, ipa))
-        for form in forms.split(","):
+        for (form,) in conn.execute(
+            "SELECT form FROM forms WHERE lemma_id = ?", (lemma_id,)
+        ):
             if is_cjk:
                 kw_processor.add_word(form, (form, short_def, full_def, example, ipa))
             else:
@@ -292,18 +287,20 @@ def dump_spacy_docs(
 def create_lemma_patterns(
     lemma_lang, conn, nlp, add_phrases, has_lemmatizer, difficulty_limit
 ):
-    query_sql = "SELECT DISTINCT lemma, forms FROM lemmas WHERE enabled = 1"
+    query_sql = "SELECT DISTINCT lemma, lemma_id FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE enabled = 1"
     if add_phrases:
         query_sql += " AND lemma LIKE '% %'"
     else:
         query_sql += " AND lemma NOT LIKE '% %'"
     if difficulty_limit is not None:
         query_sql += f" AND difficulty <= {difficulty_limit}"
-    for lemma, forms in conn.execute(query_sql):
+    for lemma, lemma_id in conn.execute(query_sql):
         if add_phrases or not has_lemmatizer or lemma_lang == "zh":
             if lemma_lang == "zh":
                 yield nlp(lemma)  # Traditional Chinese
-            for form in forms.split(","):
+            for (form,) in conn.execute(
+                "SELECT form FROM forms WHERE lemma_id = ?", (lemma_id,)
+            ):
                 yield nlp(form)
         else:
             yield nlp(lemma)

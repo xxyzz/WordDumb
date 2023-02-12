@@ -73,7 +73,7 @@ jobs:
 
       - name: Download books
         run: |
-          wget -nv https://github.com/xxyzz/WordDumb/files/8831564/books.zip
+          wget -nv https://github.com/xxyzz/WordDumb/files/10715466/books.zip
           unzip books.zip
 
       - name: Add books to library

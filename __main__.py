@@ -10,9 +10,8 @@ import json
 import sys
 from pathlib import Path
 
-from dump_lemmas import dump_kindle_lemmas, dump_lemmas_pos, dump_wiktionary
+from dump_lemmas import dump_lemmas
 from parse_job import create_files
-from utils import spacy_model_name
 
 parser = argparse.ArgumentParser()
 parser.add_argument("options")
@@ -21,35 +20,16 @@ args = parser.parse_args()
 
 options = json.loads(args.options)
 prefs = json.loads(args.prefs)
-if "dump_path" in options:
-    plugin_path = Path(options["plugin_path"])
-    if not prefs["use_pos"]:
-        if options["is_kindle"]:
-            dump_kindle_lemmas(
-                options["lemma_lang"],
-                Path(options["db_path"]),
-                Path(options["dump_path"]),
-                plugin_path,
-            )
-        else:
-            dump_wiktionary(
-                options["lemma_lang"],
-                Path(options["db_path"]),
-                Path(options["dump_path"]),
-                plugin_path,
-                prefs,
-            )
-    else:
-        dump_lemmas_pos(
-            spacy_model_name(options["lemma_lang"], options["languages"], prefs),
-            options["is_kindle"],
-            options["lemma_lang"],
-            options["gloss_lang"],
-            Path(options["db_path"]),
-            plugin_path,
-            prefs,
-        )
-
+if "db_path" in options:
+    dump_lemmas(
+        options["model_name"],
+        options["is_kindle"],
+        options["lemma_lang"],
+        options["gloss_lang"],
+        Path(options["db_path"]),
+        Path(options["plugin_path"]),
+        prefs,
+    )
 else:
     kfx_json = None
     mobi_html = b""

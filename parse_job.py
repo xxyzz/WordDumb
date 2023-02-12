@@ -22,7 +22,7 @@ try:
         save_db,
     )
     from .deps import download_word_wise_file, install_deps, which_python
-    from .dump_lemmas import dump_spacy_docs, load_lemmas_dump, spacy_doc_path
+    from .dump_lemmas import save_spacy_docs, spacy_doc_path
     from .epub import EPUB
     from .interval import Interval, IntervalTree
     from .mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
@@ -35,6 +35,7 @@ try:
         get_user_agent,
         insert_installed_libs,
         kindle_db_path,
+        load_plugin_json,
         run_subprocess,
         wiktionary_db_path,
     )
@@ -50,7 +51,7 @@ except ImportError:
         insert_lemma,
         save_db,
     )
-    from dump_lemmas import dump_spacy_docs, load_lemmas_dump, spacy_doc_path
+    from dump_lemmas import save_spacy_docs, spacy_doc_path
     from epub import EPUB
     from interval import Interval, IntervalTree
     from mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
@@ -60,6 +61,7 @@ except ImportError:
         Prefs,
         insert_installed_libs,
         kindle_db_path,
+        load_plugin_json,
         wiktionary_db_path,
     )
     from x_ray import X_Ray
@@ -117,7 +119,6 @@ def do_job(
                 False,
                 lang["wiki"],
                 prefs["wiktionary_gloss_lang"],
-                prefs,
                 notifications=notifications,
             )
     else:
@@ -125,7 +126,7 @@ def do_job(
         create_x = create_x and not get_x_ray_path(asin, book_path_str).exists()
         if create_ww and not kindle_db_path(plugin_path, lang["wiki"]).exists():
             download_word_wise_file(
-                True, lang["wiki"], "en", prefs, notifications=notifications
+                True, lang["wiki"], "en", notifications=notifications
             )
 
     return_values = (
@@ -143,8 +144,7 @@ def do_job(
     if isfrozen and (book_fmt == "EPUB" or create_x):
         # parse Fandom page and Wikipedia section requires lxml
         install_deps("lxml", notifications)
-    if create_x or (create_ww and prefs["use_pos"]):
-        install_deps(model, notifications)
+    install_deps(model, notifications)
 
     if notifications:
         notifications.put((0, "Creating files"))
@@ -228,44 +228,27 @@ def create_files(
     notif: Any,
 ) -> None:
     is_epub = not kfx_json and not mobi_codec
-    create_ww_pos = create_ww and prefs["use_pos"]
     plugin_path = Path(plugin_path_str)
-    kw_processor = None
-    lemmas_conn = None
     gloss_lang = prefs["wiktionary_gloss_lang"] if is_epub else "en"
+    insert_installed_libs(plugin_path)
+    nlp = load_spacy(model, book_path if create_x else None, prefs["use_pos"])
     if create_ww:
-        if not prefs["use_pos"]:
-            kw_processor = load_lemmas_dump(
-                not is_epub,
-                wiki_lang,
-                gloss_lang,
-                plugin_path,
-                prefs,
-            )
-        else:
-            lemmas_db_path = (
-                wiktionary_db_path(
-                    plugin_path, wiki_lang, prefs["wiktionary_gloss_lang"]
-                )
-                if is_epub
-                else kindle_db_path(plugin_path, wiki_lang)
-            )
-            lemmas_conn = sqlite3.connect(lemmas_db_path)
-
-    if create_x or create_ww_pos:
-        insert_installed_libs(plugin_path)
-        nlp = load_spacy(model, book_path if create_x else None, create_ww_pos)
-        if create_ww_pos:
-            lemma_matcher, phrase_matcher = create_spacy_matcher(
-                nlp,
-                model,
-                wiki_lang,
-                gloss_lang,
-                not is_epub,
-                lemmas_conn,
-                plugin_path,
-                prefs,
-            )
+        lemmas_db_path = (
+            wiktionary_db_path(plugin_path, wiki_lang, prefs["wiktionary_gloss_lang"])
+            if is_epub
+            else kindle_db_path(plugin_path, wiki_lang)
+        )
+        lemmas_conn = sqlite3.connect(lemmas_db_path)
+        lemma_matcher, phrase_matcher = create_spacy_matcher(
+            nlp,
+            model,
+            wiki_lang,
+            gloss_lang,
+            not is_epub,
+            lemmas_conn,
+            plugin_path,
+            prefs,
+        )
 
     if create_x:
         mediawiki = (
@@ -281,59 +264,41 @@ def create_files(
             wiki_commons = None
             if not prefs["fandom"] and prefs["add_locator_map"]:
                 wiki_commons = Wikimedia_Commons(plugin_path, useragent)
-            epub = EPUB(
-                book_path, mediawiki, wiki_commons, wikidata, custom_x_ray, kw_processor
-            )
+            epub = EPUB(book_path, mediawiki, wiki_commons, wikidata, custom_x_ray)
         elif create_ww:
-            epub = EPUB(book_path, None, None, None, None, kw_processor)
+            epub = EPUB(book_path, None, None, None, None)
 
-        if create_x or create_ww_pos:
-            for doc, (start, escaped_text, xhtml_path) in nlp.pipe(
-                epub.extract_epub(), as_tuples=True
-            ):
-                intervals = []
-                if create_x:
-                    intervals = find_named_entity(
-                        start,
-                        epub,
-                        doc,
-                        "",
-                        wiki_lang,
-                        escaped_text,
-                        custom_x_ray,
-                        xhtml_path,
-                    )
-                if create_ww:
-                    interval_tree = None
-                    if intervals:
-                        random.shuffle(intervals)
-                        interval_tree = IntervalTree()
-                        interval_tree.insert_intervals(intervals)
-                if create_ww_pos:
-                    epub_find_lemma_pos(
-                        doc,
-                        lemma_matcher,
-                        phrase_matcher,
-                        start,
-                        escaped_text,
-                        interval_tree,
-                        epub,
-                        xhtml_path,
-                    )
-                elif create_ww:
-                    epub_find_lemma(
-                        start,
-                        doc.text,
-                        kw_processor,
-                        escaped_text,
-                        xhtml_path,
-                        epub,
-                        interval_tree,
-                    )
-        elif create_ww:
-            for text, (start, escaped_text, xhtml_path) in epub.extract_epub():
+        for doc, (start, escaped_text, xhtml_path) in nlp.pipe(
+            epub.extract_epub(), as_tuples=True
+        ):
+            intervals = []
+            if create_x:
+                intervals = find_named_entity(
+                    start,
+                    epub,
+                    doc,
+                    "",
+                    wiki_lang,
+                    escaped_text,
+                    custom_x_ray,
+                    xhtml_path,
+                )
+            if create_ww:
+                interval_tree = None
+                if intervals:
+                    random.shuffle(intervals)
+                    interval_tree = IntervalTree()
+                    interval_tree.insert_intervals(intervals)
                 epub_find_lemma(
-                    start, text, kw_processor, escaped_text, xhtml_path, epub
+                    doc,
+                    lemma_matcher,
+                    phrase_matcher,
+                    start,
+                    escaped_text,
+                    interval_tree,
+                    epub,
+                    xhtml_path,
+                    prefs["use_pos"],
                 )
         epub.modify_epub(prefs, wiki_lang, lemmas_conn)
         return
@@ -349,61 +314,45 @@ def create_files(
         )
         x_ray = X_Ray(x_ray_conn, mediawiki, wikidata, custom_x_ray)
 
-    if create_x or create_ww_pos:
-        for doc, context in nlp.pipe(
-            parse_book(kfx_json, mobi_html, mobi_codec), as_tuples=True
-        ):
-            if kfx_json:
-                start = context
-                escaped_text = None
-            else:
-                start, escaped_text = context
-            if create_x:
-                find_named_entity(
-                    start, x_ray, doc, mobi_codec, wiki_lang, escaped_text, custom_x_ray
-                )
-            if create_ww_pos:
-                kindle_find_lemma_pos(
-                    doc,
-                    lemma_matcher,
-                    phrase_matcher,
-                    start,
-                    mobi_codec,
-                    escaped_text,
-                    lemmas_conn,
-                    ll_conn,
-                    wiki_lang,
-                )
-            elif create_ww:
-                kindle_find_lemma(
-                    start, doc.text, kw_processor, ll_conn, mobi_codec, escaped_text
-                )
-            if notif:
-                notif.put((start / final_start, "Creating files"))
-
+    for doc, context in nlp.pipe(
+        parse_book(kfx_json, mobi_html, mobi_codec), as_tuples=True
+    ):
+        if kfx_json:
+            start = context
+            escaped_text = None
+        else:
+            start, escaped_text = context
         if create_x:
-            x_ray.finish(
-                x_ray_path,
-                final_start,
-                kfx_json,
-                mobi_html,
-                mobi_codec,
-                prefs,
+            find_named_entity(
+                start, x_ray, doc, mobi_codec, wiki_lang, escaped_text, custom_x_ray
             )
-    elif create_ww:
-        for text, context in parse_book(kfx_json, mobi_html, mobi_codec):
+        if create_ww:
             kindle_find_lemma(
-                context if kfx_json else context[0],
-                text,
-                kw_processor,
-                ll_conn,
+                doc,
+                lemma_matcher,
+                phrase_matcher,
+                start,
                 mobi_codec,
-                "" if kfx_json else context[1],
+                escaped_text,
+                lemmas_conn,
+                ll_conn,
+                wiki_lang,
+                prefs["use_pos"],
             )
+        if notif:
+            notif.put((start / final_start, "Creating files"))
 
+    if create_x:
+        x_ray.finish(
+            x_ray_path,
+            final_start,
+            kfx_json,
+            mobi_html,
+            mobi_codec,
+            prefs,
+        )
     if create_ww:
         save_db(ll_conn, ll_path)
-    if lemmas_conn:
         lemmas_conn.close()
 
 
@@ -412,12 +361,13 @@ def parse_book(
 ) -> Iterator[tuple[str, tuple[int, str] | int]]:
     if kfx_json:
         for entry in filter(lambda x: x["type"] == 1, kfx_json):
-            yield entry["content"], entry["position"]
+            # Remove BOM: https://en.wikipedia.org/wiki/Byte_order_mark
+            yield entry["content"].replace("\ufeff", " "), entry["position"]
     else:
         # match text inside HTML tags
         for match_body in re.finditer(b"<body.{3,}?</body>", mobi_html, re.DOTALL):
             for m in re.finditer(b">[^<]{2,}<", match_body.group(0)):
-                text = m.group(0)[1:-1].decode(mobi_codec).replace("\n", " ")
+                text = m.group(0)[1:-1].decode(mobi_codec).replace("\ufeff", " ")
                 yield unescape(text), (match_body.start() + m.start() + 1, text)
 
 
@@ -435,7 +385,17 @@ def index_in_escaped_text(
         return None
 
 
-def kindle_find_lemma_pos(
+def match_lemmas(doc, lemma_matcher, phrase_matcher):
+    from spacy.util import filter_spans
+
+    phrase_spans = phrase_matcher(doc, as_spans=True)
+    if lemma_matcher is not None:
+        return filter_spans(chain(phrase_spans, lemma_matcher(doc, as_spans=True)))
+    else:
+        return filter_spans(phrase_spans)
+
+
+def kindle_find_lemma(
     doc,
     lemma_matcher,
     phrase_matcher,
@@ -445,38 +405,31 @@ def kindle_find_lemma_pos(
     lemmas_conn,
     ll_conn,
     lemma_lang,
+    use_pos,
 ):
-    lemma_spans = lemma_matcher(doc, as_spans=True)
-    if phrase_matcher is not None:
-        from spacy.util import filter_spans
-
-        lemma_spans = filter_spans(
-            chain(phrase_matcher(doc, as_spans=True), lemma_spans)
-        )
     lemma_starts: set[int] = set()
-    for span in lemma_spans:
+    for span in match_lemmas(doc, lemma_matcher, phrase_matcher):
         data = get_kindle_lemma_data(
-            span.lemma_ if hasattr(span, "lemma_") else span.text,
-            span.doc[span.start].pos_,
+            span.lemma_ if use_pos and hasattr(span, "lemma_") else span.text,
+            span.doc[span.start].pos_ if use_pos else None,
             lemmas_conn,
             lemma_lang,
         )
-        if data is None:
-            continue
-        kindle_add_lemma(
-            span.start_char,
-            span.end_char,
-            start,
-            doc.text,
-            ll_conn,
-            mobi_codec,
-            escaped_text,
-            lemma_starts,
-            data,
-        )
+        if data is not None:
+            kindle_add_lemma(
+                span.start_char,
+                span.end_char,
+                start,
+                doc.text,
+                ll_conn,
+                mobi_codec,
+                escaped_text,
+                lemma_starts,
+                data,
+            )
 
 
-def epub_find_lemma_pos(
+def epub_find_lemma(
     doc,
     lemma_matcher,
     phrase_matcher,
@@ -485,16 +438,10 @@ def epub_find_lemma_pos(
     interval_tree,
     epub,
     xhtml_path,
+    use_pos,
 ):
-    lemma_spans = lemma_matcher(doc, as_spans=True)
-    if phrase_matcher is not None:
-        from spacy.util import filter_spans
-
-        lemma_spans = filter_spans(
-            chain(phrase_matcher(doc, as_spans=True), lemma_spans)
-        )
     lemma_starts: set[int] = set()
-    for span in lemma_spans:
+    for span in match_lemmas(doc, lemma_matcher, phrase_matcher):
         epub_add_lemma(
             span.start_char,
             span.end_char,
@@ -505,7 +452,7 @@ def epub_find_lemma_pos(
             lemma_starts,
             epub,
             xhtml_path,
-            f"{span.lemma_}_{span.doc[span.start].pos_}",
+            f"{span.lemma_}_{span.doc[span.start].pos_}" if use_pos else None,
         )
 
 
@@ -531,6 +478,15 @@ def spacy_to_kindle_pos(pos: str) -> str:
 
 
 def get_kindle_lemma_data(
+    lemma: str, pos: str | None, conn: sqlite3.Connection, lemma_lang: str
+) -> tuple[int, int] | None:
+    if pos is not None:
+        return get_kindle_lemma_with_pos(lemma, pos, conn, lemma_lang)
+    else:
+        return get_kindle_lemma_without_pos(lemma, conn)
+
+
+def get_kindle_lemma_with_pos(
     lemma: str, pos: str, conn: sqlite3.Connection, lemma_lang: str
 ) -> tuple[int, int] | None:
     pos = spacy_to_kindle_pos(pos)
@@ -551,49 +507,23 @@ def get_kindle_lemma_data(
             (lemma, pos),
         ):
             return data
-
     return None
 
 
-def kindle_find_lemma(
-    start: int,
-    text: str,
-    kw_processor: Any,
-    ll_conn: Connection,
-    mobi_codec: str,
-    escaped_text: str,
-) -> None:
-    from flashtext import KeywordProcessor
-
-    starts: set[int] = set()
-    if isinstance(kw_processor, KeywordProcessor):
-        for data, token_start, token_end in kw_processor.extract_keywords(
-            text, span_info=True
-        ):
-            kindle_add_lemma(
-                token_start,
-                token_end,
-                start,
-                text,
-                ll_conn,
-                mobi_codec,
-                escaped_text,
-                starts,
-                data,
-            )
-    else:
-        for token_end, data in kw_processor.iter_long(text):
-            kindle_add_lemma(
-                token_end + 1 - len(data[0]),
-                token_end + 1,
-                start,
-                text,
-                ll_conn,
-                mobi_codec,
-                escaped_text,
-                starts,
-                data[1:],
-            )
+def get_kindle_lemma_without_pos(
+    lemma: str, conn: sqlite3.Connection
+) -> tuple[int, int] | None:
+    for data in conn.execute(
+        "SELECT difficulty, senses.id FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE lemma = ? AND enabled = 1 LIMIT 1",
+        (lemma,),
+    ):
+        return data
+    for data in conn.execute(
+        "SELECT difficulty, senses.id FROM senses JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ? AND enabled = 1 LIMIT 1",
+        (lemma,),
+    ):
+        return data
+    return None
 
 
 def kindle_add_lemma(
@@ -629,48 +559,6 @@ def kindle_add_lemma(
         else:
             end = index + len(lemma)
     insert_lemma(ll_conn, (index, end) + tuple(data))
-
-
-def epub_find_lemma(
-    start: int,
-    text: str,
-    kw_processor: Any,
-    escaped_text: str,
-    xhtml_path: Path,
-    epub: EPUB,
-    interval_tree: IntervalTree | None = None,
-) -> None:
-    from flashtext import KeywordProcessor
-
-    starts: set[int] = set()
-    if isinstance(kw_processor, KeywordProcessor):
-        for data, token_start, token_end in kw_processor.extract_keywords(
-            text, span_info=True
-        ):
-            epub_add_lemma(
-                token_start,
-                token_end,
-                interval_tree,
-                text,
-                escaped_text,
-                start,
-                starts,
-                epub,
-                xhtml_path,
-            )
-    else:
-        for token_end, data in kw_processor.iter_long(text):
-            epub_add_lemma(
-                token_end + 1 - len(data[0]),
-                token_end + 1,
-                interval_tree,
-                text,
-                escaped_text,
-                start,
-                starts,
-                epub,
-                xhtml_path,
-            )
 
 
 def epub_add_lemma(
@@ -862,23 +750,23 @@ def create_spacy_matcher(
 ):
     from spacy.matcher import PhraseMatcher
     from spacy.tokens import DocBin
-    from spacy.util import get_package_version
 
-    has_lemmatizer = "lemmatizer" in nlp.component_names
-    lemma_matcher = PhraseMatcher(nlp.vocab, attr="LEMMA" if has_lemmatizer else "TEXT")
-    if lemma_lang not in CJK_LANGS:
-        phrase_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
-    disabled_pipes = ["ner", "parser", "senter"]
-    if "lemmatizer" not in nlp.component_names:
-        disabled_pipes.extend(
-            ["tok2vec", "morphologizer", "tagger", "attribute_ruler", "lemmatizer"]
-        )
-    model_version = get_package_version(model)
-    lemmas_doc_path = spacy_doc_path(
-        model, model_version, lemma_lang, gloss_lang, is_kindle, False, plugin_path
+    disabled_pipes = list(set(["ner", "parser", "senter"]) & set(nlp.pipe_names))
+    pkg_versions = load_plugin_json(plugin_path, "data/deps.json")
+    model_version = pkg_versions["spacy_model"]
+    phrase_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
+    phrases_doc_path = spacy_doc_path(
+        model,
+        model_version,
+        lemma_lang,
+        gloss_lang,
+        is_kindle,
+        True,
+        prefs["use_pos"],
+        plugin_path,
     )
-    if not lemmas_doc_path.exists():
-        dump_spacy_docs(
+    if not phrases_doc_path.exists():
+        save_spacy_docs(
             nlp,
             model,
             model_version,
@@ -889,23 +777,28 @@ def create_spacy_matcher(
             plugin_path,
             prefs,
         )
+    with phrases_doc_path.open("rb") as f:
+        phrases_doc_bin = DocBin().from_bytes(f.read())
 
-    with lemmas_doc_path.open("rb") as f:
-        lemmas_doc_bin = DocBin().from_bytes(f.read())
-    if lemma_lang not in CJK_LANGS:
-        phrases_doc_path = spacy_doc_path(
-            model, model_version, lemma_lang, gloss_lang, is_kindle, True, plugin_path
+    if prefs["use_pos"] and lemma_lang != "zh":
+        lemma_matcher = PhraseMatcher(nlp.vocab, attr="LEMMA")
+        lemmas_doc_path = spacy_doc_path(
+            model,
+            model_version,
+            lemma_lang,
+            gloss_lang,
+            is_kindle,
+            False,
+            True,
+            plugin_path,
         )
-        with phrases_doc_path.open("rb") as f:
-            phrases_doc_bin = DocBin().from_bytes(f.read())
+        with lemmas_doc_path.open("rb") as f:
+            lemmas_doc_bin = DocBin().from_bytes(f.read())
 
-    disabled_pipes = list(set(disabled_pipes) & set(nlp.pipe_names))
     with nlp.select_pipes(disable=disabled_pipes):
-        lemma_matcher.add("lemmas", lemmas_doc_bin.get_docs(nlp.vocab))
-        if phrase_matcher is not None:
-            phrase_matcher.add("phrases", phrases_doc_bin.get_docs(nlp.vocab))
-
-    if lemma_lang not in CJK_LANGS:
-        return lemma_matcher, phrase_matcher
-    else:
-        return lemma_matcher, None
+        phrase_matcher.add("phrases", phrases_doc_bin.get_docs(nlp.vocab))
+        if prefs["use_pos"] and lemma_lang != "zh":
+            lemma_matcher.add("lemmas", lemmas_doc_bin.get_docs(nlp.vocab))
+            return lemma_matcher, phrase_matcher
+        else:
+            return None, phrase_matcher

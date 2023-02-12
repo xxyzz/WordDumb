@@ -8,7 +8,7 @@ import zipfile
 from collections import defaultdict
 from html import escape, unescape
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Iterator
 from urllib.parse import quote, unquote
 
 try:
@@ -67,7 +67,6 @@ class EPUB:
         wiki_commons: Wikimedia_Commons | None,
         wikidata: Wikidata | None,
         custom_x_ray: CustomX,
-        lemma_glosses: Any,
     ) -> None:
         self.book_path = Path(book_path_str)
         self.mediawiki = mediawiki
@@ -88,7 +87,6 @@ class EPUB:
         self.image_href_has_folder = False
         self.image_filenames: set[str] = set()
         self.custom_x_ray = custom_x_ray
-        self.lemma_glosses = lemma_glosses
         self.lemmas: dict[str, int] = {}
         self.lemma_id = 0
         self.lemmas_conn: sqlite3.Connection | None = None
@@ -136,9 +134,9 @@ class EPUB:
                 if "/" in xhtml_href:
                     self.xhtml_href_has_folder = True
                 with xhtml_path.open("r", encoding="utf-8") as f:
-                    # remove soft hyphen
+                    # remove soft hyphen and BOM
                     xhtml_text = re.sub(
-                        r"\xad|&shy;|&#xAD;|&#xad;|&#173;", "", f.read()
+                        r"\xad|&shy;|&#xAD;|&#xad;|&#173;|\ufeff", "", f.read()
                     )
                 with xhtml_path.open("w", encoding="utf-8") as f:
                     f.write(xhtml_text)
@@ -146,7 +144,7 @@ class EPUB:
                     r"<body.{3,}?</body>", xhtml_text, re.DOTALL
                 ):
                     for m in re.finditer(r">[^<]{2,}<", match_body.group(0)):
-                        text = m.group(0)[1:-1].replace("\n", " ")
+                        text = m.group(0)[1:-1]
                         yield unescape(text), (
                             match_body.start() + m.start() + 1,
                             text,
@@ -272,18 +270,13 @@ class EPUB:
                 f.write(new_xhtml_str)
 
     def build_word_wise_tag(self, word: str, origin_word: str, lang: str) -> str:
-        if self.lemmas_conn:
-            if word not in self.lemmas:
-                return origin_word
-            else:
-                data = self.get_lemma_gloss(word, lang)
-                if not data:
-                    del self.lemmas[word]
-                    return origin_word
-            short_def = data[0][0]
-        else:
-            short_def, *_ = self.get_lemma_gloss(word, lang)[0]
-
+        if word not in self.lemmas:
+            return origin_word
+        data = self.get_lemma_gloss(word, lang)
+        if not data:
+            del self.lemmas[word]
+            return origin_word
+        short_def = data[0][0]
         len_ratio = 3 if lang in CJK_LANGS else 2.5
         word_id = self.lemmas[word]
         if len(short_def) / len(origin_word) > len_ratio:
@@ -378,8 +371,8 @@ class EPUB:
         tag_str = ""
         added_ipa = False
         tag_str += f'<aside id="{lemma_id}" epub:type="footnote">'
-        if self.lemmas_conn is not None:
-            _, pos = lemma.rsplit("_", 1)
+        if self.prefs["use_pos"]:
+            lemma, pos = lemma.rsplit("_", 1)
             tag_str += f"<p>{pos}</p>"
         for _, full_def, example, ipa in data:
             if ipa and not added_ipa:
@@ -445,46 +438,62 @@ class EPUB:
         shutil.rmtree(self.extract_folder)
 
     def get_lemma_gloss(self, lemma: str, lang: str) -> list[tuple[str, str, str, str]]:
-        if self.lemmas_conn is None:
-            if lang in CJK_LANGS:  # pyahocorasick
-                return [self.lemma_glosses.get(lemma)[1:]]
-            else:  # flashtext
-                return [self.lemma_glosses.get_keyword(lemma)]
+        select_sql = f"SELECT short_def, full_def, example, "
+        if lang == "en":
+            select_sql += self.prefs["en_ipa"]
+        elif lang == "zh":
+            select_sql += self.prefs["zh_ipa"]
         else:
+            select_sql += "ipa"
+        select_sql += " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id "
+        if self.prefs["use_pos"]:
             lemma, pos = lemma.rsplit("_", 1)
             pos = self.spacy_to_wiktionary_pos(pos)
-            select_sql = f"SELECT short_def, full_def, example, "
-            if lang == "en":
-                select_sql += self.prefs["en_ipa"]
-            elif lang == "zh":
-                select_sql += self.prefs["zh_ipa"]
-            else:
-                select_sql += "ipa"
-            select_sql += " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id "
-            lemmas_data = []
-            for data in self.lemmas_conn.execute(
-                select_sql + "WHERE lemma = ? AND pos = ?", (lemma, pos)
+            return self.query_gloss_with_pos(select_sql, lemma, pos, lang)
+        else:
+            return self.query_gloss_without_pos(select_sql, lemma)
+
+    def query_gloss_with_pos(
+        self, sql: str, lemma: str, pos: str, lang: str
+    ) -> list[tuple[str, str, str, str]]:
+        lemmas_data = []
+        for data in self.lemmas_conn.execute(  # type: ignore
+            sql + "WHERE lemma = ? AND pos = ?", (lemma, pos)
+        ):
+            lemmas_data.append(data)
+        if lemmas_data:
+            return lemmas_data
+
+        if " " in lemma:
+            for data in self.lemmas_conn.execute(  # type: ignore
+                sql
+                + "JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ?",
+                (lemma,),
             ):
                 lemmas_data.append(data)
-            if lemmas_data:
-                return lemmas_data
+        elif lang == "zh":
+            for data in self.lemmas_conn.execute(  # type: ignore
+                sql
+                + "JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ? AND forms.pos = ?",
+                (lemma, pos),
+            ):
+                lemmas_data.append(data)
+        return lemmas_data
 
-            if " " in lemma:
-                for data in self.lemmas_conn.execute(
-                    select_sql
-                    + "JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ?",
-                    (lemma,),
-                ):
-                    lemmas_data.append(data)
-            elif lang == "zh":
-                for data in self.lemmas_conn.execute(
-                    select_sql
-                    + "JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ? AND forms.pos = ?",
-                    (lemma, pos),
-                ):
-                    lemmas_data.append(data)
-
-            return lemmas_data
+    def query_gloss_without_pos(
+        self, sql: str, lemma: str
+    ) -> list[tuple[str, str, str, str]]:
+        for data in self.lemmas_conn.execute(  # type: ignore
+            sql + " WHERE lemma = ? AND enabled = 1 LIMIT 1", (lemma,)
+        ):
+            return [data]
+        for data in self.lemmas_conn.execute(  # type: ignore
+            sql
+            + "JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ? AND enabled = 1 LIMIT 1",
+            (lemma,),
+        ):
+            return [data]
+        return []
 
     def spacy_to_wiktionary_pos(self, pos: str) -> str:
         # spaCy POS: https://universaldependencies.org/u/pos

@@ -361,13 +361,14 @@ def parse_book(
 ) -> Iterator[tuple[str, tuple[int, str] | int]]:
     if kfx_json:
         for entry in filter(lambda x: x["type"] == 1, kfx_json):
-            # Remove BOM: https://en.wikipedia.org/wiki/Byte_order_mark
-            yield entry["content"].replace("\ufeff", " "), entry["position"]
+            # Remove byte order mark and word joiner
+            yield re.sub(r"\ufeff|\u2060", " ", entry["content"]), entry["position"]
     else:
         # match text inside HTML tags
         for match_body in re.finditer(b"<body.{3,}?</body>", mobi_html, re.DOTALL):
             for m in re.finditer(b">[^<]{2,}<", match_body.group(0)):
-                text = m.group(0)[1:-1].decode(mobi_codec).replace("\ufeff", " ")
+                text = m.group(0)[1:-1].decode(mobi_codec)
+                text = re.sub(r"\ufeff|\u2060", " ", text)
                 yield unescape(text), (match_body.start() + m.start() + 1, text)
 
 

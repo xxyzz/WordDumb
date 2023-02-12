@@ -134,9 +134,12 @@ class EPUB:
                 if "/" in xhtml_href:
                     self.xhtml_href_has_folder = True
                 with xhtml_path.open("r", encoding="utf-8") as f:
-                    # remove soft hyphen and BOM
+                    # remove soft hyphen, byte order mark, word joiner
                     xhtml_text = re.sub(
-                        r"\xad|&shy;|&#xAD;|&#xad;|&#173;|\ufeff", "", f.read()
+                        r"\xad|&shy;|&#xad;|&#173;|\ufeff|\u2060|&NoBreak;",
+                        "",
+                        f.read(),
+                        flags=re.I,
                     )
                 with xhtml_path.open("w", encoding="utf-8") as f:
                     f.write(xhtml_text)

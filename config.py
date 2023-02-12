@@ -30,13 +30,8 @@ from PyQt6.QtWidgets import (
 )
 
 from .custom_lemmas import CustomLemmasDialog
-from .deps import download_word_wise_file, which_python
-from .dump_lemmas import (
-    dump_kindle_lemmas,
-    dump_wiktionary,
-    kindle_dump_path,
-    wiktionary_dump_path,
-)
+from .deps import download_word_wise_file, install_deps, which_python
+from .dump_lemmas import dump_spacy_docs
 from .error_dialogs import GITHUB_URL, job_failed
 from .import_lemmas import apply_imported_lemmas_data, export_lemmas_job
 from .utils import (
@@ -46,6 +41,7 @@ from .utils import (
     kindle_db_path,
     load_plugin_json,
     run_subprocess,
+    spacy_model_name,
     wiktionary_db_path,
 )
 
@@ -239,26 +235,21 @@ class ConfigWidget(QWidget):
                 if is_kindle
                 else wiktionary_db_path(self.plugin_path, lemma_lang, gloss_lang)
             )
-            dump_path = (
-                kindle_dump_path(self.plugin_path, lemma_lang)
-                if is_kindle
-                else wiktionary_dump_path(self.plugin_path, lemma_lang, gloss_lang)
-            )
             if not db_path.exists():
                 self.run_threaded_job(
                     download_word_wise_file,
-                    (is_kindle, lemma_lang, gloss_lang, prefs),
+                    (is_kindle, lemma_lang, gloss_lang),
                     _("Downloading Word Wise file"),
                 )
             else:
                 custom_lemmas_dlg = CustomLemmasDialog(
-                    self, is_kindle, lemma_lang, db_path, dump_path
+                    self, is_kindle, lemma_lang, db_path
                 )
                 if custom_lemmas_dlg.exec():
                     QSqlDatabase.removeDatabase(custom_lemmas_dlg.db_connection_name)
                     self.run_threaded_job(
                         dump_lemmas_job,
-                        (is_kindle, db_path, dump_path, lemma_lang, gloss_lang),
+                        (is_kindle, db_path, lemma_lang, gloss_lang),
                         _("Saving customized lemmas"),
                     )
                 elif hasattr(custom_lemmas_dlg, "import_lemmas_path"):
@@ -268,7 +259,6 @@ class ConfigWidget(QWidget):
                         (
                             Path(custom_lemmas_dlg.import_lemmas_path),
                             db_path,
-                            dump_path,
                             custom_lemmas_dlg.retain_enabled_lemmas,
                             is_kindle,
                             lemma_lang,
@@ -310,7 +300,6 @@ class ConfigWidget(QWidget):
 def import_lemmas_job(
     import_path: Path,
     db_path: Path,
-    dump_path: Path,
     retain_lemmas: bool,
     is_kindle: bool,
     lemma_lang: str,
@@ -320,13 +309,12 @@ def import_lemmas_job(
     notifications: Any = None,
 ) -> None:
     apply_imported_lemmas_data(db_path, import_path, retain_lemmas, lemma_lang)
-    dump_lemmas_job(is_kindle, db_path, dump_path, lemma_lang, gloss_lang)
+    dump_lemmas_job(is_kindle, db_path, lemma_lang, gloss_lang)
 
 
 def dump_lemmas_job(
     is_kindle: bool,
     db_path: Path,
-    dump_path: Path,
     lemma_lang: str,
     gloss_lang: str,
     abort: Any = None,
@@ -334,15 +322,18 @@ def dump_lemmas_job(
     notifications: Any = None,
 ) -> None:
     plugin_path = get_plugin_path()
+    model_name = spacy_model_name(
+        lemma_lang, load_plugin_json(plugin_path, "data/languages.json"), prefs
+    )
+    install_deps(model_name, notifications)
     if isfrozen:
         options = {
             "is_kindle": is_kindle,
             "db_path": str(db_path),
-            "dump_path": str(dump_path),
             "lemma_lang": lemma_lang,
             "gloss_lang": gloss_lang,
             "plugin_path": str(plugin_path),
-            "languages": load_plugin_json(plugin_path, "data/languages.json"),
+            "model_name": model_name,
         }
         args = [
             which_python()[0],
@@ -351,10 +342,10 @@ def dump_lemmas_job(
             dump_prefs(prefs),
         ]
         run_subprocess(args)
-    elif is_kindle:
-        dump_kindle_lemmas(lemma_lang, db_path, dump_path, plugin_path)
     else:
-        dump_wiktionary(lemma_lang, db_path, dump_path, plugin_path, prefs)
+        dump_spacy_docs(
+            model_name, is_kindle, lemma_lang, gloss_lang, db_path, plugin_path, prefs
+        )
 
 
 class FormatOrderDialog(QDialog):

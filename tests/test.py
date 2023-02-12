@@ -23,6 +23,7 @@ class TestDumbCode(unittest.TestCase):
         prefs["fandom"] = ""
         prefs["add_locator_map"] = True
         prefs["minimal_x_ray_count"] = 1
+        prefs["use_pos"] = False
 
         lib_db = db("~/Calibre Library").new_api
         for book_id in lib_db.all_book_ids():

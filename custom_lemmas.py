@@ -47,12 +47,10 @@ class CustomLemmasDialog(QDialog):
         is_kindle: bool,
         lemma_lang: str,
         db_path: Path,
-        dump_path: Path,
     ) -> None:
         super().__init__(parent)
         self.lemma_lang = lemma_lang
         self.db_path = db_path
-        self.dump_path = dump_path
         if is_kindle:
             window_title = _("Customize Kindle Word Wise")
         else:
@@ -221,7 +219,7 @@ class CustomLemmasDialog(QDialog):
             full_def = base64.b64decode(full_def).decode("utf-8") if full_def else ""
             example = base64.b64decode(example).decode("utf-8") if example else ""
             custom_db_conn.execute(
-                "UPDATE senses SET short_def = ?, full_def = ?, example = ? WHERE sense_id = ?",
+                "UPDATE senses SET short_def = ?, full_def = ?, example = ? WHERE id = ?",
                 (short_def, full_def, example, sense_id),
             )
         klld_conn.close()
@@ -268,7 +266,6 @@ class CustomLemmasDialog(QDialog):
     def reset_lemmas(self):
         QSqlDatabase.removeDatabase(self.db_connection_name)
         self.db_path.unlink()
-        self.dump_path.unlink()
         self.reject()
 
     def change_ipa(self):

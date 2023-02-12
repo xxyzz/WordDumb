@@ -9,7 +9,6 @@ git clone --recurse-submodules git@github.com:xxyzz/WordDumb.git
 ## Debug
 
 ```
-$ bash ./build_plugin.sh
 $ calibre-customize -b . && calibre-debug -g
 ```
 

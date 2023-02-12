@@ -82,17 +82,16 @@ jobs:
           calibredb add -m ignore --with-library ~/Calibre\ Library *.kfx *.azw3 *.epub
           rm *.kfx *.azw3 *.epub books.zip
 
+      - name: Compile translation file
+        run: calibre-debug -c "from calibre.translations.msgfmt import main; main()" translations/*.po
+
       - name: Build plugin(Unix)
         if: matrix.os != 'windows-latest'
-        run: |
-          bash ./build_plugin.sh
-          zip -r worddumb-${{ github.sha }}.zip * -x@exclude.lst
+        run: zip -r worddumb-${{ github.sha }}.zip * -x@exclude.lst
 
       - name: Build plugin(Windows)
         if: matrix.os == 'windows-latest'
-        run: |
-          bash -e ./build_plugin.sh
-          7z a -x@exclude.lst -x!.* -tzip worddumb-${{ github.sha }}.zip
+        run: 7z a -x@exclude.lst -x!.* -tzip worddumb-${{ github.sha }}.zip
 
       - name: Add plugin
         run: |
@@ -147,5 +146,4 @@ jobs:
             !__pycache__/*
             !exclude.lst
             !translations/*.po
-            !build_plugin.sh
             !mypy.ini

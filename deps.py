@@ -11,15 +11,12 @@ from urllib.request import urlopen
 from calibre.constants import isfrozen, ismacos, iswindows
 
 from .utils import (
-    CJK_LANGS,
     PROFICIENCY_VERSION,
-    Prefs,
     custom_lemmas_folder,
     get_plugin_path,
     homebrew_mac_bin_path,
     load_plugin_json,
     run_subprocess,
-    spacy_model_name,
 )
 
 PY_PATH = ""
@@ -38,9 +35,7 @@ def install_deps(pkg: str, notif: Any) -> None:
                 shutil.rmtree(old_libs_path)
 
     dep_versions = load_plugin_json(plugin_path, "data/deps.json")
-    if pkg == "pyahocorasick":
-        pip_install("pyahocorasick", dep_versions["pyahocorasick"], notif=notif)
-    elif pkg == "lxml":
+    if pkg == "lxml":
         pip_install("lxml", dep_versions["lxml"], notif=notif)
     else:
         # Install X-Ray dependencies
@@ -145,23 +140,10 @@ def download_word_wise_file(
     is_kindle: bool,
     lemma_lang: str,
     gloss_lang: str,
-    prefs: Prefs,
     abort=None,
     log=None,
     notifications=None,
 ) -> None:
-    if lemma_lang in CJK_LANGS and not prefs["use_pos"]:
-        install_deps("pyahocorasick", notifications)
-    if prefs["use_pos"]:
-        install_deps(
-            spacy_model_name(
-                lemma_lang,
-                load_plugin_json(get_plugin_path(), "data/languages.json"),
-                prefs,
-            ),
-            notifications,
-        )
-
     if notifications:
         notifications.put(
             (

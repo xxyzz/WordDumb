@@ -53,10 +53,6 @@ def insert_installed_libs(plugin_path: Path) -> None:
     insert_lib_path(str(plugin_path.parent.joinpath(f"worddumb-libs-py{py_v}")))
 
 
-def insert_plugin_libs(plugin_path: Path) -> None:
-    insert_lib_path(str(plugin_path.joinpath("libs")))
-
-
 def get_plugin_path() -> Path:
     from calibre.utils.config import config_dir
 

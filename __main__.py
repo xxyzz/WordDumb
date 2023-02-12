@@ -10,7 +10,7 @@ import json
 import sys
 from pathlib import Path
 
-from dump_lemmas import dump_lemmas
+from dump_lemmas import dump_spacy_docs
 from parse_job import create_files
 
 parser = argparse.ArgumentParser()
@@ -21,7 +21,7 @@ args = parser.parse_args()
 options = json.loads(args.options)
 prefs = json.loads(args.prefs)
 if "db_path" in options:
-    dump_lemmas(
+    dump_spacy_docs(
         options["model_name"],
         options["is_kindle"],
         options["lemma_lang"],

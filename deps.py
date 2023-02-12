@@ -70,7 +70,7 @@ def which_python() -> tuple[str, str]:
     if iswindows:
         py = "py" if shutil.which("py") else "python"
     elif ismacos:
-        py = mac_python()
+        py = homebrew_mac_bin_path("python3")
 
     if isfrozen:
         r = run_subprocess(
@@ -84,13 +84,6 @@ def which_python() -> tuple[str, str]:
     else:
         py_v = ".".join(platform.python_version_tuple()[:2])
     return py, py_v
-
-
-def mac_python() -> str:
-    py = homebrew_mac_bin_path("python3")
-    if not shutil.which(py):
-        py = "/usr/bin/python3"  # Command Line Tools
-    return py
 
 
 def pip_install(

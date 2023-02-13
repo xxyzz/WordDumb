@@ -142,21 +142,25 @@ class X_Ray:
 
     def merge_entities(self, minimal_count: int) -> None:
         for src_name, src_entity in self.entities.copy().items():
-            dest_name = self.mediawiki.get_direct_cache(src_name)
+            if src_name not in self.entities:
+                continue
             src_counter = self.get_entity_counter(src_entity["label"])
             src_count = src_counter[src_entity["id"]]
-            if isinstance(dest_name, str) and dest_name in self.entities:
-                del src_counter[src_entity["id"]]
+
+            for dest_name in self.mediawiki.redirected_titles(src_name):
+                if dest_name not in self.entities:
+                    continue
                 dest_entity = self.entities[dest_name]
-                self.get_entity_counter(dest_entity["label"])[
-                    dest_entity["id"]
-                ] += src_count
-                self.entity_occurrences[dest_entity["id"]].extend(
-                    self.entity_occurrences[src_entity["id"]]
+                dest_counter = self.get_entity_counter(dest_entity["label"])
+                src_counter[src_entity["id"]] += dest_counter[dest_entity["id"]]
+                self.entity_occurrences[src_entity["id"]].extend(
+                    self.entity_occurrences[dest_entity["id"]]
                 )
-                del self.entity_occurrences[src_entity["id"]]
-                del self.entities[src_name]
-            elif (
+                del self.entity_occurrences[dest_entity["id"]]
+                del self.entities[dest_name]
+                del dest_counter[dest_entity["id"]]
+
+            if (
                 src_count < minimal_count
                 and dest_name is None
                 and src_name not in self.custom_x_ray
@@ -239,6 +243,9 @@ class X_Ray:
 
         create_x_indices(self.conn)
         save_db(self.conn, db_path)
+        self.mediawiki.close()
+        if self.wikidata is not None:
+            self.wikidata.close()
 
     def find_kfx_images(self, kfx_json: list[KFXJson]) -> None:
         images = set()

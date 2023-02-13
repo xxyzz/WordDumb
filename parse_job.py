@@ -252,9 +252,9 @@ def create_files(
 
     if create_x:
         mediawiki = (
-            Fandom(useragent, plugin_path, prefs)
+            Fandom(useragent, plugin_path, prefs["fandom"])
             if prefs["fandom"]
-            else Wikipedia(wiki_lang, useragent, plugin_path, prefs)
+            else Wikipedia(wiki_lang, useragent, plugin_path, prefs["zh_wiki_variant"])
         )
         wikidata = None if prefs["fandom"] else Wikidata(plugin_path, useragent)
         custom_x_ray = load_custom_x_desc(book_path)

@@ -234,6 +234,11 @@ class EPUB:
             self.create_word_wise_footnotes(lang)
         self.modify_opf()
         self.zip_extract_folder()
+        self.mediawiki.close()
+        if self.wikidata is not None:
+            self.wikidata.close()
+        if self.wiki_commons is not None:
+            self.wiki_commons.close()
         if lemmas_conn is not None:
             lemmas_conn.close()
 
@@ -332,8 +337,10 @@ class EPUB:
                 if self.wikidata and (
                     wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])
                 ):
+                    add_wikidata_source = False
                     if inception := wikidata_cache.get("inception"):
                         s += f"<p>{inception_text(inception)}</p>"
+                        add_wikidata_source = True
                     if self.wiki_commons and (
                         filename := wikidata_cache.get("map_filename")
                     ):
@@ -341,7 +348,9 @@ class EPUB:
                         s += f'<img style="max-width:100%" src="{image_prefix}{filename}" />'
                         shutil.copy(file_path, self.image_folder.joinpath(filename))
                         self.image_filenames.add(filename)
-                    s += f'<p>Source: <a href="https://www.wikidata.org/wiki/{intro_cache["item_id"]}">Wikidata</a></p>'
+                        add_wikidata_source = True
+                    if add_wikidata_source:
+                        s += f'<p>Source: <a href="https://www.wikidata.org/wiki/{intro_cache["item_id"]}">Wikidata</a></p>'
                 s += "</aside>"
             else:
                 s += f'<aside id="{data["id"]}" epub:type="footnote"><p>{escape(data["quote"])}</p></aside>'
@@ -349,9 +358,6 @@ class EPUB:
         s += "</body></html>"
         with self.xhtml_folder.joinpath("x_ray.xhtml").open("w", encoding="utf-8") as f:
             f.write(s)
-
-        if self.wiki_commons:
-            self.wiki_commons.close()
 
     def create_word_wise_footnotes(self, lang: str) -> None:
         s = f"""

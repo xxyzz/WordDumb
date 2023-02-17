@@ -33,6 +33,7 @@ try:
         dump_prefs,
         get_plugin_path,
         get_user_agent,
+        get_wiktionary_klld_path,
         insert_installed_libs,
         kindle_db_path,
         load_plugin_json,
@@ -118,15 +119,22 @@ def do_job(
             download_word_wise_file(
                 False,
                 lang["wiki"],
-                prefs["wiktionary_gloss_lang"],
+                prefs,
                 notifications=notifications,
             )
     else:
         create_ww = create_ww and not get_ll_path(asin, book_path_str).exists()
         create_x = create_x and not get_x_ray_path(asin, book_path_str).exists()
-        if create_ww and not kindle_db_path(plugin_path, lang["wiki"]).exists():
+        if create_ww and (
+            not kindle_db_path(
+                plugin_path, lang["wiki"], prefs["kindle_gloss_lang"]
+            ).exists()
+            or not get_wiktionary_klld_path(
+                plugin_path, lang["wiki"], prefs["kindle_gloss_lang"]
+            ).exists()
+        ):
             download_word_wise_file(
-                True, lang["wiki"], "en", notifications=notifications
+                True, lang["wiki"], prefs, notifications=notifications
             )
 
     return_values = (
@@ -757,14 +765,7 @@ def create_spacy_matcher(
     model_version = pkg_versions["spacy_model"]
     phrase_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
     phrases_doc_path = spacy_doc_path(
-        model,
-        model_version,
-        lemma_lang,
-        gloss_lang,
-        is_kindle,
-        True,
-        prefs["use_pos"],
-        plugin_path,
+        model, model_version, lemma_lang, is_kindle, True, plugin_path, prefs
     )
     if not phrases_doc_path.exists():
         save_spacy_docs(
@@ -784,14 +785,7 @@ def create_spacy_matcher(
     if prefs["use_pos"] and lemma_lang != "zh":
         lemma_matcher = PhraseMatcher(nlp.vocab, attr="LEMMA")
         lemmas_doc_path = spacy_doc_path(
-            model,
-            model_version,
-            lemma_lang,
-            gloss_lang,
-            is_kindle,
-            False,
-            True,
-            plugin_path,
+            model, model_version, lemma_lang, is_kindle, False, plugin_path, prefs
         )
         with lemmas_doc_path.open("rb") as f:
             lemmas_doc_bin = DocBin().from_bytes(f.read())

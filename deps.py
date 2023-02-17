@@ -12,11 +12,15 @@ from calibre.constants import isfrozen, ismacos, iswindows
 
 from .utils import (
     PROFICIENCY_VERSION,
+    Prefs,
     custom_lemmas_folder,
     get_plugin_path,
+    get_wiktionary_klld_path,
     homebrew_mac_bin_path,
+    kindle_db_path,
     load_plugin_json,
     run_subprocess,
+    wiktionary_db_path,
 )
 
 PY_PATH = ""
@@ -132,11 +136,12 @@ def pip_install(
 def download_word_wise_file(
     is_kindle: bool,
     lemma_lang: str,
-    gloss_lang: str,
+    prefs: Prefs,
     abort=None,
     log=None,
     notifications=None,
 ) -> None:
+    gloss_lang = prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"]
     if notifications:
         notifications.put(
             (
@@ -144,8 +149,28 @@ def download_word_wise_file(
                 f"Downloading {lemma_lang}-{gloss_lang} {'Kindle' if is_kindle else 'Wiktionary'} file",
             )
         )
-    url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/{'kindle' if is_kindle else 'wiktionary'}_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.tar.gz"
+    plugin_path = get_plugin_path()
+    if is_kindle:
+        db_path = kindle_db_path(plugin_path, lemma_lang, prefs)
+    else:
+        db_path = wiktionary_db_path(plugin_path, lemma_lang, gloss_lang)
+
     extract_folder = custom_lemmas_folder(get_plugin_path())
+    if not db_path.exists():
+        filename = f"wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.tar.gz"
+        if is_kindle and lemma_lang == "en" and not prefs["use_wiktionary_for_kindle"]:
+            filename = f"kindle_en_en_v{PROFICIENCY_VERSION}.tar.gz"
+        url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/{filename}"
+        download_and_extract(url, extract_folder)
+
+    if is_kindle:
+        klld_path = get_wiktionary_klld_path(plugin_path, lemma_lang, gloss_lang)
+        if not klld_path.exists():
+            url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/kll.{lemma_lang}.{gloss_lang}_v{PROFICIENCY_VERSION}.klld.tar.gz"
+            download_and_extract(url, extract_folder)
+
+
+def download_and_extract(url: str, extract_folder: Path) -> None:
     with urlopen(url) as r:
         with tarfile.open(fileobj=BytesIO(r.read())) as tar:
             tar.extractall(extract_folder)

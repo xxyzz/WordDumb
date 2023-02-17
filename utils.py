@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 CJK_LANGS = ["zh", "ja", "ko"]
-PROFICIENCY_VERSION = "0.5.4dev"
+PROFICIENCY_VERSION = "0.5.5dev"
 PROFICIENCY_MAJOR_VERSION = PROFICIENCY_VERSION.split(".", 1)[0]
 
 
@@ -85,10 +85,13 @@ def custom_lemmas_folder(plugin_path: Path) -> Path:
     return plugin_path.parent.joinpath("worddumb-lemmas")
 
 
-def kindle_db_path(plugin_path: Path, lemma_lang: str) -> Path:
-    return custom_lemmas_folder(plugin_path).joinpath(
-        f"{lemma_lang}/kindle_{lemma_lang}_en_v{PROFICIENCY_MAJOR_VERSION}.db"
-    )
+def kindle_db_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -> Path:
+    if lemma_lang == "en" and not prefs["use_wiktionary_for_kindle"]:
+        return custom_lemmas_folder(plugin_path).joinpath(
+            f"{lemma_lang}/kindle_en_en_v{PROFICIENCY_MAJOR_VERSION}.db"
+        )
+    else:
+        return wiktionary_db_path(plugin_path, lemma_lang, prefs["kindle_gloss_lang"])
 
 
 def wiktionary_db_path(plugin_path: Path, lemma_lang: str, gloss_lang: str) -> Path:
@@ -104,6 +107,15 @@ def get_klld_path(plugin_path: Path) -> Path | None:
     for path in custom_folder.glob("*.en.db"):
         return path
     return None
+
+
+def get_wiktionary_klld_path(
+    plugin_path: Path, lemma_lang: str, gloss_lang: str
+) -> Path:
+    custom_folder = custom_lemmas_folder(plugin_path)
+    return custom_folder.joinpath(
+        f"{lemma_lang}/kll.{lemma_lang}.{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.klld"
+    )
 
 
 def donate() -> None:

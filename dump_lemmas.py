@@ -21,19 +21,21 @@ def spacy_doc_path(
     spacy_model: str,
     model_version: str,
     lemma_lang: str,
-    gloss_lang: str,
     is_kindle: bool,
     is_phrase: bool,
-    use_pos: bool,
     plugin_path: Path,
+    prefs: Prefs,
 ):
     import platform
 
+    gloss_lang = prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"]
+    if is_kindle and lemma_lang == "en" and prefs["use_wiktionary_for_kindle"]:
+        is_kindle = False
     py_version = ".".join(platform.python_version_tuple()[:2])
     path = custom_lemmas_folder(plugin_path).joinpath(
         f"{lemma_lang}/{spacy_model}_{'kindle' if is_kindle else 'wiktionary'}_{gloss_lang}_{model_version}_{py_version}"
     )
-    if use_pos:
+    if prefs["use_pos"]:
         if is_phrase:
             path = path.with_name(path.name + "_phrase")
         path = path.with_name(path.name + "_pos")
@@ -109,14 +111,7 @@ def save_spacy_docs(
 
     with open(
         spacy_doc_path(
-            spacy_model,
-            model_version,
-            lemma_lang,
-            gloss_lang,
-            is_kindle,
-            True,
-            prefs["use_pos"],
-            plugin_path,
+            spacy_model, model_version, lemma_lang, is_kindle, True, plugin_path, prefs
         ),
         "wb",
     ) as f:
@@ -128,11 +123,10 @@ def save_spacy_docs(
                 spacy_model,
                 model_version,
                 lemma_lang,
-                gloss_lang,
                 is_kindle,
                 False,
-                True,
                 plugin_path,
+                prefs,
             ),
             "wb",
         ) as f:

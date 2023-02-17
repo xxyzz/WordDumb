@@ -57,8 +57,9 @@ class SendFile:
                 self.push_files_to_android(adb_path)
                 self.gui.status_bar.show_message(self.notif)
             except subprocess.CalledProcessError as e:
+                stderr = e.stderr.decode("utf-8")
                 JobError(self.gui).show_error(
-                    "adb failed", e.stderr, det_msg=traceback.format_exc() + e.stderr
+                    "adb failed", stderr, det_msg=traceback.format_exc() + stderr
                 )
             return
 

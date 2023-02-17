@@ -114,6 +114,8 @@ https://user-images.githubusercontent.com/21101839/202723256-36b96e53-fbf0-4a38-
 
 https://user-images.githubusercontent.com/21101839/202723395-c84ed588-5fba-43f7-880c-70667efc9fca.mov
 
+- Set Word Wise language to Chinese on Kindle to view Wiktionary definition. WordDumb replaces the original Chinese Kindle Word Wise database file when the "Use Wiktionary defination" option is enabled for English books or creating Word Wise for non-English books.
+
 - Don't add soft hyphens to AZW3, AZW and MOBI books, it will cause the plugin to produce mediocre Word Wise and X-Ray files.
 
 - For Android users:

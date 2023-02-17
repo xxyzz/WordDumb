@@ -59,10 +59,12 @@ prefs.defaults["en_ipa"] = "ga_ipa"
 prefs.defaults["zh_ipa"] = "pinyin"
 prefs.defaults["choose_format_manually"] = True
 prefs.defaults["wiktionary_gloss_lang"] = "en"
+prefs.defaults["kindle_gloss_lang"] = "en"
 prefs.defaults["use_gpu"] = False
 prefs.defaults["cuda"] = "cu117"
 prefs.defaults["last_opened_kindle_lemmas_language"] = "ca"
 prefs.defaults["last_opened_wiktionary_lemmas_language"] = "ca"
+prefs.defaults["use_wiktionary_for_kindle"] = False
 for data in load_plugin_json(get_plugin_path(), "data/languages.json").values():
     prefs.defaults[f"{data['wiki']}_wiktionary_difficulty_limit"] = 5
 
@@ -223,22 +225,28 @@ class ConfigWidget(QWidget):
         if choose_lang_dlg.exec():
             lemma_lang = choose_lang_dlg.lemma_lang.currentData()
             gloss_lang = choose_lang_dlg.gloss_lang.currentData()
-            prefs["wiktionary_gloss_lang"] = gloss_lang
+            prefs[
+                "kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"
+            ] = gloss_lang
             prefs[
                 "last_opened_kindle_lemmas_language"
                 if is_kindle
                 else "last_opened_wiktionary_lemmas_language"
             ] = lemma_lang
+            if is_kindle and lemma_lang == "en":
+                prefs[
+                    "use_wiktionary_for_kindle"
+                ] = choose_lang_dlg.use_wiktionary_box.isChecked()
 
             db_path = (
-                kindle_db_path(self.plugin_path, lemma_lang)
+                kindle_db_path(self.plugin_path, lemma_lang, prefs)
                 if is_kindle
                 else wiktionary_db_path(self.plugin_path, lemma_lang, gloss_lang)
             )
             if not db_path.exists():
                 self.run_threaded_job(
                     download_word_wise_file,
-                    (is_kindle, lemma_lang, gloss_lang),
+                    (is_kindle, lemma_lang, prefs),
                     _("Downloading Word Wise file"),
                 )
             else:
@@ -486,12 +494,17 @@ class ChooseLemmaLangDialog(QDialog):
         for text, val in gloss_language_to_code.items():
             self.gloss_lang.addItem(text, val)
         self.gloss_lang.setCurrentText(
-            gloss_code_to_language[prefs["wiktionary_gloss_lang"]]
+            gloss_code_to_language[
+                prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"]
+            ]
         )
-        if not is_kindle:
-            form_layout.addRow(_("Gloss language"), self.gloss_lang)
-        else:
-            self.gloss_lang.setCurrentText(gloss_code_to_language["en"])
+        form_layout.addRow(_("Gloss language"), self.gloss_lang)
+        if is_kindle:
+            self.use_wiktionary_box = QCheckBox("")
+            self.use_wiktionary_box.setChecked(prefs["use_wiktionary_for_kindle"])
+            self.kindle_lemma_changed()
+            self.lemma_lang.currentIndexChanged.connect(self.kindle_lemma_changed)
+            form_layout.addRow(_("Use Wiktionary definition"), self.use_wiktionary_box)
 
         confirm_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -503,3 +516,9 @@ class ChooseLemmaLangDialog(QDialog):
         vl.addLayout(form_layout)
         vl.addWidget(confirm_button_box)
         self.setLayout(vl)
+
+    def kindle_lemma_changed(self) -> None:
+        if self.lemma_lang.currentData() == "en":
+            self.use_wiktionary_box.setEnabled(True)
+        else:
+            self.use_wiktionary_box.setDisabled(True)

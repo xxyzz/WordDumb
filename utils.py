@@ -14,6 +14,28 @@ PROFICIENCY_VERSION = "0.5.4dev"
 PROFICIENCY_MAJOR_VERSION = PROFICIENCY_VERSION.split(".", 1)[0]
 
 
+class Prefs(TypedDict):
+    use_pos: bool
+    search_people: bool
+    model_size: str
+    zh_wiki_variant: str
+    fandom: str
+    add_locator_map: str
+    preferred_formats: list[str]
+    use_all_formats: bool
+    mal_x_ray_count: int
+    en_ipa: str
+    zh_ipa: str
+    choose_format_manually: bool
+    wiktionary_gloss_lang: str
+    kindle_gloss_lang: str
+    use_gpu: bool
+    cuda: str
+    last_opened_kindle_lemmas_language: str
+    last_opened_wiktionary_lemmas_language: str
+    use_wiktionary_for_kindle: bool
+
+
 def load_plugin_json(plugin_path: Path, filepath: str) -> Any:
     with zipfile.ZipFile(plugin_path) as zf:
         with zipfile.Path(zf, filepath).open(encoding="utf-8") as f:
@@ -94,26 +116,6 @@ def get_user_agent() -> str:
     from .error_dialogs import GITHUB_URL
 
     return f"WordDumb/{'.'.join(map(str, VERSION))} ({GITHUB_URL})"
-
-
-class Prefs(TypedDict):
-    use_pos: bool
-    search_people: bool
-    model_size: str
-    zh_wiki_variant: str
-    fandom: str
-    add_locator_map: str
-    preferred_formats: list[str]
-    use_all_formats: bool
-    mal_x_ray_count: int
-    en_ipa: str
-    zh_ipa: str
-    choose_format_manually: bool
-    wiktionary_gloss_lang: str
-    use_gpu: bool
-    cuda: str
-    last_opened_kindle_lemmas_language: str
-    last_opened_wiktionary_lemmas_language: str
 
 
 def dump_prefs(prefs: Any) -> str:

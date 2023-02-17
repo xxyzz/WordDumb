@@ -126,9 +126,7 @@ def do_job(
         create_ww = create_ww and not get_ll_path(asin, book_path_str).exists()
         create_x = create_x and not get_x_ray_path(asin, book_path_str).exists()
         if create_ww and (
-            not kindle_db_path(
-                plugin_path, lang["wiki"], prefs["kindle_gloss_lang"]
-            ).exists()
+            not kindle_db_path(plugin_path, lang["wiki"], prefs).exists()
             or not get_wiktionary_klld_path(
                 plugin_path, lang["wiki"], prefs["kindle_gloss_lang"]
             ).exists()

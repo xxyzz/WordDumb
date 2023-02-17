@@ -215,3 +215,26 @@ def save_db(source: sqlite3.Connection, dest_path: Path) -> None:
         source.backup(dest)
     source.close()
     dest.close()
+
+
+def compare_klld_metadata(
+    conn_a: sqlite3.Connection, conn_b: sqlite3.Connection, key: str
+) -> bool:
+    sql = "SELECT value FROM metadata WHERE key = ?"
+    for value_a in conn_a.execute(sql, (key,)):
+        for value_b in conn_b.execute(sql, (key,)):
+            return value_a == value_b
+    return False
+
+
+def is_same_klld(path_a: Path, path_b: Path) -> bool:
+    conn_a = sqlite3.connect(path_a)
+    conn_b = sqlite3.connect(path_b)
+    for key in ["lemmaLanguage", "definitionLanguage", "version"]:
+        if not compare_klld_metadata(conn_a, conn_b, key):
+            conn_a.close()
+            conn_b.close()
+            return False
+    conn_a.close()
+    conn_b.close()
+    return True

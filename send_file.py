@@ -9,10 +9,16 @@ from calibre.constants import ismacos
 from calibre.gui2 import FunctionDispatcher
 from calibre.gui2.dialogs.message_box import JobError
 
-from .database import get_ll_path, get_x_ray_path
+from .database import get_ll_path, get_x_ray_path, is_same_klld
 from .error_dialogs import kindle_epub_dialog
 from .metadata import get_asin_etc
-from .utils import homebrew_mac_bin_path, run_subprocess
+from .utils import (
+    get_plugin_path,
+    get_wiktionary_klld_path,
+    homebrew_mac_bin_path,
+    load_plugin_json,
+    run_subprocess,
+)
 
 
 class SendFile:
@@ -76,9 +82,8 @@ class SendFile:
         [has_book, _, _, _, paths] = self.gui.book_on_device(self.book_id)
         if has_book and self.book_fmt != "EPUB":
             # _main_prefix: Kindle mount point, /Volumes/Kindle
-            device_book_path = Path(self.device_manager.device._main_prefix).joinpath(
-                paths.pop()
-            )
+            device_mount_point = Path(self.device_manager.device._main_prefix)
+            device_book_path = device_mount_point.joinpath(paths.pop())
             if job is None:
                 # update device book ASIN if it doesn't have the same ASIN
                 _, _, _, update_asin, *_ = get_asin_etc(
@@ -94,8 +99,7 @@ class SendFile:
                         self.mi, self.book_path
                     )
 
-            self.move_file_to_device(self.ll_path, device_book_path)
-            self.move_file_to_device(self.x_ray_path, device_book_path)
+            self.move_files_to_kindle(device_mount_point, device_book_path)
             libray_book_path = Path(self.book_path)
             if libray_book_path.stem.endswith("_en"):
                 libray_book_path.unlink()
@@ -117,7 +121,19 @@ class SendFile:
             )
             self.gui.upload_memory[job] = ([self.mi], None, None, [self.book_path])
 
-    def move_file_to_device(self, file_path: Path, device_book_path: Path) -> None:
+    def move_files_to_kindle(
+        self, device_mount_point: Path, device_book_path: Path
+    ) -> None:
+        if self.ll_path.exists():
+            copy_klld_to_device(
+                self.mi.language,
+                device_mount_point.joinpath("system/kll/kll.en.zh.klld"),
+                None,
+            )
+            self.move_file_to_kindle(self.ll_path, device_book_path)
+        self.move_file_to_kindle(self.x_ray_path, device_book_path)
+
+    def move_file_to_kindle(self, file_path: Path, device_book_path: Path) -> None:
         if not file_path.is_file():
             return
         sidecar_folder = device_book_path.parent.joinpath(
@@ -161,6 +177,13 @@ class SendFile:
                 ]
             )
             self.ll_path.unlink()
+            copy_klld_to_device(
+                self.mi.language,
+                Path(
+                    f"/data/data/{self.package_name}/databases/wordwise/WordWise.kll.en.zh.db"
+                ),
+                adb_path,
+            )
 
 
 def device_connected(gui: Any, book_fmt: str) -> str | bool:
@@ -221,3 +244,30 @@ def copy_klld_from_kindle(gui: Any, dest_path: Path) -> None:
         "*.en.klld"
     ):
         shutil.copy(klld_path, dest_path)
+
+
+def copy_klld_to_device(
+    book_lang: str, device_klld_path: Path, adb_path: str | None
+) -> None:
+    from .config import prefs
+
+    if book_lang == "eng" and not prefs["use_wiktionary_for_kindle"]:
+        return
+    plugin_path = get_plugin_path()
+    supported_languages = load_plugin_json(plugin_path, "data/languages.json")
+    lemma_lang = supported_languages[book_lang]
+    local_klld_path = get_wiktionary_klld_path(
+        plugin_path, lemma_lang, prefs["kindle_gloss_lang"]
+    )
+
+    if adb_path is not None:
+        run_subprocess([adb_path, "push", str(local_klld_path), str(device_klld_path)])
+    else:
+        copy = False
+        if not device_klld_path.exists():
+            copy = True
+        elif not is_same_klld(local_klld_path, device_klld_path):
+            copy = True
+
+        if copy:
+            shutil.copy(local_klld_path, device_klld_path)

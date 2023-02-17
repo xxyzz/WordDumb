@@ -457,7 +457,7 @@ class EPUB:
         select_sql += " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id "
         if self.prefs["use_pos"]:
             lemma, pos = lemma.rsplit("_", 1)
-            pos = self.spacy_to_wiktionary_pos(pos)
+            pos = spacy_to_wiktionary_pos(pos)
             return self.query_gloss_with_pos(select_sql, lemma, pos, lang)
         else:
             return self.query_gloss_without_pos(select_sql, lemma)
@@ -504,38 +504,39 @@ class EPUB:
             return [data]
         return []
 
-    def spacy_to_wiktionary_pos(self, pos: str) -> str:
-        # spaCy POS: https://universaldependencies.org/u/pos
-        # Wiktioanry POS: https://github.com/tatuylonen/wiktextract/blob/master/wiktextract/data/en/pos_subtitles.json
-        # Proficiency POS: https://github.com/xxyzz/Proficiency/blob/master/extract_wiktionary.py#L31
-        match pos:
-            case "NOUN":
-                return "noun"
-            case "ADJ":
-                return "adj"
-            case "VERB":
-                return "verb"
-            case "ADV":
-                return "adv"
-            # case "ADP":
-            #     return "prep"
-            # case "CCONJ" | "SCONJ":
-            #     return "conj"
-            # case "DET":
-            #     return "det"
-            # case "INTJ":
-            #     return "intj"
-            # case "NUM":
-            #     return "num"
-            # case "PART":
-            #     return "particle"
-            # case "PRON":
-            #     return "pron"
-            # case "PROPN":
-            #     return "name"
-            # case "PUNCT":
-            #     return "punct"
-            # case "SYM":
-            #     return "symbol"
-            case _:
-                return "other"
+
+def spacy_to_wiktionary_pos(pos: str) -> str:
+    # spaCy POS: https://universaldependencies.org/u/pos
+    # Wiktioanry POS: https://github.com/tatuylonen/wiktextract/blob/master/wiktextract/data/en/pos_subtitles.json
+    # Proficiency POS: https://github.com/xxyzz/Proficiency/blob/master/extract_wiktionary.py#L31
+    match pos:
+        case "NOUN":
+            return "noun"
+        case "ADJ":
+            return "adj"
+        case "VERB":
+            return "verb"
+        case "ADV":
+            return "adv"
+        # case "ADP":
+        #     return "prep"
+        # case "CCONJ" | "SCONJ":
+        #     return "conj"
+        # case "DET":
+        #     return "det"
+        # case "INTJ":
+        #     return "intj"
+        # case "NUM":
+        #     return "num"
+        # case "PART":
+        #     return "particle"
+        # case "PRON":
+        #     return "pron"
+        # case "PROPN":
+        #     return "name"
+        # case "PUNCT":
+        #     return "punct"
+        # case "SYM":
+        #     return "symbol"
+        case _:
+            return "other"

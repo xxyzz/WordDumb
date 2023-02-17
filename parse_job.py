@@ -23,7 +23,7 @@ try:
     )
     from .deps import download_word_wise_file, install_deps, which_python
     from .dump_lemmas import save_spacy_docs, spacy_doc_path
-    from .epub import EPUB
+    from .epub import EPUB, spacy_to_wiktionary_pos
     from .interval import Interval, IntervalTree
     from .mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
     from .metadata import KFXJson
@@ -53,7 +53,7 @@ except ImportError:
         save_db,
     )
     from dump_lemmas import save_spacy_docs, spacy_doc_path
-    from epub import EPUB
+    from epub import EPUB, spacy_to_wiktionary_pos
     from interval import Interval, IntervalTree
     from mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
     from metadata import KFXJson
@@ -244,7 +244,7 @@ def create_files(
         lemmas_db_path = (
             wiktionary_db_path(plugin_path, wiki_lang, prefs["wiktionary_gloss_lang"])
             if is_epub
-            else kindle_db_path(plugin_path, wiki_lang)
+            else kindle_db_path(plugin_path, wiki_lang, prefs)
         )
         lemmas_conn = sqlite3.connect(lemmas_db_path)
         lemma_matcher, phrase_matcher = create_spacy_matcher(
@@ -345,7 +345,7 @@ def create_files(
                 lemmas_conn,
                 ll_conn,
                 wiki_lang,
-                prefs["use_pos"],
+                prefs,
             )
         if notif:
             notif.put((start / final_start, "Creating files"))
@@ -414,15 +414,16 @@ def kindle_find_lemma(
     lemmas_conn,
     ll_conn,
     lemma_lang,
-    use_pos,
+    prefs,
 ):
     lemma_starts: set[int] = set()
     for span in match_lemmas(doc, lemma_matcher, phrase_matcher):
         data = get_kindle_lemma_data(
-            span.lemma_ if use_pos and hasattr(span, "lemma_") else span.text,
-            span.doc[span.start].pos_ if use_pos else None,
+            span.lemma_ if prefs["use_pos"] and hasattr(span, "lemma_") else span.text,
+            span.doc[span.start].pos_ if prefs["use_pos"] else None,
             lemmas_conn,
             lemma_lang,
+            prefs["use_wiktionary_for_kindle"],
         )
         if data is not None:
             kindle_add_lemma(
@@ -487,18 +488,29 @@ def spacy_to_kindle_pos(pos: str) -> str:
 
 
 def get_kindle_lemma_data(
-    lemma: str, pos: str | None, conn: sqlite3.Connection, lemma_lang: str
+    lemma: str,
+    pos: str | None,
+    conn: sqlite3.Connection,
+    lemma_lang: str,
+    use_wiktionary: bool,
 ) -> tuple[int, int] | None:
     if pos is not None:
-        return get_kindle_lemma_with_pos(lemma, pos, conn, lemma_lang)
+        return get_kindle_lemma_with_pos(lemma, pos, conn, lemma_lang, use_wiktionary)
     else:
         return get_kindle_lemma_without_pos(lemma, conn)
 
 
 def get_kindle_lemma_with_pos(
-    lemma: str, pos: str, conn: sqlite3.Connection, lemma_lang: str
+    lemma: str,
+    pos: str,
+    conn: sqlite3.Connection,
+    lemma_lang: str,
+    use_wiktionary: bool,
 ) -> tuple[int, int] | None:
-    pos = spacy_to_kindle_pos(pos)
+    if lemma_lang == "en" and not use_wiktionary:
+        pos = spacy_to_kindle_pos(pos)
+    else:
+        pos = spacy_to_wiktionary_pos(pos)
     for data in conn.execute(
         "SELECT difficulty, senses.id FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE lemma = ? AND pos = ? LIMIT 1",
         (lemma, pos),

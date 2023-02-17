@@ -146,6 +146,7 @@ class CustomLemmasDialog(QDialog):
                 else _("International Phonetic Alphabet"),
                 self.ipa_button,
             )
+            self.ipa_button.currentIndexChanged.connect(self.change_ipa)
 
         difficulty_label = QLabel(_("Difficulty limit"))
         difficulty_label.setToolTip(
@@ -157,6 +158,9 @@ class CustomLemmasDialog(QDialog):
         self.difficulty_limit_box.addItems(map(str, range(5, 0, -1)))
         self.difficulty_limit_box.setCurrentText(
             str(prefs[f"{self.lemma_lang}_wiktionary_difficulty_limit"])
+        )
+        self.difficulty_limit_box.currentIndexChanged.connect(
+            self.change_difficulty_limit
         )
         form_layout.addRow(difficulty_label, self.difficulty_limit_box)
 

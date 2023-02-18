@@ -783,7 +783,6 @@ def create_spacy_matcher(
             model,
             model_version,
             lemma_lang,
-            gloss_lang,
             is_kindle,
             lemmas_conn,
             plugin_path,

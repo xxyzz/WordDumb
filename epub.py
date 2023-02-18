@@ -63,7 +63,7 @@ class EPUB:
     def __init__(
         self,
         book_path_str: str,
-        mediawiki: Wikipedia | Fandom,
+        mediawiki: Wikipedia | Fandom | None,
         wiki_commons: Wikimedia_Commons | None,
         wikidata: Wikidata | None,
         custom_x_ray: CustomX,
@@ -211,6 +211,7 @@ class EPUB:
         for entity, data in self.entities.copy().items():
             if (
                 data["count"] < minimal_count
+                and self.mediawiki is not None  # mypy
                 and self.mediawiki.get_cache(entity) is None
                 and entity not in self.custom_x_ray
             ):
@@ -234,7 +235,8 @@ class EPUB:
             self.create_word_wise_footnotes(lang)
         self.modify_opf()
         self.zip_extract_folder()
-        self.mediawiki.close()
+        if self.mediawiki is not None:
+            self.mediawiki.close()
         if self.wikidata is not None:
             self.wikidata.close()
         if self.wiki_commons is not None:
@@ -300,6 +302,8 @@ class EPUB:
         return p_tags
 
     def create_x_ray_footnotes(self, prefs: Prefs, lang: str) -> None:
+        if self.mediawiki is None:  # just let mypy know it's not None
+            return
         source_name, source_link = x_ray_source(self.mediawiki.source_id, prefs, lang)
         image_prefix = ""
         if self.xhtml_href_has_folder:

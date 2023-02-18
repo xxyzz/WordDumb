@@ -299,7 +299,7 @@ class CustomLemmasDialog(QDialog):
         from .config import prefs
 
         limit = int(self.difficulty_limit_box.currentText())
-        prefs[f"{self.lang}_wiktionary_difficulty_limit"] = limit
+        prefs[f"{self.lemma_lang}_wiktionary_difficulty_limit"] = limit
 
 
 class LemmasTableModel(QSqlRelationalTableModel):

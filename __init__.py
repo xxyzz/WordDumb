@@ -30,7 +30,7 @@ class WordDumbDumb(InterfaceActionBase):
 
         from calibre.utils.logging import Log
 
-        from .metadata import cli_check_metadata
+        from .metadata import check_word_wise_language, cli_check_metadata
         from .parse_job import do_job
 
         parser = argparse.ArgumentParser(prog="calibre-debug -r WordDumb --")
@@ -54,6 +54,17 @@ class WordDumbDumb(InterfaceActionBase):
             if data is None:
                 continue
             book_fmt, mi, lang = data
+            if create_w:
+                create_w, gloss_lang = check_word_wise_language(
+                    lang, book_fmt != "EPUB"
+                )
+                if create_w is False:
+                    log.prints(
+                        Log.WARNING,
+                        f"Book language {lang} is not supported for Word Wise gloss language {gloss_lang}",
+                    )
+            if create_w is False and create_x is False:
+                continue
 
             notif = []
             if create_w:

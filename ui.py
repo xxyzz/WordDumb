@@ -9,8 +9,8 @@ from calibre.gui2.threaded_jobs import ThreadedJob
 from PyQt6.QtGui import QIcon
 
 from .custom_x_ray import CustomXRayDialog
-from .error_dialogs import job_failed
-from .metadata import check_metadata
+from .error_dialogs import job_failed, unsupported_ww_lang_dialog
+from .metadata import check_metadata, check_word_wise_language
 from .parse_job import do_job
 from .send_file import SendFile, device_connected
 from .utils import donate
@@ -104,6 +104,13 @@ def run(gui: Any, create_ww: bool, create_x: bool) -> None:
         gui, False
     ):
         for book_fmt, book_path in zip(book_fmts, book_paths):
+            if create_ww:
+                create_ww, gloss_lang = check_word_wise_language(
+                    lang, book_fmt != "EPUB"
+                )
+                if create_ww is False:
+                    unsupported_ww_lang_dialog(lang, gloss_lang)
+
             title = (
                 f'{mi.get("title")}({book_fmt})'
                 if len(book_fmts) > 1

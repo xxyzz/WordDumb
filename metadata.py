@@ -228,3 +228,12 @@ def update_kfx_metedata(book_path: str, asin: str, lang: str):
     yj_book.decode_book(set_metadata=yj_md)
     with open(book_path, "wb") as f:
         f.write(yj_book.convert_to_single_kfx())
+
+
+def check_word_wise_language(book_lang: str, is_kindle: bool) -> tuple[bool, str]:
+    from .config import prefs
+    from .utils import get_plugin_path, load_plugin_json
+
+    supported_languages = load_plugin_json(get_plugin_path(), "data/languages.json")
+    gloss_lang = prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"]
+    return book_lang in supported_languages[gloss_lang]["lemma_languages"], gloss_lang

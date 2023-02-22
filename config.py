@@ -46,7 +46,7 @@ from .utils import (
 )
 
 prefs = JSONConfig("plugins/worddumb")
-prefs.defaults["use_pos"] = False
+prefs.defaults["use_pos"] = True
 prefs.defaults["search_people"] = False
 prefs.defaults["model_size"] = "md"
 prefs.defaults["zh_wiki_variant"] = "cn"

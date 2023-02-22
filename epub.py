@@ -219,10 +219,15 @@ class EPUB:
                 self.removed_entity_ids.add(data["id"])
 
     def modify_epub(
-        self, prefs: Prefs, lang: str, lemmas_conn: sqlite3.Connection | None
+        self,
+        prefs: Prefs,
+        lang: str,
+        lemmas_conn: sqlite3.Connection | None,
+        has_multiple_ipas: bool,
     ) -> None:
         self.lemmas_conn = lemmas_conn
         self.prefs = prefs
+        self.has_multiple_ipas = has_multiple_ipas
         if self.entities:
             query_mediawiki(self.entities, self.mediawiki, prefs["search_people"])
             if self.wikidata:
@@ -452,10 +457,11 @@ class EPUB:
 
     def get_lemma_gloss(self, lemma: str, lang: str) -> list[tuple[str, str, str, str]]:
         select_sql = f"SELECT short_def, full_def, example, "
-        if lang == "en":
-            select_sql += self.prefs["en_ipa"]
-        elif lang == "zh":
-            select_sql += self.prefs["zh_ipa"]
+        if self.has_multiple_ipas:
+            if lang == "en":
+                select_sql += self.prefs["en_ipa"]
+            elif lang == "zh":
+                select_sql += self.prefs["zh_ipa"]
         else:
             select_sql += "ipa"
         select_sql += " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id "

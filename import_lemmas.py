@@ -123,20 +123,29 @@ def export_lemmas_job(
     difficulty_limit: int,
     is_kindle: bool,
     lemma_lang: str,
+    gloss_lang: str,
     abort: Any = None,
     log: Any = None,
     notifications: Any = None,
 ) -> None:
     from .config import prefs
+    from .utils import get_plugin_path, load_plugin_json
 
     conn = sqlite3.connect(db_path)
     with open(export_path, "w", encoding="utf-8") as f:
         query_sql = "SELECT lemma, pos, full_def, example"
         if not is_kindle:
-            if lemma_lang == "en":
-                query_sql = f", {prefs['en_ipa']}"
-            elif lemma_lang == "zh":
-                query_sql = f", {prefs['zh_ipa']}"
+            supported_languages = load_plugin_json(
+                get_plugin_path(), "data/languages.json"
+            )
+            has_multiple_ipas = (
+                supported_languages[gloss_lang]["gloss_source"] == "kaikki"
+            )
+            if has_multiple_ipas:
+                if lemma_lang == "en":
+                    query_sql = f", {prefs['en_ipa']}"
+                elif lemma_lang == "zh":
+                    query_sql = f", {prefs['zh_ipa']}"
             else:
                 query_sql = ", ipa"
         query_sql += " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE difficulty <= ?"

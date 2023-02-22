@@ -10,13 +10,14 @@ from typing import Any, BinaryIO, TypedDict
 
 def check_metadata(
     gui: Any, book_id: int, custom_x_ray: bool
-) -> tuple[int, list[str], list[str], Any, dict[str, str]] | None:
+) -> tuple[int, list[str], list[str], Any, str] | None:
     from .config import prefs
     from .error_dialogs import unsupported_format_dialog, unsupported_language_dialog
     from .utils import get_plugin_path, load_plugin_json
 
     db = gui.current_db.new_api
-    supported_languages = load_plugin_json(get_plugin_path(), "data/languages.json")
+    lang_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
+    supported_languages = {v["639-2"]: k for k, v in lang_dict.items()}
     mi = db.get_metadata(book_id, get_cover=True)
     # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     book_language = mi.get("language")
@@ -49,12 +50,11 @@ def check_metadata(
     )
 
 
-def cli_check_metadata(
-    book_path_str: str, log: Any
-) -> tuple[str, Any, dict[str, str]] | None:
+def cli_check_metadata(book_path_str: str, log: Any) -> tuple[str, Any, str] | None:
     from .utils import get_plugin_path, load_plugin_json
 
-    supported_languages = load_plugin_json(get_plugin_path(), "data/languages.json")
+    lang_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
+    supported_languages = {v["639-2"]: k for k, v in lang_dict.items()}
     book_path = Path(book_path_str)
     book_fmt = book_path.suffix.upper()[1:]
     mi = None

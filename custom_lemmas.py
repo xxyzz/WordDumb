@@ -33,7 +33,12 @@ from PyQt6.QtWidgets import (
 
 from .error_dialogs import device_not_found_dialog, ww_db_not_found_dialog
 from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
-from .utils import custom_lemmas_folder, get_klld_path, get_plugin_path
+from .utils import (
+    custom_lemmas_folder,
+    get_klld_path,
+    get_plugin_path,
+    load_plugin_json,
+)
 
 load_translations()  # type: ignore
 if TYPE_CHECKING:
@@ -46,6 +51,7 @@ class CustomLemmasDialog(QDialog):
         parent: QObject,
         is_kindle: bool,
         lemma_lang: str,
+        gloss_lang: str,
         db_path: Path,
     ) -> None:
         super().__init__(parent)
@@ -66,7 +72,12 @@ class CustomLemmasDialog(QDialog):
         )
         vl.addLayout(form_layout)
         self.init_filters(form_layout)
-        if not is_kindle:
+
+        supported_languages = load_plugin_json(get_plugin_path(), "data/languages.json")
+        if (
+            not is_kindle
+            and supported_languages[gloss_lang]["gloss_source"] == "kaikki"
+        ):
             self.init_wiktionary_buttons(form_layout)
         vl.addWidget(self.init_dialog_buttons())
 

@@ -42,7 +42,7 @@ class TestDumbCode(unittest.TestCase):
                         fmt,
                         book_path,
                         mi,
-                        {"spacy": "en_core_web_", "wiki": "en", "kaikki": "English"},
+                        "en",
                     )
                 )
             except subprocess.CalledProcessError as e:

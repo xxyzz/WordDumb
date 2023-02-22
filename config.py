@@ -65,8 +65,8 @@ prefs.defaults["cuda"] = "cu117"
 prefs.defaults["last_opened_kindle_lemmas_language"] = "ca"
 prefs.defaults["last_opened_wiktionary_lemmas_language"] = "ca"
 prefs.defaults["use_wiktionary_for_kindle"] = False
-for data in load_plugin_json(get_plugin_path(), "data/languages.json").values():
-    prefs.defaults[f"{data['wiki']}_wiktionary_difficulty_limit"] = 5
+for code in load_plugin_json(get_plugin_path(), "data/languages.json").keys():
+    prefs.defaults[f"{code}_wiktionary_difficulty_limit"] = 5
 
 load_translations()  # type: ignore
 if TYPE_CHECKING:
@@ -251,13 +251,13 @@ class ConfigWidget(QWidget):
                 )
             else:
                 custom_lemmas_dlg = CustomLemmasDialog(
-                    self, is_kindle, lemma_lang, db_path
+                    self, is_kindle, lemma_lang, gloss_lang, db_path
                 )
                 if custom_lemmas_dlg.exec():
                     QSqlDatabase.removeDatabase(custom_lemmas_dlg.db_connection_name)
                     self.run_threaded_job(
                         dump_lemmas_job,
-                        (is_kindle, db_path, lemma_lang, gloss_lang),
+                        (is_kindle, db_path, lemma_lang),
                         _("Saving customized lemmas"),
                     )
                 elif hasattr(custom_lemmas_dlg, "import_lemmas_path"):
@@ -270,7 +270,6 @@ class ConfigWidget(QWidget):
                             custom_lemmas_dlg.retain_enabled_lemmas,
                             is_kindle,
                             lemma_lang,
-                            gloss_lang,
                         ),
                         _("Saving customized lemmas"),
                     )
@@ -285,6 +284,7 @@ class ConfigWidget(QWidget):
                             custom_lemmas_dlg.export_difficulty_limit,
                             is_kindle,
                             lemma_lang,
+                            gloss_lang,
                         ),
                         _("Exporting customized lemmas"),
                     )
@@ -311,20 +311,18 @@ def import_lemmas_job(
     retain_lemmas: bool,
     is_kindle: bool,
     lemma_lang: str,
-    gloss_lang: str,
     abort: Any = None,
     log: Any = None,
     notifications: Any = None,
 ) -> None:
     apply_imported_lemmas_data(db_path, import_path, retain_lemmas, lemma_lang)
-    dump_lemmas_job(is_kindle, db_path, lemma_lang, gloss_lang)
+    dump_lemmas_job(is_kindle, db_path, lemma_lang)
 
 
 def dump_lemmas_job(
     is_kindle: bool,
     db_path: Path,
     lemma_lang: str,
-    gloss_lang: str,
     abort: Any = None,
     log: Any = None,
     notifications: Any = None,
@@ -339,7 +337,6 @@ def dump_lemmas_job(
             "is_kindle": is_kindle,
             "db_path": str(db_path),
             "lemma_lang": lemma_lang,
-            "gloss_lang": gloss_lang,
             "plugin_path": str(plugin_path),
             "model_name": model_name,
         }
@@ -351,9 +348,7 @@ def dump_lemmas_job(
         ]
         run_subprocess(args)
     else:
-        dump_spacy_docs(
-            model_name, is_kindle, lemma_lang, gloss_lang, db_path, plugin_path, prefs
-        )
+        dump_spacy_docs(model_name, is_kindle, lemma_lang, db_path, plugin_path, prefs)
 
 
 class FormatOrderDialog(QDialog):
@@ -457,48 +452,29 @@ class ChooseLemmaLangDialog(QDialog):
         )
 
         language_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
-        lemma_language_to_code = {
-            _(val["kaikki"]): val["wiki"] for val in language_dict.values()
-        }
-        lemma_code_to_language = {
-            _(val["wiki"]): _(val["kaikki"]) for val in language_dict.values()
-        }
-
+        lemma_code = prefs[
+            "last_opened_kindle_lemmas_language"
+            if is_kindle
+            else "last_opened_wiktionary_lemmas_language"
+        ]
+        gloss_code = prefs[
+            "kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"
+        ]
         self.lemma_lang = QComboBox()
-        for text, val in lemma_language_to_code.items():
-            self.lemma_lang.addItem(text, val)
-        self.lemma_lang.setCurrentText(
-            lemma_code_to_language[
-                prefs[
-                    "last_opened_kindle_lemmas_language"
-                    if is_kindle
-                    else "last_opened_wiktionary_lemmas_language"
-                ]
-            ]
-        )
-        form_layout.addRow(_("Lemma language"), self.lemma_lang)
-
-        gloss_language_to_code = {
-            _(val["kaikki"]): val["wiki"]
-            for val in language_dict.values()
-            if val["gloss"]
-        }
-        gloss_code_to_language = {
-            (val["wiki"]): _(val["kaikki"])
-            for val in language_dict.values()
-            if val["gloss"]
-        }
-        gloss_language_to_code[_("Simplified Chinese")] = "zh_cn"
-        gloss_code_to_language["zh_cn"] = _("Simplified Chinese")
         self.gloss_lang = QComboBox()
-        for text, val in gloss_language_to_code.items():
-            self.gloss_lang.addItem(text, val)
-        self.gloss_lang.setCurrentText(
-            gloss_code_to_language[
-                prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"]
-            ]
-        )
+        for code, value in language_dict.items():
+            if "lemma_languages" in value:
+                self.gloss_lang.addItem(code, _(value["name"]))
+        self.gloss_lang.addItem("zh_cn", _("Simplified Chinese"))
+
+        for code in language_dict[gloss_code]["lemma_languages"]:
+            self.lemma_lang.addItem(code, _(language_dict[code]["name"]))
+        self.lemma_lang.setCurrentText(_(language_dict[lemma_code]["name"]))
+        self.gloss_lang.setCurrentText(_(language_dict[gloss_code]["name"]))
+        self.gloss_lang.currentIndexChanged.connect(self.gloss_lang_changed)
+        form_layout.addRow(_("Lemma language"), self.lemma_lang)
         form_layout.addRow(_("Gloss language"), self.gloss_lang)
+
         if is_kindle:
             self.use_wiktionary_box = QCheckBox("")
             self.use_wiktionary_box.setChecked(prefs["use_wiktionary_for_kindle"])
@@ -522,3 +498,10 @@ class ChooseLemmaLangDialog(QDialog):
             self.use_wiktionary_box.setEnabled(True)
         else:
             self.use_wiktionary_box.setDisabled(True)
+
+    def gloss_lang_changed(self) -> None:
+        language_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
+        gloss_code = self.gloss_lang.currentData()
+        self.lemma_lang.clear()
+        for code in language_dict[gloss_code]["lemma_languages"]:
+            self.lemma_lang.addItem(code, _(language_dict[code]["name"]))

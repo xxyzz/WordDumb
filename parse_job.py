@@ -38,6 +38,7 @@ try:
         kindle_db_path,
         load_plugin_json,
         run_subprocess,
+        spacy_model_name,
         wiktionary_db_path,
     )
     from .x_ray import X_Ray
@@ -70,7 +71,7 @@ except ImportError:
 
 
 def do_job(
-    data: tuple[int, str, str, Any, dict[str, str]],
+    data: tuple[int, str, str, Any, str],
     create_ww: bool = True,
     create_x: bool = True,
     abort: Any = None,
@@ -80,9 +81,9 @@ def do_job(
     from .config import prefs
     from .metadata import get_asin_etc
 
-    (book_id, book_fmt, book_path_str, mi, lang) = data
+    (book_id, book_fmt, book_path_str, mi, book_lang) = data
     set_en_lang = (
-        True if create_ww and book_fmt != "EPUB" and lang["wiki"] != "en" else False
+        True if create_ww and book_fmt != "EPUB" and book_lang != "en" else False
     )
     if set_en_lang:
         book_path = Path(book_path_str)
@@ -94,12 +95,11 @@ def do_job(
     (asin, acr, revision, update_asin, kfx_json, mobi_html, mobi_codec) = get_asin_etc(
         book_path_str, book_fmt, mi, set_en_lang=set_en_lang
     )
-
-    model = lang["spacy"] + prefs["model_size"]
-    if prefs["use_gpu"] and lang["has_trf"]:
-        model = lang["spacy"] + "trf"
     plugin_path = get_plugin_path()
     useragent = get_user_agent()
+    model = spacy_model_name(
+        book_lang, load_plugin_json(plugin_path, "data/languages.json"), prefs
+    )
     if book_fmt == "EPUB":
         book_path = Path(book_path_str)
         new_file_stem = book_path.stem
@@ -113,12 +113,12 @@ def do_job(
         if (
             create_ww
             and not wiktionary_db_path(
-                plugin_path, lang["wiki"], prefs["wiktionary_gloss_lang"]
+                plugin_path, book_lang, prefs["wiktionary_gloss_lang"]
             ).exists()
         ):
             download_word_wise_file(
                 False,
-                lang["wiki"],
+                book_lang,
                 prefs,
                 notifications=notifications,
             )
@@ -126,14 +126,12 @@ def do_job(
         create_ww = create_ww and not get_ll_path(asin, book_path_str).exists()
         create_x = create_x and not get_x_ray_path(asin, book_path_str).exists()
         if create_ww and (
-            not kindle_db_path(plugin_path, lang["wiki"], prefs).exists()
+            not kindle_db_path(plugin_path, book_lang, prefs).exists()
             or not get_wiktionary_klld_path(
-                plugin_path, lang["wiki"], prefs["kindle_gloss_lang"]
+                plugin_path, book_lang, prefs["kindle_gloss_lang"]
             ).exists()
         ):
-            download_word_wise_file(
-                True, lang["wiki"], prefs, notifications=notifications
-            )
+            download_word_wise_file(True, book_lang, prefs, notifications=notifications)
 
     return_values = (
         book_id,
@@ -171,7 +169,7 @@ def do_job(
             "acr": acr,
             "revision": revision,
             "model": model,
-            "lemma_lang": lang["wiki"],
+            "lemma_lang": book_lang,
             "mobi_codec": mobi_codec,
             "useragent": useragent,
             "book_fmt": book_fmt,
@@ -195,7 +193,7 @@ def do_job(
             acr,
             revision,
             model,
-            lang["wiki"],
+            book_lang,
             kfx_json,
             mobi_html,
             mobi_codec,
@@ -235,7 +233,6 @@ def create_files(
 ) -> None:
     is_epub = not kfx_json and not mobi_codec
     plugin_path = Path(plugin_path_str)
-    gloss_lang = prefs["wiktionary_gloss_lang"] if is_epub else "en"
     insert_installed_libs(plugin_path)
     nlp = load_spacy(model, book_path if create_x else None, prefs["use_pos"])
     if create_ww:
@@ -249,7 +246,6 @@ def create_files(
             nlp,
             model,
             wiki_lang,
-            gloss_lang,
             not is_epub,
             lemmas_conn,
             plugin_path,
@@ -306,7 +302,12 @@ def create_files(
                     xhtml_path,
                     prefs["use_pos"],
                 )
-        epub.modify_epub(prefs, wiki_lang, lemmas_conn)
+        supported_languages = load_plugin_json(plugin_path, "data/languages.json")
+        has_multiple_ipas = (
+            supported_languages[prefs["wiktionary_gloss_lang"]]["gloss_source"]
+            == "kaikki"
+        )
+        epub.modify_epub(prefs, wiki_lang, lemmas_conn, has_multiple_ipas)
         return
 
     # Kindle
@@ -765,7 +766,7 @@ def load_spacy(model: str, book_path: str | None, use_pos: bool):
 
 
 def create_spacy_matcher(
-    nlp, model, lemma_lang, gloss_lang, is_kindle, lemmas_conn, plugin_path, prefs
+    nlp, model, lemma_lang, is_kindle, lemmas_conn, plugin_path, prefs
 ):
     from spacy.matcher import PhraseMatcher
     from spacy.tokens import DocBin

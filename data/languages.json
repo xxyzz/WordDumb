@@ -1,163 +1,281 @@
 {
-  "cat": {
-    "spacy": "ca_core_news_",
-    "wiki": "ca",
-    "kaikki": "Catalan",
-    "gloss": false,
-    "has_trf": true
+  "ca": {
+    "639-2": "cat",
+    "gloss_source": null,
+    "has_trf": true,
+    "name": "Catalan",
+    "spacy": "ca_core_news_"
   },
-  "dan": {
-    "spacy": "da_core_news_",
-    "wiki": "da",
-    "kaikki": "Danish",
-    "gloss": false,
-    "has_trf": true
+  "da": {
+    "639-2": "dan",
+    "gloss_source": null,
+    "has_trf": true,
+    "name": "Danish",
+    "spacy": "da_core_news_"
   },
-  "deu": {
-    "spacy": "de_core_news_",
-    "wiki": "de",
-    "kaikki": "German",
-    "gloss": false,
-    "has_trf": false
+  "de": {
+    "639-2": "deu",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "de"
+    ],
+    "name": "German",
+    "spacy": "de_core_news_"
   },
-  "ell": {
-    "spacy": "el_core_news_",
-    "wiki": "el",
-    "kaikki": "Greek",
-    "gloss": false,
-    "has_trf": false
+  "el": {
+    "639-2": "ell",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "el",
+      "en",
+      "fr"
+    ],
+    "name": "Greek",
+    "spacy": "el_core_news_"
   },
-  "eng": {
-    "spacy": "en_core_web_",
-    "wiki": "en",
-    "kaikki": "English",
-    "gloss": true,
-    "has_trf": true
+  "en": {
+    "639-2": "eng",
+    "gloss_source": "kaikki",
+    "has_trf": true,
+    "lemma_languages": [
+      "ca",
+      "da",
+      "de",
+      "el",
+      "en",
+      "es",
+      "fi",
+      "fr",
+      "hr",
+      "it",
+      "ja",
+      "ko",
+      "lt",
+      "mk",
+      "nl",
+      "no",
+      "pl",
+      "pt",
+      "ro",
+      "ru",
+      "sv",
+      "uk",
+      "zh"
+    ],
+    "name": "English",
+    "spacy": "en_core_web_"
   },
-  "fin": {
-    "spacy": "fi_core_news_",
-    "wiki": "fi",
-    "kaikki": "Finnish",
-    "gloss": false,
-    "has_trf": false
+  "es": {
+    "639-2": "spa",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "en",
+      "es"
+    ],
+    "name": "Spanish",
+    "spacy": "es_core_news_"
   },
-  "fra": {
-    "spacy": "fr_core_news_",
-    "wiki": "fr",
-    "kaikki": "French",
-    "gloss": false,
-    "has_trf": false
+  "fi": {
+    "639-2": "fin",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "fi"
+    ],
+    "name": "Finnish",
+    "spacy": "fi_core_news_"
   },
-  "hrv": {
-    "spacy": "hr_core_news_",
-    "wiki": "hr",
-    "kaikki": "Serbo-Croatian",
-    "gloss": false,
-    "has_trf": false
+  "fr": {
+    "639-2": "fra",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "ca",
+      "da",
+      "de",
+      "el",
+      "en",
+      "es",
+      "fi",
+      "fr",
+      "hr",
+      "it",
+      "ja",
+      "ko",
+      "lt",
+      "mk",
+      "nl",
+      "no",
+      "pl",
+      "pt",
+      "ro",
+      "ru",
+      "sv",
+      "uk",
+      "zh"
+    ],
+    "name": "French",
+    "spacy": "fr_core_news_"
   },
-  "ita": {
-    "spacy": "it_core_news_",
-    "wiki": "it",
-    "kaikki": "Italian",
-    "gloss": false,
-    "has_trf": false
+  "hr": {
+    "639-2": "hrv",
+    "gloss_source": null,
+    "has_trf": false,
+    "name": "Serbo-Croatian",
+    "spacy": "hr_core_news_"
   },
-  "jpn": {
-    "spacy": "ja_core_news_",
-    "wiki": "ja",
-    "kaikki": "Japanese",
-    "gloss": false,
-    "has_trf": true
+  "it": {
+    "639-2": "ita",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "en",
+      "it"
+    ],
+    "name": "Italian",
+    "spacy": "it_core_news_"
   },
-  "kor": {
-    "spacy": "ko_core_news_",
-    "wiki": "ko",
-    "kaikki": "Korean",
-    "gloss": false,
-    "has_trf": false
+  "ja": {
+    "639-2": "jpn",
+    "gloss_source": "dbnary",
+    "has_trf": true,
+    "lemma_languages": [
+      "ja"
+    ],
+    "name": "Japanese",
+    "spacy": "ja_core_news_"
   },
-  "lit": {
-    "spacy": "lt_core_news_",
-    "wiki": "lt",
-    "kaikki": "Lithuanian",
-    "gloss": false,
-    "has_trf": false
+  "ko": {
+    "639-2": "kor",
+    "gloss_source": null,
+    "has_trf": false,
+    "name": "Korean",
+    "spacy": "ko_core_news_"
   },
-  "mkd": {
-    "spacy": "mk_core_news_",
-    "wiki": "mk",
-    "kaikki": "Macedonian",
-    "gloss": false,
-    "has_trf": false
+  "lt": {
+    "639-2": "lit",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "lt"
+    ],
+    "name": "Lithuanian",
+    "spacy": "lt_core_news_"
   },
-  "nld": {
-    "spacy": "nl_core_news_",
-    "wiki": "nl",
-    "kaikki": "Dutch",
-    "gloss": false,
-    "has_trf": false
+  "mk": {
+    "639-2": "mkd",
+    "gloss_source": null,
+    "has_trf": false,
+    "name": "Macedonian",
+    "spacy": "mk_core_news_"
   },
-  "nob": {
-    "spacy": "nb_core_news_",
-    "wiki": "no",
-    "kaikki": "Norwegian Bokmål",
-    "gloss": false,
-    "has_trf": false
+  "nl": {
+    "639-2": "nld",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "nl"
+    ],
+    "name": "Dutch",
+    "spacy": "nl_core_news_"
   },
-  "pol": {
-    "spacy": "pl_core_news_",
-    "wiki": "pl",
-    "kaikki": "Polish",
-    "gloss": false,
-    "has_trf": false
+  "no": {
+    "639-2": "nob",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "no"
+    ],
+    "name": "Norwegian Bokmål",
+    "spacy": "nb_core_news_"
   },
-  "por": {
-    "spacy": "pt_core_news_",
-    "wiki": "pt",
-    "kaikki": "Portuguese",
-    "gloss": false,
-    "has_trf": false
+  "pl": {
+    "639-2": "pol",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "pl"
+    ],
+    "name": "Polish",
+    "spacy": "pl_core_news_"
   },
-  "ron": {
-    "spacy": "ro_core_news_",
-    "wiki": "ro",
-    "kaikki": "Romanian",
-    "gloss": false,
-    "has_trf": false
+  "pt": {
+    "639-2": "por",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "pt"
+    ],
+    "name": "Portuguese",
+    "spacy": "pt_core_news_"
   },
-  "rus": {
-    "spacy": "ru_core_news_",
-    "wiki": "ru",
-    "kaikki": "Russian",
-    "gloss": false,
-    "has_trf": false
+  "ro": {
+    "639-2": "ron",
+    "gloss_source": null,
+    "has_trf": false,
+    "name": "Romanian",
+    "spacy": "ro_core_news_"
   },
-  "spa": {
-    "spacy": "es_core_news_",
-    "wiki": "es",
-    "kaikki": "Spanish",
-    "gloss": false,
-    "has_trf": false
+  "ru": {
+    "639-2": "rus",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "ru"
+    ],
+    "name": "Russian",
+    "spacy": "ru_core_news_"
   },
-  "swe": {
-    "spacy": "sv_core_news_",
-    "wiki": "sv",
-    "kaikki": "Swedish",
-    "gloss": false,
-    "has_trf": false
+  "sv": {
+    "639-2": "swe",
+    "gloss_source": "dbnary",
+    "has_trf": false,
+    "lemma_languages": [
+      "sv"
+    ],
+    "name": "Swedish",
+    "spacy": "sv_core_news_"
   },
-  "ukr": {
-    "spacy": "uk_core_news_",
-    "wiki": "uk",
-    "kaikki": "Ukrainian",
-    "gloss": false,
-    "has_trf": true
+  "uk": {
+    "639-2": "ukr",
+    "gloss_source": null,
+    "has_trf": true,
+    "name": "Ukrainian",
+    "spacy": "uk_core_news_"
   },
-  "zho": {
-    "spacy": "zh_core_web_",
-    "wiki": "zh",
-    "kaikki": "Chinese",
-    "gloss": true,
-    "has_trf": true
+  "zh": {
+    "639-2": "zho",
+    "gloss_source": "kaikki",
+    "has_trf": true,
+    "lemma_languages": [
+      "ca",
+      "da",
+      "de",
+      "el",
+      "en",
+      "es",
+      "fi",
+      "fr",
+      "hr",
+      "it",
+      "ja",
+      "ko",
+      "lt",
+      "mk",
+      "nl",
+      "no",
+      "pl",
+      "pt",
+      "ro",
+      "ru",
+      "sv",
+      "uk",
+      "zh"
+    ],
+    "name": "Chinese",
+    "spacy": "zh_core_web_"
   }
 }

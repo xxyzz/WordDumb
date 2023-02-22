@@ -84,7 +84,7 @@ class WordDumb(InterfaceAction):
 
 def get_metadata_of_selected_books(
     gui: Any, custom_x_ray: bool
-) -> Iterator[tuple[int, list[str], list[str], Any, dict[str, str]]]:
+) -> Iterator[tuple[int, list[str], list[str], Any, str]]:
     return filter(
         None,
         [

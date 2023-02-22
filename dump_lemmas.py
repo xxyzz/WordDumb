@@ -46,7 +46,6 @@ def dump_spacy_docs(
     spacy_model: str,
     is_kindle: bool,
     lemma_lang: str,
-    gloss_lang: str,
     db_path: Path,
     plugin_path: Path,
     prefs: Prefs,

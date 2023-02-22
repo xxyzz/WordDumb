@@ -25,7 +25,6 @@ if "db_path" in options:
         options["model_name"],
         options["is_kindle"],
         options["lemma_lang"],
-        options["gloss_lang"],
         Path(options["db_path"]),
         Path(options["plugin_path"]),
         prefs,

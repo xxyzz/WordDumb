@@ -256,7 +256,10 @@ def copy_klld_to_device(
         return
     plugin_path = get_plugin_path()
     supported_languages = load_plugin_json(plugin_path, "data/languages.json")
-    lemma_lang = supported_languages[book_lang]
+    for code, value in supported_languages.items():
+        if value["639-2"] == book_lang:
+            lemma_lang = code
+            break
     local_klld_path = get_wiktionary_klld_path(
         plugin_path, lemma_lang, prefs["kindle_gloss_lang"]
     )

@@ -66,12 +66,11 @@ class Wikipedia:
 
     def add_cache(self, title: str, intro: str, wikidata_item: str | None) -> int:
         desc_id = 0
-        if intro is not None:
-            for (new_desc_id,) in self.db_conn.execute(
-                "INSERT INTO descriptions (description, wikidata_item) VALUES(?, ?) RETURNING id",
-                (intro, wikidata_item),
-            ):
-                desc_id = new_desc_id
+        for (new_desc_id,) in self.db_conn.execute(
+            "INSERT INTO descriptions (description, wikidata_item) VALUES(?, ?) RETURNING id",
+            (intro, wikidata_item),
+        ):
+            desc_id = new_desc_id
         self.add_title(title, desc_id)
         return desc_id
 
@@ -255,12 +254,11 @@ class Fandom:
 
     def add_cache(self, title: str, intro: str) -> int:
         desc_id = 0
-        if intro is not None:
-            for (new_desc_id,) in self.db_conn.execute(
-                "INSERT INTO descriptions (description) VALUES(?) RETURNING id",
-                (intro,),
-            ):
-                desc_id = new_desc_id
+        for (new_desc_id,) in self.db_conn.execute(
+            "INSERT INTO descriptions (description) VALUES(?) RETURNING id",
+            (intro,),
+        ):
+            desc_id = new_desc_id
         self.add_title(title, desc_id)
         return desc_id
 

@@ -5,9 +5,11 @@ body:
     attributes:
       label: Checkboxes
       options:
-        - label: I have read the [README](https://github.com/xxyzz/WordDumb#how-to-use) file.
+        - label: I have read the document at [xxyzz.github.com/WordDumb](https://xxyzz.github.com/WordDumb).
           required: true
         - label: I have not found similar issue or disscussion at GitHub.
+          required: true
+        - label: Reboot doesn't fix the problem.
           required: true
 
   - type: textarea
@@ -21,8 +23,8 @@ body:
       label: System Information
       placeholder: |
         OS: Arch Linux, x86_64
-        calibre version: 5.40.0, 64bit
-        Python version: 3.10.4, 64bit
+        calibre version: 5.40.0
+        Python version: 3.10.4
         Plugin version: 3.19.0
     validations:
       required: true

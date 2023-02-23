@@ -5,6 +5,8 @@ WordDumb
 
 Supported languages: Bokmål, Català, Dansk, Deutsch, English, Español, Français, Hrvatski, Italiano, Lietuvių, Nederlands, Polski, Português, Română, Suomi, Svenska, Ελληνικά, Македонски, Русский, Українська, 中文, 日本語, 한국어.
 
+Test plugin will be uploaded to `GitHub Actions Artifacts <https://github.com/xxyzz/WordDumb/actions/workflows/tests.yml>`_ at each git push automatically.
+
 .. image:: https://user-images.githubusercontent.com/21101839/202722815-357c8cfe-703c-4e58-843f-deaf694f6fea.png
 
 .. toctree::

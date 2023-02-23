@@ -96,11 +96,11 @@ Some lemmas have mutiple senses:
    >>> base64.b64decode("YW4gaG9ub3JhcnkgYXBwZWxsYXRpb24=")
    b'an honorary appellation'
 
-[Base64 - Wikipedia](https://en.wikipedia.org/wiki/Base64)
+`Base64 - Wikipedia <https://en.wikipedia.org/wiki/Base64>`_
 
-[base64 — Base16, Base32, Base64, Base85 Data Encodings — Python 3.9.0 documentation](https://docs.python.org/3/library/base64.html)
+`base64 — Base16, Base32, Base64, Base85 Data Encodings — Python 3.9.0 documentation <https://docs.python.org/3/library/base64.html>`_
 
-[codecs — Codec registry and base classes — Python 3.9.0 documentation](https://docs.python.org/3/library/codecs.html)
+`codecs — Codec registry and base classes — Python 3.9.0 documentation <https://docs.python.org/3/library/codecs.html>`_
 
 sources
 ^^^^^^^

@@ -138,6 +138,8 @@ def export_lemmas_job(
             supported_languages = load_plugin_json(
                 get_plugin_path(), "data/languages.json"
             )
+            if gloss_lang == "zh_cn":
+                gloss_lang = "zh"
             has_multiple_ipas = (
                 supported_languages[gloss_lang]["gloss_source"] == "kaikki"
             )

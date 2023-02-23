@@ -303,10 +303,10 @@ def create_files(
                     prefs["use_pos"],
                 )
         supported_languages = load_plugin_json(plugin_path, "data/languages.json")
-        has_multiple_ipas = (
-            supported_languages[prefs["wiktionary_gloss_lang"]]["gloss_source"]
-            == "kaikki"
-        )
+        gloss_lang = prefs["wiktionary_gloss_lang"]
+        if gloss_lang == "zh_cn":
+            gloss_lang = "zh"
+        has_multiple_ipas = supported_languages[gloss_lang]["gloss_source"] == "kaikki"
         epub.modify_epub(prefs, wiki_lang, lemmas_conn, has_multiple_ipas)
         return
 

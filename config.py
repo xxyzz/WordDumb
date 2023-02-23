@@ -506,6 +506,8 @@ class ChooseLemmaLangDialog(QDialog):
     def gloss_lang_changed(self) -> None:
         language_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
         gloss_code = self.gloss_lang.currentData()
+        if gloss_code == "zh_cn":
+            gloss_code = "zh"
         self.lemma_lang.clear()
         for code in language_dict[gloss_code]["lemma_languages"]:
             self.lemma_lang.addItem(_(language_dict[code]["name"]), code)

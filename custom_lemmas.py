@@ -72,13 +72,8 @@ class CustomLemmasDialog(QDialog):
         )
         vl.addLayout(form_layout)
         self.init_filters(form_layout)
-
-        supported_languages = load_plugin_json(get_plugin_path(), "data/languages.json")
-        if (
-            not is_kindle
-            and supported_languages[gloss_lang]["gloss_source"] == "kaikki"
-        ):
-            self.init_wiktionary_buttons(form_layout)
+        if not is_kindle:
+            self.init_wiktionary_buttons(form_layout, gloss_lang)
         vl.addWidget(self.init_dialog_buttons())
 
     def init_sql_table(self, is_kindle: bool) -> None:
@@ -137,10 +132,18 @@ class CustomLemmasDialog(QDialog):
         self.filter_difficulty_box.currentIndexChanged.connect(self.filter_data)
         form_layout.addRow(_("Filter difficulty"), self.filter_difficulty_box)
 
-    def init_wiktionary_buttons(self, form_layout: QFormLayout) -> None:
+    def init_wiktionary_buttons(
+        self, form_layout: QFormLayout, gloss_lang: str
+    ) -> None:
         from .config import prefs
 
-        if self.lemma_lang in ["en", "zh"]:
+        supported_languages = load_plugin_json(get_plugin_path(), "data/languages.json")
+        if gloss_lang == "zh_cn":
+            gloss_lang = "zh"
+        if (
+            self.lemma_lang in ["en", "zh"]
+            and supported_languages[gloss_lang]["gloss_source"] == "kaikki"
+        ):
             self.ipa_button = QComboBox()
             if self.lemma_lang == "en":
                 self.ipa_button.addItem(_("General American"), "ga_ipa")

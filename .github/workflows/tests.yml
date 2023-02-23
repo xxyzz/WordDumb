@@ -6,12 +6,14 @@ on:
       - '**'
     paths-ignore:
       - '**.md'
+      - '**.rst'
       - 'translations/**'
   pull_request:
     branches:
       - '**'
     paths-ignore:
       - '**.md'
+      - '**.rst'
       - 'translations/**'
 
 jobs:

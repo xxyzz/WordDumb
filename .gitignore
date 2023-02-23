@@ -7,21 +7,14 @@
 \#*\#
 
 # python env
-.env
-env
 .venv
 
 # python
 __pycache__
 
-# vmd preview file
-*.temp
-
 *.zip
-*.klld
 
 # translation files
 *.mo
 
-# Copied file
-libs
+docs/_build

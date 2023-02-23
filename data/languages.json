@@ -122,8 +122,11 @@
   },
   "hr": {
     "639-2": "hrv",
-    "gloss_source": null,
+    "gloss_source": "dbnary",
     "has_trf": false,
+    "lemma_languages": [
+      "hr"
+    ],
     "name": "Serbo-Croatian",
     "spacy": "hr_core_news_"
   },

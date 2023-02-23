@@ -196,11 +196,18 @@ class ConfigWidget(QWidget):
         donate_button.clicked.connect(donate)
         vl.addWidget(donate_button)
 
-        github_button = QPushButton(_("Source code and document"))
-        github_button.clicked.connect(self.github)
+        doc_button = QPushButton(_("Document"))
+        doc_button.clicked.connect(self.open_document)
+        vl.addWidget(doc_button)
+
+        github_button = QPushButton(_("Source code"))
+        github_button.clicked.connect(self.open_github)
         vl.addWidget(github_button)
 
-    def github(self) -> None:
+    def open_document(self) -> None:
+        webbrowser.open("https://xxyzz.github.io/WordDumb")
+
+    def open_github(self) -> None:
         webbrowser.open(GITHUB_URL)
 
     def save_settings(self) -> None:

@@ -2,6 +2,9 @@
 from typing import TYPE_CHECKING, Any
 
 GITHUB_URL = "https://github.com/xxyzz/WordDumb"
+INSTALL_PYTHON_DOC = (
+    "https://xxyzz.github.io/WordDumb/installation.html#install-python-3-10-and-pip"
+)
 
 load_translations()  # type: ignore
 if TYPE_CHECKING:
@@ -22,8 +25,8 @@ def job_failed(job: Any, parent: Any = None) -> bool:
             error_dialog(
                 "We want... a shrubbery!",
                 _(
-                    "Please read the friendly <a href='{}#how-to-use'>manual</a> of how to install Python."
-                ).format(GITHUB_URL),
+                    "Please read the friendly <a href='{}'>manual</a> of how to install Python."
+                ).format(INSTALL_PYTHON_DOC),
                 job.details,
                 parent,
             )
@@ -61,9 +64,9 @@ def subprocess_error(job: Any, parent: Any) -> None:
         error_dialog(
             "Hello, my name is Philip, but everyone calls me Pip, because they hate me.",
             _(
-                """<p>Please read the friendly <a href='{}#how-to-use'>manual</a> of how to install pip.</p>
+                """<p>Please read the friendly <a href='{}'></a> of how to install pip.</p>
                 <p>If you still have this error, make sure you installed calibre with the <a href='https://calibre-ebook.com/download_linux'> binary install command</a> but not from Flathub or Snap Store.</p>"""
-            ).format(GITHUB_URL),
+            ).format(INSTALL_PYTHON_DOC),
             job.details + exception,
             parent,
         )

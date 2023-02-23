@@ -452,6 +452,13 @@ class ChooseLemmaLangDialog(QDialog):
         )
 
         language_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
+        self.lemma_lang = QComboBox()
+        self.gloss_lang = QComboBox()
+        for code, value in language_dict.items():
+            if "lemma_languages" in value:
+                self.gloss_lang.addItem(_(value["name"]), code)
+        self.gloss_lang.addItem(_("Simplified Chinese"), "zh_cn")
+
         lemma_code = prefs[
             "last_opened_kindle_lemmas_language"
             if is_kindle
@@ -460,17 +467,14 @@ class ChooseLemmaLangDialog(QDialog):
         gloss_code = prefs[
             "kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"
         ]
-        self.lemma_lang = QComboBox()
-        self.gloss_lang = QComboBox()
-        for code, value in language_dict.items():
-            if "lemma_languages" in value:
-                self.gloss_lang.addItem(code, _(value["name"]))
-        self.gloss_lang.addItem("zh_cn", _("Simplified Chinese"))
-
+        if gloss_code == "zh_cn":
+            self.gloss_lang.setCurrentText(_("Simplified Chinese"))
+            gloss_code = "zh"
+        else:
+            self.gloss_lang.setCurrentText(_(language_dict[gloss_code]["name"]))
         for code in language_dict[gloss_code]["lemma_languages"]:
-            self.lemma_lang.addItem(code, _(language_dict[code]["name"]))
+            self.lemma_lang.addItem(_(language_dict[code]["name"]), code)
         self.lemma_lang.setCurrentText(_(language_dict[lemma_code]["name"]))
-        self.gloss_lang.setCurrentText(_(language_dict[gloss_code]["name"]))
         self.gloss_lang.currentIndexChanged.connect(self.gloss_lang_changed)
         form_layout.addRow(_("Lemma language"), self.lemma_lang)
         form_layout.addRow(_("Gloss language"), self.gloss_lang)
@@ -504,4 +508,4 @@ class ChooseLemmaLangDialog(QDialog):
         gloss_code = self.gloss_lang.currentData()
         self.lemma_lang.clear()
         for code in language_dict[gloss_code]["lemma_languages"]:
-            self.lemma_lang.addItem(code, _(language_dict[code]["name"]))
+            self.lemma_lang.addItem(_(language_dict[code]["name"]), code)

@@ -62,3 +62,5 @@ Set Word Wise language to Chinese on Kindle to view Wiktionary definition. WordD
    - WordDumb adds random ASIN metadata to Kindle books if the book don't have this data.
 
    - Non-English Kindle book's language metadata will be changed to English when creating Word Wise file.
+
+   - English and Chinese Kindle Word Wise definitions require a database file downloaded from Amazon, use Wiktionary definitions if your device can't download this file.

@@ -6,7 +6,7 @@ Set preferences
 
 - Click "Preferred format order" button then drag your preferred format to the top.
 
-- Customize Word Wise requires Kindle or Android(use adb) device connected for the first time use. Lemmas have difficulty of 5 will only display when the Word Wise slider on the far right.
+- Lemmas have difficulty of 5 will only display when the Kindle Word Wise slider on the far right.
 
 - Enable "Fetch X-Ray people descriptions from Wikipedia or Fandom" option for nonfiction books and novels that have character pages on Wikipedia or Fandom. A quote from the book will be used if it's disabled or the page is not found.
 

@@ -24,4 +24,10 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "furo"
 html_static_path = ["_static"]
-html_logo = "https://github.com/xxyzz/WordDumb/raw/master/starfish.svg"
+html_logo = "../starfish.svg"
+html_theme_options = {
+    "source_repository": "https://github.com/xxyzz/WordDumb/",
+    "source_branch": "master",
+    "source_directory": "docs/",
+    "announcement": "Testing features: Word Wise for non-English Kindle books, use POS type, improve Word Wise table loading speed, more Word Wise gloss languages.",
+}

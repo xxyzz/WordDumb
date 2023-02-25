@@ -1,20 +1,72 @@
 WordDumb
 ====================================
 
-**WordDumb** is a calibre plugin that generates Kindle Word Wise and X-Ray files and EPUB footnotes then send them to e-reader. Supports KFX, AZW3, AZW, MOBI and EPUB eBooks.
-
-Supported languages: Bokmål, Català, Dansk, Deutsch, English, Español, Français, Hrvatski, Italiano, Lietuvių, Nederlands, Polski, Português, Română, Suomi, Svenska, Ελληνικά, Македонски, Русский, Українська, 中文, 日本語, 한국어.
-
-Test plugin will be uploaded to `GitHub Actions Artifacts <https://github.com/xxyzz/WordDumb/actions/workflows/tests.yml>`_ at each git push automatically.
-
-.. image:: https://user-images.githubusercontent.com/21101839/202722815-357c8cfe-703c-4e58-843f-deaf694f6fea.png
-
 .. toctree::
    :hidden:
 
    installation
    usage
    contributing/index
+
+**WordDumb** is a calibre plugin for adding word gloss annotations, character and location descriptions to ebooks.
+
+Test version can be downloaded from `GitHub Actions Artifacts <https://github.com/xxyzz/WordDumb/actions/workflows/tests.yml>`_.
+
+.. image:: https://user-images.githubusercontent.com/21101839/202722815-357c8cfe-703c-4e58-843f-deaf694f6fea.png
+
+Features
+--------
+
+- Support KFX, AZW3, AZW, MOBI and EPUB eBooks.
+
+- Create and send Kindle Word Wise and X-Ray files.
+
+- Add Word Wise annotations and X-Ray footnotes to EPUB books.
+
+- Add locator map of countries and cities to EPUB X-Ray footnotes.
+
+- Add inception date of countries and cities to X-Ray descriptions.
+
+- Fetch X-Ray descriptions from Wikipedia and Fandom.
+
+- Customize Word Wise difficulty and definitions.
+
+- Customize X-Ray for each book.
+
+- Import Word Wise difficulty data from Anki, Kindle Vocabulary Builder and CSV file.
+
+- Export Word Wise data to Anki cards.
+
+Supported languages
+-------------------
+
+============= ===== ===================================================
+Book language X-Ray Word Wise gloss languages
+============= ===== ===================================================
+Bokmål        ✅    Bokmål, English, Français, 中文
+Català        ✅    English, Français, 中文
+Dansk         ✅    English, Français, 中文
+Deutsch       ✅    Deutsch, English, Français, 中文
+English       ✅    English, Español, Français, Italiano, Ελληνικά, 中文
+Español       ✅    Español, English, Français, 中文
+Français      ✅    English, Français, Ελληνικά, 中文
+Hrvatski      ✅    English, Français, Hrvatski, 中文
+Italiano      ✅    English, Français, Italiano, 中文
+Lietuvių      ✅    English, Français, Lietuvių, 中文
+Nederlands    ✅    English, Français, Nederlands, 中文
+Polski        ✅    English, Français, Polski, 中文
+Português     ✅    English, Français, Português, 中文
+Română        ✅    English, Français, 中文
+Suomi         ✅    English, Français, Suomi, 中文
+Svenska       ✅    English, Français, Svenska, 中文
+Ελληνικά      ✅    English, Français, Ελληνικά, 中文
+Македонски    ✅    English, Français, 中文
+Русский       ✅    English, Français, Русский, 中文
+Українська    ✅    English, Français, 中文
+中文          ✅     English, Français, 中文
+日本語         ✅    English, Français, 中文, 日本語
+한국어         ✅     English, Français, 中文
+============= ===== ===================================================
 
 Community
 ---------

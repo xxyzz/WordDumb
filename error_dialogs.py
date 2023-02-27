@@ -30,6 +30,15 @@ def job_failed(job: Any, parent: Any = None) -> bool:
                 job.details,
                 parent,
             )
+        elif "OutdatedPython" in job.details:
+            error_dialog(
+                "Outdated Python",
+                _(
+                    "Please read the friendly <a href='{}'>manual</a> of how to install Python."
+                ).format(INSTALL_PYTHON_DOC),
+                job.details,
+                parent,
+            )
         elif "CalledProcessError" in job.details:
             subprocess_error(job, parent)
         elif "ModuleNotFoundError" in job.details:

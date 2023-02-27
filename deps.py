@@ -87,6 +87,8 @@ def which_python() -> tuple[str, str]:
         py_v = r.stdout.decode().strip()
     else:
         py_v = ".".join(platform.python_version_tuple()[:2])
+    if list(map(int, py_v.split("."))) < [3, 10]:
+        raise Exception("OutdatedPython")
     return py, py_v
 
 

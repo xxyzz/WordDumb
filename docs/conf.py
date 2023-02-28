@@ -29,5 +29,4 @@ html_theme_options = {
     "source_repository": "https://github.com/xxyzz/WordDumb/",
     "source_branch": "master",
     "source_directory": "docs/",
-    "announcement": "Testing features: Word Wise for non-English Kindle books, use POS type, improve Word Wise table loading speed, more Word Wise gloss languages.",
 }

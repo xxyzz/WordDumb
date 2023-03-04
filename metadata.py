@@ -170,10 +170,10 @@ def get_asin_etc(
             elif library_asin != asin:
                 update_asin = True
                 asin = library_asin
-            locale = mu.record0[0x5C:0x60]
+            locale = mu.record0[0x5C:0x60]  # MOBI header locale
             lang = mi.language
             update_lang = False
-            if set_en_lang and lang[2:] != (9).to_bytes(2, "big"):  # MOBI header locale
+            if set_en_lang and locale[2:] != (9).to_bytes(2, "big"):
                 update_lang = True
                 locale = (9).to_bytes(4, "big")
                 lang = "eng"

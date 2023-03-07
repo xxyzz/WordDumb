@@ -354,10 +354,11 @@ class EPUB:
                         filename := wikidata_cache.get("map_filename")
                     ):
                         file_path = self.wiki_commons.get_image(filename)
-                        s += f'<img style="max-width:100%" src="{image_prefix}{filename}" />'
-                        shutil.copy(file_path, self.image_folder.joinpath(filename))
-                        self.image_filenames.add(filename)
-                        add_wikidata_source = True
+                        if file_path is not None:
+                            s += f'<img style="max-width:100%" src="{image_prefix}{filename}" />'
+                            shutil.copy(file_path, self.image_folder.joinpath(filename))
+                            self.image_filenames.add(filename)
+                            add_wikidata_source = True
                     if add_wikidata_source:
                         s += f'<p>Source: <a href="https://www.wikidata.org/wiki/{intro_cache["item_id"]}">Wikidata</a></p>'
                 s += "</aside>"

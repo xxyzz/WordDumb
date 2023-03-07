@@ -353,18 +353,21 @@ class Wikimedia_Commons:
         self.session.headers.update({"user-agent": useragent})
         self.cache_folder = plugin_path.parent.joinpath("worddumb-wikimedia")
 
-    def get_image(self, filename: str) -> Path:
+    def get_image(self, filename: str) -> Path | None:
         file_path = self.cache_folder.joinpath(filename)
-        if not file_path.exists():
-            self.download_image(filename, file_path)
+        if not file_path.exists() and not self.download_image(filename, file_path):
+            return None
         return file_path
 
-    def download_image(self, filename: str, file_path: Path) -> None:
+    def download_image(self, filename: str, file_path: Path) -> bool:
         r = self.session.get(
             f"https://commons.wikimedia.org/wiki/Special:FilePath/{filename}"
         )
+        if not r.ok:
+            return False
         with file_path.open("wb") as f:
             f.write(r.content)
+        return True
 
     def close(self) -> None:
         self.session.close()

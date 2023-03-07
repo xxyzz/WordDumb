@@ -114,6 +114,8 @@ class Wikipedia:
                 "titles": "|".join(titles),
             },
         )
+        if not result.ok:
+            return
         data = result.json()
         converts = defaultdict(list)
         redirect_to_sections: dict[str, dict[str, str]] = defaultdict(dict)
@@ -168,6 +170,8 @@ class Wikipedia:
                     "page": page,
                 },
             )
+            if not r.ok:
+                return
             result = r.json()
             for section in result.get("parse", {}).get("sections", []):
                 if section["line"] in section_to_titles:
@@ -295,6 +299,8 @@ class Fandom:
         from rapidfuzz.process import extractOne
 
         result = self.session.get(self.wiki_api, params={"page": page})
+        if not result.ok:
+            return
         data = result.json()
         if "parse" in data:
             data = data["parse"]
@@ -427,6 +433,8 @@ class Wikidata:
             "https://query.wikidata.org/sparql",
             params={"query": query, "format": "json"},
         )
+        if not result.ok:
+            return
         for binding in result.json().get("results", {}).get("bindings"):
             item_id = binding["item"]["value"].split("/")[-1]
             map_url = binding.get("map", {}).get("value")

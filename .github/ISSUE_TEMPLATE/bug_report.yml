@@ -5,7 +5,7 @@ body:
     attributes:
       label: Checkboxes
       options:
-        - label: I have read the document at [xxyzz.github.com/WordDumb](https://xxyzz.github.com/WordDumb).
+        - label: I have read the document at [xxyzz.github.io/WordDumb](https://xxyzz.github.io/WordDumb).
           required: true
         - label: I have not found similar issue or disscussion at GitHub.
           required: true

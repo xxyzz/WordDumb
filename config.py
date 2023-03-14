@@ -215,7 +215,7 @@ class ConfigWidget(QWidget):
         prefs["search_people"] = self.search_people_box.isChecked()
         prefs["model_size"] = self.model_size_box.currentData()
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
-        prefs["fandom"] = self.fandom_url.text()
+        prefs["fandom"] = self.fandom_url.text().removesuffix("/")
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
         if not ismacos:

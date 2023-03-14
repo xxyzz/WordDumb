@@ -340,7 +340,7 @@ class EPUB:
             ):
                 s += f"""
                 <aside id="{data["id"]}" epub:type="footnote">
-                {self.split_p_tags(intro_cache["intro"])}
+                {self.split_p_tags(intro_cache if isinstance(intro_cache, str) else intro_cache["intro"])}
                 <p>Source: <a href="{source_link}{quote(entity)}">{source_name}</a></p>
                 """
                 if self.wikidata and (

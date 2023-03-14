@@ -85,7 +85,11 @@ class X_Ray:
             if (search_people or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)
             ):
-                summary = intro_cache["intro"]
+                summary = (
+                    intro_cache
+                    if isinstance(intro_cache, str)
+                    else intro_cache["intro"]
+                )
                 if self.wikidata and (
                     wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])
                 ):

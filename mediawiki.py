@@ -274,7 +274,7 @@ class Fandom:
     def get_cache(self, title: str) -> str | None:
         for (desc,) in self.db_conn.execute(
             "SELECT description FROM titles JOIN descriptions ON titles.desc_id = descriptions.id WHERE title = ?",
-            (title),
+            (title,),
         ):
             return desc
         return None

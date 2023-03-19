@@ -41,18 +41,23 @@ Import data Anki Deck Package, CSV file or Kindle Vocabulary Builder. Words insi
 Create files
 ------------
 
-Connect your e-reader, select one book or multiple books then click the plugin icon or menu. You can also run the plugin in terminal:
-
-.. code-block:: console
-
-   $ calibre-debug -r WordDumb -- -h
+Connect your e-reader, select one book or multiple books then click the plugin icon or menu. Then the selected books and the generated files will be sent to your e-reader.
 
 .. raw:: html
 
    <video controls width="100%" src="https://user-images.githubusercontent.com/21101839/202723395-c84ed588-5fba-43f7-880c-70667efc9fca.mov"></video>
 
-.. note::
-   Click calibre's "Send to device" menu won't send Word Wise and X-Ray files to Kindle.
+.. attention::
+   Click calibre's "Send to device" menu won't send created files to e-reader. Always use the WordDumb plugin to send books to your device.
+
+.. tip::
+   If you forget to connect your device before generating files, connect your device then click the plugin icon or menu again and the created files will be moved to your e-reader.
+
+You can also run the plugin in terminal:
+
+.. code-block:: console
+
+   $ calibre-debug -r WordDumb -- -h
 
 Set Word Wise language to Chinese on Kindle to view Wiktionary definition. WordDumb replaces the original Chinese Kindle Word Wise database file when the "Use Wiktionary defination" option is enabled for English books or creating Word Wise for non-English books.
 

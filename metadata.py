@@ -237,5 +237,5 @@ def check_word_wise_language(book_lang: str, is_kindle: bool) -> tuple[bool, str
     supported_languages = load_plugin_json(get_plugin_path(), "data/languages.json")
     gloss_lang = prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"]
     if gloss_lang == "zh_cn":
-        gloss_lang == "zh"
+        gloss_lang = "zh"
     return book_lang in supported_languages[gloss_lang]["lemma_languages"], gloss_lang

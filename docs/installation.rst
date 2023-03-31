@@ -18,11 +18,15 @@ Install calibre 6.9.0+
 
 - macOS:
 
-Use `Homebrew <https://brew.sh>`_ or download from https://calibre-ebook.com/download_osx
+Use `Homebrew <https://brew.sh>`_ or download from https://calibre-ebook.com/download_osx.
 
 .. code-block:: console
 
    $ brew install calibre
+
+.. attention::
+
+   Don't use Rosetta 2.
 
 - Windows:
 
@@ -53,6 +57,10 @@ Install Python 3.10+ and pip
 
    $ brew install python
 
+.. attention::
+
+   Don't use Rosetta 2.
+
 - Windows:
 
 Use Chocolatey or download from https://www.python.org/downloads
@@ -61,10 +69,8 @@ Use Chocolatey or download from https://www.python.org/downloads
 
    # choco install python
 
-.. note::
-   - Do not change the default installtion settings in the Python installer.
-
-   - Python 3.11 on Windows is yet supported by `PyTorch <https://github.com/pytorch/pytorch>`_ which is the depency of `spacy-transformers <https://github.com/explosion/spacy-transformers>`_. If you want to run spaCy on GPU, install Python 3.10.
+.. attention::
+   Do not change the default installtion settings in the Python installer.
 
 Install WordDumb plugin
 -----------------------

@@ -52,7 +52,7 @@ def install_deps(pkg: str, notif: Any) -> None:
 
             pip_install("cupy-wheel", dep_versions["cupy"], notif=notif)
             # PyTorch's Windows package on pypi.org is CPU build version, reintall the CUDA build version
-            if iswindows or prefs["cuda"] == "cu116":
+            if iswindows or prefs["cuda"] == "cu118":
                 pip_install(
                     "torch",
                     dep_versions["torch"],

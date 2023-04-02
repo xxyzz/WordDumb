@@ -12,7 +12,7 @@ WordDumb
 
 Test version can be downloaded from `GitHub Actions Artifacts <https://github.com/xxyzz/WordDumb/actions/workflows/tests.yml>`_.
 
-.. image:: https://user-images.githubusercontent.com/21101839/202722815-357c8cfe-703c-4e58-843f-deaf694f6fea.png
+.. image:: https://user-images.githubusercontent.com/21101839/229348649-83b557ef-c302-4d81-a7b3-460018124040.png
 
 Features
 --------

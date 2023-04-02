@@ -6,8 +6,6 @@ Set preferences
 
 - Click "Preferred format order" button then drag your preferred format to the top.
 
-- Lemmas have difficulty of 5 will only display when the Kindle Word Wise slider on the far right.
-
 - Enable "Fetch X-Ray people descriptions from Wikipedia or Fandom" option for nonfiction books and novels that have character pages on Wikipedia or Fandom. A quote from the book will be used if it's disabled or the page is not found.
 
 - Enable "Run spaCy with GPU" option if your machine has `CUDA <https://developer.nvidia.com/cuda-downloads>`_. GPU will be used when creating X-Ray file if spaCy has transformer model for the book language with ner component.
@@ -22,21 +20,17 @@ Set preferences
 
    <video controls width="100%" src="https://user-images.githubusercontent.com/21101839/202723256-36b96e53-fbf0-4a38-ba35-27fe331d7f1d.mov"></video>
 
+Customize Word Wise
+-------------------
+
+- The default gloss language is English. If you want to use another gloss language, choose the language then click the "OK" button and wait for the download job to finish.
+
+- Lemmas have difficulty of 5 will only display when the Kindle Word Wise slider on the far right.
+
 Customize X-Ray
 ---------------
 
 Add X-Ray entities that can't be recognized by spaCy model to improve NER accuracy for each selected book. It can also be used to remove entities by checking the "Omit" checkbox.
-
-Import Word Wise
-----------------
-
-Import data Anki Deck Package, CSV file or Kindle Vocabulary Builder. Words inside the imported file will be enabled.
-
-- Select the "Include scheduling information" option when exporting the .apkg file from Anki so the card schedule state can be used as Word Wise difficulty.
-
-- The CSV file should have at least one column of words and an optional column of difficulty value.
-
-- Kindle Vocabulary Builder database path: `system/vocabulary/vocab.db`
 
 Create files
 ------------
@@ -69,3 +63,14 @@ Set Word Wise language to Chinese on Kindle to view Wiktionary definition. WordD
    - Non-English Kindle book's language metadata will be changed to English when creating Word Wise file.
 
    - English and Chinese Kindle Word Wise definitions require a database file downloaded from Amazon, use Wiktionary definitions if your device can't download this file.
+
+Import Word Wise
+----------------
+
+Import data Anki Deck Package, CSV file or Kindle Vocabulary Builder. Words inside the imported file will be enabled.
+
+- Select the "Include scheduling information" option when exporting the .apkg file from Anki so the card schedule state can be used as Word Wise difficulty.
+
+- The CSV file should have at least one column of words and an optional column of difficulty value.
+
+- Kindle Vocabulary Builder database path: `system/vocabulary/vocab.db`

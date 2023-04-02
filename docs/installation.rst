@@ -25,7 +25,6 @@ Use `Homebrew <https://brew.sh>`_ or download from https://calibre-ebook.com/dow
    $ brew install calibre
 
 .. attention::
-
    Don't use Rosetta 2.
 
 - Windows:
@@ -58,7 +57,6 @@ Install Python 3.10+ and pip
    $ brew install python
 
 .. attention::
-
    Don't use Rosetta 2.
 
 - Windows:

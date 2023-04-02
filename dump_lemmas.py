@@ -7,6 +7,7 @@ try:
         custom_lemmas_folder,
         insert_installed_libs,
         load_plugin_json,
+        use_kindle_ww_db,
     )
 except ImportError:
     from utils import (
@@ -14,6 +15,7 @@ except ImportError:
         custom_lemmas_folder,
         insert_installed_libs,
         load_plugin_json,
+        use_kindle_ww_db,
     )
 
 
@@ -29,7 +31,7 @@ def spacy_doc_path(
     import platform
 
     gloss_lang = prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"]
-    if is_kindle and lemma_lang == "en" and prefs["use_wiktionary_for_kindle"]:
+    if is_kindle and not use_kindle_ww_db(lemma_lang, prefs):
         is_kindle = False
     py_version = ".".join(platform.python_version_tuple()[:2])
     path = custom_lemmas_folder(plugin_path).joinpath(

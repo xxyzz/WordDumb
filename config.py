@@ -230,8 +230,8 @@ class ConfigWidget(QWidget):
     def open_choose_lemma_lang_dialog(self, is_kindle: bool = True) -> None:
         choose_lang_dlg = ChooseLemmaLangDialog(self, is_kindle)
         if choose_lang_dlg.exec():
-            lemma_lang = choose_lang_dlg.lemma_lang.currentData()
-            gloss_lang = choose_lang_dlg.gloss_lang.currentData()
+            lemma_lang = choose_lang_dlg.lemma_lang_box.currentData()
+            gloss_lang = choose_lang_dlg.gloss_lang_box.currentData()
             prefs[
                 "kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"
             ] = gloss_lang
@@ -240,7 +240,7 @@ class ConfigWidget(QWidget):
                 if is_kindle
                 else "last_opened_wiktionary_lemmas_language"
             ] = lemma_lang
-            if is_kindle and lemma_lang == "en":
+            if is_kindle and lemma_lang == "en" and gloss_lang in ["en", "zh", "zh_cn"]:
                 prefs[
                     "use_wiktionary_for_kindle"
                 ] = choose_lang_dlg.use_wiktionary_box.isChecked()
@@ -452,45 +452,36 @@ class ChooseLemmaLangDialog(QDialog):
     def __init__(self, parent: QObject, is_kindle: bool):
         super().__init__(parent)
         self.setWindowTitle(_("Choose language"))
+        self.prefer_gloss_code = prefs[
+            "kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"
+        ]
 
         form_layout = QFormLayout()
         form_layout.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
         )
 
+        self.lemma_lang_box = QComboBox()
+        self.gloss_lang_box = QComboBox()
         language_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
-        self.lemma_lang = QComboBox()
-        self.gloss_lang = QComboBox()
-        for code, value in language_dict.items():
-            if "lemma_languages" in value:
-                self.gloss_lang.addItem(_(value["name"]), code)
-        self.gloss_lang.addItem(_("Simplified Chinese"), "zh_cn")
-
+        for code in language_dict.keys():
+            self.lemma_lang_box.addItem(_(language_dict[code]["name"]), code)
+        self.lemma_lang_box.currentIndexChanged.connect(self.lemma_lang_changed)
         lemma_code = prefs[
             "last_opened_kindle_lemmas_language"
             if is_kindle
             else "last_opened_wiktionary_lemmas_language"
         ]
-        gloss_code = prefs[
-            "kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"
-        ]
-        if gloss_code == "zh_cn":
-            self.gloss_lang.setCurrentText(_("Simplified Chinese"))
-            gloss_code = "zh"
-        else:
-            self.gloss_lang.setCurrentText(_(language_dict[gloss_code]["name"]))
-        for code in language_dict[gloss_code]["lemma_languages"]:
-            self.lemma_lang.addItem(_(language_dict[code]["name"]), code)
-        self.lemma_lang.setCurrentText(_(language_dict[lemma_code]["name"]))
-        self.gloss_lang.currentIndexChanged.connect(self.gloss_lang_changed)
-        form_layout.addRow(_("Lemma language"), self.lemma_lang)
-        form_layout.addRow(_("Gloss language"), self.gloss_lang)
+        self.lemma_lang_box.setCurrentText(_(language_dict[lemma_code]["name"]))
+        self.lemma_lang_changed()
+        form_layout.addRow(_("Lemma language"), self.lemma_lang_box)
+        form_layout.addRow(_("Gloss language"), self.gloss_lang_box)
 
         if is_kindle:
             self.use_wiktionary_box = QCheckBox("")
-            self.use_wiktionary_box.setChecked(prefs["use_wiktionary_for_kindle"])
-            self.kindle_lemma_changed()
-            self.lemma_lang.currentIndexChanged.connect(self.kindle_lemma_changed)
+            self.kindle_lang_changed()
+            self.lemma_lang_box.currentIndexChanged.connect(self.kindle_lang_changed)
+            self.gloss_lang_box.currentIndexChanged.connect(self.kindle_lang_changed)
             form_layout.addRow(_("Use Wiktionary definition"), self.use_wiktionary_box)
 
         confirm_button_box = QDialogButtonBox(
@@ -504,17 +495,30 @@ class ChooseLemmaLangDialog(QDialog):
         vl.addWidget(confirm_button_box)
         self.setLayout(vl)
 
-    def kindle_lemma_changed(self) -> None:
-        if self.lemma_lang.currentData() == "en":
+    def kindle_lang_changed(self) -> None:
+        if (
+            self.lemma_lang_box.currentData() == "en"
+            and self.gloss_lang_box.currentData() in ["en", "zh", "zh_cn"]
+        ):
             self.use_wiktionary_box.setEnabled(True)
+            self.use_wiktionary_box.setChecked(prefs["use_wiktionary_for_kindle"])
         else:
+            self.use_wiktionary_box.setChecked(True)
             self.use_wiktionary_box.setDisabled(True)
 
-    def gloss_lang_changed(self) -> None:
+    def lemma_lang_changed(self) -> None:
         language_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
-        gloss_code = self.gloss_lang.currentData()
-        if gloss_code == "zh_cn":
-            gloss_code = "zh"
-        self.lemma_lang.clear()
-        for code in language_dict[gloss_code]["lemma_languages"]:
-            self.lemma_lang.addItem(_(language_dict[code]["name"]), code)
+        lemma_code = self.lemma_lang_box.currentData()
+        self.gloss_lang_box.clear()
+        avaliable_gloss_codes = set()
+        for code, value in language_dict.items():
+            if "lemma_languages" in value and lemma_code in value["lemma_languages"]:
+                self.gloss_lang_box.addItem(_(value["name"]), code)
+                avaliable_gloss_codes.add(code)
+                if code == "zh":
+                    self.gloss_lang_box.addItem(_("Simplified Chinese"), "zh_cn")
+                    avaliable_gloss_codes.add("zh_cn")
+        if self.prefer_gloss_code in avaliable_gloss_codes:
+            self.gloss_lang_box.setCurrentText(
+                _(language_dict[self.prefer_gloss_code]["name"])
+            )

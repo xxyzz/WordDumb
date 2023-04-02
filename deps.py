@@ -20,6 +20,7 @@ from .utils import (
     kindle_db_path,
     load_plugin_json,
     run_subprocess,
+    use_kindle_ww_db,
     wiktionary_db_path,
 )
 
@@ -160,7 +161,7 @@ def download_word_wise_file(
     extract_folder = custom_lemmas_folder(get_plugin_path())
     if not db_path.exists():
         filename = f"wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.tar.gz"
-        if is_kindle and lemma_lang == "en" and not prefs["use_wiktionary_for_kindle"]:
+        if is_kindle and use_kindle_ww_db(lemma_lang, prefs):
             filename = f"kindle_en_en_v{PROFICIENCY_VERSION}.tar.gz"
         url = f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}/{filename}"
         download_and_extract(url, extract_folder)

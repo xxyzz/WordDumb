@@ -85,8 +85,21 @@ def custom_lemmas_folder(plugin_path: Path) -> Path:
     return plugin_path.parent.joinpath("worddumb-lemmas")
 
 
+def use_kindle_ww_db(lemma_lang: str, prefs: Prefs) -> bool:
+    return (
+        lemma_lang == "en"
+        and prefs["kindle_gloss_lang"]
+        in [
+            "en",
+            "zh",
+            "zh_cn",
+        ]
+        and not prefs["use_wiktionary_for_kindle"]
+    )
+
+
 def kindle_db_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -> Path:
-    if lemma_lang == "en" and not prefs["use_wiktionary_for_kindle"]:
+    if use_kindle_ww_db(lemma_lang, prefs):
         return custom_lemmas_folder(plugin_path).joinpath(
             f"{lemma_lang}/kindle_en_en_v{PROFICIENCY_MAJOR_VERSION}.db"
         )

@@ -39,6 +39,7 @@ try:
         load_plugin_json,
         run_subprocess,
         spacy_model_name,
+        use_kindle_ww_db,
         wiktionary_db_path,
     )
     from .x_ray import X_Ray
@@ -64,6 +65,7 @@ except ImportError:
         insert_installed_libs,
         kindle_db_path,
         load_plugin_json,
+        use_kindle_ww_db,
         wiktionary_db_path,
     )
     from x_ray import X_Ray
@@ -422,7 +424,7 @@ def kindle_find_lemma(
             span.doc[span.start].pos_ if prefs["use_pos"] else None,
             lemmas_conn,
             lemma_lang,
-            prefs["use_wiktionary_for_kindle"],
+            prefs,
         )
         if data is not None:
             kindle_add_lemma(
@@ -491,10 +493,10 @@ def get_kindle_lemma_data(
     pos: str | None,
     conn: sqlite3.Connection,
     lemma_lang: str,
-    use_wiktionary: bool,
+    prefs: Prefs,
 ) -> tuple[int, int] | None:
     if pos is not None:
-        return get_kindle_lemma_with_pos(lemma, pos, conn, lemma_lang, use_wiktionary)
+        return get_kindle_lemma_with_pos(lemma, pos, conn, lemma_lang, prefs)
     else:
         return get_kindle_lemma_without_pos(lemma, conn)
 
@@ -504,9 +506,9 @@ def get_kindle_lemma_with_pos(
     pos: str,
     conn: sqlite3.Connection,
     lemma_lang: str,
-    use_wiktionary: bool,
+    prefs: Prefs,
 ) -> tuple[int, int] | None:
-    if lemma_lang == "en" and not use_wiktionary:
+    if use_kindle_ww_db(lemma_lang, prefs):
         pos = spacy_to_kindle_pos(pos)
     else:
         pos = spacy_to_wiktionary_pos(pos)
@@ -578,7 +580,7 @@ def kindle_add_lemma(
             end = index + len(escaped_text[lemma_start:lemma_end].encode(mobi_codec))
         else:
             end = index + len(lemma)
-    insert_lemma(ll_conn, (index, end) + tuple(data))
+    insert_lemma(ll_conn, (index, end) + data)
 
 
 def epub_add_lemma(

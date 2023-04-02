@@ -18,6 +18,7 @@ from .utils import (
     homebrew_mac_bin_path,
     load_plugin_json,
     run_subprocess,
+    use_kindle_ww_db,
 )
 
 
@@ -92,7 +93,7 @@ class SendFile:
                     self.book_fmt,
                     self.mi,
                     self.asin,
-                    set_en_lang=set_en_lang,
+                    set_en_lang,
                 )
                 if update_asin:  # Re-upload book cover
                     self.gui.update_thumbnail(self.mi)
@@ -252,14 +253,14 @@ def copy_klld_to_device(
 ) -> None:
     from .config import prefs
 
-    if book_lang == "eng" and not prefs["use_wiktionary_for_kindle"]:
-        return
     plugin_path = get_plugin_path()
     supported_languages = load_plugin_json(plugin_path, "data/languages.json")
     for code, value in supported_languages.items():
         if value["639-2"] == book_lang:
             lemma_lang = code
             break
+    if use_kindle_ww_db(lemma_lang, prefs):
+        return
     local_klld_path = get_wiktionary_klld_path(
         plugin_path, lemma_lang, prefs["kindle_gloss_lang"]
     )

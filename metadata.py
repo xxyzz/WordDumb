@@ -104,7 +104,7 @@ def random_asin() -> str:
 def validate_asin(asin: str | None, mi: Any) -> tuple[str, bool]:
     # check ASIN, create a random one if doesn't exist
     update_asin = False
-    if asin is None or re.fullmatch("B[0-9A-Z]{9}", asin) is None:
+    if asin is None or re.fullmatch(r"B[0-9A-Z]{9}", asin) is None:
         asin = random_asin()
         mi.set_identifier("mobi-asin", asin)
         update_asin = True

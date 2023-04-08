@@ -36,6 +36,7 @@ try:
         get_wiktionary_klld_path,
         insert_installed_libs,
         kindle_db_path,
+        load_languages_data,
         load_plugin_json,
         run_subprocess,
         spacy_model_name,
@@ -64,6 +65,7 @@ except ImportError:
         Prefs,
         insert_installed_libs,
         kindle_db_path,
+        load_languages_data,
         load_plugin_json,
         use_kindle_ww_db,
         wiktionary_db_path,
@@ -304,10 +306,8 @@ def create_files(
                     xhtml_path,
                     prefs["use_pos"],
                 )
-        supported_languages = load_plugin_json(plugin_path, "data/languages.json")
+        supported_languages = load_languages_data(plugin_path)
         gloss_lang = prefs["wiktionary_gloss_lang"]
-        if gloss_lang == "zh_cn":
-            gloss_lang = "zh"
         has_multiple_ipas = supported_languages[gloss_lang]["gloss_source"] == "kaikki"
         epub.modify_epub(prefs, wiki_lang, lemmas_conn, has_multiple_ipas)
         return

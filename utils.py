@@ -158,3 +158,15 @@ def spacy_model_name(
     else:
         spacy_model += prefs["model_size"]
     return spacy_model
+
+
+def load_languages_data(
+    plugin_path: Path,
+) -> dict[str, dict[str, str | bool | list[str]]]:
+    """
+    Add Simplified Chinese `zh_cn` key to languages dict
+    """
+    supported_languages = load_plugin_json(plugin_path, "data/languages.json")
+    supported_languages["zh_cn"] = supported_languages["zh"].copy()
+    supported_languages["zh_cn"]["name"] = "Simplified Chinese"
+    return supported_languages

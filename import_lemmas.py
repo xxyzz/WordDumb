@@ -129,17 +129,13 @@ def export_lemmas_job(
     notifications: Any = None,
 ) -> None:
     from .config import prefs
-    from .utils import get_plugin_path, load_plugin_json
+    from .utils import get_plugin_path, load_languages_data
 
     conn = sqlite3.connect(db_path)
     with open(export_path, "w", encoding="utf-8") as f:
         query_sql = "SELECT lemma, pos, full_def, example"
         if not is_kindle:
-            supported_languages = load_plugin_json(
-                get_plugin_path(), "data/languages.json"
-            )
-            if gloss_lang == "zh_cn":
-                gloss_lang = "zh"
+            supported_languages = load_languages_data(get_plugin_path())
             has_multiple_ipas = (
                 supported_languages[gloss_lang]["gloss_source"] == "kaikki"
             )

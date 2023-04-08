@@ -39,6 +39,7 @@ from .utils import (
     dump_prefs,
     get_plugin_path,
     kindle_db_path,
+    load_languages_data,
     load_plugin_json,
     run_subprocess,
     spacy_model_name,
@@ -507,7 +508,7 @@ class ChooseLemmaLangDialog(QDialog):
             self.use_wiktionary_box.setDisabled(True)
 
     def lemma_lang_changed(self) -> None:
-        language_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
+        language_dict = load_languages_data(get_plugin_path())
         lemma_code = self.lemma_lang_box.currentData()
         self.gloss_lang_box.clear()
         avaliable_gloss_codes = set()
@@ -515,9 +516,6 @@ class ChooseLemmaLangDialog(QDialog):
             if "lemma_languages" in value and lemma_code in value["lemma_languages"]:
                 self.gloss_lang_box.addItem(_(value["name"]), code)
                 avaliable_gloss_codes.add(code)
-                if code == "zh":
-                    self.gloss_lang_box.addItem(_("Simplified Chinese"), "zh_cn")
-                    avaliable_gloss_codes.add("zh_cn")
         if self.prefer_gloss_code in avaliable_gloss_codes:
             self.gloss_lang_box.setCurrentText(
                 _(language_dict[self.prefer_gloss_code]["name"])

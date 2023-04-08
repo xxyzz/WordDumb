@@ -37,7 +37,7 @@ from .utils import (
     custom_lemmas_folder,
     get_klld_path,
     get_plugin_path,
-    load_plugin_json,
+    load_languages_data,
 )
 
 load_translations()  # type: ignore
@@ -137,9 +137,7 @@ class CustomLemmasDialog(QDialog):
     ) -> None:
         from .config import prefs
 
-        supported_languages = load_plugin_json(get_plugin_path(), "data/languages.json")
-        if gloss_lang == "zh_cn":
-            gloss_lang = "zh"
+        supported_languages = load_languages_data(get_plugin_path())
         if (
             self.lemma_lang in ["en", "zh"]
             and supported_languages[gloss_lang]["gloss_source"] == "kaikki"

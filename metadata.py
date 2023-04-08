@@ -232,10 +232,8 @@ def update_kfx_metedata(book_path: str, asin: str, lang: str):
 
 def check_word_wise_language(book_lang: str, is_kindle: bool) -> tuple[bool, str]:
     from .config import prefs
-    from .utils import get_plugin_path, load_plugin_json
+    from .utils import get_plugin_path, load_languages_data
 
-    supported_languages = load_plugin_json(get_plugin_path(), "data/languages.json")
+    supported_languages = load_languages_data(get_plugin_path())
     gloss_lang = prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"]
-    if gloss_lang == "zh_cn":
-        gloss_lang = "zh"
     return book_lang in supported_languages[gloss_lang]["lemma_languages"], gloss_lang

@@ -68,7 +68,7 @@ def job_failed(job: Any, parent: Any = None) -> bool:
 
 
 def subprocess_error(job: Any, parent: Any) -> None:
-    exception = job.exception.stderr.decode("utf-8")
+    exception = job.exception.stderr.decode("utf-8", "ignore")
     if "No module named pip" in exception:
         error_dialog(
             "Hello, my name is Philip, but everyone calls me Pip, because they hate me.",

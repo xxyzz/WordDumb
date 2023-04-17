@@ -3,6 +3,7 @@
 import sqlite3
 from collections import defaultdict
 from datetime import datetime
+from functools import partial
 from pathlib import Path
 from typing import TypedDict
 from urllib.parse import unquote
@@ -297,6 +298,7 @@ class Fandom:
         from lxml import etree
         from rapidfuzz.fuzz import token_set_ratio
         from rapidfuzz.process import extractOne
+        from rapidfuzz.utils import default_process
 
         result = self.session.get(self.wiki_api, params={"page": page})
         if not result.ok:
@@ -319,7 +321,7 @@ class Fandom:
                     page,
                     disambiguation_titles,
                     score_cutoff=FUZZ_THRESHOLD,
-                    scorer=token_set_ratio,
+                    scorer=partial(token_set_ratio, processor=default_process),
                 )
                 if r is not None:
                     chosen_title = r[0]

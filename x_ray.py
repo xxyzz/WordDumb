@@ -2,6 +2,7 @@
 
 import re
 from collections import Counter, defaultdict
+from functools import partial
 from pathlib import Path
 from sqlite3 import Connection
 
@@ -108,6 +109,7 @@ class X_Ray:
     ) -> None:
         from rapidfuzz.fuzz import token_set_ratio
         from rapidfuzz.process import extractOne
+        from rapidfuzz.utils import default_process
 
         if entity_data := self.entities.get(entity):
             entity_id = entity_data["id"]
@@ -117,7 +119,7 @@ class X_Ray:
                 entity,
                 self.entities.keys(),
                 score_cutoff=FUZZ_THRESHOLD,
-                scorer=token_set_ratio,
+                scorer=partial(token_set_ratio, processor=default_process),
             )
         ):
             matched_name = r[0]

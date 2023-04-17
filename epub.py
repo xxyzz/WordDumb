@@ -6,6 +6,7 @@ import shutil
 import sqlite3
 import zipfile
 from collections import defaultdict
+from functools import partial
 from html import escape, unescape
 from pathlib import Path
 from typing import Iterator
@@ -166,6 +167,7 @@ class EPUB:
     ) -> None:
         from rapidfuzz.fuzz import token_set_ratio
         from rapidfuzz.process import extractOne
+        from rapidfuzz.utils import default_process
 
         if entity_data := self.entities.get(entity):
             entity_id = entity_data["id"]
@@ -175,7 +177,7 @@ class EPUB:
                 entity,
                 self.entities.keys(),
                 score_cutoff=FUZZ_THRESHOLD,
-                scorer=token_set_ratio,
+                scorer=partial(token_set_ratio, processor=default_process),
             )
         ):
             matched_name = r[0]

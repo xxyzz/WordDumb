@@ -168,7 +168,7 @@ class X_Ray:
 
             if (
                 src_count < minimal_count
-                and dest_name is None
+                and self.mediawiki.get_cache(src_name) is None
                 and src_name not in self.custom_x_ray
             ):
                 del src_counter[src_entity["id"]]

@@ -70,6 +70,15 @@ Use Chocolatey or download from https://www.python.org/downloads
 .. attention::
    Do not change the default installtion settings in the Python installer.
 
+Install CUDA(optional)
+----------------------
+
+`CUDA <https://en.wikipedia.org/wiki/CUDA>`_ is required for the "Run spaCy with GPU" feature, you can download CUDA from https://developer.nvidia.com/cuda-downloads
+
+.. attention::
+
+   Reboot is required after installing CUDA on Windows.
+
 Install WordDumb plugin
 -----------------------
 
@@ -77,14 +86,14 @@ Install WordDumb plugin
 
    <video controls width="100%" src="https://user-images.githubusercontent.com/21101839/202723023-082a6147-6425-43be-9869-43293c90a306.mov"></video>
 
-Install `KFX Input <https://www.mobileread.com/forums/showthread.php?t=291290>`_ plugin
----------------------------------------------------------------------------------------
+Install `KFX Input <https://www.mobileread.com/forums/showthread.php?t=291290>`_ plugin(optional)
+-------------------------------------------------------------------------------------------------
 
 This step is optional if you don't use the KFX format. The installation steps are similar to the above video.
 
 
-Install adb
------------
+Install adb(optional)
+---------------------
 
 This step is for Android users. Only KFX books are supported.
 

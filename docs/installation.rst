@@ -77,7 +77,9 @@ Install CUDA(optional)
 
 .. attention::
 
-   Reboot is required after installing CUDA on Windows.
+   - C/C++ compiler is also needed for Windows, download from https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022
+
+   - Reboot is required after installing CUDA on Windows.
 
 Install WordDumb plugin
 -----------------------

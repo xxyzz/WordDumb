@@ -308,7 +308,10 @@ def create_files(
                 )
         supported_languages = load_languages_data(plugin_path)
         gloss_lang = prefs["wiktionary_gloss_lang"]
-        has_multiple_ipas = supported_languages[gloss_lang]["gloss_source"] == "kaikki"
+        has_multiple_ipas = (
+            supported_languages[gloss_lang]["gloss_source"] == "kaikki"
+            and prefs.get(f"{wiki_lang}_ipa") is not None
+        )
         epub.modify_epub(prefs, wiki_lang, lemmas_conn, has_multiple_ipas)
         return
 

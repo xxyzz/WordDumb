@@ -459,12 +459,9 @@ class EPUB:
         shutil.rmtree(self.extract_folder)
 
     def get_lemma_gloss(self, lemma: str, lang: str) -> list[tuple[str, str, str, str]]:
-        select_sql = f"SELECT short_def, full_def, example, "
+        select_sql = "SELECT short_def, full_def, example, "
         if self.has_multiple_ipas:
-            if lang == "en":
-                select_sql += self.prefs["en_ipa"]
-            elif lang == "zh":
-                select_sql += self.prefs["zh_ipa"]
+            select_sql += self.prefs[f"{lang}_ipa"]
         else:
             select_sql += "ipa"
         select_sql += " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id "

@@ -74,3 +74,16 @@ Import data Anki Deck Package, CSV file or Kindle Vocabulary Builder. Words insi
 - The CSV file should have at least one column of words and an optional column of difficulty value.
 
 - Kindle Vocabulary Builder database path: `system/vocabulary/vocab.db`
+
+
+HTTP proxy
+----------
+
+HTTP proxy can be configured by setting the `http_proxy`, and `https_proxy` environment variables:
+
+.. code-block:: console
+
+    $ export HTTP_PROXY="http://host:port"
+    $ export HTTPS_PROXY="http://host:port"
+
+Notice the value of `HTTPS_PROXY` starts with `http://`. For more information, check out `requests documentation <https://requests.readthedocs.io/en/latest/user/advanced/#proxies>`_ and `calibre manual <https://manual.calibre-ebook.com/faq.html#how-do-i-get-calibre-to-use-my-http-proxy>`_.

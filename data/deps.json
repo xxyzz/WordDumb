@@ -2,7 +2,7 @@
   "cupy": "12.0.0",
   "lxml": "4.9.2",
   "thinc-apple-ops": "0.1.3",
-  "torch": "2.0.0",
+  "torch": "2.0.1",
   "rapidfuzz": "3.0.0",
   "spacy_model": "3.5.0"
 }

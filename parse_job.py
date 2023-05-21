@@ -239,6 +239,7 @@ def create_files(
     plugin_path = Path(plugin_path_str)
     insert_installed_libs(plugin_path)
     nlp = load_spacy(model, book_path if create_x else None, prefs["use_pos"])
+    lemmas_conn = None
     if create_ww:
         lemmas_db_path = (
             wiktionary_db_path(plugin_path, wiki_lang, prefs["wiktionary_gloss_lang"])
@@ -365,7 +366,7 @@ def create_files(
         )
     if create_ww:
         save_db(ll_conn, ll_path)
-        lemmas_conn.close()
+        lemmas_conn.close()  # type: ignore
 
 
 def parse_book(

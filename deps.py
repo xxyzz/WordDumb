@@ -71,11 +71,17 @@ def install_deps(pkg: str, notif: Any) -> None:
 
 
 def which_python() -> tuple[str, str]:
+    """
+    Return Python command or file path and version string
+    """
     py = "python3"
     if iswindows:
         py = "py" if shutil.which("py") else "python"
     elif ismacos:
         py = homebrew_mac_bin_path("python3")
+
+    if shutil.which(py) is None:
+        raise Exception("PythonNotFound")
 
     if isfrozen:
         r = run_subprocess(

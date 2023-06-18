@@ -21,11 +21,11 @@ def error_dialog(title: str, message: str, error: str, parent: Any) -> None:
 
 def job_failed(job: Any, parent: Any = None) -> bool:
     if job and job.failed:
-        if "FileNotFoundError" in job.details and "subprocess.py" in job.details:
+        if "PythonNotFound" in job.details:
             error_dialog(
                 "We want... a shrubbery!",
                 _(
-                    "Please read the friendly <a href='{}'>manual</a> of how to install Python."
+                    "Can't find Python. Please read the <a href='{}'>document</a> of how to install Python."
                 ).format(INSTALL_PYTHON_DOC),
                 job.details,
                 parent,
@@ -34,7 +34,7 @@ def job_failed(job: Any, parent: Any = None) -> bool:
             error_dialog(
                 "Outdated Python",
                 _(
-                    "Please read the friendly <a href='{}'>manual</a> of how to install Python."
+                    "Your Python version is too old, please update to a newer version and read the <a href='{}'>document</a> for more information."
                 ).format(INSTALL_PYTHON_DOC),
                 job.details,
                 parent,

@@ -16,7 +16,7 @@ from .utils import (
     custom_lemmas_folder,
     get_plugin_path,
     get_wiktionary_klld_path,
-    homebrew_mac_bin_path,
+    mac_bin_path,
     kindle_db_path,
     load_plugin_json,
     run_subprocess,
@@ -78,7 +78,7 @@ def which_python() -> tuple[str, str]:
     if iswindows:
         py = "py" if shutil.which("py") else "python"
     elif ismacos:
-        py = homebrew_mac_bin_path("python3")
+        py = mac_bin_path("python3")
 
     if shutil.which(py) is None:
         raise Exception("PythonNotFound")

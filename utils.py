@@ -2,10 +2,12 @@
 
 import json
 import platform
+import shutil
 import subprocess
 import sys
 import webbrowser
 import zipfile
+
 from pathlib import Path
 from typing import Any, TypedDict
 
@@ -57,12 +59,21 @@ def run_subprocess(
         )
 
 
-def homebrew_mac_bin_path(package: str) -> str:
-    # stupid macOS loses PATH when calibre is not launched in terminal
+def mac_bin_path(command: str) -> str:
+    # stupid macOS loses PATH when calibre is not launched from terminal
+    # search homebrew binary path first
     if platform.machine() == "arm64":
-        return f"/opt/homebrew/bin/{package}"
+        bin_path = f"/opt/homebrew/bin/{command}"
     else:
-        return f"/usr/local/bin/{package}"
+        bin_path = f"/usr/local/bin/{command}"
+
+    if (
+        shutil.which(bin_path) is None
+        and (env_bin_path := shutil.which(command)) is not None
+    ):
+        # assume PATH is not empty
+        return env_bin_path
+    return bin_path
 
 
 def insert_lib_path(path: str) -> None:

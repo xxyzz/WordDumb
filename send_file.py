@@ -15,7 +15,7 @@ from .metadata import get_asin_etc
 from .utils import (
     get_plugin_path,
     get_wiktionary_klld_path,
-    homebrew_mac_bin_path,
+    mac_bin_path,
     load_plugin_json,
     run_subprocess,
     use_kindle_ww_db,
@@ -212,7 +212,7 @@ def adb_connected(adb_path: str) -> bool:
 
 
 def which_adb() -> str | None:
-    return shutil.which(homebrew_mac_bin_path("adb") if ismacos else "adb")
+    return shutil.which(mac_bin_path("adb") if ismacos else "adb")
 
 
 def get_package_name(adb_path: str) -> str | None:

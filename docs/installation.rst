@@ -59,6 +59,9 @@ Install Python 3.10+ and pip
 .. attention::
    Don't use Rosetta 2.
 
+.. tip::
+   You'll need to set the `PATH` environment variable for calibre so the plugin can find the Python command if your system's Python is not installed from Homebrew, because the `PATH` variable is cleared when calibre is launched from Launchpad. Please read `calibre manual <https://manual.calibre-ebook.com/customize.html#environment-variables>`_ about how to set this variable.
+
 - Windows:
 
 Use Chocolatey or download from https://www.python.org/downloads

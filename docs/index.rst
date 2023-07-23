@@ -57,6 +57,7 @@ Nederlands    ✅    English, Français, Nederlands, 中文
 Polski        ✅    English, Français, Polski, 中文
 Português     ✅    English, Français, Português, 中文
 Română        ✅    English, Français, 中文
+Slovenščina   ✅    English, Français, 中文
 Suomi         ✅    English, Français, Suomi, 中文
 Svenska       ✅    English, Français, Svenska, 中文
 Ελληνικά      ✅    English, Français, Ελληνικά, 中文

@@ -60,6 +60,7 @@
       "pt",
       "ro",
       "ru",
+      "sl",
       "sv",
       "uk",
       "zh"
@@ -113,6 +114,7 @@
       "pt",
       "ro",
       "ru",
+      "sl",
       "sv",
       "uk",
       "zh"
@@ -232,6 +234,13 @@
     "name": "Russian",
     "spacy": "ru_core_news_"
   },
+  "sl": {
+    "639-2": "slv",
+    "gloss_source": null,
+    "has_trf": true,
+    "name": "Slovene",
+    "spacy": "sl_core_news_"
+  },
   "sv": {
     "639-2": "swe",
     "gloss_source": "dbnary",
@@ -274,6 +283,7 @@
       "pt",
       "ro",
       "ru",
+      "sl",
       "sv",
       "uk",
       "zh"

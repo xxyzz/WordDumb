@@ -47,8 +47,11 @@ def install_deps(pkg: str, notif: Any) -> None:
         # Install X-Ray dependencies
         pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
 
-        url = f"https://github.com/explosion/spacy-models/releases/download/{pkg}-{dep_versions['spacy_model']}/{pkg}-{dep_versions['spacy_model']}-py3-none-any.whl"
-        pip_install(pkg, dep_versions["spacy_model"], url=url, notif=notif)
+        model_version = dep_versions[
+            "spacy_trf_model" if pkg.endswith("_trf") else "spacy_cpu_model"
+        ]
+        url = f"https://github.com/explosion/spacy-models/releases/download/{pkg}-{model_version}/{pkg}-{model_version}-py3-none-any.whl"
+        pip_install(pkg, model_version, url=url, notif=notif)
         if pkg.endswith("_trf"):
             from .config import prefs
 

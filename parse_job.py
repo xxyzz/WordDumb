@@ -235,6 +235,9 @@ def create_files(
     prefs: Prefs,
     notif: Any,
 ) -> None:
+    """
+    This function runs in system Python subprocess for official(frozen) calibre build.
+    """
     is_epub = not kfx_json and not mobi_codec
     plugin_path = Path(plugin_path_str)
     insert_installed_libs(plugin_path)
@@ -779,7 +782,9 @@ def create_spacy_matcher(
 
     disabled_pipes = list(set(["ner", "parser", "senter"]) & set(nlp.pipe_names))
     pkg_versions = load_plugin_json(plugin_path, "data/deps.json")
-    model_version = pkg_versions["spacy_model"]
+    model_version = model_version = pkg_versions[
+        "spacy_trf_model" if model.endswith("_trf") else "spacy_cpu_model"
+    ]
     phrase_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
     phrases_doc_path = spacy_doc_path(
         model, model_version, lemma_lang, is_kindle, True, plugin_path, prefs

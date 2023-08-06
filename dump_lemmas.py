@@ -66,7 +66,9 @@ def dump_spacy_docs(
     save_spacy_docs(
         nlp,
         spacy_model,
-        pkg_versions["spacy_model"],
+        pkg_versions[
+            "spacy_trf_model" if spacy_model.endswith("_trf") else "spacy_cpu_model"
+        ],
         lemma_lang,
         is_kindle,
         lemmas_conn,

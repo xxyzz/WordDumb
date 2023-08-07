@@ -27,6 +27,9 @@ Customize Word Wise
 
 - Lemmas have difficulty of 5 will only display when the Kindle Word Wise slider on the far right.
 
+.. attention::
+   If the "Use Wiktionary definition" option is enabled, you have to change Word Wise language to **Chinese** on your Kindle device to view the correct gloss data, and the original Chinese Word Wise database file on Kindle will be replaced.
+
 Customize X-Ray
 ---------------
 
@@ -52,8 +55,6 @@ You can also run the plugin in terminal:
 .. code-block:: console
 
    $ calibre-debug -r WordDumb -- -h
-
-Set Word Wise language to Chinese on Kindle to view Wiktionary definition. WordDumb replaces the original Chinese Kindle Word Wise database file when the "Use Wiktionary defination" option is enabled for English books or creating Word Wise for non-English books.
 
 .. note::
    - Don't add soft hyphens to AZW3, AZW and MOBI books, it will cause the plugin to produce mediocre Word Wise and X-Ray files.

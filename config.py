@@ -483,7 +483,13 @@ class ChooseLemmaLangDialog(QDialog):
             self.kindle_lang_changed()
             self.lemma_lang_box.currentIndexChanged.connect(self.kindle_lang_changed)
             self.gloss_lang_box.currentIndexChanged.connect(self.kindle_lang_changed)
-            form_layout.addRow(_("Use Wiktionary definition"), self.use_wiktionary_box)
+            wiktionary_gloss_label = QLabel(_("Use Wiktionary definition"))
+            wiktionary_gloss_label.setToolTip(
+                _(
+                    "Change Word Wise language to Chinese on your Kindle device to view definition from Wiktionary"
+                )
+            )
+            form_layout.addRow(wiktionary_gloss_label, self.use_wiktionary_box)
 
         confirm_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel

@@ -61,7 +61,7 @@ You can also run the plugin in terminal:
 
    - WordDumb adds random ASIN metadata to Kindle books if the book don't have this data.
 
-   - Non-English Kindle book's language metadata will be changed to English when creating Word Wise file.
+   - Non-English Kindle book's language metadata will be changed to English when creating Word Wise file, the original book's metadata in calibre library won't be changed.
 
    - English and Chinese Kindle Word Wise definitions require a database file downloaded from Amazon, use Wiktionary definitions if your device can't download this file.
 

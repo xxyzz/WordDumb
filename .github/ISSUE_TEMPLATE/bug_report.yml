@@ -49,5 +49,5 @@ body:
 
   - type: textarea
     attributes:
-      label: Screenshots or videos
-      description: If applicable, drag and drop screenshot or video files to help explain your problem.
+      label: Generated files, screenshots or videos
+      description: Drag and drop generated Word Wise, X-Ray files. Or screenshots.

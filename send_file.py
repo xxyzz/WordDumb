@@ -42,6 +42,7 @@ class SendFile:
             self.book_fmt,
             self.acr,
         ) = data
+        self.orig_mi_lang = self.mi.language
         self.ll_path = get_ll_path(self.asin, self.book_path)
         self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
         self.package_name = package_name
@@ -128,7 +129,7 @@ class SendFile:
     ) -> None:
         if self.ll_path.exists():
             copy_klld_to_device(
-                self.mi.language,
+                self.orig_mi_lang,  # `self.mi.language` could be set to `eng` for KFX books
                 device_mount_point.joinpath("system/kll/kll.en.zh.klld"),
                 None,
             )

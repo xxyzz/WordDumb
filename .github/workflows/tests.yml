@@ -148,4 +148,4 @@ jobs:
             !__pycache__/*
             !exclude.lst
             !translations/*.po
-            !mypy.ini
+            !pyproject.toml

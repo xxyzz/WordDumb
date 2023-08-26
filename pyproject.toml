@@ -1,0 +1,45 @@
+[tool.ruff]
+builtins = ["_", "load_translations", "get_icons"]
+exclude = ["docs"]
+
+[tool.mypy]
+exclude = ["tests", "__main__", "docs"]
+explicit_package_bases = true
+check_untyped_defs = true
+# strict = True
+
+[[tool.mypy.overrides]]
+module = "calibre.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "calibre_plugins.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "PyQt6.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "requests.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "lxml.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "spacy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "rapidfuzz.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ".*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "__main__.*"
+ignore_missing_imports = true

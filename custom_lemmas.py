@@ -163,7 +163,8 @@ class CustomLemmasDialog(QDialog):
         difficulty_label = QLabel(_("Difficulty limit"))
         difficulty_label.setToolTip(
             _(
-                "Difficult words have lower value. Words have difficulty value higher than this value are disabled."
+                "Difficult words have lower value. Words have difficulty value higher "
+                "than this value are disabled."
             )
         )
         self.difficulty_limit_box = QComboBox()
@@ -227,7 +228,12 @@ class CustomLemmasDialog(QDialog):
 
         klld_conn = sqlite3.connect(klld_path)
         for sense_id, short_def, full_def, example in klld_conn.execute(
-            "SELECT senses.id, short_def, full_def, example_sentence FROM lemmas JOIN senses ON lemmas.id = display_lemma_id WHERE (full_def IS NOT NULL OR short_def IS NOT NULL) AND lemma NOT like '-%'"
+            """
+            SELECT senses.id, short_def, full_def, example_sentence
+            FROM lemmas JOIN senses ON lemmas.id = display_lemma_id
+            WHERE (full_def IS NOT NULL OR short_def IS NOT NULL)
+            AND lemma NOT like '-%'
+            """
         ):
             short_def = base64.b64decode(short_def if short_def else full_def).decode(
                 "utf-8"
@@ -235,7 +241,8 @@ class CustomLemmasDialog(QDialog):
             full_def = base64.b64decode(full_def).decode("utf-8") if full_def else ""
             example = base64.b64decode(example).decode("utf-8") if example else ""
             custom_db_conn.execute(
-                "UPDATE senses SET short_def = ?, full_def = ?, example = ? WHERE id = ?",
+                "UPDATE senses SET short_def = ?, full_def = ?, example = ? "
+                "WHERE id = ?",
                 (short_def, full_def, example, sense_id),
             )
         klld_conn.close()
@@ -441,7 +448,8 @@ class ExportOptionsDialog(QDialog):
 
         text = QLabel(
             _(
-                'Export text separated by tab, can be imported to Anki.<br/> "Allow HTML in fields" option needs to be enabled in Anki.'
+                "Export text separated by tab, can be imported to Anki.<br/> "
+                '"Allow HTML in fields" option needs to be enabled in Anki.'
             )
         )
         vl.addWidget(text)

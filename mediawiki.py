@@ -43,8 +43,11 @@ class Wikipedia:
         db_conn = sqlite3.connect(db_path)
         db_conn.executescript(
             """
-            CREATE TABLE IF NOT EXISTS titles (title TEXT PRIMARY KEY COLLATE NOCASE, desc_id INTEGER);
-            CREATE TABLE IF NOT EXISTS descriptions (id INTEGER PRIMARY KEY, description TEXT, wikidata_item TEXT);
+            CREATE TABLE IF NOT EXISTS titles
+            (title TEXT PRIMARY KEY COLLATE NOCASE, desc_id INTEGER);
+
+            CREATE TABLE IF NOT EXISTS descriptions
+            (id INTEGER PRIMARY KEY, description TEXT, wikidata_item TEXT);
             """
         )
         return db_conn
@@ -68,7 +71,8 @@ class Wikipedia:
     def add_cache(self, title: str, intro: str, wikidata_item: str | None) -> int:
         desc_id = 0
         for (new_desc_id,) in self.db_conn.execute(
-            "INSERT INTO descriptions (description, wikidata_item) VALUES(?, ?) RETURNING id",
+            "INSERT INTO descriptions (description, wikidata_item) "
+            "VALUES(?, ?) RETURNING id",
             (intro, wikidata_item),
         ):
             desc_id = new_desc_id
@@ -82,7 +86,11 @@ class Wikipedia:
 
     def get_cache(self, title: str) -> WikipediaCache | None:
         for desc, wikidata_item in self.db_conn.execute(
-            "SELECT description, wikidata_item FROM titles JOIN descriptions ON titles.desc_id = descriptions.id WHERE title = ?",
+            """
+            SELECT description, wikidata_item
+            FROM titles JOIN descriptions ON titles.desc_id = descriptions.id
+            WHERE title = ?
+            """,
             (title,),
         ):
             return {"intro": desc, "item_id": wikidata_item}
@@ -97,7 +105,11 @@ class Wikipedia:
         return [
             other_title
             for (other_title,) in self.db_conn.execute(
-                "SELECT title FROM titles WHERE desc_id = (SELECT desc_id FROM titles WHERE title = ?) AND title != ?",
+                """
+                SELECT title FROM titles
+                WHERE title != ? AND
+                desc_id = (SELECT desc_id FROM titles WHERE title = ?)
+                """,
                 (title, title),
             )
         ]
@@ -227,8 +239,11 @@ class Fandom:
         db_conn = sqlite3.connect(db_path)
         db_conn.executescript(
             """
-            CREATE TABLE IF NOT EXISTS titles (title TEXT PRIMARY KEY COLLATE NOCASE, desc_id INTEGER);
-            CREATE TABLE IF NOT EXISTS descriptions (id INTEGER PRIMARY KEY, description TEXT);
+            CREATE TABLE IF NOT EXISTS titles
+            (title TEXT PRIMARY KEY COLLATE NOCASE, desc_id INTEGER);
+
+            CREATE TABLE IF NOT EXISTS descriptions
+            (id INTEGER PRIMARY KEY, description TEXT);
             """
         )
         return db_conn
@@ -274,7 +289,10 @@ class Fandom:
 
     def get_cache(self, title: str) -> str | None:
         for (desc,) in self.db_conn.execute(
-            "SELECT description FROM titles JOIN descriptions ON titles.desc_id = descriptions.id WHERE title = ?",
+            """
+            SELECT description FROM titles JOIN descriptions
+            ON titles.desc_id = descriptions.id WHERE title = ?
+            """,
             (title,),
         ):
             return desc
@@ -289,7 +307,11 @@ class Fandom:
         return [
             other_title
             for (other_title,) in self.db_conn.execute(
-                "SELECT title FROM titles WHERE desc_id = (SELECT desc_id FROM titles WHERE title = ?) AND title != ?",
+                """
+                SELECT title FROM titles
+                WHERE title != ? AND
+                desc_id = (SELECT desc_id FROM titles WHERE title = ?)
+                """,
                 (title, title),
             )
         ]
@@ -334,7 +356,8 @@ class Fandom:
             html = etree.HTML(text)
             # Remove infobox, quote, references, error
             for e in html.xpath(
-                "//table | //aside | //dl | //*[contains(@class, 'reference')] | //span[contains(@class, 'error')]"
+                "//table | //aside | //dl | //*[contains(@class, 'reference')] | "
+                "//span[contains(@class, 'error')]"
             ):
                 e.getparent().remove(e)
             intro = html.xpath("string()").strip()
@@ -395,7 +418,10 @@ class Wikidata:
         self.db_conn = sqlite3.connect(db_path)
         if create_db:
             self.db_conn.execute(
-                "CREATE TABLE wikidata (item TEXT PRIMARY KEY, map_filename TEXT, inception TEXT)"
+                """
+                CREATE TABLE wikidata
+                (item TEXT PRIMARY KEY, map_filename TEXT, inception TEXT)
+                """
             )
 
     def close(self):
@@ -467,7 +493,10 @@ def inception_text(inception_str: str) -> str:
         inception = datetime.fromisoformat(inception_str)
         # Python 3.11: datetime.now(timezone.utc) - inception
         years = (datetime.now() - inception).days // 365
-        return f"Inception: {inception.strftime('%d %B %Y').lstrip('0')}({years} years ago)"
+        return (
+            f"Inception: {inception.strftime('%d %B %Y').lstrip('0')}"
+            f"({years} years ago)"
+        )
 
 
 def query_mediawiki(

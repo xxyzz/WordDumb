@@ -52,7 +52,10 @@ def create_lang_layer(
 
 def insert_lemma(ll_conn: sqlite3.Connection, data: tuple[int, int, int, int]) -> None:
     ll_conn.execute(
-        "INSERT INTO glosses (start, end, difficulty, sense_id, low_confidence) VALUES (?, ?, ?, ?, 0)",
+        """
+        INSERT INTO glosses (start, end, difficulty, sense_id, low_confidence)
+        VALUES (?, ?, ?, ?, 0)
+        """,
         data,
     )
 
@@ -150,7 +153,10 @@ def create_x_ray_db(
 
     str_list.append([22, "en", f"{prefs['fandom']}/wiki/%s" if prefs["fandom"] else ""])
     x_ray_conn.execute(
-        "INSERT INTO source (id, label, url, license_label, license_url) VALUES(2, 4, 22, 7, 8)"
+        """
+        INSERT INTO source (id, label, url, license_label, license_url)
+        VALUES(2, 4, 22, 7, 8)
+        """
     )
     x_ray_conn.executemany("INSERT INTO string VALUES(?, ?, ?)", str_list)
     return x_ray_conn, db_path
@@ -176,7 +182,10 @@ def insert_x_entities(
     conn: sqlite3.Connection, data: Iterator[tuple[int, str, int, int]]
 ) -> None:
     conn.executemany(
-        "INSERT INTO entity (id, label, type, count, has_info_card) VALUES(?, ?, ?, ?, 1)",
+        """
+        INSERT INTO entity (id, label, type, count, has_info_card)
+        VALUES(?, ?, ?, ?, 1)
+        """,
         data,
     )
 

@@ -35,7 +35,9 @@ def spacy_doc_path(
         is_kindle = False
     py_version = ".".join(platform.python_version_tuple()[:2])
     path = custom_lemmas_folder(plugin_path).joinpath(
-        f"{lemma_lang}/{spacy_model}_{'kindle' if is_kindle else 'wiktionary'}_{gloss_lang}_{model_version}_{py_version}"
+        f"{lemma_lang}/{spacy_model}_"
+        f"{'kindle' if is_kindle else 'wiktionary'}"
+        f"_{gloss_lang}_{model_version}_{py_version}"
     )
     if prefs["use_pos"]:
         if is_phrase:
@@ -135,7 +137,11 @@ def save_spacy_docs(
 
 
 def create_lemma_patterns_with_pos(lemma_lang, conn, nlp, difficulty_limit):
-    query_sql = "SELECT DISTINCT lemma, lemma_id FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE enabled = 1"
+    query_sql = """
+    SELECT DISTINCT lemma, lemma_id
+    FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id
+    WHERE enabled = 1
+    """
     if difficulty_limit is not None:
         query_sql += f" AND difficulty <= {difficulty_limit}"
     for lemma, lemma_id in conn.execute(query_sql):
@@ -148,13 +154,22 @@ def create_lemma_patterns_with_pos(lemma_lang, conn, nlp, difficulty_limit):
 
 
 def create_lemma_patterns_without_pos(conn, nlp, difficulty_limit):
-    query_sql = "SELECT DISTINCT lemma FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE enabled = 1"
+    query_sql = """
+    SELECT DISTINCT lemma
+    FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id
+    WHERE enabled = 1
+    """
     if difficulty_limit is not None:
         query_sql += f" AND difficulty <= {difficulty_limit}"
     for (lemma,) in conn.execute(query_sql):
         yield nlp.make_doc(lemma)
 
-    query_sql = "SELECT DISTINCT form FROM senses JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE enabled = 1"
+    query_sql = """
+    SELECT DISTINCT form
+    FROM senses JOIN forms
+    ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos
+    WHERE enabled = 1
+    """
     if difficulty_limit is not None:
         query_sql += f" AND difficulty <= {difficulty_limit}"
     for (form,) in conn.execute(query_sql):

@@ -25,7 +25,8 @@ def job_failed(job: Any, parent: Any = None) -> bool:
             error_dialog(
                 "We want... a shrubbery!",
                 _(
-                    "Can't find Python. Please read the <a href='{}'>document</a> of how to install Python."
+                    "Can't find Python. Please read the <a href='{}'>document</a> "
+                    "of how to install Python."
                 ).format(INSTALL_PYTHON_DOC),
                 job.details,
                 parent,
@@ -34,7 +35,8 @@ def job_failed(job: Any, parent: Any = None) -> bool:
             error_dialog(
                 "Outdated Python",
                 _(
-                    "Your Python version is too old, please update to a newer version and read the <a href='{}'>document</a> for more information."
+                    "Your Python version is too old, please update to a newer version "
+                    "and read the <a href='{}'>document</a> for more information."
                 ).format(INSTALL_PYTHON_DOC),
                 job.details,
                 parent,
@@ -47,7 +49,9 @@ def job_failed(job: Any, parent: Any = None) -> bool:
             error_dialog(
                 "Joint MOBI",
                 _(
-                    "Please use <a href='https://github.com/kevinhendricks/KindleUnpack'>KindleUnpack</a>'s '-s' option to split the book."
+                    "Please use "
+                    "<a href='https://github.com/kevinhendricks/KindleUnpack'>"
+                    "KindleUnpack</a>'s '-s' option to split the book."
                 ),
                 job.details,
                 parent,
@@ -56,7 +60,9 @@ def job_failed(job: Any, parent: Any = None) -> bool:
             error_dialog(
                 "Welcome to DLL Hell",
                 _(
-                    "Install <a href='https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads'>Visual C++ 2019 Redistributable</a>"
+                    "Install <a href='https://support.microsoft.com/en-us/help/2977003/"
+                    "the-latest-supported-visual-c-downloads'>"
+                    "Visual C++ 2019 Redistributable</a>"
                 ),
                 job.datails,
                 parent,
@@ -71,10 +77,13 @@ def subprocess_error(job: Any, parent: Any) -> None:
     exception = job.exception.stderr.decode("utf-8", "ignore")
     if "No module named pip" in exception:
         error_dialog(
-            "Hello, my name is Philip, but everyone calls me Pip, because they hate me.",
+            "Hello, my name is Philip, but everyone calls me Pip, "
+            "because they hate me.",
             _(
-                """<p>Please read the friendly <a href='{}'></a> of how to install pip.</p>
-                <p>If you still have this error, make sure you installed calibre with the <a href='https://calibre-ebook.com/download_linux'> binary install command</a> but not from Flathub or Snap Store.</p>"""
+                "<p>Please read the friendly <a href='{}'></a> of how to install pip."
+                "</p><p>If you still have this error, make sure you installed calibre "
+                "with the <a href='https://calibre-ebook.com/download_linux'> binary "
+                "install command</a> but not from Flathub or Snap Store.</p>"
             ).format(INSTALL_PYTHON_DOC),
             job.details + exception,
             parent,
@@ -85,7 +94,8 @@ def subprocess_error(job: Any, parent: Any) -> None:
         error_dialog(
             _("Can't find CUDA"),
             _(
-                "'Run spaCy with GPU' feature requires <a href='https://developer.nvidia.com/cuda-downloads'>CUDA</a>"
+                "'Run spaCy with GPU' feature requires "
+                "<a href='https://developer.nvidia.com/cuda-downloads'>CUDA</a>"
             ),
             job.details + exception,
             parent,
@@ -108,16 +118,20 @@ def module_not_found_error(error: str, parent: Any) -> None:
 
 
 def check_network_error(error: str, parent: Any) -> None:
-    CALIBRE_PROXY_FAQ = "https://manual.calibre-ebook.com/faq.html#how-do-i-get-calibre-to-use-my-http-proxy"
+    CALIBRE_PROXY_FAQ = (
+        "https://manual.calibre-ebook.com/faq.html"
+        "#how-do-i-get-calibre-to-use-my-http-proxy"
+    )
 
     if "check_hostname requires server_hostname" in error or "SSLError" in error:
         error_dialog(
             "Cyberspace is not a place beyond the rule of law",
             _(
-                """<p>Read <a href='{}'>calibre FAQ</a> first then check your proxy environment variables, they should be set by these commands:</p>
-                <p><code>$ export HTTP_PROXY='http://host:port'</code></p>
-                <p><code>$ export HTTPS_PROXY='http://host:port'</code></p>
-                <p>If you're allergic to terminal, close your proxy and use a VPN.</p>"""
+                "<p>Read <a href='{}'>calibre FAQ</a> first then check your proxy "
+                "environment variables, they should be set by these commands:</p>"
+                "<p><code>$ export HTTP_PROXY='http://host:port'</code></p>"
+                "<p><code>$ export HTTPS_PROXY='http://host:port'</code></p>"
+                "<p>If you're allergic to terminal, close your proxy and use a VPN.</p>"
             ).format(CALIBRE_PROXY_FAQ),
             error,
             parent,
@@ -126,7 +140,8 @@ def check_network_error(error: str, parent: Any) -> None:
         error_dialog(
             "It was a pleasure to burn",
             _(
-                "Is GitHub/Wikipedia/Fandom blocked by your ISP? You might need to bypass Internet censorship. Please read <a href='{}'>calibre FAQ</a>."
+                "Is GitHub/Wikipedia/Fandom blocked by your ISP? You might need to "
+                "bypass Internet censorship. Please read <a href='{}'>calibre FAQ</a>."
             ).format(CALIBRE_PROXY_FAQ),
             error,
             parent,
@@ -135,7 +150,8 @@ def check_network_error(error: str, parent: Any) -> None:
         error_dialog(
             "Tonnerre de Brest!",
             _(
-                'An error occurred, please copy error message then report bug at <a href="{}/issues">GitHub</a>.'
+                "An error occurred, please copy error message then report bug at "
+                '<a href="{}/issues">GitHub</a>.'
             ).format(GITHUB_URL),
             error,
             parent,
@@ -163,7 +179,8 @@ def device_not_found_dialog(parent: Any) -> None:
     warning_dialog(
         _("Device not found"),
         _(
-            "Definition data will be added when Kindle or Android(requires adb) device is connected."
+            "Definition data will be added when Kindle or Android(requires adb) "
+            "device is connected."
         ),
         parent,
     )
@@ -173,7 +190,8 @@ def ww_db_not_found_dialog(parent: Any) -> None:
     warning_dialog(
         _("Word Wise database not found"),
         _(
-            "Can't find Word Wise database on your device, open a Word Wise enabled book to download this file."
+            "Can't find Word Wise database on your device, open a Word Wise enabled "
+            "book to download this file."
         ),
         parent,
     )
@@ -183,7 +201,8 @@ def kindle_epub_dialog(parent: Any) -> None:
     warning_dialog(
         _("Kindle doesn't support EPUB"),
         _(
-            "Kindle doesn't support EPUB format natively, please convert the book format then try again."
+            "Kindle doesn't support EPUB format natively, please convert the book "
+            "format then try again."
         ),
         parent,
     )

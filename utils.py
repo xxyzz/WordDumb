@@ -7,7 +7,6 @@ import subprocess
 import sys
 import webbrowser
 import zipfile
-
 from pathlib import Path
 from typing import Any, TypedDict
 
@@ -58,7 +57,11 @@ def run_subprocess(
             input=input_str,
             check=True,
             capture_output=True,
-            creationflags=subprocess.CREATE_NO_WINDOW if platform.system() == "Windows" else 0,  # type: ignore
+            creationflags=(
+                subprocess.CREATE_NO_WINDOW  # type: ignore
+                if platform.system() == "Windows"
+                else 0
+            ),
         )
 
 
@@ -86,44 +89,43 @@ def insert_lib_path(path: str) -> None:
 
 def insert_installed_libs(plugin_path: Path) -> None:
     py_v = ".".join(platform.python_version_tuple()[:2])
-    insert_lib_path(str(plugin_path.parent.joinpath(f"worddumb-libs-py{py_v}")))
+    insert_lib_path(str(plugin_path.parent / f"worddumb-libs-py{py_v}"))
 
 
 def get_plugin_path() -> Path:
     from calibre.utils.config import config_dir
 
-    return Path(config_dir).joinpath("plugins/WordDumb.zip")
+    return Path(config_dir) / "plugins/WordDumb.zip"
 
 
 def custom_lemmas_folder(plugin_path: Path) -> Path:
-    return plugin_path.parent.joinpath("worddumb-lemmas")
+    return plugin_path.parent / "worddumb-lemmas"
 
 
 def use_kindle_ww_db(lemma_lang: str, prefs: Prefs) -> bool:
     return (
         lemma_lang == "en"
-        and prefs["kindle_gloss_lang"]
-        in [
-            "en",
-            "zh",
-            "zh_cn",
-        ]
+        and prefs["kindle_gloss_lang"] in ["en", "zh", "zh_cn"]
         and not prefs["use_wiktionary_for_kindle"]
     )
 
 
 def kindle_db_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -> Path:
     if use_kindle_ww_db(lemma_lang, prefs):
-        return custom_lemmas_folder(plugin_path).joinpath(
-            f"{lemma_lang}/kindle_en_en_v{PROFICIENCY_MAJOR_VERSION}.db"
+        return (
+            custom_lemmas_folder(plugin_path)
+            / lemma_lang
+            / f"kindle_en_en_v{PROFICIENCY_MAJOR_VERSION}.db"
         )
     else:
         return wiktionary_db_path(plugin_path, lemma_lang, prefs["kindle_gloss_lang"])
 
 
 def wiktionary_db_path(plugin_path: Path, lemma_lang: str, gloss_lang: str) -> Path:
-    return custom_lemmas_folder(plugin_path).joinpath(
-        f"{lemma_lang}/wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.db"
+    return (
+        custom_lemmas_folder(plugin_path)
+        / lemma_lang
+        / f"wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.db"
     )
 
 
@@ -139,9 +141,10 @@ def get_klld_path(plugin_path: Path) -> Path | None:
 def get_wiktionary_klld_path(
     plugin_path: Path, lemma_lang: str, gloss_lang: str
 ) -> Path:
-    custom_folder = custom_lemmas_folder(plugin_path)
-    return custom_folder.joinpath(
-        f"{lemma_lang}/kll.{lemma_lang}.{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.klld"
+    return (
+        custom_lemmas_folder(plugin_path)
+        / lemma_lang
+        / f"kll.{lemma_lang}.{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.klld"
     )
 
 

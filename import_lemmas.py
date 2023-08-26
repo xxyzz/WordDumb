@@ -62,7 +62,11 @@ def query_vocabulary_builder(lang: str, db_path: Path) -> dict[str, int]:
     conn = sqlite3.connect(db_path)
     words = {}
     for stem, category, lookups in conn.execute(
-        "SELECT stem, category, count(*) FROM WORDS JOIN LOOKUPS ON LOOKUPS.word_key = WORDS.id WHERE lang = ? GROUP BY stem",
+        """
+        SELECT stem, category, count(*)
+        FROM WORDS JOIN LOOKUPS ON LOOKUPS.word_key = WORDS.id
+        WHERE lang = ? GROUP BY stem
+        """,
         (lang,),
     ):
         words[stem] = lookups_to_difficulty(lookups, category)
@@ -146,7 +150,10 @@ def export_lemmas_job(
                     query_sql = f", {prefs['zh_ipa']}"
             else:
                 query_sql = ", ipa"
-        query_sql += " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE difficulty <= ?"
+        query_sql += (
+            " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id "
+            "WHERE difficulty <= ?"
+        )
 
         if only_enabled:
             query_sql += " AND enabled = 1"

@@ -265,7 +265,10 @@ class EPUB:
                     continue
                 new_xhtml_str += xhtml_str[last_end:start]
                 if isinstance(entity_id, int):
-                    new_xhtml_str += f'<a epub:type="noteref" href="x_ray.xhtml#{entity_id}">{entity}</a>'
+                    new_xhtml_str += (
+                        f'<a epub:type="noteref" href="x_ray.xhtml#'
+                        f'{entity_id}">{entity}</a>'
+                    )
                 else:
                     new_xhtml_str += self.build_word_wise_tag(entity_id, entity, lang)
                 last_end = end
@@ -282,7 +285,9 @@ class EPUB:
                 if self.lemmas:
                     new_xhtml_str = new_xhtml_str.replace(
                         "</head>",
-                        "<style>body {line-height: 2.5;} ruby {text-decoration:overline;} ruby a {text-decoration:none;}</style></head>",
+                        "<style>body {line-height: 2.5;} ruby "
+                        "{text-decoration:overline;} ruby a {text-decoration:none;}"
+                        "</style></head>",
                     )
                 f.write(new_xhtml_str)
 
@@ -297,9 +302,16 @@ class EPUB:
         len_ratio = 3 if lang in CJK_LANGS else 2.5
         word_id = self.lemmas[word]
         if len(short_def) / len(origin_word) > len_ratio:
-            return f'<a epub:type="noteref" href="word_wise.xhtml#{word_id}">{origin_word}</a>'
+            return (
+                '<a epub:type="noteref" href="word_wise.xhtml#'
+                f'{word_id}">{origin_word}</a>'
+            )
         else:
-            return f'<ruby><a epub:type="noteref" href="word_wise.xhtml#{word_id}">{origin_word}</a><rp>(</rp><rt>{short_def}</rt><rp>)</rp></ruby>'
+            return (
+                '<ruby><a epub:type="noteref" href="word_wise.xhtml#'
+                f'{word_id}">{origin_word}</a><rp>(</rp><rt>{short_def}'
+                "</rt><rp>)</rp></ruby>"
+            )
 
     def split_p_tags(self, intro: str) -> str:
         intro = escape(intro)
@@ -327,24 +339,35 @@ class EPUB:
         for entity, data in self.entities.items():
             if custom_data := self.custom_x_ray.get(entity):
                 custom_desc, custom_source_id, _ = custom_data
-                s += f'<aside id="{data["id"]}" epub:type="footnote">{self.split_p_tags(custom_desc)}'
+                s += (
+                    f'<aside id="{data["id"]}" epub:type="footnote">'
+                    f"{self.split_p_tags(custom_desc)}"
+                )
                 if custom_source_id:
                     custom_source_name, custom_source_link = x_ray_source(
                         custom_source_id, prefs, lang
                     )
                     if custom_source_link:
-                        s += f'<p>Source: <a href="{custom_source_link}{quote(entity)}">{custom_source_name}</a></p>'
+                        s += (
+                            f'<p>Source: <a href="{custom_source_link}{quote(entity)}'
+                            f'">{custom_source_name}</a></p>'
+                        )
                     else:
                         s += f"<p>Source: {custom_source_name}</p>"
                 s += "</aside>"
             elif (prefs["search_people"] or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)
             ):
-                s += f"""
-                <aside id="{data["id"]}" epub:type="footnote">
-                {self.split_p_tags(intro_cache if isinstance(intro_cache, str) else intro_cache["intro"])}
-                <p>Source: <a href="{source_link}{quote(entity)}">{source_name}</a></p>
-                """
+                s += f'<aside id="{data["id"]}" epub:type="footnote">'
+                s += self.split_p_tags(
+                    intro_cache
+                    if isinstance(intro_cache, str)
+                    else intro_cache["intro"]
+                )
+                s += (
+                    f'<p>Source: <a href="{source_link}{quote(entity)}">'
+                    f"{source_name}</a></p>"
+                )
                 if self.wikidata and (
                     wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])
                 ):
@@ -357,15 +380,24 @@ class EPUB:
                     ):
                         file_path = self.wiki_commons.get_image(filename)
                         if file_path is not None:
-                            s += f'<img style="max-width:100%" src="{image_prefix}{filename}" />'
+                            s += (
+                                '<img style="max-width:100%" src="'
+                                f'{image_prefix}{filename}" />'
+                            )
                             shutil.copy(file_path, self.image_folder.joinpath(filename))
                             self.image_filenames.add(filename)
                             add_wikidata_source = True
                     if add_wikidata_source:
-                        s += f'<p>Source: <a href="https://www.wikidata.org/wiki/{intro_cache["item_id"]}">Wikidata</a></p>'
+                        s += (
+                            '<p>Source: <a href="https://www.wikidata.org/wiki/'
+                            f'{intro_cache["item_id"]}">Wikidata</a></p>'
+                        )
                 s += "</aside>"
             else:
-                s += f'<aside id="{data["id"]}" epub:type="footnote"><p>{escape(data["quote"])}</p></aside>'
+                s += (
+                    f'<aside id="{data["id"]}" epub:type="footnote"><p>'
+                    f'{escape(data["quote"])}</p></aside>'
+                )
 
         s += "</body></html>"
         with self.xhtml_folder.joinpath("x_ray.xhtml").open("w", encoding="utf-8") as f:
@@ -403,7 +435,10 @@ class EPUB:
             if example:
                 tag_str += f"<p><i>{escape(example)}</i></p>"
             tag_str += "<hr/>"
-        tag_str += f"<p>Source: <a href='https://en.wiktionary.org/wiki/{quote(lemma)}'>Wiktionary</a></p></aside>"
+        tag_str += (
+            f"<p>Source: <a href='https://en.wiktionary.org/wiki/"
+            f"{quote(lemma)}'>Wiktionary</a></p></aside>"
+        )
         return tag_str
 
     def modify_opf(self) -> None:
@@ -417,10 +452,16 @@ class EPUB:
             image_prefix = f"{self.image_folder.name}/"
         manifest = self.opf_root.find("opf:manifest", NAMESPACES)
         if self.entities:
-            s = f'<item href="{xhtml_prefix}x_ray.xhtml" id="x_ray.xhtml" media-type="application/xhtml+xml"/>'
+            s = (
+                f'<item href="{xhtml_prefix}x_ray.xhtml" '
+                'id="x_ray.xhtml" media-type="application/xhtml+xml"/>'
+            )
             manifest.append(etree.fromstring(s))
         if self.lemmas:
-            s = f'<item href="{xhtml_prefix}word_wise.xhtml" id="word_wise.xhtml" media-type="application/xhtml+xml"/>'
+            s = (
+                f'<item href="{xhtml_prefix}word_wise.xhtml" '
+                'id="word_wise.xhtml" media-type="application/xhtml+xml"/>'
+            )
             manifest.append(etree.fromstring(s))
         for filename in self.image_filenames:
             filename_lower = filename.lower()
@@ -434,7 +475,10 @@ class EPUB:
                 media_type = "webp"
             else:
                 media_type = Path(filename).suffix.replace(".", "")
-            s = f'<item href="{image_prefix}{filename}" id="{filename}" media-type="image/{media_type}"/>'
+            s = (
+                f'<item href="{image_prefix}{filename}" id="{filename}" '
+                f'media-type="image/{media_type}"/>'
+            )
             manifest.append(etree.fromstring(s))
         spine = self.opf_root.find("opf:spine", NAMESPACES)
         if self.entities:
@@ -477,14 +521,18 @@ class EPUB:
         if " " in lemma:
             for data in self.lemmas_conn.execute(  # type: ignore
                 sql
-                + "JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ?",
+                + "JOIN forms ON "
+                + "senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos "
+                + "WHERE form = ?",
                 (lemma,),
             ):
                 lemmas_data.append(data)
         elif lang == "zh":
             for data in self.lemmas_conn.execute(  # type: ignore
                 sql
-                + "JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ? AND forms.pos = ?",
+                + "JOIN forms "
+                + "ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos "
+                + "WHERE form = ? AND forms.pos = ?",
                 (lemma, pos),
             ):
                 lemmas_data.append(data)
@@ -499,7 +547,9 @@ class EPUB:
             return [data]
         for data in self.lemmas_conn.execute(  # type: ignore
             sql
-            + "JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ? AND enabled = 1 LIMIT 1",
+            + "JOIN forms "
+            + "ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos "
+            + "WHERE form = ? AND enabled = 1 LIMIT 1",
             (lemma,),
         ):
             return [data]

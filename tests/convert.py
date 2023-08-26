@@ -41,7 +41,8 @@ if args.l:
     table_sql_list = [
         (
             "glosses",
-            f"SELECT start, difficulty, sense_id FROM glosses ORDER BY start LIMIT {LIMIT}",
+            "SELECT start, difficulty, sense_id FROM glosses "
+            f"ORDER BY start LIMIT {LIMIT}",
         ),
         ("count", "SELECT count(*) FROM glosses"),
         ("metadata", "SELECT * FROM metadata"),

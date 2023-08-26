@@ -17,9 +17,9 @@ from .utils import (
     custom_lemmas_folder,
     get_plugin_path,
     get_wiktionary_klld_path,
-    mac_bin_path,
     kindle_db_path,
     load_plugin_json,
+    mac_bin_path,
     run_subprocess,
     use_kindle_ww_db,
     wiktionary_db_path,
@@ -50,13 +50,17 @@ def install_deps(pkg: str, notif: Any) -> None:
         model_version = dep_versions[
             "spacy_trf_model" if pkg.endswith("_trf") else "spacy_cpu_model"
         ]
-        url = f"https://github.com/explosion/spacy-models/releases/download/{pkg}-{model_version}/{pkg}-{model_version}-py3-none-any.whl"
+        url = (
+            "https://github.com/explosion/spacy-models/releases/download/"
+            f"{pkg}-{model_version}/{pkg}-{model_version}-py3-none-any.whl"
+        )
         pip_install(pkg, model_version, url=url, notif=notif)
         if pkg.endswith("_trf"):
             from .config import prefs
 
             pip_install("cupy-wheel", dep_versions["cupy"], notif=notif)
-            # PyTorch's Windows package on pypi.org is CPU build version, reintall the CUDA build version
+            # PyTorch's Windows package on pypi.org is CPU build version,
+            # reintall the CUDA build version
             if iswindows or prefs["cuda"] == "cu118":
                 pip_install(
                     "torch",
@@ -159,7 +163,8 @@ def download_word_wise_file(
         notifications.put(
             (
                 0,
-                f"Downloading {lemma_lang}-{gloss_lang} {'Kindle' if is_kindle else 'Wiktionary'} file",
+                f"Downloading {lemma_lang}-{gloss_lang} "
+                f"{'Kindle' if is_kindle else 'Wiktionary'} file",
             )
         )
     plugin_path = get_plugin_path()
@@ -179,7 +184,10 @@ def download_word_wise_file(
     if is_kindle:
         klld_path = get_wiktionary_klld_path(plugin_path, lemma_lang, gloss_lang)
         if not klld_path.exists():
-            url = f"{PROFICIENCY_RELEASE_URL}/kll.{lemma_lang}.{gloss_lang}_v{PROFICIENCY_VERSION}.klld.bz2"
+            url = (
+                PROFICIENCY_RELEASE_URL
+                + f"/kll.{lemma_lang}.{gloss_lang}_v{PROFICIENCY_VERSION}.klld.bz2"
+            )
             download_and_extract(url, extract_folder)
 
 

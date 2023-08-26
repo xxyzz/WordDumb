@@ -107,7 +107,8 @@ class ConfigWidget(QWidget):
         )
         self.search_people_box.setToolTip(
             _(
-                "Enable this option for nonfiction books and novels that have character pages on Wikipedia/Fandom"
+                "Enable this option for nonfiction books and novels that have character"
+                " pages on Wikipedia/Fandom"
             )
         )
         self.search_people_box.setChecked(prefs["search_people"])
@@ -122,7 +123,8 @@ class ConfigWidget(QWidget):
             self.use_gpu_box = QCheckBox(_("Run spaCy with GPU(requires CUDA)"))
             self.use_gpu_box.setToolTip(
                 _(
-                    "GPU will be used when creating X-Ray file if spaCy has transformer model for the book language with ner component."
+                    "GPU will be used when creating X-Ray file if spaCy has transformer"
+                    " model for the book language with ner component."
                 )
             )
             self.use_gpu_box.setChecked(prefs["use_gpu"])
@@ -157,7 +159,8 @@ class ConfigWidget(QWidget):
         minimal_x_ray_label = QLabel(_("Minimal X-Ray occurrences"))
         minimal_x_ray_label.setToolTip(
             _(
-                "X-Ray entities that appear less then this number and don't have description from Wikipedia/Fandom will be removed"
+                "X-Ray entities that appear less then this number and don't have "
+                "description from Wikipedia/Fandom will be removed"
             )
         )
         form_layout.addRow(minimal_x_ray_label, self.minimal_x_ray_count)
@@ -423,7 +426,8 @@ class ChooseFormatDialog(QDialog):
 
         message = QLabel(
             _(
-                "This book has multiple supported formats. Choose the format you want to use."
+                "This book has multiple supported formats. Choose the format "
+                "you want to use."
             )
         )
         vl.addWidget(message)
@@ -486,7 +490,8 @@ class ChooseLemmaLangDialog(QDialog):
             wiktionary_gloss_label = QLabel(_("Use Wiktionary definition"))
             wiktionary_gloss_label.setToolTip(
                 _(
-                    "Change Word Wise language to Chinese on your Kindle device to view definition from Wiktionary"
+                    "Change Word Wise language to Chinese on your Kindle device to "
+                    "view definition from Wiktionary"
                 )
             )
             form_layout.addRow(wiktionary_gloss_label, self.use_wiktionary_box)

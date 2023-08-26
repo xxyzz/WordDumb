@@ -11,46 +11,29 @@ import sys
 from pathlib import Path
 
 from dump_lemmas import dump_spacy_docs
-from parse_job import create_files
+from parse_job import ParseJobData, create_files
 
 parser = argparse.ArgumentParser()
-parser.add_argument("options")
+parser.add_argument("job_data")
 parser.add_argument("prefs")
 args = parser.parse_args()
 
-options = json.loads(args.options)
+job_data = json.loads(args.job_data)
 prefs = json.loads(args.prefs)
-if "db_path" in options:
+if "db_path" in job_data:
     dump_spacy_docs(
-        options["model_name"],
-        options["is_kindle"],
-        options["lemma_lang"],
-        Path(options["db_path"]),
-        Path(options["plugin_path"]),
+        job_data["model_name"],
+        job_data["is_kindle"],
+        job_data["lemma_lang"],
+        Path(job_data["db_path"]),
+        Path(job_data["plugin_path"]),
         prefs,
     )
 else:
-    kfx_json = None
-    mobi_html = b""
-    if options["book_fmt"] == "KFX":
-        kfx_json = json.load(sys.stdin)
-    elif options["book_fmt"] != "EPUB":
-        mobi_html = sys.stdin.buffer.read()
+    data = ParseJobData(**job_data)
+    if data.book_fmt == "KFX":
+        data.kfx_json = json.load(sys.stdin)
+    elif data.book_fmt != "EPUB":
+        data.mobi_html = sys.stdin.buffer.read()
 
-    create_files(
-        options["create_ww"],
-        options["create_x"],
-        options["asin"],
-        options["book_path"],
-        options["acr"],
-        options["revision"],
-        options["model"],
-        options["lemma_lang"],
-        kfx_json,
-        mobi_html,
-        options["mobi_codec"],
-        options["plugin_path"],
-        options["useragent"],
-        prefs,
-        None,
-    )
+    create_files(data, prefs, None)

@@ -4,6 +4,7 @@ import random
 import re
 import shutil
 import sqlite3
+from dataclasses import asdict, dataclass
 from html import escape, unescape
 from itertools import chain
 from pathlib import Path
@@ -74,85 +75,99 @@ except ImportError:
     from x_ray_share import NER_LABELS, CustomX, get_custom_x_path, load_custom_x_desc
 
 
+@dataclass
+class ParseJobData:
+    book_id: int = 0
+    book_path: str = ""
+    mi: Any = None
+    book_fmt: str = ""
+    book_lang: str = ""  # 639-2 language code
+    useragent: str = ""
+    plugin_path: str | Path = ""
+    spacy_model: str = ""
+    create_ww: bool = True
+    create_x: bool = True
+    asin: str = ""
+    acr: str = ""
+    revision: str = ""
+    update_asin: bool = False
+    kfx_json: KFXJson | None = None
+    mobi_html: bytes | None = b""
+    mobi_codec: str = ""
+
+
 def do_job(
-    data: tuple[int, str, str, Any, str],
-    create_ww: bool = True,
-    create_x: bool = True,
+    data: ParseJobData,
     abort: Any = None,
     log: Any = None,
     notifications: Any = None,
-) -> tuple[int, str, str, Any, bool, str, str]:
+) -> ParseJobData:
     from .config import prefs
     from .metadata import get_asin_etc
 
-    (book_id, book_fmt, book_path_str, mi, book_lang) = data
     set_en_lang = (
-        True if create_ww and book_fmt != "EPUB" and book_lang != "en" else False
+        True
+        if data.create_ww and data.book_fmt != "EPUB" and data.book_lang != "en"
+        else False
     )
     if set_en_lang:
-        book_path = Path(book_path_str)
-        book_path = book_path.with_stem(book_path.stem + "_en")
-        if not book_path.exists():
-            shutil.copy(book_path_str, book_path)
-        book_path_str = str(book_path)
+        en_book_path = Path(data.book_path)
+        en_book_path = en_book_path.with_stem(en_book_path.stem + "_en")
+        if not en_book_path.exists():
+            shutil.copy(data.book_path, en_book_path)
+        data.book_path = str(en_book_path)
 
-    (asin, acr, revision, update_asin, kfx_json, mobi_html, mobi_codec) = get_asin_etc(
-        book_path_str, book_fmt, mi, set_en_lang=set_en_lang
+    get_asin_etc(data, set_en_lang=set_en_lang)
+    data.plugin_path = get_plugin_path()
+    data.useragent = get_user_agent()
+    data.spacy_model = spacy_model_name(
+        data.book_lang, load_plugin_json(data.plugin_path, "data/languages.json"), prefs
     )
-    plugin_path = get_plugin_path()
-    useragent = get_user_agent()
-    model = spacy_model_name(
-        book_lang, load_plugin_json(plugin_path, "data/languages.json"), prefs
-    )
-    if book_fmt == "EPUB":
-        book_path = Path(book_path_str)
-        new_file_stem = book_path.stem
-        if create_x:
+    if data.book_fmt == "EPUB":
+        new_epub_path = Path(data.book_path)
+        new_file_stem = new_epub_path.stem
+        if data.create_x:
             new_file_stem += "_x_ray"
-        if create_ww:
+        if data.create_ww:
             new_file_stem += "_word_wise"
-        new_epub_path = book_path.with_stem(new_file_stem)
-        create_x = create_x and not new_epub_path.exists()
-        create_ww = create_ww and not new_epub_path.exists()
+        new_epub_path = new_epub_path.with_stem(new_file_stem)
+        data.create_x = data.create_x and not new_epub_path.exists()
+        data.create_ww = data.create_ww and not new_epub_path.exists()
+        shutil.copy(data.book_path, new_epub_path)
+        data.book_path = str(new_epub_path)
         if (
-            create_ww
+            data.create_ww
             and not wiktionary_db_path(
-                plugin_path, book_lang, prefs["wiktionary_gloss_lang"]
+                data.plugin_path, data.book_lang, prefs["wiktionary_gloss_lang"]
             ).exists()
         ):
             download_word_wise_file(
-                False,
-                book_lang,
-                prefs,
-                notifications=notifications,
+                False, data.book_lang, prefs, notifications=notifications
             )
     else:
-        create_ww = create_ww and not get_ll_path(asin, book_path_str).exists()
-        create_x = create_x and not get_x_ray_path(asin, book_path_str).exists()
-        if create_ww and (
-            not kindle_db_path(plugin_path, book_lang, prefs).exists()
+        data.create_ww = (
+            data.create_ww and not get_ll_path(data.asin, data.book_path).exists()
+        )
+        data.create_x = (
+            data.create_x and not get_x_ray_path(data.asin, data.book_path).exists()
+        )
+        if data.create_ww and (
+            not kindle_db_path(data.plugin_path, data.book_lang, prefs).exists()
             or not get_wiktionary_klld_path(
-                plugin_path, book_lang, prefs["kindle_gloss_lang"]
+                data.plugin_path, data.book_lang, prefs["kindle_gloss_lang"]
             ).exists()
         ):
-            download_word_wise_file(True, book_lang, prefs, notifications=notifications)
+            download_word_wise_file(
+                True, data.book_lang, prefs, notifications=notifications
+            )
 
-    return_values = (
-        book_id,
-        asin,
-        str(new_epub_path) if book_fmt == "EPUB" else book_path_str,
-        mi,
-        update_asin,
-        book_fmt,
-        acr,
-    )
-    if not create_ww and not create_x:
-        return return_values
+    if not data.create_ww and not data.create_x:
+        return data
 
-    if isfrozen and (book_fmt == "EPUB" or create_x):
+    if isfrozen and (data.book_fmt == "EPUB" or data.create_x):
         # parse Fandom page and Wikipedia section requires lxml
         install_deps("lxml", notifications)
-    install_deps(model, notifications)
+    install_deps(data.spacy_model, notifications)
 
     if notifications:
         notifications.put((0, "Creating files"))
@@ -163,137 +178,118 @@ def do_job(
     # but the "transformers" package formats docstrings in their code
     # and calibre-debug can't be used as Python interpreter for pip
     if isfrozen:
-        plugin_path = str(plugin_path)
         py_path, _ = which_python()
-        options = {
-            "create_ww": create_ww,
-            "create_x": create_x,
-            "asin": asin,
-            "book_path": book_path_str,
-            "acr": acr,
-            "revision": revision,
-            "model": model,
-            "lemma_lang": book_lang,
-            "mobi_codec": mobi_codec,
-            "useragent": useragent,
-            "book_fmt": book_fmt,
-            "plugin_path": plugin_path,
-        }
-        args = [py_path, plugin_path, json.dumps(options), dump_prefs(prefs)]
-        if book_fmt == "KFX":
-            input_str = json.dumps(kfx_json).encode("utf-8")
-        elif book_fmt == "EPUB":
-            input_str = b""
-        else:
-            input_str = mobi_html
+        # copy data can't be converted by `asdict`
+        copy_mi = data.mi
+        copy_mobi_html = data.mobi_html  # bytes
+        copy_kfx_json = data.kfx_json  # too long
+        data.mi = None
+        data.mobi_html = None
+        data.kfx_json = None
+        data.plugin_path = str(data.plugin_path)
+        args = [
+            py_path,
+            str(data.plugin_path),
+            json.dumps(asdict(data)),
+            dump_prefs(prefs),
+        ]
+        data.mi = copy_mi
+        input_str = None
+        if data.book_fmt == "KFX":
+            input_str = json.dumps(copy_kfx_json).encode("utf-8")
+        elif data.book_fmt != "EPUB":
+            input_str = copy_mobi_html
 
         run_subprocess(args, input_str)
     else:
-        create_files(
-            create_ww,
-            create_x,
-            asin,
-            book_path_str,
-            acr,
-            revision,
-            model,
-            book_lang,
-            kfx_json,
-            mobi_html,
-            mobi_codec,
-            str(plugin_path),
-            useragent,
-            prefs,
-            notifications,
-        )
+        create_files(data, prefs, notifications)
 
-    return return_values
+    return data
 
 
-def calulate_final_start(kfx_json: list[KFXJson] | None, mobi_html: bytes) -> int:
-    if kfx_json:
-        return kfx_json[-1]["position"] + len(kfx_json[-1]["content"])
-    elif mobi_html:
-        return len(mobi_html)
-    return 0
+def calulate_final_start(data: ParseJobData) -> int:
+    match data.book_fmt:
+        case "KFX":
+            return data.kfx_json[-1]["position"] + len(  # type: ignore
+                data.kfx_json[-1]["content"]  # type: ignore
+            )
+        case "AZW3" | "MOBI":
+            return len(data.mobi_html)  # type: ignore
+        case _:
+            return 0
 
 
-def create_files(
-    create_ww: bool,
-    create_x: bool,
-    asin: str,
-    book_path: str,
-    acr: str,
-    revision: str,
-    model: str,
-    wiki_lang: str,
-    kfx_json: list[KFXJson] | None,
-    mobi_html: bytes,
-    mobi_codec: str,
-    plugin_path_str: str,
-    useragent: str,
-    prefs: Prefs,
-    notif: Any,
-) -> None:
+def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
     """
     This function runs in system Python subprocess for official(frozen) calibre build.
     """
-    is_epub = not kfx_json and not mobi_codec
-    plugin_path = Path(plugin_path_str)
-    insert_installed_libs(plugin_path)
-    nlp = load_spacy(model, book_path if create_x else None, prefs["use_pos"])
+    is_epub = data.book_fmt == "EPUB"
+    data.plugin_path = Path(data.plugin_path)
+    insert_installed_libs(data.plugin_path)
+    nlp = load_spacy(
+        data.spacy_model, data.book_path if data.create_x else None, prefs["use_pos"]
+    )
     lemmas_conn = None
-    if create_ww:
+    if data.create_ww:
         lemmas_db_path = (
-            wiktionary_db_path(plugin_path, wiki_lang, prefs["wiktionary_gloss_lang"])
+            wiktionary_db_path(
+                data.plugin_path, data.book_lang, prefs["wiktionary_gloss_lang"]
+            )
             if is_epub
-            else kindle_db_path(plugin_path, wiki_lang, prefs)
+            else kindle_db_path(data.plugin_path, data.book_lang, prefs)
         )
         lemmas_conn = sqlite3.connect(lemmas_db_path)
         lemma_matcher, phrase_matcher = create_spacy_matcher(
             nlp,
-            model,
-            wiki_lang,
+            data.spacy_model,
+            data.book_lang,
             not is_epub,
             lemmas_conn,
-            plugin_path,
+            data.plugin_path,
             prefs,
         )
 
-    if create_x:
+    if data.create_x:
         mediawiki = (
-            Fandom(useragent, plugin_path, prefs["fandom"])
+            Fandom(data.useragent, data.plugin_path, prefs["fandom"])
             if prefs["fandom"]
-            else Wikipedia(wiki_lang, useragent, plugin_path, prefs["zh_wiki_variant"])
+            else Wikipedia(
+                data.book_lang,
+                data.useragent,
+                data.plugin_path,
+                prefs["zh_wiki_variant"],
+            )
         )
-        wikidata = None if prefs["fandom"] else Wikidata(plugin_path, useragent)
-        custom_x_ray = load_custom_x_desc(book_path)
+        wikidata = (
+            None if prefs["fandom"] else Wikidata(data.plugin_path, data.useragent)
+        )
+        custom_x_ray = load_custom_x_desc(data.book_path)
 
     if is_epub:
-        if create_x:
+        if data.create_x:
             wiki_commons = None
             if not prefs["fandom"] and prefs["add_locator_map"]:
-                wiki_commons = Wikimedia_Commons(plugin_path, useragent)
-            epub = EPUB(book_path, mediawiki, wiki_commons, wikidata, custom_x_ray)
-        elif create_ww:
-            epub = EPUB(book_path, None, None, None, None)
+                wiki_commons = Wikimedia_Commons(data.plugin_path, data.useragent)
+            epub = EPUB(data.book_path, mediawiki, wiki_commons, wikidata, custom_x_ray)
+        elif data.create_ww:
+            epub = EPUB(data.book_path, None, None, None, None)
 
         for doc, (start, escaped_text, xhtml_path) in nlp.pipe(
             epub.extract_epub(), as_tuples=True
         ):
             intervals = []
-            if create_x:
+            if data.create_x:
                 intervals = find_named_entity(
                     start,
                     epub,
                     doc,
                     "",
-                    wiki_lang,
+                    data.book_lang,
                     escaped_text,
                     custom_x_ray,
                     xhtml_path,
                 )
-            if create_ww:
+            if data.create_ww:
                 interval_tree = None
                 if intervals:
                     random.shuffle(intervals)
@@ -310,80 +306,91 @@ def create_files(
                     xhtml_path,
                     prefs["use_pos"],
                 )
-        supported_languages = load_languages_data(plugin_path)
+        supported_languages = load_languages_data(data.plugin_path)
         gloss_lang = prefs["wiktionary_gloss_lang"]
         has_multiple_ipas = (
             supported_languages[gloss_lang]["gloss_source"] == "kaikki"
-            and prefs.get(f"{wiki_lang}_ipa") is not None
+            and prefs.get(f"{data.book_lang}_ipa") is not None
         )
-        epub.modify_epub(prefs, wiki_lang, lemmas_conn, has_multiple_ipas)
+        epub.modify_epub(prefs, data.book_lang, lemmas_conn, has_multiple_ipas)
         return
 
     # Kindle
-    final_start = calulate_final_start(kfx_json, mobi_html)
-    if create_ww:
-        ll_conn, ll_path = create_lang_layer(asin, book_path, acr, revision)
+    final_start = calulate_final_start(data)
+    if data.create_ww:
+        ll_conn, ll_path = create_lang_layer(
+            data.asin,
+            data.book_path,
+            data.acr,
+            data.revision,
+        )
 
-    if create_x:
+    if data.create_x:
         x_ray_conn, x_ray_path = create_x_ray_db(
-            asin, book_path, wiki_lang, plugin_path, prefs
+            data.asin,
+            data.book_path,
+            data.book_lang,
+            data.plugin_path,
+            prefs,
         )
         x_ray = X_Ray(x_ray_conn, mediawiki, wikidata, custom_x_ray)
 
-    for doc, context in nlp.pipe(
-        parse_book(kfx_json, mobi_html, mobi_codec), as_tuples=True
-    ):
-        if kfx_json:
+    for doc, context in nlp.pipe(parse_book(data), as_tuples=True):
+        if data.kfx_json is not None:
             start = context
             escaped_text = None
         else:
             start, escaped_text = context
-        if create_x:
+        if data.create_x:
             find_named_entity(
-                start, x_ray, doc, mobi_codec, wiki_lang, escaped_text, custom_x_ray
+                start,
+                x_ray,
+                doc,
+                data.mobi_codec,
+                data.book_lang,
+                escaped_text,
+                custom_x_ray,
             )
-        if create_ww:
+        if data.create_ww:
             kindle_find_lemma(
                 doc,
                 lemma_matcher,
                 phrase_matcher,
                 start,
-                mobi_codec,
+                data.mobi_codec,
                 escaped_text,
                 lemmas_conn,
                 ll_conn,
-                wiki_lang,
+                data.book_lang,
                 prefs,
             )
         if notif:
             notif.put((start / final_start, "Creating files"))
 
-    if create_x:
+    if data.create_x:
         x_ray.finish(
             x_ray_path,
             final_start,
-            kfx_json,
-            mobi_html,
-            mobi_codec,
+            data.kfx_json,
+            data.mobi_html,
+            data.mobi_codec,
             prefs,
         )
-    if create_ww:
+    if data.create_ww:
         save_db(ll_conn, ll_path)
         lemmas_conn.close()  # type: ignore
 
 
-def parse_book(
-    kfx_json: list[KFXJson] | None, mobi_html: bytes, mobi_codec: str
-) -> Iterator[tuple[str, tuple[int, str] | int]]:
-    if kfx_json:
-        for entry in filter(lambda x: x["type"] == 1, kfx_json):
+def parse_book(data: ParseJobData) -> Iterator[tuple[str, tuple[int, str] | int]]:
+    if data.kfx_json is not None:
+        for entry in filter(lambda x: x["type"] == 1, data.kfx_json):
             # Remove byte order mark and word joiner
             yield re.sub(r"\ufeff|\u2060", " ", entry["content"]), entry["position"]
-    else:
+    elif data.mobi_html is not None:
         # match text inside HTML tags
-        for match_body in re.finditer(b"<body.{3,}?</body>", mobi_html, re.DOTALL):
+        for match_body in re.finditer(b"<body.{3,}?</body>", data.mobi_html, re.DOTALL):
             for m in re.finditer(b">[^<]{2,}<", match_body.group(0)):
-                text = m.group(0)[1:-1].decode(mobi_codec)
+                text = m.group(0)[1:-1].decode(data.mobi_codec)
                 text = re.sub(r"\ufeff|\u2060", " ", text)
                 yield unescape(text), (match_body.start() + m.start() + 1, text)
 
@@ -520,19 +527,33 @@ def get_kindle_lemma_with_pos(
     else:
         pos = spacy_to_wiktionary_pos(pos)
     for data in conn.execute(
-        "SELECT difficulty, senses.id FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE lemma = ? AND pos = ? LIMIT 1",
+        """
+        SELECT difficulty, senses.id
+        FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id
+        WHERE lemma = ? AND pos = ? LIMIT 1
+        """,
         (lemma, pos),
     ):
         return data
     if " " in lemma:
         for data in conn.execute(
-            "SELECT difficulty, senses.id FROM senses JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ? LIMIT 1",
+            """
+            SELECT difficulty, senses.id
+            FROM senses JOIN forms
+            ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos
+            WHERE form = ? LIMIT 1
+            """,
             (lemma,),
         ):
             return data
     if lemma_lang == "zh":  # Check simplified form
         for data in conn.execute(
-            "SELECT difficulty, senses.id FROM senses JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ? AND senses.pos = ? LIMIT 1",
+            """
+            SELECT difficulty, senses.id
+            FROM senses JOIN forms
+            ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos
+            WHERE form = ? AND senses.pos = ? LIMIT 1
+            """,
             (lemma, pos),
         ):
             return data
@@ -543,12 +564,22 @@ def get_kindle_lemma_without_pos(
     lemma: str, conn: sqlite3.Connection
 ) -> tuple[int, int] | None:
     for data in conn.execute(
-        "SELECT difficulty, senses.id FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id WHERE lemma = ? AND enabled = 1 LIMIT 1",
+        """
+        SELECT difficulty, senses.id
+        FROM senses JOIN lemmas
+        ON senses.lemma_id = lemmas.id
+        WHERE lemma = ? AND enabled = 1 LIMIT 1
+        """,
         (lemma,),
     ):
         return data
     for data in conn.execute(
-        "SELECT difficulty, senses.id FROM senses JOIN forms ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos WHERE form = ? AND enabled = 1 LIMIT 1",
+        """
+        SELECT difficulty, senses.id
+        FROM senses JOIN forms
+        ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos
+        WHERE form = ? AND enabled = 1 LIMIT 1
+        """,
         (lemma,),
     ):
         return data

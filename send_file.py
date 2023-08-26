@@ -12,11 +12,11 @@ from calibre.gui2.dialogs.message_box import JobError
 from .database import get_ll_path, get_x_ray_path, is_same_klld
 from .error_dialogs import kindle_epub_dialog
 from .metadata import get_asin_etc
+from .parse_job import ParseJobData
 from .utils import (
     get_plugin_path,
     get_wiktionary_klld_path,
     mac_bin_path,
-    load_plugin_json,
     run_subprocess,
     use_kindle_ww_db,
 )
@@ -24,30 +24,17 @@ from .utils import (
 
 class SendFile:
     def __init__(
-        self,
-        gui: Any,
-        data: tuple[int, str, str, Any, bool, str, str],
-        package_name: str | bool,
-        notif: Any,
+        self, gui: Any, data: ParseJobData, package_name: str | bool, notif: Any
     ) -> None:
         self.gui = gui
         self.device_manager = gui.device_manager
         self.notif = notif
-        (
-            self.book_id,
-            self.asin,
-            self.book_path,
-            self.mi,
-            _,
-            self.book_fmt,
-            self.acr,
-        ) = data
-        self.orig_mi_lang = self.mi.language
-        self.ll_path = get_ll_path(self.asin, self.book_path)
-        self.x_ray_path = get_x_ray_path(self.asin, self.book_path)
+        self.job_data = data
+        self.ll_path = get_ll_path(data.asin, data.book_path)
+        self.x_ray_path = get_x_ray_path(data.asin, data.book_path)
         self.package_name = package_name
-        if self.acr is None:
-            self.acr = "_"
+        if data.acr is None:
+            self.job_data.acr = "_"
 
     # use some code from calibre.gui2.device:DeviceMixin.upload_books
     def send_files(self, job: Any) -> None:
@@ -70,66 +57,65 @@ class SendFile:
                 self.gui.job_exception(job, dialog_title="Upload book failed")
                 return
             self.gui.books_uploaded(job)
-            if self.book_fmt == "EPUB":
+            if self.job_data.book_fmt == "EPUB":
                 self.gui.status_bar.show_message(self.notif)
-                Path(self.book_path).unlink()
+                Path(self.job_data.book_path).unlink()
                 return
 
         set_en_lang = False
         if (
             self.ll_path.exists()
-            and self.book_fmt != "EPUB"
-            and self.mi.language != "eng"
+            and self.job_data.book_fmt != "EPUB"
+            and self.job_data.book_lang != "en"
         ):
             set_en_lang = True
-        [has_book, _, _, _, paths] = self.gui.book_on_device(self.book_id)
-        if has_book and self.book_fmt != "EPUB":
+        [has_book, _, _, _, paths] = self.gui.book_on_device(self.job_data.book_id)
+        if has_book and self.job_data.book_fmt != "EPUB":
             # _main_prefix: Kindle mount point, /Volumes/Kindle
             device_mount_point = Path(self.device_manager.device._main_prefix)
             device_book_path = device_mount_point.joinpath(paths.pop())
             if job is None:
                 # update device book ASIN if it doesn't have the same ASIN
-                _, _, _, update_asin, *_ = get_asin_etc(
-                    str(device_book_path),
-                    self.book_fmt,
-                    self.mi,
-                    self.asin,
-                    set_en_lang,
-                )
-                if update_asin:  # Re-upload book cover
-                    self.gui.update_thumbnail(self.mi)
+                get_asin_etc(self.job_data, self.job_data.asin, set_en_lang)
+                if self.job_data.update_asin:  # Re-upload book cover
+                    self.gui.update_thumbnail(self.job_data.mi)
                     self.device_manager.device.upload_kindle_thumbnail(
-                        self.mi, self.book_path
+                        self.job_data.mi, self.job_data.book_path
                     )
 
             self.move_files_to_kindle(device_mount_point, device_book_path)
-            libray_book_path = Path(self.book_path)
+            libray_book_path = Path(self.job_data.book_path)
             if libray_book_path.stem.endswith("_en"):
                 libray_book_path.unlink()
             self.gui.status_bar.show_message(self.notif)
-        elif job is None or self.book_fmt == "EPUB":
+        elif job is None or self.job_data.book_fmt == "EPUB":
             # upload book and cover to device
-            self.gui.update_thumbnail(self.mi)
+            self.gui.update_thumbnail(self.job_data.mi)
             # without this the book language won't be English after uploading
-            if set_en_lang and self.book_fmt == "KFX":
-                self.mi.language = "eng"
+            if set_en_lang and self.job_data.book_fmt == "KFX":
+                self.job_data.mi.language = "eng"
             job = self.device_manager.upload_books(
                 FunctionDispatcher(self.send_files),
-                [self.book_path],
-                [Path(self.book_path).name],
+                [self.job_data.book_path],
+                [Path(self.job_data.book_path).name],
                 on_card=None,
-                metadata=[self.mi],
-                titles=[i.title for i in [self.mi]],
+                metadata=[self.job_data.mi],
+                titles=[i.title for i in [self.job_data.mi]],
                 plugboards=self.gui.current_db.new_api.pref("plugboards", {}),
             )
-            self.gui.upload_memory[job] = ([self.mi], None, None, [self.book_path])
+            self.gui.upload_memory[job] = (
+                [self.job_data.mi],
+                None,
+                None,
+                [self.job_data.book_path],
+            )
 
     def move_files_to_kindle(
         self, device_mount_point: Path, device_book_path: Path
     ) -> None:
         if self.ll_path.exists():
             copy_klld_to_device(
-                self.orig_mi_lang,  # `self.mi.language` could be set to `eng` for KFX books
+                self.job_data.book_lang,
                 device_mount_point.joinpath("system/kll/kll.en.zh.klld"),
                 None,
             )
@@ -155,8 +141,8 @@ class SendFile:
             [
                 adb_path,
                 "push",
-                self.book_path,
-                f"{device_book_folder}/{Path(self.book_path).name}",
+                self.job_data.book_path,
+                f"{device_book_folder}/{Path(self.job_data.book_path).name}",
             ]
         )
         if self.x_ray_path.exists():
@@ -165,7 +151,8 @@ class SendFile:
                     adb_path,
                     "push",
                     self.x_ray_path,
-                    f"{device_book_folder}/{self.asin}/XRAY.{self.asin}.{self.acr}.db",
+                    f"{device_book_folder}/{self.job_data.asin}/XRAY."
+                    f"{self.job_data.asin}.{self.job_data.acr}.db",
                 ]
             )
             self.x_ray_path.unlink()
@@ -176,14 +163,16 @@ class SendFile:
                     adb_path,
                     "push",
                     self.ll_path,
-                    f"/data/data/{self.package_name}/databases/WordWise.en.{self.asin}.{self.acr.replace('!', '_')}.db",
+                    f"/data/data/{self.package_name}/databases/WordWise.en."
+                    f"{self.job_data.asin}.{self.job_data.acr.replace('!', '_')}.db",
                 ]
             )
             self.ll_path.unlink()
             copy_klld_to_device(
-                self.mi.language,
+                self.job_data.book_lang,
                 Path(
-                    f"/data/data/{self.package_name}/databases/wordwise/WordWise.kll.en.zh.db"
+                    f"/data/data/{self.package_name}"
+                    "/databases/wordwise/WordWise.kll.en.zh.db"
                 ),
                 adb_path,
             )
@@ -255,15 +244,10 @@ def copy_klld_to_device(
     from .config import prefs
 
     plugin_path = get_plugin_path()
-    supported_languages = load_plugin_json(plugin_path, "data/languages.json")
-    for code, value in supported_languages.items():
-        if value["639-2"] == book_lang:
-            lemma_lang = code
-            break
-    if use_kindle_ww_db(lemma_lang, prefs):
+    if use_kindle_ww_db(book_lang, prefs):
         return
     local_klld_path = get_wiktionary_klld_path(
-        plugin_path, lemma_lang, prefs["kindle_gloss_lang"]
+        plugin_path, book_lang, prefs["kindle_gloss_lang"]
     )
 
     if adb_path is not None:

@@ -7,7 +7,10 @@ VERSION = (3, 29, 6)
 
 class WordDumbDumb(InterfaceActionBase):
     name = "WordDumb"
-    description = "Create Kindle Word Wise and X-Ray file and EPUB footnotes then send to e-reader."
+    description = (
+        "Create Kindle Word Wise and X-Ray file and EPUB footnotes "
+        "then send to e-reader."
+    )
     supported_platforms = ["linux", "osx", "windows"]
     author = "xxyzz"
     version = VERSION
@@ -31,7 +34,7 @@ class WordDumbDumb(InterfaceActionBase):
         from calibre.utils.logging import Log
 
         from .metadata import check_word_wise_language, cli_check_metadata
-        from .parse_job import do_job
+        from .parse_job import ParseJobData, do_job
 
         parser = argparse.ArgumentParser(prog="calibre-debug -r WordDumb --")
         parser.add_argument("-w", help="Create Word Wise", action="store_true")
@@ -61,7 +64,8 @@ class WordDumbDumb(InterfaceActionBase):
                 if create_w is False:
                     log.prints(
                         Log.WARNING,
-                        f"Book language {lang} is not supported for Word Wise gloss language {gloss_lang}",
+                        f"Book language {lang} is not supported for Word Wise gloss"
+                        "language {gloss_lang}",
                     )
             if create_w is False and create_x is False:
                 continue
@@ -75,5 +79,12 @@ class WordDumbDumb(InterfaceActionBase):
             log.prints(
                 Log.INFO, f"Creating {notif_str} file for book {mi.get('title')}"
             )
-
-            do_job((None, book_fmt, file_path, mi, lang), create_w, create_x)
+            job_data = ParseJobData(
+                book_fmt=book_fmt,
+                book_path=file_path,
+                mi=mi,
+                book_lang=lang,
+                create_ww=create_w,
+                create_x=create_x,
+            )
+            do_job(job_data)

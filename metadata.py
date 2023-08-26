@@ -5,7 +5,10 @@ import random
 import re
 import string
 from pathlib import Path
-from typing import Any, BinaryIO, TypedDict
+from typing import TYPE_CHECKING, Any, BinaryIO, TypedDict
+
+if TYPE_CHECKING:
+    from .parse_job import ParseJobData
 
 
 def check_metadata(
@@ -118,73 +121,60 @@ class KFXJson(TypedDict):
 
 
 def get_asin_etc(
-    book_path: str,
-    book_fmt: str,
-    mi: Any,
-    library_asin: str | None = None,
-    set_en_lang: bool = False,
-) -> tuple[str, str, str, bool, KFXJson | None, bytes, str]:
-    revision = ""
-    kfx_json: KFXJson | None = None
-    mobi_html = b""
-    mobi_codec = ""
-    update_asin = False
-    asin = ""
-    acr = ""
-
-    if book_fmt == "KFX":
+    data: "ParseJobData", library_asin: str | None = None, set_en_lang: bool = False
+) -> None:
+    if data.book_fmt == "KFX":
         from calibre_plugins.kfx_input.kfxlib import YJ_Book
 
-        yj_book = YJ_Book(book_path)
+        yj_book = YJ_Book(data.book_path)
         yj_md = yj_book.get_metadata()
-        asin = getattr(yj_md, "asin", "")
-        acr = getattr(yj_md, "asset_id", "")
+        data.asin = getattr(yj_md, "asin", "")
+        data.acr = getattr(yj_md, "asset_id", "")
         if library_asin is None:
-            asin, update_asin = validate_asin(asin, mi)
-        elif library_asin != asin:
-            update_asin = True
-            asin = library_asin
+            data.asin, data.update_asin = validate_asin(data.asin, data.mi)
+        elif library_asin != data.asin:
+            data.update_asin = True
+            data.asin = library_asin
         lang = yj_md.language
         update_lang = False
         if set_en_lang and lang != "en":
             update_lang = True
             lang = "en"
-        if update_asin or update_lang:
-            update_kfx_metedata(book_path, asin, lang)
+        if data.update_asin or update_lang:
+            update_kfx_metedata(data.book_path, data.asin, lang)
         if library_asin is None:
-            kfx_json = json.loads(yj_book.convert_to_json_content())["data"]
-    elif book_fmt != "EPUB":
+            data.kfx_json = json.loads(yj_book.convert_to_json_content())["data"]
+    elif data.book_fmt != "EPUB":
         from calibre.ebooks.metadata.mobi import MetadataUpdater
 
-        with open(book_path, "r+b") as f:
-            acr = f.read(32).rstrip(b"\x00").decode("utf-8")  # Palm db name
-            revision = get_mobi_revision(f)
+        with open(data.book_path, "r+b") as f:
+            data.acr = f.read(32).rstrip(b"\x00").decode("utf-8")  # Palm db name
+            data.revision = get_mobi_revision(f)
             f.seek(0)
             mu = MetadataUpdater(f)
-            mobi_codec = mu.codec
-            if (asin := mu.original_exth_records.get(113)) is None:
-                asin = mu.original_exth_records.get(504)
-            asin = asin.decode(mu.codec) if asin else None
+            data.mobi_codec = mu.codec
+            asin_bytes = mu.original_exth_records.get(113)
+            if asin_bytes is None:
+                asin_bytes = mu.original_exth_records.get(504)
+            data.asin = asin_bytes.decode(mu.codec) if asin_bytes is not None else None
             if library_asin is None:
-                asin, update_asin = validate_asin(asin, mi)
-            elif library_asin != asin:
-                update_asin = True
-                asin = library_asin
+                data.asin, data.update_asin = validate_asin(data.asin, data.mi)
+            elif library_asin != data.asin:
+                data.update_asin = True
+                data.asin = library_asin
             locale = mu.record0[0x5C:0x60]  # MOBI header locale
-            lang = mi.language
+            lang = data.mi.language
             update_lang = False
             if set_en_lang and locale[2:] != (9).to_bytes(2, "big"):
                 update_lang = True
                 locale = (9).to_bytes(4, "big")
                 lang = "eng"
-            if update_asin or update_lang:
-                mi.language = lang
+            if data.update_asin or update_lang:
+                data.mi.language = lang
                 mu.record0[0x5C:0x60] = locale
-                mu.update(mi, asin=asin)
+                mu.update(data.mi, asin=data.asin)
         if library_asin is None:
-            mobi_html = extract_mobi(book_path)
-
-    return asin, acr, revision, update_asin, kfx_json, mobi_html, mobi_codec
+            data.mobi_html = extract_mobi(data.book_path)
 
 
 def get_mobi_revision(f: BinaryIO) -> str:

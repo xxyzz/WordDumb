@@ -48,7 +48,7 @@ def load_plugin_json(plugin_path: Path, filepath: str) -> Any:
 
 
 def run_subprocess(
-    args: list[str], input_str: bytes | None = None
+    args: list[str], input_str: bytes | str | None = None
 ) -> subprocess.CompletedProcess[bytes]:
     from calibre.gui2 import sanitize_env_vars
 

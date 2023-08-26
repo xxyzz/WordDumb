@@ -446,16 +446,7 @@ class EPUB:
 
     def zip_extract_folder(self) -> None:
         shutil.make_archive(str(self.extract_folder), "zip", self.extract_folder)
-        new_filename = self.book_path.stem
-        if self.entities:
-            new_filename += "_x_ray"
-        if self.lemmas:
-            new_filename += "_word_wise"
-        new_filename += ".epub"
-        shutil.move(
-            self.extract_folder.with_suffix(".zip"),
-            self.book_path.with_name(new_filename),
-        )
+        self.extract_folder.with_suffix(".zip").replace(self.book_path)
         shutil.rmtree(self.extract_folder)
 
     def get_lemma_gloss(self, lemma: str, lang: str) -> list[tuple[str, str, str, str]]:

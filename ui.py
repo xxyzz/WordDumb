@@ -11,7 +11,7 @@ from PyQt6.QtGui import QIcon
 from .custom_x_ray import CustomXRayDialog
 from .error_dialogs import job_failed, unsupported_ww_lang_dialog
 from .metadata import check_metadata, check_word_wise_language
-from .parse_job import do_job
+from .parse_job import ParseJobData, do_job
 from .send_file import SendFile, device_connected
 from .utils import donate
 
@@ -122,11 +122,20 @@ def run(gui: Any, create_ww: bool, create_x: bool) -> None:
             if create_x:
                 notif.append("X-Ray")
             notif = _(" and ").join(notif)
+            job_data = ParseJobData(
+                book_id=book_id,
+                book_path=book_path,
+                mi=mi,
+                book_fmt=book_fmt,
+                book_lang=lang,
+                create_ww=create_ww,
+                create_x=create_x,
+            )
             job = ThreadedJob(
                 "WordDumb's dumb job",
                 _("Generating {} for {}").format(notif, title),
                 do_job,
-                ((book_id, book_fmt, book_path, mi, lang), create_ww, create_x),
+                (job_data,),
                 {},
                 Dispatcher(
                     partial(
@@ -143,11 +152,8 @@ def run(gui: Any, create_ww: bool, create_x: bool) -> None:
 def done(job, gui=None, notif=None):
     if job_failed(job, gui):
         return
-    book_id, _, _, mi, update_asin, book_fmt, _ = job.result
-    if update_asin:
-        gui.current_db.new_api.set_metadata(book_id, mi)
 
-    if package_name := device_connected(gui, book_fmt):
+    if package_name := device_connected(gui, job.result.book_fmt):
         SendFile(gui, job.result, package_name, notif).send_files(None)
     else:
         gui.status_bar.show_message(notif)

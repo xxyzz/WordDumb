@@ -11,7 +11,7 @@ from pathlib import Path
 
 from calibre.library import db
 from calibre_plugins.worddumb.config import prefs
-from calibre_plugins.worddumb.parse_job import do_job
+from calibre_plugins.worddumb.parse_job import ParseJobData, do_job
 from convert import LIMIT
 
 
@@ -24,29 +24,32 @@ class TestDumbCode(unittest.TestCase):
         prefs["add_locator_map"] = True
         prefs["minimal_x_ray_count"] = 1
         prefs["use_pos"] = False
+        prefs["kindle_gloss_lang"] = "en"
+        prefs["use_wiktionary_for_kindle"] = False
 
         lib_db = db("~/Calibre Library").new_api
         for book_id in lib_db.all_book_ids():
             mi = lib_db.get_metadata(book_id)
             if mi.get("title") == "Twelve Years a Slave":
-                text_book_id = book_id
+                test_book_id = book_id
                 break
 
         for fmt in lib_db.formats(book_id):
             book_path = lib_db.format_abspath(book_id, fmt)
             cls.book_folder = Path(book_path).parent
             try:
-                do_job(
-                    (
-                        text_book_id,
-                        fmt,
-                        book_path,
-                        mi,
-                        "en",
-                    )
+                data = ParseJobData(
+                    book_id=test_book_id,
+                    book_path=book_path,
+                    mi=mi,
+                    book_fmt=fmt,
+                    book_lang="en",
                 )
+                do_job(data)
+                if fmt == "EPUB":
+                    cls.epub_path = data.book_path
             except subprocess.CalledProcessError as e:
-                logging.error(e.stderr)
+                logging.error(e.stderr.decode("utf-8", "ignore"))
                 raise e
 
             if fmt != "EPUB":
@@ -132,6 +135,9 @@ class TestDumbCode(unittest.TestCase):
                 "excerpt",
                 "SELECT * FROM excerpt",
             )
+
+    def test_epub_file(self):
+        self.assertTrue(Path(self.epub_path).exists())
 
 
 if __name__ == "__main__":

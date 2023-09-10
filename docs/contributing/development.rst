@@ -47,19 +47,8 @@ Create zip file
 
    $ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
 
-Remove FAT32 dirty bit
-----------------------
-
-Run these commands on Linux. Use fdisk or df to find Kindle device
-
-.. code-block:: console
-
-   # fdisk -l
-   # umount /dev/sdb1
-   # fsck /dev/sdb1
-
-Documents
----------
+Library and API documents
+-------------------------
 
 - https://manual.calibre-ebook.com
 
@@ -87,8 +76,6 @@ Documents
 
 - https://www.mediawiki.org/wiki/API:Etiquette
 
-- https://spacy.io
-
 - https://docs.python-requests.org
 
 - https://lxml.de
@@ -100,6 +87,17 @@ Documents
 - https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/Wikidata_Query_Help
 
 - https://en.wikibooks.org/wiki/SPARQL
+
+Natural language processing
+---------------------------
+
+- https://spacy.io
+
+- https://course.fast.ai
+
+- https://paperswithcode.com/task/word-sense-disambiguation
+
+- https://paperswithcode.com/task/named-entity-recognition-ner
 
 Kindle firmware
 ---------------

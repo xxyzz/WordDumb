@@ -16,7 +16,7 @@ jobs:
       run:
         working-directory: docs
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v4
         with:
@@ -27,7 +27,7 @@ jobs:
 
       - run: make html
 
-      - uses: actions/upload-pages-artifact@v1
+      - uses: actions/upload-pages-artifact@v2
         if: github.ref_name == 'master'
         with:
           path: docs/_build/html

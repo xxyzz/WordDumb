@@ -29,7 +29,7 @@ jobs:
       PY_VERSION: 3.11
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'true'
 
@@ -130,6 +130,7 @@ jobs:
       - name: Run test
         run: cd tests && calibre-debug test.py
         env:
+          PYTHONOPTIMIZE: 1
           PYTHONWARNINGS: default
           CALIBRE_SHOW_DEPRECATION_WARNINGS: 1
 

@@ -303,7 +303,9 @@ class ConfigWidget(QWidget):
                     QSqlDatabase.removeDatabase(custom_lemmas_dlg.db_connection_name)
 
     def run_threaded_job(self, func, args, job_title):
-        gui = self.parent().parent()
+        gui = self.parent()
+        while gui.parent() is not None:
+            gui = gui.parent()
         job = ThreadedJob(
             "WordDumb's dumb job",
             job_title,

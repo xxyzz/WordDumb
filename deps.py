@@ -175,9 +175,11 @@ def download_word_wise_file(
 
     extract_folder = custom_lemmas_folder(get_plugin_path())
     if not db_path.exists():
-        filename = f"wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.bz2"
+        filename = (
+            f"wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.tar.bz2"
+        )
         if is_kindle and use_kindle_ww_db(lemma_lang, prefs):
-            filename = f"kindle_en_en_v{PROFICIENCY_VERSION}.bz2"
+            filename = f"kindle_en_en_v{PROFICIENCY_VERSION}.tar.bz2"
         url = f"{PROFICIENCY_RELEASE_URL}/{filename}"
         download_and_extract(url, extract_folder)
 
@@ -186,7 +188,7 @@ def download_word_wise_file(
         if not klld_path.exists():
             url = (
                 PROFICIENCY_RELEASE_URL
-                + f"/kll.{lemma_lang}.{gloss_lang}_v{PROFICIENCY_VERSION}.klld.bz2"
+                + f"/kll.{lemma_lang}.{gloss_lang}_v{PROFICIENCY_VERSION}.klld.tar.bz2"
             )
             download_and_extract(url, extract_folder)
 

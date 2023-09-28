@@ -33,7 +33,7 @@ Run this command to compile .mo files, you don't need to do this if you're using
    $ calibre-debug -c "from calibre.translations.msgfmt import main; main()" translations/*.po
 
 .. note::
-   Poedit's "Update from source code" feature would comment the language name translations then move them to the end of the file. You shold revert this change when commit.
+   Poedit's "Update from source code" feature would comment the language name translations then move them to the end of the file. You should revert this change when commit.
 
 Add difficulty data to more languages
 -------------------------------------

@@ -71,7 +71,7 @@ Use Chocolatey or download from https://www.python.org/downloads
    # choco install python
 
 .. attention::
-   Do not change the default installtion settings in the Python installer.
+   Do not change the default installation settings in the Python installer.
 
 Install CUDA(optional)
 ----------------------
@@ -124,4 +124,4 @@ This step is for Android users. Only KFX books are supported.
 
 - Windows: download from https://developer.android.com/studio/releases/platform-tools
 
-Enable USB debugging, and Rooted debugging(only send Word Wise file requires this option). For more information, please read `Android Debug Bridge user guide <https://developer.android.com/studio/command-line/adb#Enabling>`_. Rooted debugging is only available on `userdebug and eng build variant <https://source.android.com/docs/setup/create/new-device#build-variants>`_ ROMs, some custom ROMs like `LineageOS <https://lineageos.org>`_ have this option. Don't forget to diable USB debugging after the files are sent.
+Enable USB debugging, and Rooted debugging(only send Word Wise file requires this option). For more information, please read `Android Debug Bridge user guide <https://developer.android.com/studio/command-line/adb#Enabling>`_. Rooted debugging is only available on `userdebug and eng build variant <https://source.android.com/docs/setup/create/new-device#build-variants>`_ ROMs, some custom ROMs like `LineageOS <https://lineageos.org>`_ have this option. Don't forget to disable USB debugging after the files are sent.

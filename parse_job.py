@@ -207,7 +207,7 @@ def do_job(
     return data
 
 
-def calulate_final_start(data: ParseJobData) -> int:
+def calculate_final_start(data: ParseJobData) -> int:
     match data.book_fmt:
         case "KFX":
             return data.kfx_json[-1]["position"] + len(  # type: ignore
@@ -316,7 +316,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
         return
 
     # Kindle
-    final_start = calulate_final_start(data)
+    final_start = calculate_final_start(data)
     if data.create_ww:
         ll_conn, ll_path = create_lang_layer(
             data.asin,

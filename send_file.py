@@ -84,9 +84,9 @@ class SendFile:
                     )
 
             self.move_files_to_kindle(device_mount_point, device_book_path)
-            libray_book_path = Path(self.job_data.book_path)
-            if libray_book_path.stem.endswith("_en"):
-                libray_book_path.unlink()
+            library_book_path = Path(self.job_data.book_path)
+            if library_book_path.stem.endswith("_en"):
+                library_book_path.unlink()
             self.gui.status_bar.show_message(self.notif)
         elif job is None or self.job_data.book_fmt == "EPUB":
             # upload book and cover to device

@@ -76,7 +76,7 @@ senses
 | 1  | 910              | 878     | 910           | 0        | 1         | 1.0          | 34284     | 0            | YSBuYW1lIG9yIHRpdGxl | YSBuYW1lIG9yIHRpdGxl | YW4gaG9ub3JhcnkgYXBwZWxsYXRpb24= |
 +----+------------------+---------+---------------+----------+-----------+--------------+-----------+--------------+----------------------+----------------------+----------------------------------+
 
-Some lemmas have mutiple senses:
+Some lemmas have multiple senses:
 
 .. code-block:: console
 

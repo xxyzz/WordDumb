@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 CJK_LANGS = ["zh", "ja", "ko"]
-PROFICIENCY_VERSION = "0.5.8"
+PROFICIENCY_VERSION = "0.5.10"
 PROFICIENCY_RELEASE_URL = (
     f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}"
 )
@@ -98,8 +98,8 @@ def get_plugin_path() -> Path:
     return Path(config_dir) / "plugins/WordDumb.zip"
 
 
-def custom_lemmas_folder(plugin_path: Path) -> Path:
-    return plugin_path.parent / "worddumb-lemmas"
+def custom_lemmas_folder(plugin_path: Path, lemma_lang: str) -> Path:
+    return plugin_path.parent / "worddumb-lemmas" / lemma_lang
 
 
 def use_kindle_ww_db(lemma_lang: str, prefs: Prefs) -> bool:
@@ -113,8 +113,7 @@ def use_kindle_ww_db(lemma_lang: str, prefs: Prefs) -> bool:
 def kindle_db_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -> Path:
     if use_kindle_ww_db(lemma_lang, prefs):
         return (
-            custom_lemmas_folder(plugin_path)
-            / lemma_lang
+            custom_lemmas_folder(plugin_path, lemma_lang)
             / f"kindle_en_en_v{PROFICIENCY_MAJOR_VERSION}.db"
         )
     else:
@@ -123,14 +122,13 @@ def kindle_db_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -> Path:
 
 def wiktionary_db_path(plugin_path: Path, lemma_lang: str, gloss_lang: str) -> Path:
     return (
-        custom_lemmas_folder(plugin_path)
-        / lemma_lang
+        custom_lemmas_folder(plugin_path, lemma_lang)
         / f"wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.db"
     )
 
 
 def get_klld_path(plugin_path: Path) -> Path | None:
-    custom_folder = custom_lemmas_folder(plugin_path)
+    custom_folder = custom_lemmas_folder(plugin_path, "")
     for path in custom_folder.glob("*.en.klld"):
         return path
     for path in custom_folder.glob("*.en.db"):
@@ -142,8 +140,7 @@ def get_wiktionary_klld_path(
     plugin_path: Path, lemma_lang: str, gloss_lang: str
 ) -> Path:
     return (
-        custom_lemmas_folder(plugin_path)
-        / lemma_lang
+        custom_lemmas_folder(plugin_path, lemma_lang)
         / f"kll.{lemma_lang}.{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.klld"
     )
 

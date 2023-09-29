@@ -34,9 +34,8 @@ def spacy_doc_path(
     if is_kindle and not use_kindle_ww_db(lemma_lang, prefs):
         is_kindle = False
     py_version = ".".join(platform.python_version_tuple()[:2])
-    path = custom_lemmas_folder(plugin_path).joinpath(
-        f"{lemma_lang}/{spacy_model}_"
-        f"{'kindle' if is_kindle else 'wiktionary'}"
+    path = custom_lemmas_folder(plugin_path, lemma_lang).joinpath(
+        f"{spacy_model}_{'kindle' if is_kindle else 'wiktionary'}"
         f"_{gloss_lang}_{model_version}_{py_version}"
     )
     if prefs["use_pos"]:

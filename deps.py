@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
+import bz2
 import platform
 import shutil
-import tarfile
-from io import BytesIO
 from pathlib import Path
 from typing import Any
 from urllib.request import urlopen
@@ -12,16 +11,13 @@ from calibre.constants import isfrozen, ismacos, iswindows
 
 from .utils import (
     PROFICIENCY_RELEASE_URL,
-    PROFICIENCY_VERSION,
     Prefs,
-    custom_lemmas_folder,
     get_plugin_path,
     get_wiktionary_klld_path,
     kindle_db_path,
     load_plugin_json,
     mac_bin_path,
     run_subprocess,
-    use_kindle_ww_db,
     wiktionary_db_path,
 )
 
@@ -173,25 +169,18 @@ def download_word_wise_file(
     else:
         db_path = wiktionary_db_path(plugin_path, lemma_lang, gloss_lang)
 
-    extract_folder = custom_lemmas_folder(get_plugin_path())
     if not db_path.exists():
-        filename = f"wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_VERSION}.bz2"
-        if is_kindle and use_kindle_ww_db(lemma_lang, prefs):
-            filename = f"kindle_en_en_v{PROFICIENCY_VERSION}.bz2"
-        url = f"{PROFICIENCY_RELEASE_URL}/{filename}"
-        download_and_extract(url, extract_folder)
+        bz2_filename = db_path.with_suffix(db_path.suffix + ".bz2").name
+        download_and_extract(f"{PROFICIENCY_RELEASE_URL}/{bz2_filename}", db_path)
 
     if is_kindle:
         klld_path = get_wiktionary_klld_path(plugin_path, lemma_lang, gloss_lang)
         if not klld_path.exists():
-            url = (
-                PROFICIENCY_RELEASE_URL
-                + f"/kll.{lemma_lang}.{gloss_lang}_v{PROFICIENCY_VERSION}.klld.bz2"
-            )
-            download_and_extract(url, extract_folder)
+            bz2_filename = klld_path.with_suffix(klld_path.suffix + ".bz2").name
+            download_and_extract(f"{PROFICIENCY_RELEASE_URL}/{bz2_filename}", klld_path)
 
 
-def download_and_extract(url: str, extract_folder: Path) -> None:
-    with urlopen(url) as r:
-        with tarfile.open(fileobj=BytesIO(r.read())) as tar:
-            tar.extractall(extract_folder)
+def download_and_extract(url: str, extract_path: Path) -> None:
+    extract_path.parent.mkdir(parents=True, exist_ok=True)
+    with urlopen(url) as r, bz2.open(r) as bz2_f, extract_path.open("wb") as f:
+        shutil.copyfileobj(bz2_f, f)

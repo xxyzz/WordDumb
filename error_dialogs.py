@@ -80,10 +80,10 @@ def subprocess_error(job: Any, parent: Any) -> None:
             "Hello, my name is Philip, but everyone calls me Pip, "
             "because they hate me.",
             _(
-                "<p>Please read the friendly <a href='{}'></a> of how to install pip."
-                "</p><p>If you still have this error, make sure you installed calibre "
-                "with the <a href='https://calibre-ebook.com/download_linux'> binary "
-                "install command</a> but not from Flathub or Snap Store.</p>"
+                "<p>Please read the friendly <a href='{}'>manual</a> of how to install "
+                "pip.</p><p>If you still have this error, make sure you installed "
+                "calibre with the <a href='https://calibre-ebook.com/download_linux'>"
+                "binary install command</a> but not from Flathub or Snap Store.</p>"
             ).format(INSTALL_PYTHON_DOC),
             job.details + exception,
             parent,

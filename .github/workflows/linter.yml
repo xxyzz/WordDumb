@@ -28,3 +28,4 @@ jobs:
       - run: |
           python -m pip install ruff
           ruff .
+      - uses: crate-ci/typos@v1.16.15

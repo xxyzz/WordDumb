@@ -164,7 +164,6 @@ string
 ==== ========== ====== 
  id   language   text  
 ==== ========== ====== 
- 0    de         Alle  
  0    en         All   
  0    en-AU      All   
  0    en-CA      All   

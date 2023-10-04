@@ -62,7 +62,7 @@ prefs.defaults["choose_format_manually"] = True
 prefs.defaults["wiktionary_gloss_lang"] = "en"
 prefs.defaults["kindle_gloss_lang"] = "en"
 prefs.defaults["use_gpu"] = False
-prefs.defaults["cuda"] = "cu118"
+prefs.defaults["cuda"] = "cu121"
 prefs.defaults["last_opened_kindle_lemmas_language"] = "ca"
 prefs.defaults["last_opened_wiktionary_lemmas_language"] = "ca"
 prefs.defaults["use_wiktionary_for_kindle"] = False
@@ -130,7 +130,7 @@ class ConfigWidget(QWidget):
             self.use_gpu_box.setChecked(prefs["use_gpu"])
             vl.addWidget(self.use_gpu_box)
 
-            cuda_versions = {"cu118": "CUDA 11.8", "cu117": "CUDA 11.7"}
+            cuda_versions = {"cu121": "CUDA 12.1", "cu118": "CUDA 11.8"}
             self.cuda_version_box = QComboBox()
             for cuda_version, text in cuda_versions.items():
                 self.cuda_version_box.addItem(text, cuda_version)

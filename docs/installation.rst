@@ -80,8 +80,6 @@ Install CUDA(optional)
 
 .. attention::
 
-   - PyTorch currently doesn't support CUDA 12(`GitHub issue <https://github.com/pytorch/pytorch/issues/91122>`_), download older version from https://developer.nvidia.com/cuda-toolkit-archive
-
    - C/C++ compiler is needed for Windows, download from https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022
 
    - Read the installation guide on the CUDA download page for more information.

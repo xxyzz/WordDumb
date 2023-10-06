@@ -76,7 +76,7 @@ class SendFile:
             device_book_path = device_mount_point.joinpath(paths.pop())
             if job is None:
                 # update device book ASIN if it doesn't have the same ASIN
-                get_asin_etc(self.job_data, self.job_data.asin, set_en_lang)
+                get_asin_etc(self.job_data, device_book_path, set_en_lang)
                 if self.job_data.update_asin:  # Re-upload book cover
                     self.gui.update_thumbnail(self.job_data.mi)
                     self.device_manager.device.upload_kindle_thumbnail(

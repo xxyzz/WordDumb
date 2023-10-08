@@ -1,6 +1,12 @@
 [tool.ruff]
 builtins = ["_", "load_translations", "get_icons"]
 exclude = ["docs"]
+select = [
+    "E",  # pycodestyle error
+    "F",  # Pyflakes
+    "I",  # isort
+    "W",  # pycodestyle warning
+]
 
 [tool.mypy]
 exclude = ["tests", "__main__", "docs"]

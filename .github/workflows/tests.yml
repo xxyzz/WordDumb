@@ -2,19 +2,19 @@ name: Tests
 
 on:
   push:
-    branches:
-      - '**'
     paths-ignore:
       - '**.md'
       - '**.rst'
       - 'translations/**'
   pull_request:
-    branches:
-      - '**'
     paths-ignore:
       - '**.md'
       - '**.rst'
       - 'translations/**'
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   test:

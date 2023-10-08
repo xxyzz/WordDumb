@@ -1,16 +1,10 @@
 name: Lint Code Base
 
-on:
-  push:
-    branches:
-      - '**'
-    paths:
-      - '**.py'
-  pull_request:
-    branches:
-      - '**'
-    paths:
-      - '**.py'
+on: [push, pull_request]
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   lint:

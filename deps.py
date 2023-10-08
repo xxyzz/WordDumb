@@ -64,7 +64,7 @@ def install_deps(pkg: str, notif: Any) -> None:
                     extra_index=f"https://download.pytorch.org/whl/{prefs['cuda']}",
                     notif=notif,
                 )
-                # an old verison of typing-extensions(4.4.0) is installed from pytorch's
+                # an old version of typing-extensions(4.4.0) is installed from pytorch's
                 # index which is incompatible with pydantic 2.4.2
                 pip_install(
                     "typing-extensions", dep_versions["typing-extensions"], notif=notif

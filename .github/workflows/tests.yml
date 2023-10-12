@@ -2,6 +2,8 @@ name: Tests
 
 on:
   push:
+    branches:  # ignore pushed tags
+      - "*"
     paths-ignore:
       - '**.md'
       - '**.rst'

@@ -2,6 +2,8 @@ name: Build and deploy docs
 
 on:
   push:
+    branches:  # ignore pushed tags
+      - "*"
     paths:
       - 'docs/**'
   pull_request:

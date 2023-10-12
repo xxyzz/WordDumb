@@ -134,6 +134,8 @@ class ConfigWidget(QWidget):
             self.cuda_version_box = QComboBox()
             for cuda_version, text in cuda_versions.items():
                 self.cuda_version_box.addItem(text, cuda_version)
+            if prefs["cuda"] not in cuda_versions:
+                prefs["cuda"] = "cu121"
             self.cuda_version_box.setCurrentText(cuda_versions[prefs["cuda"]])
             cuda_version_label = QLabel(_("CUDA version"))
             cuda_version_label.setToolTip(

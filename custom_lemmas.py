@@ -210,7 +210,9 @@ class CustomLemmasDialog(QDialog):
         plugin_path = get_plugin_path()
         klld_path = get_klld_path(plugin_path)
         if klld_path is None:
-            gui = self.parent().parent()
+            gui = self.parent()
+            while gui.parent() is not None:
+                gui = gui.parent()
             package_name = device_connected(gui, "KFX")
             if not package_name:
                 device_not_found_dialog(self)

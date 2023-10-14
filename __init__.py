@@ -65,7 +65,7 @@ class WordDumbDumb(InterfaceActionBase):
                     log.prints(
                         Log.WARNING,
                         f"Book language {lang} is not supported for Word Wise gloss"
-                        "language {gloss_lang}",
+                        f"language {gloss_lang}",
                     )
             if create_w is False and create_x is False:
                 continue

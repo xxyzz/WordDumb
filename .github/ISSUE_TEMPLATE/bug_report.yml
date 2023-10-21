@@ -18,14 +18,31 @@ body:
     validations:
       required: true
 
-  - type: textarea
+  - type: input
     attributes:
-      label: System Information
-      placeholder: |
-        OS: Arch Linux, x86_64
-        calibre version: 5.40.0
-        Python version: 3.10.4
-        Plugin version: 3.19.0
+      label: Operating System name and version
+      placeholder: Debian 12
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Python version
+      placeholder: "3.12"
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: calibre version
+      placeholder: "6.29"
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: WordDumb plugin version
+      placeholder: "3.29.7"
     validations:
       required: true
 

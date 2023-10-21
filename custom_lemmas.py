@@ -35,7 +35,7 @@ from .error_dialogs import device_not_found_dialog, ww_db_not_found_dialog
 from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
 from .utils import (
     custom_lemmas_folder,
-    get_klld_path,
+    get_kindle_klld_path,
     get_plugin_path,
     load_languages_data,
 )
@@ -208,7 +208,7 @@ class CustomLemmasDialog(QDialog):
             custom_db_conn.close()
             return
         plugin_path = get_plugin_path()
-        klld_path = get_klld_path(plugin_path)
+        klld_path = get_kindle_klld_path(plugin_path)
         if klld_path is None:
             gui = self.parent()
             while gui.parent() is not None:
@@ -223,7 +223,7 @@ class CustomLemmasDialog(QDialog):
             else:
                 copy_klld_from_kindle(gui, custom_folder)
 
-        klld_path = get_klld_path(plugin_path)
+        klld_path = get_kindle_klld_path(plugin_path)
         if klld_path is None:
             ww_db_not_found_dialog(self)
             return

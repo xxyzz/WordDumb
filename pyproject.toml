@@ -53,4 +53,4 @@ ignore_missing_imports = true
 [tool.typos]
 type.json.check-file = false
 type.po.check-file = false
-default.extend-ignore-re = ["B00OLDL0BA"]
+default.extend-words = {"BA" = "BA"}

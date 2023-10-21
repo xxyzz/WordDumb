@@ -127,8 +127,8 @@ def wiktionary_db_path(plugin_path: Path, lemma_lang: str, gloss_lang: str) -> P
     )
 
 
-def get_klld_path(plugin_path: Path) -> Path | None:
-    custom_folder = custom_lemmas_folder(plugin_path, "")
+def get_kindle_klld_path(plugin_path: Path) -> Path | None:
+    custom_folder = custom_lemmas_folder(plugin_path, "en")
     for path in custom_folder.glob("*.en.klld"):
         return path
     for path in custom_folder.glob("*.en.db"):

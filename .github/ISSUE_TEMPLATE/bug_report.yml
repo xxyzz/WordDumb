@@ -55,8 +55,9 @@ body:
 
   - type: textarea
     attributes:
-      label: Reproduce steps
+      label: Plugin settings and reproduce steps
       placeholder: |
+        0. Enable the X feature
         1. Go to ...
         2. Click on ...
         3. Scroll down to ...

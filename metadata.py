@@ -142,7 +142,7 @@ def get_asin_etc(
             update_lang = True
             book_lang = "en"
         if data.update_asin or update_lang:
-            update_kfx_metedata(
+            yj_book = update_kfx_metedata(
                 str(device_book_path)
                 if device_book_path is not None
                 else data.book_path,
@@ -213,7 +213,7 @@ def extract_mobi(book_path: str) -> bytes:
         return html
 
 
-def update_kfx_metedata(book_path: str, asin: str, lang: str):
+def update_kfx_metedata(book_path: str, asin: str, lang: str) -> Any:
     from calibre_plugins.kfx_input.kfxlib import YJ_Book, YJ_Metadata
 
     yj_book = YJ_Book(book_path)
@@ -224,6 +224,7 @@ def update_kfx_metedata(book_path: str, asin: str, lang: str):
     yj_book.decode_book(set_metadata=yj_md)
     with open(book_path, "wb") as f:
         f.write(yj_book.convert_to_single_kfx())
+    return yj_book
 
 
 def check_word_wise_language(book_lang: str, is_kindle: bool) -> tuple[bool, str]:

@@ -90,7 +90,6 @@ class ParseJobData:
     asin: str = ""
     acr: str = ""
     revision: str = ""
-    update_asin: bool = False
     kfx_json: KFXJson | None = None
     mobi_html: bytes | None = b""
     mobi_codec: str = ""

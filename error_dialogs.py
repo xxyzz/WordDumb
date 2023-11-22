@@ -215,3 +215,11 @@ def unsupported_ww_lang_dialog(book_lang: str, gloss_lang: str) -> None:
             book_lang, gloss_lang
         ),
     )
+
+
+def kindle_has_same_book_dialog(parent: Any) -> None:
+    warning_dialog(
+        _("Find same book on Kindle device"),
+        _("Remove the book from your device then try again."),
+        parent,
+    )

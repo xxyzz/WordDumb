@@ -104,14 +104,12 @@ def random_asin() -> str:
     return asin
 
 
-def validate_asin(asin: str | None, mi: Any) -> tuple[str, bool]:
+def validate_asin(asin: str | None, mi: Any) -> str:
     # check ASIN, create a random one if doesn't exist
-    update_asin = False
     if asin is None or re.fullmatch(r"B[0-9A-Z]{9}", asin) is None:
         asin = random_asin()
         mi.set_identifier("mobi-asin", asin)
-        update_asin = True
-    return asin, update_asin
+    return asin
 
 
 class KFXJson(TypedDict):
@@ -120,41 +118,28 @@ class KFXJson(TypedDict):
     type: int
 
 
-def get_asin_etc(
-    data: "ParseJobData", device_book_path: str | None = None, set_en_lang: bool = False
-) -> None:
+def get_asin_etc(data: "ParseJobData", set_en_lang: bool = False) -> None:
     if data.book_fmt == "KFX":
         from calibre_plugins.kfx_input.kfxlib import YJ_Book
 
-        yj_book = YJ_Book(
-            str(device_book_path) if device_book_path is not None else data.book_path
-        )
+        yj_book = YJ_Book(data.book_path)
         yj_md = yj_book.get_metadata()
         book_asin = getattr(yj_md, "asin", "")
         data.acr = getattr(yj_md, "asset_id", "")
         book_lang = getattr(yj_md, "language", "en")
-        if device_book_path is None:
-            data.asin, data.update_asin = validate_asin(book_asin, data.mi)
-        elif book_asin != data.asin:
-            data.update_asin = True
+        data.asin = validate_asin(book_asin, data.mi)
+        update_asin = data.asin != book_asin
         update_lang = False
         if set_en_lang and book_lang != "en":
             update_lang = True
             book_lang = "en"
-        if data.update_asin or update_lang:
-            yj_book = update_kfx_metedata(
-                str(device_book_path)
-                if device_book_path is not None
-                else data.book_path,
-                data.asin,
-                book_lang,
-            )
-        if device_book_path is None:
-            data.kfx_json = json.loads(yj_book.convert_to_json_content())["data"]
+        if update_asin or update_lang:
+            yj_book = update_kfx_metedata(data.book_path, data.asin, book_lang)
+        data.kfx_json = json.loads(yj_book.convert_to_json_content())["data"]
     elif data.book_fmt != "EPUB":
         from calibre.ebooks.metadata.mobi import MetadataUpdater
 
-        with open(device_book_path or data.book_path, "r+b") as f:
+        with open(data.book_path, "r+b") as f:
             data.acr = f.read(32).rstrip(b"\x00").decode("utf-8")  # Palm db name
             data.revision = get_mobi_revision(f)
             f.seek(0)
@@ -164,22 +149,20 @@ def get_asin_etc(
                 113
             ) or mu.original_exth_records.get(504)
             book_asin = asin_bytes.decode(mu.codec) if asin_bytes is not None else None
-            if device_book_path is None:
-                data.asin, data.update_asin = validate_asin(book_asin, data.mi)
-            elif book_asin != data.asin:
-                data.update_asin = True
+            data.asin = validate_asin(book_asin, data.mi)
             locale = mu.record0[0x5C:0x60]  # MOBI header locale
             mi_lang = data.mi.language
+            update_asin = data.asin != book_asin
             update_lang = False
             if set_en_lang and locale[2:] != (9).to_bytes(2, "big"):
                 update_lang = True
                 locale = (9).to_bytes(4, "big")
                 mi_lang = "eng"
-            if data.update_asin or update_lang:
+            if update_asin or update_lang:
                 data.mi.language = mi_lang
                 mu.record0[0x5C:0x60] = locale
                 mu.update(data.mi, asin=data.asin)
-        if device_book_path is None:
+
             data.mobi_html = extract_mobi(data.book_path)
 
 

@@ -10,8 +10,7 @@ from calibre.gui2 import FunctionDispatcher
 from calibre.gui2.dialogs.message_box import JobError
 
 from .database import get_ll_path, get_x_ray_path, is_same_klld
-from .error_dialogs import kindle_epub_dialog
-from .metadata import get_asin_etc
+from .error_dialogs import kindle_epub_dialog, kindle_has_same_book_dialog
 from .parse_job import ParseJobData
 from .utils import (
     get_plugin_path,
@@ -75,13 +74,8 @@ class SendFile:
             device_mount_point = Path(self.device_manager.device._main_prefix)
             device_book_path = device_mount_point.joinpath(paths.pop())
             if job is None:
-                # update device book ASIN if it doesn't have the same ASIN
-                get_asin_etc(self.job_data, device_book_path, set_en_lang)
-                if self.job_data.update_asin:  # Re-upload book cover
-                    self.gui.update_thumbnail(self.job_data.mi)
-                    self.device_manager.device.upload_kindle_thumbnail(
-                        self.job_data.mi, self.job_data.book_path
-                    )
+                kindle_has_same_book_dialog(self.gui)
+                return
 
             self.move_files_to_kindle(device_mount_point, device_book_path)
             library_book_path = Path(self.job_data.book_path)

@@ -43,7 +43,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt update
-          sudo apt install libegl1 libopengl0
+          sudo apt install libegl1 libopengl0 libxcb-cursor0
           sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
       - name: Install calibre on macOS

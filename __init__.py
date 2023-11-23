@@ -14,7 +14,7 @@ class WordDumbDumb(InterfaceActionBase):
     supported_platforms = ["linux", "osx", "windows"]
     author = "xxyzz"
     version = VERSION
-    minimum_calibre_version = (6, 9, 0)
+    minimum_calibre_version = (6, 27, 0)
     actual_plugin = "calibre_plugins.worddumb.ui:WordDumb"
 
     def is_customizable(self):

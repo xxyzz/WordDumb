@@ -171,7 +171,7 @@ class SendFile:
 
 def device_connected(gui: Any, book_fmt: str) -> str | bool:
     if gui.device_manager.is_device_present:
-        is_kindle = getattr(gui.device_manager.device, "VENDOR_NAME", None) == "KINDLE"
+        is_kindle = getattr(gui.device_manager.device, "VENDOR_ID", None) == [0x1949]
         if book_fmt == "EPUB":
             if is_kindle:
                 kindle_epub_dialog(gui)

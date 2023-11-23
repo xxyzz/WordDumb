@@ -10,7 +10,7 @@ from calibre.gui2 import FunctionDispatcher
 from calibre.gui2.dialogs.message_box import JobError
 
 from .database import get_ll_path, get_x_ray_path, is_same_klld
-from .error_dialogs import kindle_epub_dialog, kindle_has_same_book_dialog
+from .error_dialogs import kindle_epub_dialog
 from .parse_job import ParseJobData
 from .utils import (
     get_plugin_path,
@@ -68,21 +68,18 @@ class SendFile:
             and self.job_data.book_lang != "en"
         ):
             set_en_lang = True
-        [has_book, _, _, _, paths] = self.gui.book_on_device(self.job_data.book_id)
-        if has_book and self.job_data.book_fmt != "EPUB":
+        # https://github.com/kovidgoyal/calibre/blob/320fb96bbd08b99afbf3de560f7950367d21c093/src/calibre/gui2/device.py#L1772
+        paths = self.gui.book_on_device(self.job_data.book_id)[4]
+        if job is not None and self.job_data.book_fmt != "EPUB":
             # _main_prefix: Kindle mount point, /Volumes/Kindle
             device_mount_point = Path(self.device_manager.device._main_prefix)
             device_book_path = device_mount_point.joinpath(paths.pop())
-            if job is None:
-                kindle_has_same_book_dialog(self.gui)
-                return
-
             self.move_files_to_kindle(device_mount_point, device_book_path)
             library_book_path = Path(self.job_data.book_path)
             if library_book_path.stem.endswith("_en"):
                 library_book_path.unlink()
             self.gui.status_bar.show_message(self.notif)
-        elif job is None or self.job_data.book_fmt == "EPUB":
+        else:
             # upload book and cover to device
             self.gui.update_thumbnail(self.job_data.mi)
             # without this the book language won't be English after uploading

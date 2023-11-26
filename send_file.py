@@ -68,13 +68,11 @@ class SendFile:
             and self.job_data.book_lang != "en"
         ):
             set_en_lang = True
+
         # https://github.com/kovidgoyal/calibre/blob/320fb96bbd08b99afbf3de560f7950367d21c093/src/calibre/gui2/device.py#L1772
-        paths = self.gui.book_on_device(self.job_data.book_id)[4]
-        if job is not None and self.job_data.book_fmt != "EPUB":
-            # _main_prefix: Kindle mount point, /Volumes/Kindle
-            device_mount_point = Path(self.device_manager.device._main_prefix)
-            device_book_path = device_mount_point.joinpath(paths.pop())
-            self.move_files_to_kindle(device_mount_point, device_book_path)
+        has_book, *_, paths = self.gui.book_on_device(self.job_data.book_id)
+        if has_book and job is not None and self.job_data.book_fmt != "EPUB":
+            self.move_files_to_kindle(self.gui.device_manager.device, Path(paths.pop()))
             library_book_path = Path(self.job_data.book_path)
             if library_book_path.stem.endswith("_en"):
                 library_book_path.unlink()
@@ -101,30 +99,33 @@ class SendFile:
                 [self.job_data.book_path],
             )
 
-    def move_files_to_kindle(
-        self, device_mount_point: Path, device_book_path: Path
-    ) -> None:
+    def move_files_to_kindle(self, device_driver: Any, device_book_path: Path) -> None:
+        use_mtp = getattr(device_driver, "DEVICE_PLUGBOARD_NAME", "") == "MTP_DEVICE"
+        if not use_mtp:
+            # _main_prefix: Kindle mount point, /Volumes/Kindle
+            device_mount_point = Path(device_driver._main_prefix)
         if self.ll_path.exists():
+            device_klld_path = Path("system/kll/kll.en.zh.klld")
+            if not use_mtp:
+                device_klld_path = device_mount_point.joinpath(device_klld_path)
             copy_klld_to_device(
                 self.job_data.book_lang,
-                device_mount_point.joinpath("system/kll/kll.en.zh.klld"),
+                device_klld_path,
                 None,
+                device_driver if use_mtp else None,
             )
-            self.move_file_to_kindle(self.ll_path, device_book_path)
-        self.move_file_to_kindle(self.x_ray_path, device_book_path)
-
-    def move_file_to_kindle(self, file_path: Path, device_book_path: Path) -> None:
-        if not file_path.is_file():
-            return
         sidecar_folder = device_book_path.parent.joinpath(
             f"{device_book_path.stem}.sdr"
         )
-        if not sidecar_folder.is_dir():
-            sidecar_folder.mkdir()
-        dst_path = sidecar_folder.joinpath(file_path.name)
-        if dst_path.is_file():
-            dst_path.unlink()
-        shutil.move(file_path, dst_path, shutil.copy)
+        if use_mtp:
+            for file_path in (self.ll_path, self.x_ray_path):
+                dest_path = sidecar_folder.joinpath(file_path.name)
+                upload_file_to_kindle_mtp(device_driver, file_path, dest_path)
+        else:
+            sidecar_folder = device_mount_point.joinpath(sidecar_folder)
+            for file_path in (self.ll_path, self.x_ray_path):
+                dest_path = sidecar_folder.joinpath(file_path.name)
+                move_file_to_kindle_usbms(file_path, dest_path)
 
     def push_files_to_android(self, adb_path: str) -> None:
         device_book_folder = f"/sdcard/Android/data/{self.package_name}/files/"
@@ -230,7 +231,7 @@ def copy_klld_from_kindle(gui: Any, dest_path: Path) -> None:
 
 
 def copy_klld_to_device(
-    book_lang: str, device_klld_path: Path, adb_path: str | None
+    book_lang: str, device_klld_path: Path, adb_path: str | None, mtp_driver: Any = None
 ) -> None:
     from .config import prefs
 
@@ -243,6 +244,8 @@ def copy_klld_to_device(
 
     if adb_path is not None:
         run_subprocess([adb_path, "push", str(local_klld_path), str(device_klld_path)])
+    elif mtp_driver is not None:
+        upload_file_to_kindle_mtp(mtp_driver, local_klld_path, device_klld_path)
     else:
         copy = False
         if not device_klld_path.exists():
@@ -252,3 +255,24 @@ def copy_klld_to_device(
 
         if copy:
             shutil.copy(local_klld_path, device_klld_path)
+
+
+def upload_file_to_kindle_mtp(driver: Any, source_path: Path, dest_path: Path) -> None:
+    # https://github.com/kovidgoyal/calibre/blob/52ebc7809506e19beb135f53419a8bb9571c24e3/src/calibre/devices/mtp/driver.py#L417
+    if not source_path.exists():
+        return
+    storage = driver.filesystem_cache.storage(driver._main_id)
+    parent = driver.ensure_parent(storage, dest_path.parts)
+    with source_path.open("rb") as f:
+        driver.put_file(parent, dest_path.parts[-1], f, source_path.stat().st_size)
+    source_path.unlink()
+
+
+def move_file_to_kindle_usbms(source_path: Path, dest_path: Path) -> None:
+    if not source_path.is_file():
+        return
+    if not dest_path.parent.is_dir():
+        dest_path.parent.mkdir()
+    if dest_path.is_file():
+        dest_path.unlink()
+    shutil.move(source_path, dest_path, shutil.copy)

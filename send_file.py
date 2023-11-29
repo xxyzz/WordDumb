@@ -100,7 +100,7 @@ class SendFile:
             )
 
     def move_files_to_kindle(self, device_driver: Any, device_book_path: Path) -> None:
-        use_mtp = getattr(device_driver, "DEVICE_PLUGBOARD_NAME", "") == "MTP_DEVICE"
+        use_mtp = is_mtp_device(device_driver)
         if not use_mtp:
             # _main_prefix: Kindle mount point, /Volumes/Kindle
             device_mount_point = Path(device_driver._main_prefix)
@@ -172,7 +172,16 @@ class SendFile:
 
 def device_connected(gui: Any, book_fmt: str) -> str | bool:
     if gui.device_manager.is_device_present:
-        is_kindle = getattr(gui.device_manager.device, "VENDOR_ID", None) == [0x1949]
+        is_kindle = False
+        device = gui.device_manager.device
+        if hasattr(device, "VENDOR_NAME"):
+            # Normal USB mass storage Kindle
+            is_kindle = device.VENDOR_NAME == "KINDLE"
+        elif hasattr(device, "current_vid"):
+            # Kindle Scribe, MTP vendor id is Amazon
+            # https://github.com/kovidgoyal/calibre/blob/475b0d3d2e6678dc4fd5441619f71a048c3806ea/src/calibre/devices/mtp/driver.py#L145
+            is_kindle = device.current_vid == 0x1949
+
         if book_fmt == "EPUB":
             if is_kindle:
                 kindle_epub_dialog(gui)
@@ -185,6 +194,13 @@ def device_connected(gui: Any, book_fmt: str) -> str | bool:
         if adb_path and adb_connected(adb_path):
             package_name = get_package_name(adb_path)
             return package_name if package_name else False
+    return False
+
+
+def is_mtp_device(device_driver: Any) -> bool:
+    # https://github.com/kovidgoyal/calibre/blob/475b0d3d2e6678dc4fd5441619f71a048c3806ea/src/calibre/devices/mtp/driver.py#L49
+    if hasattr(device_driver, "DEVICE_PLUGBOARD_NAME"):
+        return device_driver.DEVICE_PLUGBOARD_NAME == "MTP_DEVICE"
     return False
 
 

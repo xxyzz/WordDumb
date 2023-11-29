@@ -32,7 +32,12 @@ from PyQt6.QtWidgets import (
 )
 
 from .error_dialogs import device_not_found_dialog, ww_db_not_found_dialog
-from .send_file import copy_klld_from_android, copy_klld_from_kindle, device_connected
+from .send_file import (
+    copy_klld_from_android,
+    copy_klld_from_kindle,
+    device_connected,
+    is_mtp_device,
+)
 from .utils import (
     custom_lemmas_folder,
     get_kindle_klld_path,
@@ -216,6 +221,8 @@ class CustomLemmasDialog(QDialog):
             package_name = device_connected(gui, "KFX")
             if not package_name:
                 device_not_found_dialog(self)
+                return
+            if is_mtp_device(gui.device_manager.device):
                 return
             custom_folder = custom_lemmas_folder(plugin_path, "en")
             if isinstance(package_name, str):

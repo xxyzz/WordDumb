@@ -77,7 +77,7 @@ class SendFile:
             if library_book_path.stem.endswith("_en"):
                 library_book_path.unlink()
             self.gui.status_bar.show_message(self.notif)
-        else:
+        elif job is None:
             # upload book and cover to device
             self.gui.update_thumbnail(self.job_data.mi)
             # without this the book language won't be English after uploading

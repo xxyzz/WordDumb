@@ -280,7 +280,9 @@ def upload_file_to_kindle_mtp(driver: Any, source_path: Path, dest_path: Path) -
     storage = driver.filesystem_cache.storage(driver._main_id)
     parent = driver.ensure_parent(storage, dest_path.parts)
     with source_path.open("rb") as f:
-        driver.put_file(parent, dest_path.parts[-1], f, source_path.stat().st_size)
+        driver.put_file(
+            parent, dest_path.parts[-1], f, source_path.stat().st_size, replace=True
+        )
     source_path.unlink()
 
 

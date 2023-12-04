@@ -1,7 +1,7 @@
 Installation
 ============
 
-Install calibre 6.9.0+
+Install calibre 7.1.0+
 ----------------------
 
 - Arch Linux:
@@ -35,7 +35,7 @@ Use `Chocolatey <https://chocolatey.org>`_ or download from https://calibre-eboo
 
    # choco install calibre
 
-Install Python 3.10+ and pip
+Install Python 3.11+ and pip
 ----------------------------
 
 - Arch Linux:

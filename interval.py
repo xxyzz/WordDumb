@@ -41,7 +41,7 @@ class IntervalTree:
 
         return node
 
-    def insert_intervals(self, intervals: Interval) -> None:
+    def insert_intervals(self, intervals: list[Interval]) -> None:
         for interval in intervals:
             self.insert(self.root, interval)
 

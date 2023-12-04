@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 
 GITHUB_URL = "https://github.com/xxyzz/WordDumb"
 INSTALL_PYTHON_DOC = (
-    "https://xxyzz.github.io/WordDumb/installation.html#install-python-3-10-and-pip"
+    "https://xxyzz.github.io/WordDumb/installation.html#install-python-3-11-and-pip"
 )
 
 load_translations()  # type: ignore

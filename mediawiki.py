@@ -2,7 +2,7 @@
 
 import sqlite3
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
 from typing import TypedDict
@@ -483,16 +483,13 @@ class Wikidata:
 
 
 def inception_text(inception_str: str) -> str:
-    # don't need to remove the last "Z" in Python 3.11
-    inception_str = inception_str.removesuffix("Z")
     if inception_str.startswith("-"):
         bc = int(inception_str[1:5]) + 1  # 2BC: -0001, 1BC: +0000, 1AD: 0001
         years = datetime.now().year + bc
         return f"Inception: {bc} BC({years} years ago)"
     else:
         inception = datetime.fromisoformat(inception_str)
-        # Python 3.11: datetime.now(timezone.utc) - inception
-        years = (datetime.now() - inception).days // 365
+        years = (datetime.now(timezone.utc) - inception).days // 365
         return (
             f"Inception: {inception.strftime('%d %B %Y').lstrip('0')}"
             f"({years} years ago)"

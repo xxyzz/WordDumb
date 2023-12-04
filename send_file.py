@@ -72,7 +72,7 @@ class SendFile:
         # https://github.com/kovidgoyal/calibre/blob/320fb96bbd08b99afbf3de560f7950367d21c093/src/calibre/gui2/device.py#L1772
         has_book, *_, paths = self.gui.book_on_device(self.job_data.book_id)
         if has_book and job is not None and self.job_data.book_fmt != "EPUB":
-            self.move_files_to_kindle(self.gui.device_manager.device, Path(paths.pop()))
+            self.move_files_to_kindle(self.gui.device_manager, Path(paths.pop()))
             library_book_path = Path(self.job_data.book_path)
             if library_book_path.stem.endswith("_en"):
                 library_book_path.unlink()
@@ -99,11 +99,11 @@ class SendFile:
                 [self.job_data.book_path],
             )
 
-    def move_files_to_kindle(self, device_driver: Any, device_book_path: Path) -> None:
-        use_mtp = is_mtp_device(device_driver)
+    def move_files_to_kindle(self, device_manager: Any, device_book_path: Path) -> None:
+        use_mtp = is_mtp_device(device_manager.device)
         if not use_mtp:
             # _main_prefix: Kindle mount point, /Volumes/Kindle
-            device_mount_point = Path(device_driver._main_prefix)
+            device_mount_point = Path(device_manager.device._main_prefix)
         if self.ll_path.exists():
             device_klld_path = Path("system/kll/kll.en.zh.klld")
             if not use_mtp:
@@ -112,7 +112,7 @@ class SendFile:
                 self.job_data.book_lang,
                 device_klld_path,
                 None,
-                device_driver if use_mtp else None,
+                device_manager if use_mtp else None,
             )
         sidecar_folder = device_book_path.parent.joinpath(
             f"{device_book_path.stem}.sdr"
@@ -120,7 +120,7 @@ class SendFile:
         if use_mtp:
             for file_path in (self.ll_path, self.x_ray_path):
                 dest_path = sidecar_folder.joinpath(file_path.name)
-                upload_file_to_kindle_mtp(device_driver, file_path, dest_path)
+                upload_file_to_kindle_mtp(device_manager, file_path, dest_path)
         else:
             sidecar_folder = device_mount_point.joinpath(sidecar_folder)
             for file_path in (self.ll_path, self.x_ray_path):
@@ -247,7 +247,10 @@ def copy_klld_from_kindle(gui: Any, dest_path: Path) -> None:
 
 
 def copy_klld_to_device(
-    book_lang: str, device_klld_path: Path, adb_path: str | None, mtp_driver: Any = None
+    book_lang: str,
+    device_klld_path: Path,
+    adb_path: str | None,
+    device_manager: Any = None,
 ) -> None:
     from .config import prefs
 
@@ -260,8 +263,8 @@ def copy_klld_to_device(
 
     if adb_path is not None:
         run_subprocess([adb_path, "push", str(local_klld_path), str(device_klld_path)])
-    elif mtp_driver is not None:
-        upload_file_to_kindle_mtp(mtp_driver, local_klld_path, device_klld_path)
+    elif device_manager is not None:
+        upload_file_to_kindle_mtp(device_manager, local_klld_path, device_klld_path)
     else:
         copy = False
         if not device_klld_path.exists():
@@ -273,10 +276,21 @@ def copy_klld_to_device(
             shutil.copy(local_klld_path, device_klld_path)
 
 
-def upload_file_to_kindle_mtp(driver: Any, source_path: Path, dest_path: Path) -> None:
-    # https://github.com/kovidgoyal/calibre/blob/52ebc7809506e19beb135f53419a8bb9571c24e3/src/calibre/devices/mtp/driver.py#L417
+def upload_file_to_kindle_mtp(
+    device_manager: Any, source_path: Path, dest_path: Path
+) -> None:
     if not source_path.exists():
         return
+    device_manager.create_job(
+        mtp_upload_job,
+        None,
+        f"MTP uploading '{dest_path}'",
+        args=[device_manager.device, source_path, dest_path],
+    )
+
+
+def mtp_upload_job(driver: Any, source_path: Path, dest_path: Path) -> None:
+    # https://github.com/kovidgoyal/calibre/blob/52ebc7809506e19beb135f53419a8bb9571c24e3/src/calibre/devices/mtp/driver.py#L417
     storage = driver.filesystem_cache.storage(driver._main_id)
     parent = driver.ensure_parent(storage, dest_path.parts)
     with source_path.open("rb") as f:

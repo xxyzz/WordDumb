@@ -4,3 +4,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "typos"  # ignore patch updates
+        update-types: ["version-update:semver-patch"]

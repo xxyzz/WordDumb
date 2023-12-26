@@ -36,7 +36,6 @@ from .send_file import (
     copy_klld_from_android,
     copy_klld_from_kindle,
     device_connected,
-    is_mtp_device,
 )
 from .utils import (
     custom_lemmas_folder,
@@ -222,13 +221,11 @@ class CustomLemmasDialog(QDialog):
             if not package_name:
                 device_not_found_dialog(self)
                 return
-            if is_mtp_device(gui.device_manager.device):
-                return
             custom_folder = custom_lemmas_folder(plugin_path, "en")
             if isinstance(package_name, str):
                 copy_klld_from_android(package_name, custom_folder)
             else:
-                copy_klld_from_kindle(gui, custom_folder)
+                copy_klld_from_kindle(gui.device_manager.device, custom_folder)
 
         klld_path = get_kindle_klld_path(plugin_path)
         if klld_path is None:

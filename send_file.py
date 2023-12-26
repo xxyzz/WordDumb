@@ -120,7 +120,7 @@ class SendFile:
         if use_mtp:
             for file_path in (self.ll_path, self.x_ray_path):
                 dest_path = sidecar_folder.joinpath(file_path.name)
-                upload_file_to_kindle_mtp(device_manager, file_path, dest_path)
+                upload_file_to_mtp(device_manager, file_path, dest_path)
         else:
             sidecar_folder = device_mount_point.joinpath(sidecar_folder)
             for file_path in (self.ll_path, self.x_ray_path):
@@ -239,11 +239,16 @@ def copy_klld_from_android(package_name: str, dest_path: Path) -> None:
     dest_path.joinpath("wordwise").rmdir()
 
 
-def copy_klld_from_kindle(gui: Any, dest_path: Path) -> None:
-    for klld_path in Path(f"{gui.device_manager.device._main_prefix}/system/kll").glob(
-        "*.en.klld"
-    ):
-        shutil.copy(klld_path, dest_path)
+def copy_klld_from_kindle(device_driver: Any, dest_path: Path) -> None:
+    if is_mtp_device(device_driver):
+        download_file_from_mtp(
+            device_driver, Path("system/kll/kll.en.en.klld"), dest_path
+        )
+    else:
+        for klld_path in Path(f"{device_driver._main_prefix}/system/kll").glob(
+            "*.en.klld"
+        ):
+            shutil.copy(klld_path, dest_path)
 
 
 def copy_klld_to_device(
@@ -264,7 +269,7 @@ def copy_klld_to_device(
     if adb_path is not None:
         run_subprocess([adb_path, "push", str(local_klld_path), str(device_klld_path)])
     elif device_manager is not None:
-        upload_file_to_kindle_mtp(device_manager, local_klld_path, device_klld_path)
+        upload_file_to_mtp(device_manager, local_klld_path, device_klld_path)
     else:
         copy = False
         if not device_klld_path.exists():
@@ -276,9 +281,7 @@ def copy_klld_to_device(
             shutil.copy(local_klld_path, device_klld_path)
 
 
-def upload_file_to_kindle_mtp(
-    device_manager: Any, source_path: Path, dest_path: Path
-) -> None:
+def upload_file_to_mtp(device_manager: Any, source_path: Path, dest_path: Path) -> None:
     if not source_path.exists():
         return
     device_manager.create_job(
@@ -298,6 +301,25 @@ def mtp_upload_job(driver: Any, source_path: Path, dest_path: Path) -> None:
             parent, dest_path.parts[-1], f, source_path.stat().st_size, replace=True
         )
     source_path.unlink()
+
+
+def download_file_from_mtp(device_manager: Any, source_path: Path, dest_path: Path):
+    device_manager.create_job(
+        mtp_download_job,
+        None,
+        f"MTP downloading '{source_path}'",
+        args=[device_manager.device, source_path, dest_path],
+    )
+
+
+def mtp_download_job(driver: Any, source_path: Path, dest_path: Path) -> None:
+    # https://github.com/kovidgoyal/calibre/blob/a1d86860ac83146e06fc398ed8c6d5422f8749ca/src/calibre/devices/mtp/driver.py#L171
+    storage = driver.filesystem_cache.storage(driver._main_id)
+    path = storage.find_path(source_path.parts)
+    if path is not None:
+        stream = driver.get_mtp_file(path)
+        with dest_path.open("wb") as dest_f:
+            shutil.copyfileobj(stream, dest_f)
 
 
 def move_file_to_kindle_usbms(source_path: Path, dest_path: Path) -> None:

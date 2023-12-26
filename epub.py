@@ -149,10 +149,13 @@ class EPUB:
                 ):
                     for m in re.finditer(r">[^<]{2,}<", match_body.group(0)):
                         text = m.group(0)[1:-1]
-                        yield unescape(text), (
-                            match_body.start() + m.start() + 1,
-                            text,
-                            xhtml_path,
+                        yield (
+                            unescape(text),
+                            (
+                                match_body.start() + m.start() + 1,
+                                text,
+                                xhtml_path,
+                            ),
                         )
 
     def add_entity(

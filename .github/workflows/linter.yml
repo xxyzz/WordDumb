@@ -4,7 +4,7 @@ on:
   push:
     branches:  # ignore pushed tags
       - "*"
-    pull_request:
+  pull_request:
 
 permissions:
   contents: read
@@ -18,12 +18,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - uses: psf/black@stable
       - run: |
           python -m pip install mypy
-          mypy .
-          mypy __main__.py
+          python -m mypy .
+          python -m mypy __main__.py
       - run: |
           python -m pip install ruff
-          ruff .
+          python -m ruff .
+          python -m ruff format --diff .
       - uses: crate-ci/typos@v1.16.25

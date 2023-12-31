@@ -29,7 +29,7 @@ Use `Homebrew <https://brew.sh>`_ or download from https://calibre-ebook.com/dow
 
 - Windows:
 
-Use `Chocolatey <https://chocolatey.org>`_ or download from https://calibre-ebook.com/download_windows64
+Use `Chocolatey <https://chocolatey.org>`_ or download from https://calibre-ebook.com/download_windows
 
 .. code-block:: console
 
@@ -59,9 +59,6 @@ Install Python 3.11+ and pip
 .. attention::
    Don't use Rosetta 2.
 
-.. tip::
-   You'll need to set the `PATH` environment variable for calibre so the plugin can find the Python command if your system's Python is not installed from Homebrew, because the `PATH` variable is cleared when calibre is launched from Launchpad. Please read `calibre manual <https://manual.calibre-ebook.com/customize.html#environment-variables>`_ about how to set this variable.
-
 - Windows:
 
 Use Chocolatey or download from https://www.python.org/downloads
@@ -71,7 +68,9 @@ Use Chocolatey or download from https://www.python.org/downloads
    # choco install python
 
 .. attention::
-   Do not change the default installation settings in the Python installer.
+   - Do not change the default installation settings in the Python installer.
+   - The dependencies(`PyTorch <https://pytorch.org/get-started/locally>`_) of the transformer model may not support the latest Python version.
+
 
 Install CUDA(optional)
 ----------------------

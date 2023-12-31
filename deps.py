@@ -83,8 +83,12 @@ def which_python() -> tuple[str, str]:
     """
     Return Python command or file path and version string
     """
+    from .config import prefs
+
     py = "python3"
-    if iswindows:
+    if len(prefs["python_path"]) > 0:
+        py = prefs["python_path"]
+    elif iswindows:
         py = "py" if shutil.which("py") else "python"
     elif ismacos:
         py = mac_bin_path("python3")

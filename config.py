@@ -66,6 +66,7 @@ prefs.defaults["cuda"] = "cu121"
 prefs.defaults["last_opened_kindle_lemmas_language"] = "ca"
 prefs.defaults["last_opened_wiktionary_lemmas_language"] = "ca"
 prefs.defaults["use_wiktionary_for_kindle"] = False
+prefs.defaults["python_path"] = ""
 for code in load_plugin_json(get_plugin_path(), "data/languages.json").keys():
     prefs.defaults[f"{code}_wiktionary_difficulty_limit"] = 5
 
@@ -118,6 +119,17 @@ class ConfigWidget(QWidget):
         form_layout.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
         )
+
+        python_path_label = QLabel(_("Python path"))
+        python_path_label.setToolTip(
+            _(
+                "Absolute path of the executable binary for the Python interpreter, "
+                "leave this empty to find Python in PATH."
+            )
+        )
+        self.python_path = QLineEdit()
+        self.python_path.setText(prefs["python_path"])
+        form_layout.addRow(python_path_label, self.python_path)
 
         if not ismacos:
             self.use_gpu_box = QCheckBox(_("Run spaCy with GPU(requires CUDA)"))
@@ -217,6 +229,7 @@ class ConfigWidget(QWidget):
         webbrowser.open(GITHUB_URL)
 
     def save_settings(self) -> None:
+        prefs["python_path"] = self.python_path.text()
         prefs["use_pos"] = self.use_pos_box.isChecked()
         prefs["search_people"] = self.search_people_box.isChecked()
         prefs["model_size"] = self.model_size_box.currentData()

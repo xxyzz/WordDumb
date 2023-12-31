@@ -38,6 +38,7 @@ class Prefs(TypedDict):
     last_opened_kindle_lemmas_language: str
     last_opened_wiktionary_lemmas_language: str
     use_wiktionary_for_kindle: bool
+    python_path: str
 
 
 def load_plugin_json(plugin_path: Path, filepath: str) -> Any:

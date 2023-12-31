@@ -1,7 +1,7 @@
 {
   "cupy": "12.3.0",
-  "lxml": "4.9.4",
-  "rapidfuzz": "3.6.0",
+  "lxml": "5.0.0",
+  "rapidfuzz": "3.6.1",
   "spacy_cpu_model": "3.7.0",
   "spacy_trf_model": "3.7.2",
   "thinc-apple-ops": "0.1.4",

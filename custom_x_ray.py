@@ -49,7 +49,7 @@ class CustomXRayDialog(QDialog):
         vl = QVBoxLayout()
         self.setLayout(vl)
 
-        self.x_ray_table = QTableView()
+        self.x_ray_table = QTableView(self)
         self.x_ray_table.setAlternatingRowColors(True)
         self.x_ray_model = XRayTableModel(book_path)
         self.x_ray_table.setModel(self.x_ray_model)

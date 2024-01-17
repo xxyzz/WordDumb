@@ -2,6 +2,7 @@
 
 import base64
 import sqlite3
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -81,7 +82,7 @@ class CustomLemmasDialog(QDialog):
         vl.addWidget(self.init_dialog_buttons())
 
     def init_sql_table(self, is_kindle: bool) -> None:
-        self.lemmas_table = QTableView()
+        self.lemmas_table = QTableView(self)
         self.lemmas_table.setAlternatingRowColors(True)
         if is_kindle:
             self.check_empty_kindle_gloss()
@@ -89,7 +90,7 @@ class CustomLemmasDialog(QDialog):
         db = QSqlDatabase.addDatabase("QSQLITE", self.db_connection_name)
         db.setDatabaseName(str(self.db_path))
         db.open()
-        self.lemmas_model: LemmasTableModel = LemmasTableModel(db, is_kindle)
+        self.lemmas_model = LemmasTableModel(db, is_kindle)
         self.lemmas_model.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
         self.lemmas_model.setTable("senses")
         self.lemmas_model.setRelation(
@@ -135,6 +136,15 @@ class CustomLemmasDialog(QDialog):
             self.filter_difficulty_box.addItem(str(difficulty_level), difficulty_level)
         self.filter_difficulty_box.currentIndexChanged.connect(self.filter_data)
         form_layout.addRow(_("Filter difficulty"), self.filter_difficulty_box)
+
+        hl = QHBoxLayout()
+        enable_all_button = QPushButton(_("Enable all"))
+        disable_all_button = QPushButton(_("Disable all"))
+        enable_all_button.clicked.connect(partial(self.enable_or_disable_words, True))
+        disable_all_button.clicked.connect(partial(self.enable_or_disable_words, False))
+        hl.addWidget(enable_all_button)
+        hl.addWidget(disable_all_button)
+        form_layout.addRow("", hl)
 
     def init_wiktionary_buttons(
         self, form_layout: QFormLayout, gloss_lang: str
@@ -326,6 +336,14 @@ class CustomLemmasDialog(QDialog):
         limit = int(self.difficulty_limit_box.currentText())
         prefs[f"{self.lemma_lang}_wiktionary_difficulty_limit"] = limit
 
+    def enable_or_disable_words(self, enable: bool):
+        for row in range(self.lemmas_model.rowCount()):
+            record = self.lemmas_model.record(row)
+            record.setValue("enabled", int(enable))
+            self.lemmas_model.setRecord(row, record)
+        self.lemmas_model.submitAll()
+        self.lemmas_model.select()
+
 
 class LemmasTableModel(QSqlRelationalTableModel):
     def __init__(self, db: QSqlDatabase, is_kindle: bool) -> None:
@@ -427,6 +445,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
     def commit_editor(self):
         editor = self.sender()
         self.commitData.emit(editor)
+        self.closeEditor.emit(editor)
 
     def setEditorData(self, editor, index):
         value = index.data(Qt.ItemDataRole.DisplayRole)

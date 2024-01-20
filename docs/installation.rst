@@ -38,6 +38,8 @@ Use `Chocolatey <https://chocolatey.org>`_ or download from https://calibre-eboo
 Install Python 3.11+ and pip
 ----------------------------
 
+You could set the Python interpreter path in the plugin preferences window if you don't use the following methods to install Python.
+
 - Arch Linux:
 
 .. code-block:: console
@@ -69,7 +71,7 @@ Use Chocolatey or download from https://www.python.org/downloads
 
 .. attention::
    - Do not change the default installation settings in the Python installer.
-   - The dependencies(`PyTorch <https://pytorch.org/get-started/locally>`_) of the transformer model may not support the latest Python version.
+   - The dependencies(`PyTorch <https://pytorch.org/get-started/locally>`_) of the transformer model may not support the latest Python and CUDA version.
 
 
 Install CUDA(optional)

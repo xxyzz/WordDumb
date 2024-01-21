@@ -79,6 +79,7 @@ class CustomLemmasDialog(QDialog):
         self.init_filters(form_layout)
         if not is_kindle:
             self.init_wiktionary_buttons(form_layout, gloss_lang)
+        self.add_enable_disable_buttons(form_layout)
         vl.addWidget(self.init_dialog_buttons())
 
     def init_sql_table(self, is_kindle: bool) -> None:
@@ -137,6 +138,7 @@ class CustomLemmasDialog(QDialog):
         self.filter_difficulty_box.currentIndexChanged.connect(self.filter_data)
         form_layout.addRow(_("Filter difficulty"), self.filter_difficulty_box)
 
+    def add_enable_disable_buttons(self, form_layout:QFormLayout) -> None:
         hl = QHBoxLayout()
         enable_all_button = QPushButton(_("Enable all"))
         disable_all_button = QPushButton(_("Disable all"))

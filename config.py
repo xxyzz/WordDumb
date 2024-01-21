@@ -66,6 +66,7 @@ prefs.defaults["cuda"] = "cu121"
 prefs.defaults["last_opened_kindle_lemmas_language"] = "ca"
 prefs.defaults["last_opened_wiktionary_lemmas_language"] = "ca"
 prefs.defaults["use_wiktionary_for_kindle"] = False
+prefs.defaults["remove_link_styles"] = False
 prefs.defaults["python_path"] = ""
 for code in load_plugin_json(get_plugin_path(), "data/languages.json").keys():
     prefs.defaults[f"{code}_wiktionary_difficulty_limit"] = 5
@@ -210,6 +211,12 @@ class ConfigWidget(QWidget):
         self.locator_map_box.setChecked(prefs["add_locator_map"])
         vl.addWidget(self.locator_map_box)
 
+        self.remove_link_styles = QCheckBox(
+            _("Remove Word Wise and X-Ray links underline and color in EPUB books")
+        )
+        self.remove_link_styles.setChecked(prefs["remove_link_styles"])
+        vl.addWidget(self.remove_link_styles)
+
         donate_button = QPushButton(QIcon.ic("donate.png"), "Tree-fiddy?")
         donate_button.clicked.connect(donate)
         vl.addWidget(donate_button)
@@ -237,6 +244,7 @@ class ConfigWidget(QWidget):
         prefs["fandom"] = self.fandom_url.text().removesuffix("/")
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
+        prefs["remove_link_styles"] = self.remove_link_styles.isChecked()
         if not ismacos:
             prefs["use_gpu"] = self.use_gpu_box.isChecked()
             prefs["cuda"] = self.cuda_version_box.currentData()

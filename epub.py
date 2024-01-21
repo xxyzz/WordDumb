@@ -255,6 +255,21 @@ class EPUB:
             lemmas_conn.close()
 
     def insert_anchor_elements(self, lang: str) -> None:
+        css_rules = ""
+        if len(self.lemmas) > 0:
+            css_rules += """
+            body {line-height: 2.5;}
+            ruby.wordwise {text-decoration: overline;}
+            ruby.wordwise a {text-decoration: none;}
+            """
+        if self.prefs["remove_link_styles"]:
+            css_rules += """
+            a.x-ray, a.wordwise, ruby.wordwise a {
+              text-decoration: none;
+              color: inherit;
+            }
+            """
+
         for xhtml_path, entity_list in self.entity_occurrences.items():
             if self.entities and self.lemmas:
                 entity_list = sorted(entity_list, key=operator.itemgetter(0))
@@ -269,7 +284,7 @@ class EPUB:
                 new_xhtml_str += xhtml_str[last_end:start]
                 if isinstance(entity_id, int):
                     new_xhtml_str += (
-                        f'<a epub:type="noteref" href="x_ray.xhtml#'
+                        f'<a class="x-ray" epub:type="noteref" href="x_ray.xhtml#'
                         f'{entity_id}">{entity}</a>'
                     )
                 else:
@@ -277,20 +292,16 @@ class EPUB:
                 last_end = end
             new_xhtml_str += xhtml_str[last_end:]
 
-            # add epub namespace and Word Wise CSS
+            # add epub namespace and CSS
             with xhtml_path.open("w", encoding="utf-8") as f:
                 if NAMESPACES["ops"] not in new_xhtml_str:
                     new_xhtml_str = new_xhtml_str.replace(
                         f'xmlns="{NAMESPACES["xml"]}"',
-                        f'xmlns="{NAMESPACES["xml"]}" '
-                        f'xmlns:epub="{NAMESPACES["ops"]}"',
+                        f'xmlns="{NAMESPACES["xml"]}" xmlns:epub="{NAMESPACES["ops"]}"',
                     )
-                if self.lemmas:
+                if len(css_rules) > 0:
                     new_xhtml_str = new_xhtml_str.replace(
-                        "</head>",
-                        "<style>body {line-height: 2.5;} ruby "
-                        "{text-decoration:overline;} ruby a {text-decoration:none;}"
-                        "</style></head>",
+                        "</head>", f"<style>{css_rules}</style></head>"
                     )
                 f.write(new_xhtml_str)
 
@@ -306,12 +317,12 @@ class EPUB:
         word_id = self.lemmas[word]
         if len(short_def) / len(origin_word) > len_ratio:
             return (
-                '<a epub:type="noteref" href="word_wise.xhtml#'
+                '<a class="wordwise" epub:type="noteref" href="word_wise.xhtml#'
                 f'{word_id}">{origin_word}</a>'
             )
         else:
             return (
-                '<ruby><a epub:type="noteref" href="word_wise.xhtml#'
+                '<ruby class="wordwise"><a epub:type="noteref" href="word_wise.xhtml#'
                 f'{word_id}">{origin_word}</a><rp>(</rp><rt>{short_def}'
                 "</rt><rp>)</rp></ruby>"
             )

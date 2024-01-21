@@ -138,7 +138,7 @@ class CustomLemmasDialog(QDialog):
         self.filter_difficulty_box.currentIndexChanged.connect(self.filter_data)
         form_layout.addRow(_("Filter difficulty"), self.filter_difficulty_box)
 
-    def add_enable_disable_buttons(self, form_layout:QFormLayout) -> None:
+    def add_enable_disable_buttons(self, form_layout: QFormLayout) -> None:
         hl = QHBoxLayout()
         enable_all_button = QPushButton(_("Enable all"))
         disable_all_button = QPushButton(_("Disable all"))

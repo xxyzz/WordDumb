@@ -5,9 +5,10 @@
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+from datetime import datetime, timezone
 
 project = "WordDumb"
-copyright = "2024, xxyzz"
+copyright = f"{datetime.now(timezone.utc).year}, xxyzz"
 author = "xxyzz"
 
 # -- General configuration ---------------------------------------------------

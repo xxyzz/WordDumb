@@ -239,13 +239,13 @@ def copy_klld_from_android(package_name: str, dest_path: Path) -> None:
     dest_path.joinpath("wordwise").rmdir()
 
 
-def copy_klld_from_kindle(device_driver: Any, dest_path: Path) -> None:
-    if is_mtp_device(device_driver):
+def copy_klld_from_kindle(device_manager: Any, dest_path: Path) -> None:
+    if is_mtp_device(device_manager.device):
         download_file_from_mtp(
-            device_driver, Path("system/kll/kll.en.en.klld"), dest_path
+            device_manager, Path("system/kll/kll.en.en.klld"), dest_path
         )
     else:
-        for klld_path in Path(f"{device_driver._main_prefix}/system/kll").glob(
+        for klld_path in Path(f"{device_manager.device._main_prefix}/system/kll").glob(
             "*.en.klld"
         ):
             shutil.copy(klld_path, dest_path)

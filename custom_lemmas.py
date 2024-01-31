@@ -237,7 +237,7 @@ class CustomLemmasDialog(QDialog):
             if isinstance(package_name, str):
                 copy_klld_from_android(package_name, custom_folder)
             else:
-                copy_klld_from_kindle(gui.device_manager.device, custom_folder)
+                copy_klld_from_kindle(gui.device_manager, custom_folder)
 
         klld_path = get_kindle_klld_path(plugin_path)
         if klld_path is None:

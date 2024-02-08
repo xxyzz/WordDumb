@@ -152,3 +152,4 @@ jobs:
             !exclude.lst
             !translations/*.po
             !pyproject.toml
+            !__MACOSX

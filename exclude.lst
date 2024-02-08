@@ -5,3 +5,4 @@ __pycache__/*
 exclude.lst
 translations/*.po
 pyproject.toml
+__MACOSX

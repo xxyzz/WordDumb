@@ -1,5 +1,6 @@
 # stupid system files
 .DS_Store
+__MACOSX
 
 # emacs files
 *~

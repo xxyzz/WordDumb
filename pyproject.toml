@@ -1,6 +1,8 @@
 [tool.ruff]
 builtins = ["_", "load_translations", "get_icons"]
 exclude = ["docs"]
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle error
     "F",  # Pyflakes

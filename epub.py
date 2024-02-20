@@ -315,6 +315,8 @@ class EPUB:
         short_def = data[0][0]
         len_ratio = 3 if lang in CJK_LANGS else 2.5
         word_id = self.lemmas[word]
+        while "," in short_def and len(short_def) / len(origin_word) > len_ratio:
+            short_def = short_def.rsplit(",", 1)[0]
         if len(short_def) / len(origin_word) > len_ratio:
             return (
                 '<a class="wordwise" epub:type="noteref" href="word_wise.xhtml#'

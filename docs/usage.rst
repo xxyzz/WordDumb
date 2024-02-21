@@ -76,6 +76,16 @@ Import data Anki Deck Package, CSV file or Kindle Vocabulary Builder. Words insi
 
 - Kindle Vocabulary Builder database path: `system/vocabulary/vocab.db`
 
+Setting correct KOReader settings
+---------------------------------
+
+By default KOReader shows footnotes on the page, which takes up too much space when WordWise is enabled. 
+
+To change this, open the menu (click somewhere at the top area), then in the upper menu choose the "reader with lines" symbol (second from left).
+Here, select "Style tweaks" -> "In-page footnotes" and remove all checkmarks. (By default, In-Page EPUB footnotes (smaller) is checked.)
+
+For a better footnote experience, enable pop-up footnotes. Do this by opening the top menu again, clicking on the "gear" symbol (third from left).
+Then select "Taps and gestures" -> "Links" and then check "Show footnotes in popup"
 
 HTTP proxy
 ----------

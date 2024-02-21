@@ -99,64 +99,62 @@ class EPUB:
         with zipfile.ZipFile(self.book_path) as zf:
             zf.extractall(self.extract_folder)
 
-        with self.extract_folder.joinpath("META-INF/container.xml").open("rb") as f:
-            root = etree.fromstring(f.read())
-            opf_path = unquote(root.find(".//n:rootfile", NAMESPACES).get("full-path"))
-            self.opf_path = self.extract_folder.joinpath(opf_path)
-            if not self.opf_path.exists():
-                self.opf_path = next(self.extract_folder.rglob(opf_path))
-        with self.opf_path.open("rb") as opf:
-            self.opf_root = etree.fromstring(opf.read())
-            for item in self.opf_root.xpath(
-                'opf:manifest/opf:item[starts-with(@media-type, "image/")]',
-                namespaces=NAMESPACES,
-            ):
-                image_href = unquote(item.get("href"))
-                image_path = self.extract_folder.joinpath(image_href)
-                if not image_path.exists():
-                    image_path = next(self.extract_folder.rglob(image_href))
-                if not image_path.parent.samefile(self.extract_folder):
-                    self.image_folder = image_path.parent
-                if "/" in image_href:
-                    self.image_href_has_folder = True
-                    break
+        opf_root = etree.parse(self.extract_folder / "META-INF/container.xml")
+        opf_path = unquote(opf_root.find(".//n:rootfile", NAMESPACES).get("full-path"))
+        self.opf_path = self.extract_folder.joinpath(opf_path)
+        if not self.opf_path.exists():
+            self.opf_path = next(self.extract_folder.rglob(opf_path))
+        self.opf_root = etree.parse(self.opf_path)
 
-            for item in self.opf_root.iterfind(
-                'opf:manifest/opf:item[@media-type="application/xhtml+xml"]', NAMESPACES
-            ):
-                if item.get("properties") == "nav":
-                    continue
-                xhtml_href = unquote(item.get("href"))
-                xhtml_path = self.extract_folder.joinpath(xhtml_href)
-                if not xhtml_path.exists():
-                    xhtml_path = next(self.extract_folder.rglob(xhtml_href))
-                if not xhtml_path.parent.samefile(self.extract_folder):
-                    self.xhtml_folder = xhtml_path.parent
-                if "/" in xhtml_href:
-                    self.xhtml_href_has_folder = True
-                with xhtml_path.open("r", encoding="utf-8") as f:
-                    # remove soft hyphen, byte order mark, word joiner
-                    xhtml_text = re.sub(
-                        r"\xad|&shy;|&#xad;|&#173;|\ufeff|\u2060|&NoBreak;",
-                        "",
-                        f.read(),
-                        flags=re.I,
+        # find image files folder
+        for item in self.opf_root.xpath(
+            'opf:manifest/opf:item[starts-with(@media-type, "image/")]',
+            namespaces=NAMESPACES,
+        ):
+            image_href = unquote(item.get("href"))
+            image_path = self.extract_folder.joinpath(image_href)
+            if not image_path.exists():
+                image_path = next(self.extract_folder.rglob(image_href))
+            if not image_path.parent.samefile(self.extract_folder):
+                self.image_folder = image_path.parent
+            if "/" in image_href:
+                self.image_href_has_folder = True
+                break
+
+        for itemref in self.opf_root.iterfind("opf:spine/opf:itemref", NAMESPACES):
+            idref = itemref.get("idref")
+            item = self.opf_root.find(
+                f'opf:manifest/opf:item[@id="{idref}"]', NAMESPACES
+            )
+            xhtml_href = unquote(item.get("href"))
+            xhtml_path = self.extract_folder.joinpath(xhtml_href)
+            if not xhtml_path.exists():
+                xhtml_path = next(self.extract_folder.rglob(xhtml_href))
+            if not xhtml_path.parent.samefile(self.extract_folder):
+                self.xhtml_folder = xhtml_path.parent
+            if "/" in xhtml_href:
+                self.xhtml_href_has_folder = True
+            with xhtml_path.open("r", encoding="utf-8") as f:
+                # remove soft hyphen, byte order mark, word joiner
+                xhtml_text = re.sub(
+                    r"\xad|&shy;|&#xad;|&#173;|\ufeff|\u2060|&NoBreak;",
+                    "",
+                    f.read(),
+                    flags=re.I,
+                )
+            with xhtml_path.open("w", encoding="utf-8") as f:
+                f.write(xhtml_text)
+            for match_body in re.finditer(r"<body.{3,}?</body>", xhtml_text, re.DOTALL):
+                for m in re.finditer(r">[^<]{2,}<", match_body.group(0)):
+                    text = m.group(0)[1:-1]
+                    yield (
+                        unescape(text),
+                        (
+                            match_body.start() + m.start() + 1,
+                            text,
+                            xhtml_path,
+                        ),
                     )
-                with xhtml_path.open("w", encoding="utf-8") as f:
-                    f.write(xhtml_text)
-                for match_body in re.finditer(
-                    r"<body.{3,}?</body>", xhtml_text, re.DOTALL
-                ):
-                    for m in re.finditer(r">[^<]{2,}<", match_body.group(0)):
-                        text = m.group(0)[1:-1]
-                        yield (
-                            unescape(text),
-                            (
-                                match_body.start() + m.start() + 1,
-                                text,
-                                xhtml_path,
-                            ),
-                        )
 
     def add_entity(
         self,

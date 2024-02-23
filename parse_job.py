@@ -276,6 +276,10 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
         for doc, (start, escaped_text, xhtml_path) in nlp.pipe(
             epub.extract_epub(), as_tuples=True
         ):
+            if data.book_lang == "ru" and "\u0301" in escaped_text:
+                lemma_doc = nlp(doc.text.replace("\u0301", ""))
+            else:
+                lemma_doc = doc
             intervals = []
             if data.create_x:
                 intervals = find_named_entity(
@@ -304,6 +308,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                     epub,
                     xhtml_path,
                     prefs["use_pos"],
+                    lemma_doc,
                 )
         supported_languages = load_languages_data(data.plugin_path)
         gloss_lang = prefs["wiktionary_gloss_lang"]
@@ -431,6 +436,7 @@ def kindle_find_lemma(
     prefs,
 ):
     lemma_starts: set[int] = set()
+
     for span in match_lemmas(doc, lemma_matcher, phrase_matcher):
         data = get_kindle_lemma_data(
             span.lemma_ if prefs["use_pos"] and hasattr(span, "lemma_") else span.text,
@@ -463,12 +469,14 @@ def epub_find_lemma(
     epub,
     xhtml_path,
     use_pos,
+    lemma_doc,
 ):
     lemma_starts: set[int] = set()
-    for span in match_lemmas(doc, lemma_matcher, phrase_matcher):
+
+    for span in match_lemmas(lemma_doc, lemma_matcher, phrase_matcher):
         epub_add_lemma(
-            span.start_char,
-            span.end_char,
+            doc[span.start].idx,
+            doc[span.end - 1].idx + len(doc[span.end - 1].text),
             interval_tree,
             doc.text,
             escaped_text,

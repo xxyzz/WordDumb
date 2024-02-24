@@ -1,4 +1,5 @@
 import sqlite3
+from operator import itemgetter
 from pathlib import Path
 
 try:
@@ -95,7 +96,7 @@ def save_spacy_docs(
     if prefs["use_pos"] and lemma_lang != "zh":
         lemmas_doc_bin = DocBin(attrs=["LEMMA"])
     difficulty_limit = (
-        None if is_kindle else prefs[f"{lemma_lang}_wiktionary_difficulty_limit"]
+        5 if is_kindle else prefs[f"{lemma_lang}_wiktionary_difficulty_limit"]
     )
     if prefs["use_pos"]:
         for doc in create_lemma_patterns_with_pos(
@@ -136,40 +137,44 @@ def save_spacy_docs(
 
 
 def create_lemma_patterns_with_pos(lemma_lang, conn, nlp, difficulty_limit):
-    query_sql = """
-    SELECT DISTINCT lemma, lemma_id
-    FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id
-    WHERE enabled = 1
-    """
-    if difficulty_limit is not None:
-        query_sql += f" AND difficulty <= {difficulty_limit}"
-    for lemma, lemma_id in conn.execute(query_sql):
-        yield nlp(lemma)
-        if " " in lemma or lemma_lang == "zh":
-            for (form,) in conn.execute(
-                "SELECT DISTINCT form FROM forms WHERE lemma_id = ?", (lemma_id,)
-            ):
-                yield nlp(form)
+    if lemma_lang == "zh":
+        query_sql = """
+        SELECT DISTINCT lemma
+        FROM lemmas l
+        JOIN senses s ON l.id = s.lemma_id AND enabled = 1 AND difficulty <= :difficulty
+        UNION ALL
+        SELECT DISTINCT form FROM forms f
+        JOIN senses s ON f.lemma_id = s.lemma_id AND f.pos = s.pos
+        AND enabled = 1 AND difficulty <= :difficulty
+        """
+    else:
+        query_sql = """
+        SELECT DISTINCT lemma
+        FROM lemmas l
+        JOIN senses s ON l.id = s.lemma_id AND enabled = 1 AND difficulty <= :difficulty
+        UNION ALL
+        SELECT DISTINCT form
+        FROM lemmas l
+        JOIN forms f ON l.id = f.lemma_id
+        JOIN senses s ON l.id = s.lemma_id AND f.pos = s.pos
+        AND enabled = 1 AND difficulty <= :difficulty
+        WHERE lemma LIKE '% %'
+        """
+    yield from nlp.pipe(
+        map(itemgetter(0), conn.execute(query_sql, {"difficulty": difficulty_limit}))
+    )
 
 
 def create_lemma_patterns_without_pos(conn, nlp, difficulty_limit):
     query_sql = """
     SELECT DISTINCT lemma
-    FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id
-    WHERE enabled = 1
-    """
-    if difficulty_limit is not None:
-        query_sql += f" AND difficulty <= {difficulty_limit}"
-    for (lemma,) in conn.execute(query_sql):
-        yield nlp.make_doc(lemma)
-
-    query_sql = """
+    FROM lemmas l JOIN senses s ON l.id = s.lemma_id
+    AND enabled = 1 AND difficulty <= :difficulty
+    UNION ALL
     SELECT DISTINCT form
-    FROM senses JOIN forms
-    ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos
-    WHERE enabled = 1
+    FROM forms f JOIN senses s ON f.lemma_id = s.lemma_id
+    AND f.pos = s.pos AND enabled = 1 AND difficulty <= :difficulty
     """
-    if difficulty_limit is not None:
-        query_sql += f" AND difficulty <= {difficulty_limit}"
-    for (form,) in conn.execute(query_sql):
-        yield nlp.make_doc(form)
+    yield from nlp.tokenizer.pipe(
+        map(itemgetter(0), conn.execute(query_sql, {"difficulty": difficulty_limit}))
+    )

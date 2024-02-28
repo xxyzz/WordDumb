@@ -254,7 +254,8 @@ class EPUB:
     def modify_epub(
         self,
         prefs: Prefs,
-        lang: str,
+        lemma_lang: str,
+        gloss_lang: str,
         lemmas_conn: sqlite3.Connection | None,
         has_multiple_ipas: bool,
     ) -> None:
@@ -267,10 +268,10 @@ class EPUB:
                 query_wikidata(self.entities, self.mediawiki, self.wikidata)
             if prefs["minimal_x_ray_count"] > 1:
                 self.remove_entities(prefs["minimal_x_ray_count"])
-            self.create_x_ray_footnotes(prefs, lang)
-        self.insert_anchor_elements(lang)
+            self.create_x_ray_footnotes(prefs, lemma_lang)
+        self.insert_anchor_elements(lemma_lang)
         if self.lemmas:
-            self.create_word_wise_footnotes(lang)
+            self.create_word_wise_footnotes(lemma_lang, gloss_lang)
         self.modify_opf()
         self.zip_extract_folder()
         if self.mediawiki is not None:
@@ -282,7 +283,7 @@ class EPUB:
         if lemmas_conn is not None:
             lemmas_conn.close()
 
-    def insert_anchor_elements(self, lang: str) -> None:
+    def insert_anchor_elements(self, lemma_lang: str) -> None:
         css_rules = ""
         if len(self.lemmas) > 0:
             css_rules += """
@@ -332,7 +333,7 @@ class EPUB:
                     )
                 else:
                     new_xhtml_str += self.build_word_wise_tag(
-                        occurrence.lemma, word, lang
+                        occurrence.lemma, word, lemma_lang
                     )
                 last_w_end = occurrence.word_end
                 if occurrence.paragraph_end != last_p_end:
@@ -354,15 +355,15 @@ class EPUB:
                     )
                 f.write(new_xhtml_str)
 
-    def build_word_wise_tag(self, lemma: str, word: str, lang: str) -> str:
+    def build_word_wise_tag(self, lemma: str, word: str, lemma_lang: str) -> str:
         if lemma not in self.lemmas:
             return word
-        data = self.get_lemma_gloss(lemma, lang)
+        data = self.get_lemma_gloss(lemma, lemma_lang)
         if not data:
             del self.lemmas[lemma]
             return word
         short_def = data[0][0]
-        len_ratio = 3 if lang in CJK_LANGS else 2.5
+        len_ratio = 3 if lemma_lang in CJK_LANGS else 2.5
         lemma_id = self.lemmas[lemma]
         if len(short_def) / len(word) > len_ratio:
             return (
@@ -466,23 +467,25 @@ class EPUB:
         with self.xhtml_folder.joinpath("x_ray.xhtml").open("w", encoding="utf-8") as f:
             f.write(s)
 
-    def create_word_wise_footnotes(self, lang: str) -> None:
+    def create_word_wise_footnotes(self, lemma_lang: str, gloss_lang: str) -> None:
         s = f"""
         <html xmlns="http://www.w3.org/1999/xhtml"
         xmlns:epub="http://www.idpf.org/2007/ops"
-        lang="{lang}" xml:lang="{lang}">
+        lang="{lemma_lang}" xml:lang="{lemma_lang}">
         <head><title>Word Wise</title><meta charset="utf-8"/></head>
         <body>
         """
         for lemma, lemma_id in self.lemmas.items():
-            s += self.create_ww_aside_tag(lemma, lemma_id, lang)
+            s += self.create_ww_aside_tag(lemma, lemma_id, lemma_lang, gloss_lang)
         s += "</body></html>"
         with self.xhtml_folder.joinpath("word_wise.xhtml").open(
             "w", encoding="utf-8"
         ) as f:
             f.write(s)
 
-    def create_ww_aside_tag(self, lemma: str, lemma_id: int, lemma_lang: str) -> str:
+    def create_ww_aside_tag(
+        self, lemma: str, lemma_id: int, lemma_lang: str, gloss_lang: str
+    ) -> str:
         data = self.get_lemma_gloss(lemma, lemma_lang)
         tag_str = ""
         added_ipa = False
@@ -499,7 +502,7 @@ class EPUB:
                 tag_str += f"<p><i>{escape(example)}</i></p>"
             tag_str += "<hr/>"
         tag_str += (
-            f"<p>Source: <a href='https://en.wiktionary.org/wiki/"
+            f"<p>Source: <a href='https://{gloss_lang}.wiktionary.org/wiki/"
             f"{quote(lemma)}'>Wiktionary</a></p></aside>"
         )
         return tag_str

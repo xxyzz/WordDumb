@@ -312,7 +312,9 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
             supported_languages[gloss_lang]["gloss_source"] == "kaikki"
             and prefs.get(f"{data.book_lang}_ipa") is not None
         )
-        epub.modify_epub(prefs, data.book_lang, lemmas_conn, has_multiple_ipas)
+        epub.modify_epub(
+            prefs, data.book_lang, gloss_lang, lemmas_conn, has_multiple_ipas
+        )
         return
 
     # Kindle

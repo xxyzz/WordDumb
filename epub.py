@@ -6,6 +6,7 @@ import shutil
 import sqlite3
 import zipfile
 from collections import defaultdict
+from dataclasses import dataclass
 from functools import partial
 from html import escape, unescape
 from pathlib import Path
@@ -60,6 +61,16 @@ NAMESPACES = {
 }
 
 
+@dataclass
+class Occurrence:
+    paragraph_start: int
+    paragraph_end: int
+    word_start: int
+    word_end: int
+    lemma: str = ""
+    entity_id: int = 0
+
+
 class EPUB:
     def __init__(
         self,
@@ -75,9 +86,7 @@ class EPUB:
         self.wikidata = wikidata
         self.entity_id = 0
         self.entities: dict[str, XRayEntity] = {}
-        self.entity_occurrences: dict[
-            Path, list[tuple[int, int, str, int | str]]
-        ] = defaultdict(list)
+        self.entity_occurrences: dict[Path, list[Occurrence]] = defaultdict(list)
         self.removed_entity_ids: set[int] = set()
         self.extract_folder = self.book_path.with_name("extract")
         if self.extract_folder.exists():
@@ -93,7 +102,7 @@ class EPUB:
         self.lemmas_conn: sqlite3.Connection | None = None
         self.prefs: Prefs = {}
 
-    def extract_epub(self) -> Iterator[tuple[str, tuple[int, str, Path]]]:
+    def extract_epub(self) -> Iterator[tuple[str, tuple[int, int, Path]]]:
         from lxml import etree
 
         with zipfile.ZipFile(self.book_path) as zf:
@@ -151,7 +160,7 @@ class EPUB:
                         unescape(text),
                         (
                             match_body.start() + m.start() + 1,
-                            text,
+                            match_body.start() + m.end() - 1,
                             xhtml_path,
                         ),
                     )
@@ -161,10 +170,11 @@ class EPUB:
         entity: str,
         ner_label: str,
         book_quote: str,
-        start: int,
-        end: int,
+        paragraph_start: int,
+        paragraph_end: int,
+        word_start: int,
+        word_end: int,
         xhtml_path: Path,
-        origin_entity: str,
     ) -> None:
         from rapidfuzz.fuzz import token_set_ratio
         from rapidfuzz.process import extractOne
@@ -199,13 +209,33 @@ class EPUB:
             self.entity_id += 1
 
         self.entity_occurrences[xhtml_path].append(
-            (start, end, origin_entity, entity_id)
+            Occurrence(
+                paragraph_start=paragraph_start,
+                paragraph_end=paragraph_end,
+                word_start=word_start,
+                word_end=word_end,
+                entity_id=entity_id,
+            )
         )
 
     def add_lemma(
-        self, lemma: str, start: int, end: int, xhtml_path: Path, origin_text: str
+        self,
+        lemma: str,
+        paragraph_start: int,
+        paragraph_end: int,
+        word_start: int,
+        word_end: int,
+        xhtml_path: Path,
     ) -> None:
-        self.entity_occurrences[xhtml_path].append((start, end, origin_text, lemma))
+        self.entity_occurrences[xhtml_path].append(
+            Occurrence(
+                paragraph_start=paragraph_start,
+                paragraph_end=paragraph_end,
+                word_start=word_start,
+                word_end=word_end,
+                lemma=lemma,
+            )
+        )
         if lemma not in self.lemmas:
             self.lemmas[lemma] = self.lemma_id
             self.lemma_id += 1
@@ -268,27 +298,48 @@ class EPUB:
             }
             """
 
-        for xhtml_path, entity_list in self.entity_occurrences.items():
+        for xhtml_path, occurrences in self.entity_occurrences.items():
             if self.entities and self.lemmas:
-                entity_list = sorted(entity_list, key=operator.itemgetter(0))
-
+                occurrences = sorted(
+                    occurrences,
+                    key=operator.attrgetter("paragraph_start", "word_start"),
+                )
             with xhtml_path.open(encoding="utf-8") as f:
                 xhtml_str = f.read()
             new_xhtml_str = ""
-            last_end = 0
-            for start, end, entity, entity_id in entity_list:
-                if entity_id in self.removed_entity_ids:
+            last_p_text = ""
+            last_w_end = 0
+            last_p_end = 0
+            for occurrence in occurrences:
+                if occurrence.entity_id in self.removed_entity_ids:
                     continue
-                new_xhtml_str += xhtml_str[last_end:start]
-                if isinstance(entity_id, int):
+                if occurrence.paragraph_end != last_p_end:
+                    new_xhtml_str += escape(last_p_text[last_w_end:])
+                    new_xhtml_str += xhtml_str[last_p_end : occurrence.paragraph_start]
+                    last_w_end = 0
+
+                paragraph_text = unescape(
+                    xhtml_str[occurrence.paragraph_start : occurrence.paragraph_end]
+                )
+                new_xhtml_str += escape(
+                    paragraph_text[last_w_end : occurrence.word_start]
+                )
+                word = paragraph_text[occurrence.word_start : occurrence.word_end]
+                if occurrence.lemma == "":
                     new_xhtml_str += (
                         f'<a class="x-ray" epub:type="noteref" href="x_ray.xhtml#'
-                        f'{entity_id}">{entity}</a>'
+                        f'{occurrence.entity_id}">{escape(word)}</a>'
                     )
                 else:
-                    new_xhtml_str += self.build_word_wise_tag(entity_id, entity, lang)
-                last_end = end
-            new_xhtml_str += xhtml_str[last_end:]
+                    new_xhtml_str += self.build_word_wise_tag(
+                        occurrence.lemma, word, lang
+                    )
+                last_w_end = occurrence.word_end
+                if occurrence.paragraph_end != last_p_end:
+                    last_p_end = occurrence.paragraph_end
+                    last_p_text = paragraph_text
+
+            new_xhtml_str += xhtml_str[last_p_end:]
 
             # add epub namespace and CSS
             with xhtml_path.open("w", encoding="utf-8") as f:
@@ -303,25 +354,25 @@ class EPUB:
                     )
                 f.write(new_xhtml_str)
 
-    def build_word_wise_tag(self, word: str, origin_word: str, lang: str) -> str:
-        if word not in self.lemmas:
-            return origin_word
-        data = self.get_lemma_gloss(word, lang)
+    def build_word_wise_tag(self, lemma: str, word: str, lang: str) -> str:
+        if lemma not in self.lemmas:
+            return word
+        data = self.get_lemma_gloss(lemma, lang)
         if not data:
-            del self.lemmas[word]
-            return origin_word
+            del self.lemmas[lemma]
+            return word
         short_def = data[0][0]
         len_ratio = 3 if lang in CJK_LANGS else 2.5
-        word_id = self.lemmas[word]
-        if len(short_def) / len(origin_word) > len_ratio:
+        lemma_id = self.lemmas[lemma]
+        if len(short_def) / len(word) > len_ratio:
             return (
                 '<a class="wordwise" epub:type="noteref" href="word_wise.xhtml#'
-                f'{word_id}">{origin_word}</a>'
+                f'{lemma_id}">{escape(word)}</a>'
             )
         else:
             return (
                 '<ruby class="wordwise"><a epub:type="noteref" href="word_wise.xhtml#'
-                f'{word_id}">{origin_word}</a><rp>(</rp><rt>{short_def}'
+                f'{lemma_id}">{escape(word)}</a><rp>(</rp><rt>{escape(short_def)}'
                 "</rt><rp>)</rp></ruby>"
             )
 

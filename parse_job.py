@@ -273,7 +273,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
         elif data.create_ww:
             epub = EPUB(data.book_path, None, None, None, None)
 
-        for doc, (start, escaped_text, xhtml_path) in nlp.pipe(
+        for doc, (start, end, xhtml_path) in nlp.pipe(
             epub.extract_epub(), as_tuples=True
         ):
             intervals = []
@@ -284,13 +284,14 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                     doc,
                     "",
                     data.book_lang,
-                    escaped_text,
+                    None,
                     custom_x_ray,
                     xhtml_path,
+                    end,
                 )
             if data.create_ww:
                 interval_tree = None
-                if intervals:
+                if len(intervals) > 0:
                     random.shuffle(intervals)
                     interval_tree = IntervalTree()
                     interval_tree.insert_intervals(intervals)
@@ -299,7 +300,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                     lemma_matcher,
                     phrase_matcher,
                     start,
-                    escaped_text,
+                    end,
                     interval_tree,
                     epub,
                     xhtml_path,
@@ -457,26 +458,26 @@ def epub_find_lemma(
     doc,
     lemma_matcher,
     phrase_matcher,
-    start,
-    escaped_text,
+    paragraph_start,
+    paragraph_end,
     interval_tree,
     epub,
     xhtml_path,
     use_pos,
 ):
-    lemma_starts: set[int] = set()
     for span in match_lemmas(doc, lemma_matcher, phrase_matcher):
-        epub_add_lemma(
+        if interval_tree is not None and interval_tree.is_overlap(
+            Interval(span.start_char, span.end_char - 1)
+        ):
+            return
+
+        epub.add_lemma(
+            f"{span.lemma_}_{span.doc[span.start].pos_}" if use_pos else span.lemma_,
+            paragraph_start,
+            paragraph_end,
             span.start_char,
             span.end_char,
-            interval_tree,
-            doc.text,
-            escaped_text,
-            start,
-            lemma_starts,
-            epub,
             xhtml_path,
-            f"{span.lemma_}_{span.doc[span.start].pos_}" if use_pos else None,
         )
 
 
@@ -620,38 +621,6 @@ def kindle_add_lemma(
     insert_lemma(ll_conn, (index, end) + data)
 
 
-def epub_add_lemma(
-    token_start: int,
-    token_end: int,
-    interval_tree: IntervalTree | None,
-    text: str,
-    escaped_text: str,
-    start: int,
-    starts: set[int],
-    epub: EPUB,
-    xhtml_path: Path,
-    lemma_pos: str | None = None,
-) -> None:
-    word = text[token_start:token_end]
-    result = index_in_escaped_text(word, escaped_text, token_start)
-    if result is None:
-        return
-    word_start, word_end = result
-    if word_start in starts:
-        return
-    if interval_tree and interval_tree.is_overlap(Interval(word_start, word_end - 1)):
-        return
-
-    starts.add(word_start)
-    epub.add_lemma(
-        lemma_pos if lemma_pos is not None else word,
-        start + word_start,
-        start + word_end,
-        xhtml_path,
-        escaped_text[word_start:word_end],
-    )
-
-
 DIRECTIONS = frozenset(
     [
         "north",
@@ -697,13 +666,14 @@ def process_entity(text: str, lang: str, len_limit: int) -> str | None:
 
 def find_named_entity(
     start: int,
-    x_ray: X_Ray,
+    x_ray: X_Ray | EPUB,
     doc: Any,
     mobi_codec: str,
     lang: str,
-    escaped_text: str,
+    escaped_text: str | None,
     custom_x_ray: CustomX,
     xhtml_path: Path | None = None,
+    end: int = 0,
 ) -> list[Interval]:
     len_limit = 2 if lang in CJK_LANGS else 3
     starts = set()
@@ -718,7 +688,7 @@ def find_named_entity(
             continue
 
         ent_text = ent.text if ent.ent_id_ else text
-        if escaped_text:
+        if escaped_text is not None:
             result = index_in_escaped_text(ent_text, escaped_text, ent.start_char)
             if result is None:
                 continue
@@ -738,15 +708,16 @@ def find_named_entity(
         else:
             starts.add(start_char)
 
-        if xhtml_path:  # EPUB
+        if isinstance(x_ray, EPUB):
             x_ray.add_entity(
                 text,
                 ent.label_,
                 ent.sent.text.strip(),
-                start + start_char,
-                start + end_char,
+                start,
+                end,
+                start_char,
+                end_char,
                 xhtml_path,
-                selectable_text,
             )
             intervals.append(Interval(start_char, end_char - 1))
             continue
@@ -754,7 +725,7 @@ def find_named_entity(
         # Include the next punctuation so the word can be selected on Kindle
         if re.match(r"[^\w\s]", book_text[end_char : end_char + 1]):
             selectable_text = book_text[start_char : end_char + 1]
-        if mobi_codec:
+        if mobi_codec is not None and escaped_text is not None:
             ent_start = start + len(escaped_text[:start_char].encode(mobi_codec))
             ent_len = len(selectable_text.encode(mobi_codec))
         else:

@@ -259,18 +259,18 @@ class ConfigWidget(QWidget):
         if choose_lang_dlg.exec():
             lemma_lang = choose_lang_dlg.lemma_lang_box.currentData()
             gloss_lang = choose_lang_dlg.gloss_lang_box.currentData()
-            prefs[
-                "kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"
-            ] = gloss_lang
+            prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"] = (
+                gloss_lang
+            )
             prefs[
                 "last_opened_kindle_lemmas_language"
                 if is_kindle
                 else "last_opened_wiktionary_lemmas_language"
             ] = lemma_lang
             if is_kindle and lemma_lang == "en" and gloss_lang in ["en", "zh", "zh_cn"]:
-                prefs[
-                    "use_wiktionary_for_kindle"
-                ] = choose_lang_dlg.use_wiktionary_box.isChecked()
+                prefs["use_wiktionary_for_kindle"] = (
+                    choose_lang_dlg.use_wiktionary_box.isChecked()
+                )
 
             db_path = (
                 kindle_db_path(self.plugin_path, lemma_lang, prefs)

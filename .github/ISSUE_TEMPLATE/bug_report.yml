@@ -5,51 +5,16 @@ body:
     attributes:
       label: Checkboxes
       options:
-        - label: I have read the document at [xxyzz.github.io/WordDumb](https://xxyzz.github.io/WordDumb).
+        - label: I have read the [installation](https://xxyzz.github.io/WordDumb/installation.html) and [usage](https://xxyzz.github.io/WordDumb/usage.html) documents.
           required: true
-        - label: I have not found similar issue or disscussion at GitHub.
+        - label: I have not found similar open/closed issue or disscussion.
           required: true
         - label: Reboot doesn't fix the problem.
           required: true
 
   - type: textarea
     attributes:
-      label: Describe the bug
-    validations:
-      required: true
-
-  - type: input
-    attributes:
-      label: Operating System name and version
-      placeholder: Debian 12
-    validations:
-      required: true
-
-  - type: input
-    attributes:
-      label: Python version
-      placeholder: "3.12"
-    validations:
-      required: true
-
-  - type: input
-    attributes:
-      label: calibre version
-      placeholder: "6.29"
-    validations:
-      required: true
-
-  - type: input
-    attributes:
-      label: WordDumb plugin version
-      placeholder: "3.29.7"
-    validations:
-      required: true
-
-  - type: textarea
-    attributes:
-      label: Error message
-      render: text
+      label: Describe the bug and copy the error message
     validations:
       required: true
 
@@ -68,4 +33,4 @@ body:
   - type: textarea
     attributes:
       label: Generated files, screenshots or videos
-      description: Drag and drop generated Word Wise, X-Ray files. Or screenshots.
+      description: Drag files here if they are helpful for solving the issue.

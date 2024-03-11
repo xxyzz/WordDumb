@@ -21,6 +21,6 @@ jobs:
       - name: Rename zip file
         run: mv worddumb-*.zip worddumb-${GITHUB_REF_NAME}.zip
 
-      - uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v2
         with:
           files: worddumb-*.zip

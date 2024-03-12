@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """
 Create X-Ray file on macOS: run this script in subprocess to bypass
 the ludicrous library validation

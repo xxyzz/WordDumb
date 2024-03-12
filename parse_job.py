@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import json
 import random
 import re
@@ -269,9 +268,16 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
             wiki_commons = None
             if not prefs["fandom"] and prefs["add_locator_map"]:
                 wiki_commons = Wikimedia_Commons(data.plugin_path, data.useragent)
-            epub = EPUB(data.book_path, mediawiki, wiki_commons, wikidata, custom_x_ray)
+            epub = EPUB(
+                data.book_path,
+                mediawiki,
+                wiki_commons,
+                wikidata,
+                custom_x_ray,
+                lemmas_conn,
+            )
         elif data.create_ww:
-            epub = EPUB(data.book_path, None, None, None, None)
+            epub = EPUB(data.book_path, None, None, None, None, lemmas_conn)
 
         for doc, (start, end, xhtml_path) in nlp.pipe(
             epub.extract_epub(), as_tuples=True
@@ -308,13 +314,8 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                 )
         supported_languages = load_languages_data(data.plugin_path)
         gloss_lang = prefs["wiktionary_gloss_lang"]
-        has_multiple_ipas = (
-            supported_languages[gloss_lang]["gloss_source"] == "kaikki"
-            and prefs.get(f"{data.book_lang}_ipa") is not None
-        )
-        epub.modify_epub(
-            prefs, data.book_lang, gloss_lang, lemmas_conn, has_multiple_ipas
-        )
+        gloss_source = supported_languages[gloss_lang]["gloss_source"]
+        epub.modify_epub(prefs, data.book_lang, gloss_lang, gloss_source)
         return
 
     # Kindle
@@ -435,9 +436,11 @@ def kindle_find_lemma(
 ):
     lemma_starts: set[int] = set()
     for span in match_lemmas(doc, lemma_matcher, phrase_matcher):
+        lemma = getattr(span, "lemma_", "")
+        pos = getattr(span.doc[span.start], "pos_", "")
         data = get_kindle_lemma_data(
-            span.lemma_ if prefs["use_pos"] and hasattr(span, "lemma_") else span.text,
-            span.doc[span.start].pos_ if prefs["use_pos"] else None,
+            span.lemma_ if prefs["use_pos"] and lemma != "" else span.text,
+            pos if prefs["use_pos"] and pos != "" else "",
             lemmas_conn,
             lemma_lang,
             prefs,
@@ -472,9 +475,11 @@ def epub_find_lemma(
             Interval(span.start_char, span.end_char - 1)
         ):
             return
-
+        lemma = getattr(span, "lemma_", "")
+        pos = getattr(span.doc[span.start], "pos_", "")
         epub.add_lemma(
-            f"{span.lemma_}_{span.doc[span.start].pos_}" if use_pos else span.lemma_,
+            lemma if use_pos and lemma != "" else span.text,
+            spacy_to_wiktionary_pos(pos) if use_pos and pos != "" else "",
             paragraph_start,
             paragraph_end,
             span.start_char,
@@ -506,12 +511,12 @@ def spacy_to_kindle_pos(pos: str) -> str:
 
 def get_kindle_lemma_data(
     lemma: str,
-    pos: str | None,
+    pos: str,
     conn: sqlite3.Connection,
     lemma_lang: str,
     prefs: Prefs,
 ) -> tuple[int, int] | None:
-    if pos is not None:
+    if pos != "":
         return get_kindle_lemma_with_pos(lemma, pos, conn, lemma_lang, prefs)
     else:
         return get_kindle_lemma_without_pos(lemma, conn)
@@ -806,6 +811,7 @@ def create_spacy_matcher(
     with phrases_doc_path.open("rb") as f:
         phrases_doc_bin = DocBin().from_bytes(f.read())
 
+    # Chinese words don't have inflection forms, only use phrase matcher
     if prefs["use_pos"] and lemma_lang != "zh":
         lemma_matcher = PhraseMatcher(nlp.vocab, attr="LEMMA")
         lemmas_doc_path = spacy_doc_path(

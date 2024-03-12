@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from typing import TYPE_CHECKING, Any
 
 GITHUB_URL = "https://github.com/xxyzz/WordDumb"

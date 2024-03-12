@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import re
 from collections import Counter, defaultdict
 from functools import partial

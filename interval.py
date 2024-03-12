@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from collections import namedtuple
 from dataclasses import dataclass
 from typing import Optional

@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
-
 import operator
 import re
 import shutil
 import sqlite3
 import zipfile
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import partial
 from html import escape, unescape
 from pathlib import Path
@@ -67,8 +65,17 @@ class Occurrence:
     paragraph_end: int
     word_start: int
     word_end: int
-    lemma: str = ""
-    entity_id: int = 0
+    entity_id: int = -1
+    sense_ids: tuple[int, ...] = ()
+
+
+@dataclass
+class Sense:
+    pos: str
+    short_def: str
+    full_def: str
+    example: str
+    ipas: list[str] = field(default_factory=list)
 
 
 class EPUB:
@@ -79,6 +86,7 @@ class EPUB:
         wiki_commons: Wikimedia_Commons | None,
         wikidata: Wikidata | None,
         custom_x_ray: CustomX,
+        lemmas_conn: sqlite3.Connection | None,
     ) -> None:
         self.book_path = Path(book_path_str)
         self.mediawiki = mediawiki
@@ -97,10 +105,13 @@ class EPUB:
         self.image_href_has_folder = False
         self.image_filenames: set[str] = set()
         self.custom_x_ray = custom_x_ray
-        self.lemmas: dict[str, int] = {}
-        self.lemma_id = 0
-        self.lemmas_conn: sqlite3.Connection | None = None
+        self.sense_id_dict: dict[tuple[int, ...], int] = {}
+        self.word_wise_id = 0
+        self.lemmas_conn: sqlite3.Connection | None = lemmas_conn
         self.prefs: Prefs = {}
+        self.lemma_lang: str = ""
+        self.gloss_lang: str = ""
+        self.gloss_source: str = ""
 
     def extract_epub(self) -> Iterator[tuple[str, tuple[int, int, Path]]]:
         from lxml import etree
@@ -221,24 +232,32 @@ class EPUB:
     def add_lemma(
         self,
         lemma: str,
+        pos: str,
         paragraph_start: int,
         paragraph_end: int,
         word_start: int,
         word_end: int,
         xhtml_path: Path,
     ) -> None:
+        sense_ids = self.find_sense_ids(lemma, pos)
+        if len(sense_ids) == 0:
+            return
+        if sense_ids in self.sense_id_dict:
+            ww_id = self.sense_id_dict[sense_ids]
+        else:
+            ww_id = self.word_wise_id
+            self.word_wise_id += 1
+            self.sense_id_dict[sense_ids] = ww_id
+
         self.entity_occurrences[xhtml_path].append(
             Occurrence(
                 paragraph_start=paragraph_start,
                 paragraph_end=paragraph_end,
                 word_start=word_start,
                 word_end=word_end,
-                lemma=lemma,
+                sense_ids=sense_ids,
             )
         )
-        if lemma not in self.lemmas:
-            self.lemmas[lemma] = self.lemma_id
-            self.lemma_id += 1
 
     def remove_entities(self, minimal_count: int) -> None:
         for entity, data in self.entities.copy().items():
@@ -252,26 +271,22 @@ class EPUB:
                 self.removed_entity_ids.add(data["id"])
 
     def modify_epub(
-        self,
-        prefs: Prefs,
-        lemma_lang: str,
-        gloss_lang: str,
-        lemmas_conn: sqlite3.Connection | None,
-        has_multiple_ipas: bool,
+        self, prefs: Prefs, lemma_lang: str, gloss_lang: str, gloss_source: str
     ) -> None:
-        self.lemmas_conn = lemmas_conn
         self.prefs = prefs
-        self.has_multiple_ipas = has_multiple_ipas
+        self.lemma_lang = lemma_lang
+        self.gloss_lang = gloss_lang
+        self.gloss_source = gloss_source
         if self.entities:
             query_mediawiki(self.entities, self.mediawiki, prefs["search_people"])
             if self.wikidata:
                 query_wikidata(self.entities, self.mediawiki, self.wikidata)
             if prefs["minimal_x_ray_count"] > 1:
                 self.remove_entities(prefs["minimal_x_ray_count"])
-            self.create_x_ray_footnotes(prefs, lemma_lang)
-        self.insert_anchor_elements(lemma_lang)
-        if self.lemmas:
-            self.create_word_wise_footnotes(lemma_lang, gloss_lang)
+            self.create_x_ray_footnotes()
+        self.insert_anchor_elements()
+        if len(self.sense_id_dict) > 0:
+            self.create_word_wise_footnotes()
         self.modify_opf()
         self.zip_extract_folder()
         if self.mediawiki is not None:
@@ -280,12 +295,12 @@ class EPUB:
             self.wikidata.close()
         if self.wiki_commons is not None:
             self.wiki_commons.close()
-        if lemmas_conn is not None:
-            lemmas_conn.close()
+        if self.lemmas_conn is not None:
+            self.lemmas_conn.close()
 
-    def insert_anchor_elements(self, lemma_lang: str) -> None:
+    def insert_anchor_elements(self) -> None:
         css_rules = ""
-        if len(self.lemmas) > 0:
+        if len(self.sense_id_dict) > 0:
             css_rules += """
             body {line-height: 2.5;}
             ruby.wordwise {text-decoration: overline;}
@@ -300,7 +315,7 @@ class EPUB:
             """
 
         for xhtml_path, occurrences in self.entity_occurrences.items():
-            if self.entities and self.lemmas:
+            if len(self.entities) > 0 and self.lemmas_conn is not None:
                 occurrences = sorted(
                     occurrences,
                     key=operator.attrgetter("paragraph_start", "word_start"),
@@ -326,14 +341,14 @@ class EPUB:
                     paragraph_text[last_w_end : occurrence.word_start]
                 )
                 word = paragraph_text[occurrence.word_start : occurrence.word_end]
-                if occurrence.lemma == "":
+                if occurrence.entity_id != -1:
                     new_xhtml_str += (
                         f'<a class="x-ray" epub:type="noteref" href="x_ray.xhtml#'
                         f'{occurrence.entity_id}">{escape(word)}</a>'
                     )
                 else:
                     new_xhtml_str += self.build_word_wise_tag(
-                        occurrence.lemma, word, lemma_lang
+                        occurrence.sense_ids, word
                     )
                 last_w_end = occurrence.word_end
                 if occurrence.paragraph_end != last_p_end:
@@ -355,39 +370,33 @@ class EPUB:
                     )
                 f.write(new_xhtml_str)
 
-    def build_word_wise_tag(self, lemma: str, word: str, lemma_lang: str) -> str:
-        if lemma not in self.lemmas:
-            return word
-        data = self.get_lemma_gloss(lemma, lemma_lang)
-        if not data:
-            del self.lemmas[lemma]
-            return word
-        short_def = data[0][0]
-        len_ratio = 3 if lemma_lang in CJK_LANGS else 2.5
-        lemma_id = self.lemmas[lemma]
+    def build_word_wise_tag(
+        self,
+        sense_ids: tuple[int, ...],
+        word: str,
+    ) -> str:
+        ww_id = self.sense_id_dict[sense_ids]
+        sense_list = self.get_sense_data(sense_ids[:1])
+        short_def = sense_list[0].short_def
+        len_ratio = 3 if self.lemma_lang in CJK_LANGS else 2.5
         if len(short_def) / len(word) > len_ratio:
             return (
                 '<a class="wordwise" epub:type="noteref" href="word_wise.xhtml#'
-                f'{lemma_id}">{escape(word)}</a>'
+                f'{ww_id}">{escape(word)}</a>'
             )
         else:
             return (
                 '<ruby class="wordwise"><a epub:type="noteref" href="word_wise.xhtml#'
-                f'{lemma_id}">{escape(word)}</a><rp>(</rp><rt>{escape(short_def)}'
+                f'{ww_id}">{escape(word)}</a><rp>(</rp><rt>{escape(short_def)}'
                 "</rt><rp>)</rp></ruby>"
             )
 
-    def split_p_tags(self, intro: str) -> str:
-        intro = escape(intro)
-        p_tags = ""
-        for p_str in intro.splitlines():
-            p_tags += f"<p>{p_str}</p>"
-        return p_tags
-
-    def create_x_ray_footnotes(self, prefs: Prefs, lang: str) -> None:
+    def create_x_ray_footnotes(self) -> None:
         if self.mediawiki is None:  # just let mypy know it's not None
             return
-        source_name, source_link = x_ray_source(self.mediawiki.source_id, prefs, lang)
+        source_name, source_link = x_ray_source(
+            self.mediawiki.source_id, self.prefs, self.lemma_lang
+        )
         image_prefix = ""
         if self.xhtml_href_has_folder:
             image_prefix += "../"
@@ -396,7 +405,7 @@ class EPUB:
         s = f"""
         <html xmlns="http://www.w3.org/1999/xhtml"
         xmlns:epub="http://www.idpf.org/2007/ops"
-        lang="{lang}" xml:lang="{lang}">
+        lang="{self.lemma_lang}" xml:lang="{self.lemma_lang}">
         <head><title>X-Ray</title><meta charset="utf-8"/></head>
         <body>
         """
@@ -405,11 +414,11 @@ class EPUB:
                 custom_desc, custom_source_id, _ = custom_data
                 s += (
                     f'<aside id="{data["id"]}" epub:type="footnote">'
-                    f"{self.split_p_tags(custom_desc)}"
+                    f"{create_p_tags(custom_desc)}"
                 )
                 if custom_source_id:
                     custom_source_name, custom_source_link = x_ray_source(
-                        custom_source_id, prefs, lang
+                        custom_source_id, self.prefs, self.lemma_lang
                     )
                     if custom_source_link:
                         s += (
@@ -419,11 +428,11 @@ class EPUB:
                     else:
                         s += f"<p>Source: {custom_source_name}</p>"
                 s += "</aside>"
-            elif (prefs["search_people"] or data["label"] not in PERSON_LABELS) and (
-                intro_cache := self.mediawiki.get_cache(entity)
-            ):
+            elif (
+                self.prefs["search_people"] or data["label"] not in PERSON_LABELS
+            ) and (intro_cache := self.mediawiki.get_cache(entity)):
                 s += f'<aside id="{data["id"]}" epub:type="footnote">'
-                s += self.split_p_tags(
+                s += create_p_tags(
                     intro_cache
                     if isinstance(intro_cache, str)
                     else intro_cache["intro"]
@@ -467,44 +476,43 @@ class EPUB:
         with self.xhtml_folder.joinpath("x_ray.xhtml").open("w", encoding="utf-8") as f:
             f.write(s)
 
-    def create_word_wise_footnotes(self, lemma_lang: str, gloss_lang: str) -> None:
-        s = f"""
+    def create_word_wise_footnotes(self) -> None:
+        page_text = f"""
         <html xmlns="http://www.w3.org/1999/xhtml"
         xmlns:epub="http://www.idpf.org/2007/ops"
-        lang="{lemma_lang}" xml:lang="{lemma_lang}">
+        lang="{self.gloss_lang}" xml:lang="{self.gloss_lang}">
         <head><title>Word Wise</title><meta charset="utf-8"/></head>
         <body>
         """
-        for lemma, lemma_id in self.lemmas.items():
-            s += self.create_ww_aside_tag(lemma, lemma_id, lemma_lang, gloss_lang)
-        s += "</body></html>"
+        for sense_ids, ww_id in self.sense_id_dict.items():
+            page_text += self.create_ww_aside_tag(sense_ids, ww_id)
+        page_text += "</body></html>"
         with self.xhtml_folder.joinpath("word_wise.xhtml").open(
             "w", encoding="utf-8"
         ) as f:
-            f.write(s)
+            f.write(page_text)
 
-    def create_ww_aside_tag(
-        self, lemma: str, lemma_id: int, lemma_lang: str, gloss_lang: str
-    ) -> str:
-        data = self.get_lemma_gloss(lemma, lemma_lang)
+    def create_ww_aside_tag(self, sense_ids: tuple[int, ...], ww_id: int) -> str:
+        sense_list = self.get_sense_data(sense_ids, True)
         tag_str = ""
-        added_ipa = False
-        tag_str += f'<aside id="{lemma_id}" epub:type="footnote">'
-        if self.prefs["use_pos"]:
-            lemma, pos = lemma.rsplit("_", 1)
-            tag_str += f"<p>{pos}</p>"
-        for _, full_def, example, ipa in data:
-            if ipa and not added_ipa:
-                tag_str += f"<p>{escape(ipa)}</p>"
-                added_ipa = True
-            tag_str += f"<p>{escape(full_def)}</p>"
-            if example:
-                tag_str += f"<p><i>{escape(example)}</i></p>"
-            tag_str += "<hr/>"
-        tag_str += (
-            f"<p>Source: <a href='https://{gloss_lang}.wiktionary.org/wiki/"
-            f"{quote(lemma)}'>Wiktionary</a></p></aside>"
-        )
+        tag_str += f'<aside id="{ww_id}" epub:type="footnote">'
+        last_pos = ""
+        for sense_data in sense_list:
+            if sense_data.pos != last_pos:
+                if last_pos != "":
+                    tag_str += "</ol><hr/>"
+                tag_str += f"<p>{sense_data.pos}</p>"
+                if last_pos == "":
+                    for ipa in sense_data.ipas:
+                        tag_str += f"<p>{escape(ipa)}</p>"
+                tag_str += f"<ol><li>{escape(sense_data.full_def)}"
+                last_pos = sense_data.pos
+            else:
+                tag_str += f"<li>{escape(sense_data.full_def)}"
+            if sense_data.example != "":
+                tag_str += f" <i>{escape(sense_data.example)}</i>"
+            tag_str += "</li>"
+        tag_str += "</ol><hr/><p>Source: Wiktionary</p></aside>"
         return tag_str
 
     def modify_opf(self) -> None:
@@ -517,13 +525,13 @@ class EPUB:
         if self.image_href_has_folder:
             image_prefix = f"{self.image_folder.name}/"
         manifest = self.opf_root.find("opf:manifest", NAMESPACES)
-        if self.entities:
+        if len(self.entities) > 0:
             s = (
                 f'<item href="{xhtml_prefix}x_ray.xhtml" '
                 'id="x_ray.xhtml" media-type="application/xhtml+xml"/>'
             )
             manifest.append(etree.fromstring(s))
-        if self.lemmas:
+        if len(self.sense_id_dict) > 0:
             s = (
                 f'<item href="{xhtml_prefix}word_wise.xhtml" '
                 'id="word_wise.xhtml" media-type="application/xhtml+xml"/>'
@@ -547,9 +555,9 @@ class EPUB:
             )
             manifest.append(etree.fromstring(s))
         spine = self.opf_root.find("opf:spine", NAMESPACES)
-        if self.entities:
+        if len(self.entities) > 0:
             spine.append(etree.fromstring('<itemref idref="x_ray.xhtml"/>'))
-        if self.lemmas:
+        if len(self.sense_id_dict) > 0:
             spine.append(etree.fromstring('<itemref idref="word_wise.xhtml"/>'))
         with self.opf_path.open("w", encoding="utf-8") as f:
             f.write(etree.tostring(self.opf_root, encoding=str))
@@ -559,67 +567,100 @@ class EPUB:
         self.extract_folder.with_suffix(".zip").replace(self.book_path)
         shutil.rmtree(self.extract_folder)
 
-    def get_lemma_gloss(self, lemma: str, lang: str) -> list[tuple[str, str, str, str]]:
-        select_sql = "SELECT short_def, full_def, example, "
-        if self.has_multiple_ipas:
-            select_sql += self.prefs[f"{lang}_ipa"]
+    def find_sense_ids(self, word: str, pos: str) -> tuple[int, ...]:
+        if pos != "":
+            return self.find_sense_ids_with_pos(word, pos)
         else:
-            select_sql += "ipa"
-        select_sql += " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id "
-        if self.prefs["use_pos"]:
-            lemma, pos = lemma.rsplit("_", 1)
-            pos = spacy_to_wiktionary_pos(pos)
-            return self.query_gloss_with_pos(select_sql, lemma, pos, lang)
+            return self.find_sense_ids_without_pos(word)
+
+    def find_sense_ids_with_pos(self, word: str, pos: str) -> tuple[int, ...]:
+        if self.lemmas_conn is None:
+            return ()
+        sense_ids = []
+        for (sense_id,) in self.lemmas_conn.execute(
+            """
+            SELECT DISTINCT s.id
+            FROM senses s JOIN lemmas l ON s.lemma_id = l.id
+            WHERE lemma = ? AND pos = ?
+            """,
+            (word, pos),
+        ):
+            sense_ids.append(sense_id)
+        if len(sense_ids) > 0:
+            return tuple(sense_ids)
+
+        sql = """
+            SELECT DISTINCT s.id
+            FROM senses s JOIN forms f
+            ON s.lemma_id = f.lemma_id AND s.pos = f.pos
+            WHERE form = ?
+            """
+        query_values: tuple[str, ...] = (word,)
+        if " " not in word:  # not limit pos for phrase
+            sql += " AND f.pos = ?"
+            query_values = (word, pos)
+        for (sense_id,) in self.lemmas_conn.execute(sql, query_values):
+            sense_ids.append(sense_id)
+        return tuple(sense_ids)
+
+    def find_sense_ids_without_pos(self, word: str) -> tuple[int, ...]:
+        if self.lemmas_conn is None:
+            return ()
+        sense_ids = []
+        for (sense_id,) in self.lemmas_conn.execute(
+            """
+        SELECT DISTINCT s.id
+        FROM senses s JOIN lemmas l ON s.lemma_id = l.id
+        WHERE lemma = ?
+        """,
+            (word,),
+        ):
+            sense_ids.append(sense_id)
+        if len(sense_ids) > 0:
+            return tuple(sense_ids)
+        for (sense_id,) in self.lemmas_conn.execute(
+            """
+        SELECT DISTINCT s.id
+        FROM senses s JOIN forms f ON s.lemma_id = f.lemma_id AND s.pos = f.pos
+        WHERE form = ?
+        """,
+            (word,),
+        ):
+            sense_ids.append(sense_id)
+
+        return tuple(sense_ids)
+
+    def get_sense_data(
+        self, sense_ids: tuple[int, ...], order_by_pos: bool = False
+    ) -> list[Sense]:
+        if self.lemmas_conn is None:
+            return []
+        sql = "SELECT pos, short_def, full_def, example, "
+        if self.gloss_source == "kaikki":
+            if self.lemma_lang == "en":
+                sql += "ga_ipa, rp_ipa "
+            elif self.lemma_lang == "zh":
+                sql += "pinyin, bopomofo "
+            else:
+                sql += "ipa "
         else:
-            return self.query_gloss_without_pos(select_sql, lemma)
-
-    def query_gloss_with_pos(
-        self, sql: str, lemma: str, pos: str, lang: str
-    ) -> list[tuple[str, str, str, str]]:
-        lemmas_data = []
-        for data in self.lemmas_conn.execute(  # type: ignore
-            sql + "WHERE lemma = ? AND pos = ?", (lemma, pos)
-        ):
-            lemmas_data.append(data)
-        if lemmas_data:
-            return lemmas_data
-
-        if " " in lemma:
-            for data in self.lemmas_conn.execute(  # type: ignore
-                sql
-                + "JOIN forms ON "
-                + "senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos "
-                + "WHERE form = ?",
-                (lemma,),
-            ):
-                lemmas_data.append(data)
-        elif lang == "zh":
-            for data in self.lemmas_conn.execute(  # type: ignore
-                sql
-                + "JOIN forms "
-                + "ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos "
-                + "WHERE form = ? AND forms.pos = ?",
-                (lemma, pos),
-            ):
-                lemmas_data.append(data)
-        return lemmas_data
-
-    def query_gloss_without_pos(
-        self, sql: str, lemma: str
-    ) -> list[tuple[str, str, str, str]]:
-        for data in self.lemmas_conn.execute(  # type: ignore
-            sql + " WHERE lemma = ? AND enabled = 1 LIMIT 1", (lemma,)
-        ):
-            return [data]
-        for data in self.lemmas_conn.execute(  # type: ignore
-            sql
-            + "JOIN forms "
-            + "ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos "
-            + "WHERE form = ? AND enabled = 1 LIMIT 1",
-            (lemma,),
-        ):
-            return [data]
-        return []
+            sql += "ipa "
+        sql += "FROM senses s JOIN lemmas l ON s.lemma_id = l.id WHERE s.id IN ("
+        sql += ",".join("?" * len(sense_ids))
+        sql += ") "
+        if order_by_pos:
+            sql += "ORDER BY pos"
+        sense_list: list[Sense] = []
+        for data in self.lemmas_conn.execute(sql, sense_ids):
+            sense_data = Sense(
+                pos=data[0] or "",
+                short_def=data[1] or "",
+                full_def=data[2] or "",
+                example=data[3] or "",
+            )
+            sense_data.ipas = list(data[4:])
+            sense_list.append(sense_data)
+        return sense_list
 
 
 def spacy_to_wiktionary_pos(pos: str) -> str:
@@ -657,3 +698,7 @@ def spacy_to_wiktionary_pos(pos: str) -> str:
         #     return "symbol"
         case _:
             return "other"
+
+
+def create_p_tags(intro: str) -> str:
+    return "".join(f"<p>{escape(line)}</p>" for line in intro.splitlines())

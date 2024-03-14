@@ -40,7 +40,6 @@ from .utils import (
     custom_lemmas_folder,
     get_kindle_klld_path,
     get_plugin_path,
-    load_languages_data,
 )
 
 load_translations()  # type: ignore
@@ -150,29 +149,6 @@ class CustomLemmasDialog(QDialog):
         self, form_layout: QFormLayout, gloss_lang: str
     ) -> None:
         from .config import prefs
-
-        supported_languages = load_languages_data(get_plugin_path())
-        if (
-            self.lemma_lang in ["en", "zh"]
-            and supported_languages[gloss_lang]["gloss_source"] == "kaikki"
-        ):
-            self.ipa_button = QComboBox()
-            if self.lemma_lang == "en":
-                self.ipa_button.addItem(_("General American"), "ga_ipa")
-                self.ipa_button.addItem(_("Received Pronunciation"), "rp_ipa")
-                self.ipa_button.setCurrentText(prefs["en_ipa"])
-            elif self.lemma_lang == "zh":
-                self.ipa_button.addItem(_("Pinyin"), "pinyin")
-                self.ipa_button.addItem(_("Bopomofo"), "bopomofo")
-                self.ipa_button.setCurrentText(_(prefs["zh_ipa"]))
-
-            form_layout.addRow(
-                _("Phonetic transcription system")
-                if self.lemma_lang == "zh"
-                else _("International Phonetic Alphabet"),
-                self.ipa_button,
-            )
-            self.ipa_button.currentIndexChanged.connect(self.change_ipa)
 
         difficulty_label = QLabel(_("Difficulty limit"))
         difficulty_label.setToolTip(
@@ -306,11 +282,6 @@ class CustomLemmasDialog(QDialog):
         QSqlDatabase.removeDatabase(self.db_connection_name)
         self.db_path.unlink()
         self.reject()
-
-    def change_ipa(self):
-        from .config import prefs
-
-        prefs[f"{self.lemma_lang}_ipa"] = self.ipa_button.currentData()
 
     def set_export_options(self):
         option_dialog = ExportOptionsDialog(self)

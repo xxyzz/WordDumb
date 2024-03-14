@@ -132,51 +132,24 @@ def export_lemmas_job(
     log: Any = None,
     notifications: Any = None,
 ) -> None:
-    from .config import prefs
-    from .utils import get_plugin_path, load_languages_data
-
     conn = sqlite3.connect(db_path)
     with open(export_path, "w", encoding="utf-8") as f:
-        query_sql = "SELECT lemma, pos, full_def, example"
-        if not is_kindle:
-            supported_languages = load_languages_data(get_plugin_path())
-            has_multiple_ipas = (
-                supported_languages[gloss_lang]["gloss_source"] == "kaikki"
-            )
-            if has_multiple_ipas:
-                if lemma_lang == "en":
-                    query_sql = f", {prefs['en_ipa']}"
-                elif lemma_lang == "zh":
-                    query_sql = f", {prefs['zh_ipa']}"
-            else:
-                query_sql = ", ipa"
-        query_sql += (
-            " FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id "
-            "WHERE difficulty <= ?"
-        )
-
+        query_sql = """
+        SELECT lemma, pos, full_def, example
+        FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id
+        WHERE difficulty <= ?
+        """
         if only_enabled:
             query_sql += " AND enabled = 1"
 
-        if is_kindle:
-            for lemma, pos_type, full_def, example in conn.execute(
-                query_sql, (difficulty_limit,)
-            ):
-                back_text = f"<p>{pos_type}</p><p>{full_def}</p>"
-                if example:
-                    back_text += f"<i>{example}</i>"
-                f.write(f"{lemma}\t{back_text}\n")
-        else:
-            for lemma, pos_type, full_def, example, ipa in conn.execute(
-                query_sql, (difficulty_limit,)
-            ):
-                back_text = f"<p>{pos_type}</p>"
-                if ipa:
-                    ipa = escape(re.sub(r"\t|\n", " ", ipa))
-                    back_text += f"<p>{ipa}</p>"
-                full_def = escape(re.sub(r"\t|\n", " ", full_def))
-                back_text += f"<p>{full_def}</p>"
-                if example:
-                    example = escape(re.sub(r"\t|\n", " ", example))
-                    back_text += f"<i>{example}</i>"
-                f.write(f"{lemma}\t{back_text}\n")
+        for lemma, pos_type, full_def, example in conn.execute(
+            query_sql, (difficulty_limit,)
+        ):
+            back_text = f"<p>{pos_type}</p>"
+            full_def = escape(re.sub(r"\t|\n", " ", full_def))
+            back_text += f"<p>{full_def}</p>"
+            if example is not None and len(example) > 0:
+                example = escape(re.sub(r"\t|\n", " ", example))
+                back_text += f"<i>{example}</i>"
+            f.write(f"{lemma}\t{back_text}\n")
+    conn.close()

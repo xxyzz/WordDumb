@@ -26,8 +26,6 @@ class Prefs(TypedDict):
     preferred_formats: list[str]
     use_all_formats: bool
     mal_x_ray_count: int
-    en_ipa: str
-    zh_ipa: str
     choose_format_manually: bool
     wiktionary_gloss_lang: str
     kindle_gloss_lang: str

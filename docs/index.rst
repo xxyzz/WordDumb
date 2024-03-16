@@ -60,10 +60,12 @@ Română        ✅    English, Français, 中文
 Slovenščina   ✅    English, Français, 中文
 Suomi         ✅    English, Français, Suomi, 中文
 Svenska       ✅    English, Français, Svenska, 中文
+čeština       ❌    English, Français, 中文
 Ελληνικά      ✅    English, Français, Ελληνικά, 中文
 Македонски    ✅    English, Français, 中文
 Русский       ✅    English, Français, Русский, 中文
 Українська    ✅    English, Français, 中文
+עִבְֿרִית‎          ❌    English, Français, 中文
 中文          ✅     English, Français, 中文
 日本語         ✅    English, Français, 中文, 日本語
 한국어         ✅     English, Français, 中文

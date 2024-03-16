@@ -207,10 +207,8 @@ def kindle_epub_dialog(parent: Any) -> None:
     )
 
 
-def unsupported_ww_lang_dialog(book_lang: str, gloss_lang: str) -> None:
+def unsupported_ww_lang_dialog() -> None:
     warning_dialog(
         _("Unsupported language"),
-        _("Book language {} is not supported for Word Wise gloss language {}.").format(
-            book_lang, gloss_lang
-        ),
+        _("Book language is not supported for the selected Word Wise gloss language."),
     )

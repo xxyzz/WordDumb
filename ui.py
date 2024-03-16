@@ -8,7 +8,7 @@ from PyQt6.QtGui import QIcon
 
 from .custom_x_ray import CustomXRayDialog
 from .error_dialogs import job_failed, unsupported_ww_lang_dialog
-from .metadata import check_metadata, check_word_wise_language
+from .metadata import MetaDataResult, check_metadata
 from .parse_job import ParseJobData, do_job
 from .send_file import SendFile, device_connected
 from .utils import donate
@@ -82,7 +82,7 @@ class WordDumb(InterfaceAction):
 
 def get_metadata_of_selected_books(
     gui: Any, custom_x_ray: bool
-) -> Iterator[tuple[int, list[str], list[str], Any, str]]:
+) -> Iterator[MetaDataResult]:
     return filter(
         None,
         [
@@ -98,21 +98,22 @@ def get_metadata_of_selected_books(
 def run(gui: Any, create_ww: bool, create_x: bool) -> None:
     if not create_ww and not create_x:
         return
-    for book_id, book_fmts, book_paths, mi, lang in get_metadata_of_selected_books(
-        gui, False
-    ):
-        for book_fmt, book_path in zip(book_fmts, book_paths):
-            if create_ww:
-                create_ww, gloss_lang = check_word_wise_language(
-                    lang, book_fmt != "EPUB"
-                )
-                if create_ww is False:
-                    unsupported_ww_lang_dialog(lang, gloss_lang)
+    for md_result in get_metadata_of_selected_books(gui, False):
+        for book_fmt, book_path, support_ww in zip(
+            md_result.book_fmts, md_result.book_paths, md_result.support_ww_list
+        ):
+            if create_ww and not support_ww:
+                create_ww = False
+                unsupported_ww_lang_dialog()
+            if create_x and not md_result.support_x_ray:
+                create_x = False
+            if not create_ww and not create_x:
+                continue
 
             title = (
-                f'{mi.get("title")}({book_fmt})'
-                if len(book_fmts) > 1
-                else mi.get("title")
+                f'{md_result.mi.get("title")}({md_result.book_fmt})'
+                if len(md_result.book_fmts) > 1
+                else md_result.mi.get("title")
             )
             notif = []
             if create_ww:
@@ -121,11 +122,11 @@ def run(gui: Any, create_ww: bool, create_x: bool) -> None:
                 notif.append("X-Ray")
             notif = _(" and ").join(notif)
             job_data = ParseJobData(
-                book_id=book_id,
+                book_id=md_result.book_id,
                 book_path=book_path,
-                mi=mi,
+                mi=md_result.mi,
                 book_fmt=book_fmt,
-                book_lang=lang,
+                book_lang=md_result.book_lang,
                 create_ww=create_ww,
                 create_x=create_x,
             )

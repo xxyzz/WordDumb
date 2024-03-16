@@ -2,6 +2,7 @@ import json
 import random
 import re
 import string
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, BinaryIO, TypedDict
 
@@ -9,9 +10,18 @@ if TYPE_CHECKING:
     from .parse_job import ParseJobData
 
 
-def check_metadata(
-    gui: Any, book_id: int, custom_x_ray: bool
-) -> tuple[int, list[str], list[str], Any, str] | None:
+@dataclass
+class MetaDataResult:
+    book_id: int = 0
+    book_lang: str = ""
+    book_fmts: list[str] = field(default_factory=list)
+    book_paths: list[str] = field(default_factory=list)
+    mi: Any = None
+    support_ww_list: list[bool] = field(default_factory=list)
+    support_x_ray: bool = False
+
+
+def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult | None:
     from .config import prefs
     from .error_dialogs import unsupported_format_dialog, unsupported_language_dialog
     from .utils import get_plugin_path, load_plugin_json
@@ -21,8 +31,8 @@ def check_metadata(
     supported_languages = {v["639-2"]: k for k, v in lang_dict.items()}
     mi = db.get_metadata(book_id, get_cover=True)
     # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    book_language = mi.get("language")
-    if book_language not in supported_languages:
+    calibre_book_lang = mi.get("language")
+    if calibre_book_lang not in supported_languages:
         unsupported_language_dialog(mi.get("title"))
         return None
 
@@ -42,16 +52,29 @@ def check_metadata(
     if not prefs["use_all_formats"]:
         supported_fmts = [supported_fmts[0]]
 
-    return (
-        book_id,
-        supported_fmts,
-        [db.format_abspath(book_id, fmt) for fmt in supported_fmts],
-        mi,
-        supported_languages[book_language],
+    book_lang = supported_languages[calibre_book_lang]
+    support_ww_list = []
+    for fmt in supported_fmts:
+        gloss_lang = prefs[
+            "kindle_gloss_lang" if fmt != "EPUB" else "wiktionary_gloss_lang"
+        ]
+        support_ww_list.append(
+            book_lang in lang_dict[gloss_lang].get("lemma_languages", [])
+        )
+
+    return MetaDataResult(
+        book_id=book_id,
+        book_lang=book_lang,
+        book_fmts=supported_fmts,
+        book_paths=[db.format_abspath(book_id, fmt) for fmt in supported_fmts],
+        mi=mi,
+        support_ww_list=support_ww_list,
+        support_x_ray=lang_dict[book_lang]["spacy"] != "",
     )
 
 
-def cli_check_metadata(book_path_str: str, log: Any) -> tuple[str, Any, str] | None:
+def cli_check_metadata(book_path_str: str, log: Any) -> MetaDataResult | None:
+    from .config import prefs
     from .utils import get_plugin_path, load_plugin_json
 
     lang_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
@@ -81,15 +104,27 @@ def cli_check_metadata(book_path_str: str, log: Any) -> tuple[str, Any, str] | N
         with book_path.open("rb") as f:
             mi = get_metadata(f)
 
-    if mi:
-        book_language = mi.get("language")
-        if book_language not in supported_languages:
+    if mi is not None:
+        calibre_book_lang = mi.get("language")
+        if calibre_book_lang not in supported_languages:
             log.prints(
                 log.WARN,
                 f"The language of the book {mi.get('title')} is not supported.",
             )
             return None
-        return book_fmt, mi, supported_languages[book_language]
+        book_lang = supported_languages[calibre_book_lang]
+        gloss_lang = prefs[
+            "kindle_gloss_lang" if book_fmt != "EPUB" else "wiktionary_gloss_lang"
+        ]
+        return MetaDataResult(
+            book_fmts=[book_fmt],
+            mi=mi,
+            book_lang=book_lang,
+            support_ww_list=[
+                book_lang in lang_dict[gloss_lang].get("lemma_languages", [])
+            ],
+            support_x_ray=lang_dict[book_lang]["spacy"] != "",
+        )
 
     log.prints(log.WARN, "The book format is not supported.")
     return None
@@ -206,12 +241,3 @@ def update_kfx_metedata(book_path: str, asin: str, lang: str) -> Any:
     with open(book_path, "wb") as f:
         f.write(yj_book.convert_to_single_kfx())
     return yj_book
-
-
-def check_word_wise_language(book_lang: str, is_kindle: bool) -> tuple[bool, str]:
-    from .config import prefs
-    from .utils import get_plugin_path, load_languages_data
-
-    supported_languages = load_languages_data(get_plugin_path())
-    gloss_lang = prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"]
-    return book_lang in supported_languages[gloss_lang]["lemma_languages"], gloss_lang

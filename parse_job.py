@@ -225,7 +225,10 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
     data.plugin_path = Path(data.plugin_path)
     insert_installed_libs(data.plugin_path)
     nlp = load_spacy(
-        data.spacy_model, data.book_path if data.create_x else None, prefs["use_pos"]
+        data.spacy_model,
+        data.book_path if data.create_x else None,
+        prefs["use_pos"],
+        data.book_lang,
     )
     lemmas_conn = None
     if data.create_ww:
@@ -744,8 +747,13 @@ def find_named_entity(
     return intervals
 
 
-def load_spacy(model: str, book_path: str | None, use_pos: bool):
+def load_spacy(
+    model: str, book_path: str | None, use_pos: bool, lemma_lang: str
+) -> Any:
     import spacy
+
+    if model == "":
+        return spacy.blank(lemma_lang)
 
     excluded_components = []
     if not use_pos:
@@ -790,12 +798,21 @@ def create_spacy_matcher(
 
     disabled_pipes = list(set(["ner", "parser", "senter"]) & set(nlp.pipe_names))
     pkg_versions = load_plugin_json(plugin_path, "data/deps.json")
-    model_version = model_version = pkg_versions[
+    model_version = pkg_versions[
         "spacy_trf_model" if model.endswith("_trf") else "spacy_cpu_model"
     ]
+    # Chinese words don't have inflection forms, only use phrase matcher
+    use_lemma_matcher = prefs["use_pos"] and lemma_lang != "zh" and model != ""
     phrase_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
     phrases_doc_path = spacy_doc_path(
-        model, model_version, lemma_lang, is_kindle, True, plugin_path, prefs
+        model,
+        model_version,
+        lemma_lang,
+        is_kindle,
+        True,
+        plugin_path,
+        prefs,
+        use_lemma_matcher,
     )
     if not phrases_doc_path.exists():
         save_spacy_docs(
@@ -807,22 +824,19 @@ def create_spacy_matcher(
             lemmas_conn,
             plugin_path,
             prefs,
+            use_lemma_matcher,
         )
-    with phrases_doc_path.open("rb") as f:
-        phrases_doc_bin = DocBin().from_bytes(f.read())
-
-    # Chinese words don't have inflection forms, only use phrase matcher
-    if prefs["use_pos"] and lemma_lang != "zh":
+    phrases_doc_bin = DocBin().from_disk(phrases_doc_path)
+    if use_lemma_matcher:
         lemma_matcher = PhraseMatcher(nlp.vocab, attr="LEMMA")
         lemmas_doc_path = spacy_doc_path(
-            model, model_version, lemma_lang, is_kindle, False, plugin_path, prefs
+            model, model_version, lemma_lang, is_kindle, False, plugin_path, prefs, True
         )
-        with lemmas_doc_path.open("rb") as f:
-            lemmas_doc_bin = DocBin().from_bytes(f.read())
+        lemmas_doc_bin = DocBin().from_disk(lemmas_doc_path)
 
     with nlp.select_pipes(disable=disabled_pipes):
         phrase_matcher.add("phrases", phrases_doc_bin.get_docs(nlp.vocab))
-        if prefs["use_pos"] and lemma_lang != "zh":
+        if use_lemma_matcher:
             lemma_matcher.add("lemmas", lemmas_doc_bin.get_docs(nlp.vocab))
             return lemma_matcher, phrase_matcher
         else:

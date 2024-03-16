@@ -59,8 +59,6 @@ prefs.defaults["wiktionary_gloss_lang"] = "en"
 prefs.defaults["kindle_gloss_lang"] = "en"
 prefs.defaults["use_gpu"] = False
 prefs.defaults["cuda"] = "cu121"
-prefs.defaults["last_opened_kindle_lemmas_language"] = "ca"
-prefs.defaults["last_opened_wiktionary_lemmas_language"] = "ca"
 prefs.defaults["use_wiktionary_for_kindle"] = False
 prefs.defaults["remove_link_styles"] = False
 prefs.defaults["python_path"] = ""
@@ -258,11 +256,6 @@ class ConfigWidget(QWidget):
             prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"] = (
                 gloss_lang
             )
-            prefs[
-                "last_opened_kindle_lemmas_language"
-                if is_kindle
-                else "last_opened_wiktionary_lemmas_language"
-            ] = lemma_lang
             if is_kindle and lemma_lang == "en" and gloss_lang in ["en", "zh", "zh_cn"]:
                 prefs["use_wiktionary_for_kindle"] = (
                     choose_lang_dlg.use_wiktionary_box.isChecked()
@@ -489,19 +482,23 @@ class ChooseLemmaLangDialog(QDialog):
 
         self.lemma_lang_box = QComboBox()
         self.gloss_lang_box = QComboBox()
-        language_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
-        for code in language_dict.keys():
-            self.lemma_lang_box.addItem(_(language_dict[code]["name"]), code)
-        self.lemma_lang_box.currentIndexChanged.connect(self.lemma_lang_changed)
-        lemma_code = prefs[
-            "last_opened_kindle_lemmas_language"
-            if is_kindle
-            else "last_opened_wiktionary_lemmas_language"
+        language_dict = load_languages_data(get_plugin_path())
+        selected_gloss_code = prefs[
+            "kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"
         ]
-        self.lemma_lang_box.setCurrentText(_(language_dict[lemma_code]["name"]))
-        self.lemma_lang_changed()
-        form_layout.addRow(_("Lemma language"), self.lemma_lang_box)
+        self.gloss_lang_box.currentIndexChanged.connect(
+            partial(self.gloss_lang_changed, language_dict)
+        )
+        for gloss_lang, lang_value in language_dict.items():
+            if len(lang_value.get("lemma_languages", [])) == 0:
+                continue
+            gloss_lang_name = _(lang_value["name"])
+            self.gloss_lang_box.addItem(gloss_lang_name, gloss_lang)
+            if gloss_lang == selected_gloss_code:
+                self.gloss_lang_box.setCurrentText(gloss_lang_name)
+        self.gloss_lang_changed(language_dict)
         form_layout.addRow(_("Gloss language"), self.gloss_lang_box)
+        form_layout.addRow(_("Lemma language"), self.lemma_lang_box)
 
         if is_kindle:
             self.use_wiktionary_box = QCheckBox("")
@@ -539,16 +536,12 @@ class ChooseLemmaLangDialog(QDialog):
             self.use_wiktionary_box.setChecked(True)
             self.use_wiktionary_box.setDisabled(True)
 
-    def lemma_lang_changed(self) -> None:
-        language_dict = load_languages_data(get_plugin_path())
-        lemma_code = self.lemma_lang_box.currentData()
-        self.gloss_lang_box.clear()
-        available_gloss_codes = set()
-        for code, value in language_dict.items():
-            if "lemma_languages" in value and lemma_code in value["lemma_languages"]:
-                self.gloss_lang_box.addItem(_(value["name"]), code)
-                available_gloss_codes.add(code)
-        if self.prefer_gloss_code in available_gloss_codes:
-            self.gloss_lang_box.setCurrentText(
-                _(language_dict[self.prefer_gloss_code]["name"])
-            )
+    def gloss_lang_changed(self, lang_dict) -> None:
+        gloss_lang = self.gloss_lang_box.currentData()
+        self.lemma_lang_box.clear()
+        lemma_langs = lang_dict[gloss_lang].get("lemma_languages", [])
+        for index, lemma_lang in enumerate(lemma_langs):
+            lemma_lang_name = _(lang_dict[lemma_lang]["name"])
+            self.lemma_lang_box.addItem(lemma_lang_name, lemma_lang)
+            if index == 0:
+                self.lemma_lang_box.setCurrentText(lemma_lang_name)

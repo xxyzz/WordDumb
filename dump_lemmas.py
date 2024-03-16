@@ -28,6 +28,7 @@ def spacy_doc_path(
     is_phrase: bool,
     plugin_path: Path,
     prefs: Prefs,
+    use_lemma_matcher: bool,
 ):
     import platform
 
@@ -36,10 +37,10 @@ def spacy_doc_path(
         is_kindle = False
     py_version = ".".join(platform.python_version_tuple()[:2])
     path = custom_lemmas_folder(plugin_path, lemma_lang).joinpath(
-        f"{spacy_model}_{'kindle' if is_kindle else 'wiktionary'}"
+        f"{spacy_model or lemma_lang}_{'kindle' if is_kindle else 'wiktionary'}"
         f"_{gloss_lang}_{model_version}_{py_version}"
     )
-    if prefs["use_pos"]:
+    if use_lemma_matcher:
         if is_phrase:
             path = path.with_name(path.name + "_phrase")
         path = path.with_name(path.name + "_pos")
@@ -57,12 +58,17 @@ def dump_spacy_docs(
     insert_installed_libs(plugin_path)
     import spacy
 
+    use_lemma_matcher = prefs["use_pos"] and lemma_lang != "zh" and spacy_model != ""
     excluded_components = ["ner", "parser"]
-    if lemma_lang == "zh" or not prefs["use_pos"]:
+    if not use_lemma_matcher:
         excluded_components.extend(
             ["tok2vec", "morphologizer", "tagger", "attribute_ruler", "lemmatizer"]
         )
-    nlp = spacy.load(spacy_model, exclude=excluded_components)
+    nlp = (
+        spacy.load(spacy_model, exclude=excluded_components)
+        if spacy_model != ""
+        else spacy.blank(lemma_lang)
+    )
     lemmas_conn = sqlite3.connect(db_path)
     pkg_versions = load_plugin_json(plugin_path, "data/deps.json")
     save_spacy_docs(
@@ -76,6 +82,7 @@ def dump_spacy_docs(
         lemmas_conn,
         plugin_path,
         prefs,
+        use_lemma_matcher,
     )
     lemmas_conn.close()
 
@@ -89,22 +96,23 @@ def save_spacy_docs(
     lemmas_conn: sqlite3.Connection,
     plugin_path: Path,
     prefs: Prefs,
+    use_lemma_matcher: bool,
 ):
     from spacy.tokens import DocBin
 
     phrases_doc_bin = DocBin(attrs=["LOWER"])
-    if prefs["use_pos"] and lemma_lang != "zh":
+    if use_lemma_matcher:
         lemmas_doc_bin = DocBin(attrs=["LEMMA"])
     difficulty_limit = (
         5 if is_kindle else prefs[f"{lemma_lang}_wiktionary_difficulty_limit"]
     )
-    if prefs["use_pos"]:
+    if use_lemma_matcher:
         for doc in create_lemma_patterns_with_pos(
             lemma_lang, lemmas_conn, nlp, difficulty_limit
         ):
-            if " " in doc.text or lemma_lang == "zh":
+            if " " in doc.text:
                 phrases_doc_bin.add(doc)
-            if " " not in doc.text and lemma_lang != "zh":
+            else:
                 lemmas_doc_bin.add(doc)
     else:
         for doc in create_lemma_patterns_without_pos(
@@ -112,16 +120,20 @@ def save_spacy_docs(
         ):
             phrases_doc_bin.add(doc)
 
-    with open(
+    phrases_doc_bin.to_disk(
         spacy_doc_path(
-            spacy_model, model_version, lemma_lang, is_kindle, True, plugin_path, prefs
-        ),
-        "wb",
-    ) as f:
-        f.write(phrases_doc_bin.to_bytes())
-
-    if prefs["use_pos"] and lemma_lang != "zh":
-        with open(
+            spacy_model,
+            model_version,
+            lemma_lang,
+            is_kindle,
+            True,
+            plugin_path,
+            prefs,
+            use_lemma_matcher,
+        )
+    )
+    if use_lemma_matcher:
+        lemmas_doc_bin.to_disk(
             spacy_doc_path(
                 spacy_model,
                 model_version,
@@ -130,10 +142,9 @@ def save_spacy_docs(
                 False,
                 plugin_path,
                 prefs,
-            ),
-            "wb",
-        ) as f:
-            f.write(lemmas_doc_bin.to_bytes())
+                use_lemma_matcher,
+            )
+        )
 
 
 def create_lemma_patterns_with_pos(lemma_lang, conn, nlp, difficulty_limit):

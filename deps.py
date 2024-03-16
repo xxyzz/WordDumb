@@ -41,32 +41,37 @@ def install_deps(pkg: str, notif: Any) -> None:
         # Install X-Ray dependencies
         pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
 
-        model_version = dep_versions[
-            "spacy_trf_model" if pkg.endswith("_trf") else "spacy_cpu_model"
-        ]
-        url = (
-            "https://github.com/explosion/spacy-models/releases/download/"
-            f"{pkg}-{model_version}/{pkg}-{model_version}-py3-none-any.whl"
-        )
-        pip_install(pkg, model_version, url=url, notif=notif)
-        if pkg.endswith("_trf"):
-            from .config import prefs
+        if pkg == "":
+            pip_install("spacy", dep_versions["spacy"], notif=notif)
+        else:
+            model_version = dep_versions[
+                "spacy_trf_model" if pkg.endswith("_trf") else "spacy_cpu_model"
+            ]
+            url = (
+                "https://github.com/explosion/spacy-models/releases/download/"
+                f"{pkg}-{model_version}/{pkg}-{model_version}-py3-none-any.whl"
+            )
+            pip_install(pkg, model_version, url=url, notif=notif)
+            if pkg.endswith("_trf"):
+                from .config import prefs
 
-            pip_install("cupy-wheel", dep_versions["cupy"], notif=notif)
-            # PyTorch's Windows package on pypi.org is CPU build version,
-            # reintall the CUDA build version
-            if iswindows or prefs["cuda"] == "cu118":
-                pip_install(
-                    "torch",
-                    dep_versions["torch"],
-                    extra_index=f"https://download.pytorch.org/whl/{prefs['cuda']}",
-                    notif=notif,
-                )
-                # an old version of typing-extensions(4.4.0) is installed from pytorch's
-                # index which is incompatible with pydantic 2.4.2
-                pip_install(
-                    "typing-extensions", dep_versions["typing-extensions"], notif=notif
-                )
+                pip_install("cupy-wheel", dep_versions["cupy"], notif=notif)
+                # PyTorch's Windows package on pypi.org is CPU build version,
+                # reintall the CUDA build version
+                if iswindows or prefs["cuda"] == "cu118":
+                    pip_install(
+                        "torch",
+                        dep_versions["torch"],
+                        extra_index=f"https://download.pytorch.org/whl/{prefs['cuda']}",
+                        notif=notif,
+                    )
+                    # an old version of typing-extensions(4.4.0) is installed
+                    # from pytorch's index which is incompatible with pydantic 2.4.2
+                    pip_install(
+                        "typing-extensions",
+                        dep_versions["typing-extensions"],
+                        notif=notif,
+                    )
 
         if ismacos and platform.machine() == "arm64":
             pip_install(

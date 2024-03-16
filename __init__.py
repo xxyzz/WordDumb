@@ -31,7 +31,7 @@ class WordDumbDumb(InterfaceActionBase):
 
         from calibre.utils.logging import Log
 
-        from .metadata import check_word_wise_language, cli_check_metadata
+        from .metadata import cli_check_metadata
         from .parse_job import ParseJobData, do_job
 
         parser = argparse.ArgumentParser(prog="calibre-debug -r WordDumb --")
@@ -51,21 +51,23 @@ class WordDumbDumb(InterfaceActionBase):
             create_x = True
 
         for file_path in args.book_path:
-            data = cli_check_metadata(file_path, log)
-            if data is None:
+            md_result = cli_check_metadata(file_path, log)
+            if md_result is None:
                 continue
-            book_fmt, mi, lang = data
-            if create_w:
-                create_w, gloss_lang = check_word_wise_language(
-                    lang, book_fmt != "EPUB"
+            if create_w and not md_result.support_ww_list[0]:
+                create_w = False
+                log.prints(
+                    Log.WARNING,
+                    "Book language is not supported for selected "
+                    "Word Wise gloss language",
                 )
-                if create_w is False:
-                    log.prints(
-                        Log.WARNING,
-                        f"Book language {lang} is not supported for Word Wise gloss"
-                        f"language {gloss_lang}",
-                    )
-            if create_w is False and create_x is False:
+            if create_x and not md_result.support_x_ray:
+                create_x = False
+                log.prints(
+                    Log.WARNING,
+                    "X-Ray doesn't support the book language",
+                )
+            if not create_w and not create_x:
                 continue
 
             notif = []
@@ -75,13 +77,14 @@ class WordDumbDumb(InterfaceActionBase):
                 notif.append("X-Ray")
             notif_str = " and ".join(notif)
             log.prints(
-                Log.INFO, f"Creating {notif_str} file for book {mi.get('title')}"
+                Log.INFO,
+                f"Creating {notif_str} file for book {md_result.mi.get('title')}",
             )
             job_data = ParseJobData(
-                book_fmt=book_fmt,
+                book_fmt=md_result.book_fmts[0],
                 book_path=file_path,
-                mi=mi,
-                book_lang=lang,
+                mi=md_result.mi,
+                book_lang=md_result.book_lang,
                 create_ww=create_w,
                 create_x=create_x,
             )

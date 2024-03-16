@@ -164,6 +164,8 @@ def spacy_model_name(
     lemma_lang: str, languages: dict[str, dict[str, str]], prefs: Prefs
 ) -> str:
     spacy_model = languages[lemma_lang]["spacy"]
+    if spacy_model == "":
+        return ""
     if prefs["use_gpu"] and languages[lemma_lang]["has_trf"]:
         spacy_model += "trf"
     else:

@@ -1,14 +1,21 @@
 {
   "ca": {
     "639-2": "cat",
-    "gloss_source": null,
+    "gloss_source": "",
     "has_trf": true,
     "name": "Catalan",
     "spacy": "ca_core_news_"
   },
+  "cs": {
+    "639-2": "ces",
+    "gloss_source": "",
+    "has_trf": false,
+    "name": "Czech",
+    "spacy": ""
+  },
   "da": {
     "639-2": "dan",
-    "gloss_source": null,
+    "gloss_source": "",
     "has_trf": true,
     "name": "Danish",
     "spacy": "da_core_news_"
@@ -41,6 +48,7 @@
     "has_trf": true,
     "lemma_languages": [
       "ca",
+      "cs",
       "da",
       "de",
       "el",
@@ -48,6 +56,7 @@
       "es",
       "fi",
       "fr",
+      "he",
       "hr",
       "it",
       "ja",
@@ -95,6 +104,7 @@
     "has_trf": false,
     "lemma_languages": [
       "ca",
+      "cs",
       "da",
       "de",
       "el",
@@ -102,6 +112,7 @@
       "es",
       "fi",
       "fr",
+      "he",
       "hr",
       "it",
       "ja",
@@ -121,6 +132,13 @@
     ],
     "name": "French",
     "spacy": "fr_core_news_"
+  },
+  "he": {
+    "639-2": "heb",
+    "gloss_source": "",
+    "has_trf": false,
+    "name": "Hebrew",
+    "spacy": ""
   },
   "hr": {
     "639-2": "hrv",
@@ -155,7 +173,7 @@
   },
   "ko": {
     "639-2": "kor",
-    "gloss_source": null,
+    "gloss_source": "",
     "has_trf": false,
     "name": "Korean",
     "spacy": "ko_core_news_"
@@ -172,7 +190,7 @@
   },
   "mk": {
     "639-2": "mkd",
-    "gloss_source": null,
+    "gloss_source": "",
     "has_trf": false,
     "name": "Macedonian",
     "spacy": "mk_core_news_"
@@ -219,7 +237,7 @@
   },
   "ro": {
     "639-2": "ron",
-    "gloss_source": null,
+    "gloss_source": "",
     "has_trf": false,
     "name": "Romanian",
     "spacy": "ro_core_news_"
@@ -236,7 +254,7 @@
   },
   "sl": {
     "639-2": "slv",
-    "gloss_source": null,
+    "gloss_source": "",
     "has_trf": true,
     "name": "Slovene",
     "spacy": "sl_core_news_"
@@ -253,7 +271,7 @@
   },
   "uk": {
     "639-2": "ukr",
-    "gloss_source": null,
+    "gloss_source": "",
     "has_trf": true,
     "name": "Ukrainian",
     "spacy": "uk_core_news_"
@@ -264,6 +282,7 @@
     "has_trf": true,
     "lemma_languages": [
       "ca",
+      "cs",
       "da",
       "de",
       "el",
@@ -271,6 +290,7 @@
       "es",
       "fi",
       "fr",
+      "he",
       "hr",
       "it",
       "ja",

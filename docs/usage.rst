@@ -6,6 +6,8 @@ Set preferences
 
 - Click "Preferred format order" button then drag your preferred format to the top.
 
+- The "Use POS type to find Word Wise definition" option should be disabled for languages that spaCy's lemmatizer doesn't work well, like Korean and stressed Russian.
+
 - Enable "Fetch X-Ray people descriptions from Wikipedia or Fandom" option for nonfiction books and novels that have character pages on Wikipedia or Fandom. A quote from the book will be used if it's disabled or the page is not found.
 
 - Enable "Run spaCy with GPU" option if your machine has `CUDA <https://developer.nvidia.com/cuda-downloads>`_. GPU will be used when creating X-Ray file if spaCy has transformer model for the book language with ner component.

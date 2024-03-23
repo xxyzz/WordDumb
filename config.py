@@ -505,7 +505,7 @@ class ChooseLemmaLangDialog(QDialog):
             self.kindle_lang_changed()
             self.lemma_lang_box.currentIndexChanged.connect(self.kindle_lang_changed)
             self.gloss_lang_box.currentIndexChanged.connect(self.kindle_lang_changed)
-            wiktionary_gloss_label = QLabel(_("Use Wiktionary definition"))
+            wiktionary_gloss_label = QLabel(_("Use Wiktionary definition 🛈"))
             wiktionary_gloss_label.setToolTip(
                 _(
                     "Change Word Wise language to Chinese on your Kindle device to "

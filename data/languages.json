@@ -135,8 +135,11 @@
   },
   "he": {
     "639-2": "heb",
-    "gloss_source": "",
+    "gloss_source": "kaikki",
     "has_trf": false,
+    "lemma_languages": [
+      "en"
+    ],
     "name": "Hebrew",
     "spacy": ""
   },

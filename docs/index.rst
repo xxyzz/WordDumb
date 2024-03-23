@@ -47,7 +47,7 @@ Bokmål        ✅    Bokmål, English, Français, 中文
 Català        ✅    English, Français, 中文
 Dansk         ✅    English, Français, 中文
 Deutsch       ✅    Deutsch, English, Français, 中文
-English       ✅    English, Español, Français, Italiano, Ελληνικά, 中文
+English       ✅    English, Español, Français, Italiano, Ελληνικά, עִבְרִית‎, 中文
 Español       ✅    Español, English, Français, 中文
 Français      ✅    English, Français, Ελληνικά, 中文
 Hrvatski      ✅    English, Français, Hrvatski, 中文

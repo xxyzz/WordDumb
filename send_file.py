@@ -113,17 +113,18 @@ class SendFile:
                 None,
                 device_manager if use_mtp else None,
             )
-        sidecar_folder = device_book_path.parent.joinpath(
-            f"{device_book_path.stem}.sdr"
+        # Use library book filename, calibre API returns lowercase name for MTP device
+        sidecar_folder = (
+            device_book_path.parent / f"{Path(self.job_data.book_path).stem}.sdr"
         )
         if use_mtp:
             for file_path in (self.ll_path, self.x_ray_path):
-                dest_path = sidecar_folder.joinpath(file_path.name)
+                dest_path = sidecar_folder / file_path.name
                 upload_file_to_mtp(device_manager, file_path, dest_path)
         else:
-            sidecar_folder = device_mount_point.joinpath(sidecar_folder)
+            sidecar_folder = device_mount_point / sidecar_folder
             for file_path in (self.ll_path, self.x_ray_path):
-                dest_path = sidecar_folder.joinpath(file_path.name)
+                dest_path = sidecar_folder / file_path.name
                 move_file_to_kindle_usbms(file_path, dest_path)
 
     def push_files_to_android(self, adb_path: str) -> None:

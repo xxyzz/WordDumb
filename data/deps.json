@@ -1,11 +1,11 @@
 {
   "cupy": "12.3.0",
-  "lxml": "5.1.0",
-  "rapidfuzz": "3.6.2",
+  "lxml": "5.1.1",
+  "rapidfuzz": "3.7.0",
   "spacy": "3.7.4",
   "spacy_cpu_model": "3.7.0",
   "spacy_trf_model": "3.7.2",
   "thinc-apple-ops": "0.1.4",
-  "torch": "2.2.1",
+  "torch": "2.2.2",
   "typing-extensions": "4.10.0"
 }

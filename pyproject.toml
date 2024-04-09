@@ -55,4 +55,4 @@ ignore_missing_imports = true
 [tool.typos]
 type.json.check-file = false
 type.po.check-file = false
-default.extend-words = {"BA" = "BA"}
+default.extend-words = {"BA" = "BA", "opf" = "opf", "EVN" = "EVN"}

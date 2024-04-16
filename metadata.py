@@ -24,10 +24,10 @@ class MetaDataResult:
 def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult | None:
     from .config import prefs
     from .error_dialogs import unsupported_format_dialog, unsupported_language_dialog
-    from .utils import get_plugin_path, load_plugin_json
+    from .utils import get_plugin_path, load_languages_data
 
     db = gui.current_db.new_api
-    lang_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
+    lang_dict = load_languages_data(get_plugin_path())
     supported_languages = {v["639-2"]: k for k, v in lang_dict.items()}
     mi = db.get_metadata(book_id, get_cover=True)
     # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes

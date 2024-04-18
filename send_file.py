@@ -26,6 +26,7 @@ class SendFile:
     ) -> None:
         self.gui = gui
         self.device_manager = gui.device_manager
+        self.is_mtp = is_mtp_device(self.device_manager.device)
         self.notif = notif
         self.job_data = data
         self.ll_path = get_ll_path(data.asin, data.book_path)
@@ -59,6 +60,10 @@ class SendFile:
                 self.gui.status_bar.show_message(self.notif)
                 Path(self.job_data.book_path).unlink()
                 return
+            if self.is_mtp:
+                # https://github.com/kovidgoyal/calibre/blob/3eb69966563caf877d0e1f2819ddbf6599c35622/src/calibre/devices/mtp/driver.py#L462
+                # https://github.com/kovidgoyal/calibre/blob/3eb69966563caf877d0e1f2819ddbf6599c35622/src/calibre/devices/mtp/filesystem_cache.py#L37
+                mtp_device_filename = job.result[0][0].name
 
         set_en_lang = False
         if (
@@ -71,7 +76,11 @@ class SendFile:
         # https://github.com/kovidgoyal/calibre/blob/320fb96bbd08b99afbf3de560f7950367d21c093/src/calibre/gui2/device.py#L1772
         has_book, *_, paths = self.gui.book_on_device(self.job_data.book_id)
         if has_book and job is not None and self.job_data.book_fmt != "EPUB":
-            self.move_files_to_kindle(self.gui.device_manager, Path(paths.pop()))
+            device_book_path = Path(paths.pop())
+            if self.is_mtp:
+                # `book_on_device` returns lower case path for MTP devices
+                device_book_path = device_book_path.with_name(mtp_device_filename)
+            self.move_files_to_kindle(self.gui.device_manager, device_book_path)
             library_book_path = Path(self.job_data.book_path)
             if library_book_path.stem.endswith("_en"):
                 library_book_path.unlink()
@@ -99,25 +108,21 @@ class SendFile:
             )
 
     def move_files_to_kindle(self, device_manager: Any, device_book_path: Path) -> None:
-        use_mtp = is_mtp_device(device_manager.device)
-        if not use_mtp:
+        if not self.is_mtp:
             # _main_prefix: Kindle mount point, /Volumes/Kindle
             device_mount_point = Path(device_manager.device._main_prefix)
         if self.ll_path.exists():
             device_klld_path = Path("system/kll/kll.en.zh.klld")
-            if not use_mtp:
+            if not self.is_mtp:
                 device_klld_path = device_mount_point.joinpath(device_klld_path)
             copy_klld_to_device(
                 self.job_data.book_lang,
                 device_klld_path,
                 None,
-                device_manager if use_mtp else None,
+                device_manager if self.is_mtp else None,
             )
-        # Use library book filename, calibre API returns lowercase name for MTP device
-        sidecar_folder = (
-            device_book_path.parent / f"{Path(self.job_data.book_path).stem}.sdr"
-        )
-        if use_mtp:
+        sidecar_folder = device_book_path.with_suffix(".sdr")
+        if self.is_mtp:
             for file_path in (self.ll_path, self.x_ray_path):
                 dest_path = sidecar_folder / file_path.name
                 upload_file_to_mtp(device_manager, file_path, dest_path)

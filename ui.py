@@ -73,9 +73,11 @@ class WordDumb(InterfaceAction):
     def config(self):
         self.interface_action_base_plugin.do_user_config(self.gui)
 
-    def open_custom_x_ray_dialog(self):
-        for _, _, book_paths, mi, _ in get_metadata_of_selected_books(self.gui, True):
-            custom_x_dlg = CustomXRayDialog(book_paths[0], mi.get("title"), self.gui)
+    def open_custom_x_ray_dialog(self) -> None:
+        for md_result in get_metadata_of_selected_books(self.gui, True):
+            custom_x_dlg = CustomXRayDialog(
+                md_result.book_paths[0], md_result.mi.get("title"), self.gui
+            )
             if custom_x_dlg.exec():
                 custom_x_dlg.x_ray_model.save_data()
 

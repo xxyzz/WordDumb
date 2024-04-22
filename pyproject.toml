@@ -14,7 +14,7 @@ select = [
 exclude = ["tests", "__main__", "docs"]
 explicit_package_bases = true
 check_untyped_defs = true
-# strict = True
+# strict = true
 
 [[tool.mypy.overrides]]
 module = "calibre.*"

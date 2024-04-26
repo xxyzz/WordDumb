@@ -70,7 +70,7 @@ You can also run the plugin in terminal:
 Import Word Wise
 ----------------
 
-Import data Anki Deck Package, CSV file or Kindle Vocabulary Builder. Words inside the imported file will be enabled.
+Update difficulty levels from Anki Deck Package, CSV file or Kindle Vocabulary Builder. Words inside the imported file will be enabled.
 
 - Select the "Include scheduling information" option when exporting the .apkg file from Anki so the card schedule state can be used as Word Wise difficulty.
 
@@ -81,7 +81,7 @@ Import data Anki Deck Package, CSV file or Kindle Vocabulary Builder. Words insi
 Setting correct KOReader settings
 ---------------------------------
 
-By default KOReader shows footnotes on the page, which takes up too much space when WordWise is enabled. 
+By default KOReader shows footnotes on the page, which takes up too much space when WordWise is enabled.
 
 To change this, open the menu (click somewhere at the top area), then in the upper menu choose the "reader with lines" symbol (second from left).
 Here, select "Style tweaks" -> "In-page footnotes" and remove all checkmarks. (By default, In-Page EPUB footnotes (smaller) is checked.)

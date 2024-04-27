@@ -355,6 +355,7 @@ class EPUB:
                     last_p_end = occurrence.paragraph_end
                     last_p_text = paragraph_text
 
+            new_xhtml_str += escape(last_p_text[last_w_end:])
             new_xhtml_str += xhtml_str[last_p_end:]
 
             # add epub namespace and CSS

@@ -497,8 +497,8 @@ class ChooseLemmaLangDialog(QDialog):
             if gloss_lang == selected_gloss_code:
                 self.gloss_lang_box.setCurrentText(gloss_lang_name)
         self.gloss_lang_changed(language_dict)
-        form_layout.addRow(_("Gloss language"), self.gloss_lang_box)
-        form_layout.addRow(_("Lemma language"), self.lemma_lang_box)
+        form_layout.addRow(_("Definition language"), self.gloss_lang_box)
+        form_layout.addRow(_("Book language"), self.lemma_lang_box)
 
         if is_kindle:
             self.use_wiktionary_box = QCheckBox("")

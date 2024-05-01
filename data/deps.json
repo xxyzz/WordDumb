@@ -6,6 +6,6 @@
   "spacy_cpu_model": "3.7.0",
   "spacy_trf_model": "3.7.2",
   "thinc-apple-ops": "0.1.5",
-  "torch": "2.3.0",
+  "torch": "2.2.2",
   "typing-extensions": "4.11.0"
 }

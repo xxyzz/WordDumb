@@ -92,7 +92,7 @@ def which_python() -> tuple[str, str]:
     if len(prefs["python_path"]) > 0:
         py = prefs["python_path"]
     elif iswindows:
-        py = "py" if shutil.which("py") else "python"
+        py = "py"
     elif ismacos:
         py = mac_bin_path("python3")
 

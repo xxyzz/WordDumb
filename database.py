@@ -64,7 +64,12 @@ def get_x_ray_path(asin: str, book_path: str) -> Path:
 
 
 def create_x_ray_db(
-    asin: str, book_path: str, lang: str, plugin_path: Path, prefs: dict[str, str]
+    asin: str,
+    book_path: str,
+    lang: str,
+    plugin_path: Path,
+    prefs: dict[str, str],
+    wiki_name: str,
 ) -> tuple[sqlite3.Connection, Path]:
     db_path = get_x_ray_path(asin, book_path)
     x_ray_conn = sqlite3.connect(":memory:")
@@ -149,8 +154,7 @@ def create_x_ray_db(
             else f"https://{lang}.wikipedia.org/wiki/%s",
         ]
     )
-
-    str_list.append([22, "en", f"{prefs['fandom']}/wiki/%s" if prefs["fandom"] else ""])
+    str_list.append([22, "en", f"{prefs['mediawiki_api'].split('/', 1)[0]}/wiki/%s"])
     x_ray_conn.execute(
         """
         INSERT INTO source (id, label, url, license_label, license_url)
@@ -158,6 +162,8 @@ def create_x_ray_db(
         """
     )
     x_ray_conn.executemany("INSERT INTO string VALUES(?, ?, ?)", str_list)
+    if wiki_name != "Wikipedia":
+        x_ray_conn.execute("UPDATE string SET text = ? WHERE id = 4", (wiki_name,))
     return x_ray_conn, db_path
 
 

@@ -3,12 +3,6 @@ import re
 from pathlib import Path
 from typing import TypedDict
 
-try:
-    from .utils import Prefs
-except ImportError:
-    from utils import Prefs
-
-
 FUZZ_THRESHOLD = 85.7
 
 # https://github.com/explosion/spaCy/blob/master/spacy/glossary.py#L325
@@ -57,18 +51,6 @@ def is_full_name(
         and partial_label in PERSON_LABELS
         and full_label in PERSON_LABELS
     )
-
-
-def x_ray_source(source_id: int, prefs: Prefs, lang: str) -> tuple[str, str | None]:
-    if source_id == 1:
-        source_link = (
-            f"https://{lang}.wikipedia.org/wiki/"
-            if lang != "zh"
-            else f"https://zh.wikipedia.org/zh-{prefs['zh_wiki_variant']}/"
-        )
-        return "Wikipedia", source_link
-    else:
-        return "Fandom", prefs["fandom"] + "/wiki" if prefs["fandom"] else None
 
 
 class XRayEntity(TypedDict):

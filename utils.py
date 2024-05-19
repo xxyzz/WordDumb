@@ -21,7 +21,7 @@ class Prefs(TypedDict):
     search_people: bool
     model_size: str
     zh_wiki_variant: str
-    fandom: str
+    mediawiki_api: str
     add_locator_map: str
     preferred_formats: list[str]
     use_all_formats: bool

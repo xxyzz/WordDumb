@@ -139,7 +139,7 @@ def check_network_error(error: str, parent: Any) -> None:
         error_dialog(
             "It was a pleasure to burn",
             _(
-                "Is GitHub/Wikipedia/Fandom blocked by your ISP? You might need to "
+                "Is GitHub or Wikipedia blocked by your ISP? You might need to "
                 "bypass Internet censorship. Please read <a href='{}'>calibre FAQ</a>."
             ).format(CALIBRE_PROXY_FAQ),
             error,

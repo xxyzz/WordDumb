@@ -27,7 +27,7 @@ Features
 
 - Add inception date of countries and cities to X-Ray descriptions.
 
-- Fetch X-Ray descriptions from Wikipedia and Fandom.
+- Fetch X-Ray descriptions from Wikipedia or other MediaWiki server.
 
 - Customize Word Wise difficulty and definitions.
 

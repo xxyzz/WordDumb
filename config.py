@@ -8,8 +8,8 @@ from calibre.constants import isfrozen, ismacos
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig
-from PyQt6.QtCore import QObject, QRegularExpression, Qt
-from PyQt6.QtGui import QIcon, QRegularExpressionValidator
+from PyQt6.QtCore import QObject, Qt
+from PyQt6.QtGui import QIcon
 from PyQt6.QtSql import QSqlDatabase
 from PyQt6.QtWidgets import (
     QAbstractItemView,
@@ -49,7 +49,7 @@ prefs.defaults["use_pos"] = True
 prefs.defaults["search_people"] = False
 prefs.defaults["model_size"] = "md"
 prefs.defaults["zh_wiki_variant"] = "cn"
-prefs.defaults["fandom"] = ""
+prefs.defaults["mediawiki_api"] = ""
 prefs.defaults["add_locator_map"] = False
 prefs.defaults["preferred_formats"] = ["KFX", "AZW3", "AZW", "MOBI", "EPUB"]
 prefs.defaults["use_all_formats"] = False
@@ -99,12 +99,15 @@ class ConfigWidget(QWidget):
         vl.addWidget(self.use_pos_box)
 
         self.search_people_box = QCheckBox(
-            _("Fetch X-Ray people descriptions from Wikipedia/Fandom")
+            _(
+                "Fetch X-Ray people descriptions from Wikipedia or other "
+                "MediaWiki server"
+            )
         )
         self.search_people_box.setToolTip(
             _(
                 "Enable this option for nonfiction books and novels that have character"
-                " pages on Wikipedia/Fandom"
+                " pages on Wikipedia or other MediaWiki server"
             )
         )
         self.search_people_box.setChecked(prefs["search_people"])
@@ -169,7 +172,7 @@ class ConfigWidget(QWidget):
         minimal_x_ray_label.setToolTip(
             _(
                 "X-Ray entities that appear less then this number and don't have "
-                "description from Wikipedia/Fandom will be removed"
+                "description from Wikipedia or other MediaWiki server will be removed"
             )
         )
         form_layout.addRow(minimal_x_ray_label, self.minimal_x_ray_count)
@@ -188,13 +191,10 @@ class ConfigWidget(QWidget):
         self.zh_wiki_box.setCurrentText(zh_variants[prefs["zh_wiki_variant"]])
         form_layout.addRow(_("Chinese Wikipedia variant"), self.zh_wiki_box)
 
-        self.fandom_url = QLineEdit()
-        self.fandom_url.setText(prefs["fandom"])
-        self.fandom_url.setPlaceholderText("https://*.fandom.com[/language]")
-        fandom_re = QRegularExpression(r"https:\/\/[\w-]+\.fandom\.com(\/[\w-]+)?")
-        fandom_validator = QRegularExpressionValidator(fandom_re)
-        self.fandom_url.setValidator(fandom_validator)
-        form_layout.addRow(_("Fandom URL"), self.fandom_url)
+        self.mediawiki_api = QLineEdit()
+        self.mediawiki_api.setText(prefs["mediawiki_api"])
+        self.mediawiki_api.setPlaceholderText("https://wiki.domain/w/api.php")
+        form_layout.addRow(_("MediaWiki Action API"), self.mediawiki_api)
 
         vl.addLayout(form_layout)
 
@@ -235,13 +235,15 @@ class ConfigWidget(QWidget):
         prefs["search_people"] = self.search_people_box.isChecked()
         prefs["model_size"] = self.model_size_box.currentData()
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
-        prefs["fandom"] = self.fandom_url.text().removesuffix("/")
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
         prefs["remove_link_styles"] = self.remove_link_styles.isChecked()
         if not ismacos:
             prefs["use_gpu"] = self.use_gpu_box.isChecked()
             prefs["cuda"] = self.cuda_version_box.currentData()
+        mediawiki_api = self.mediawiki_api.text().strip("/ ")
+        if mediawiki_api.endswith("/api.php") or mediawiki_api == "":
+            prefs["mediawiki_api"] = mediawiki_api
 
     def open_format_order_dialog(self):
         format_order_dialog = FormatOrderDialog(self)

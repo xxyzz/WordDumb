@@ -25,7 +25,7 @@ try:
     from .dump_lemmas import save_spacy_docs, spacy_doc_path
     from .epub import EPUB, spacy_to_wiktionary_pos
     from .interval import Interval, IntervalTree
-    from .mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
+    from .mediawiki import MediaWiki, Wikidata, Wikimedia_Commons
     from .metadata import KFXJson
     from .utils import (
         CJK_LANGS,
@@ -58,7 +58,7 @@ except ImportError:
     from dump_lemmas import save_spacy_docs, spacy_doc_path
     from epub import EPUB, spacy_to_wiktionary_pos
     from interval import Interval, IntervalTree
-    from mediawiki import Fandom, Wikidata, Wikimedia_Commons, Wikipedia
+    from mediawiki import MediaWiki, Wikidata, Wikimedia_Commons
     from metadata import KFXJson
     from utils import (
         CJK_LANGS,
@@ -163,7 +163,7 @@ def do_job(
         return data
 
     if isfrozen and (data.book_fmt == "EPUB" or data.create_x):
-        # parse Fandom page and Wikipedia section requires lxml
+        # parse MediaWiki page and Wikipedia section requires lxml
         install_deps("lxml", notifications)
     install_deps(data.spacy_model, notifications)
 
@@ -251,25 +251,24 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
         )
 
     if data.create_x:
-        mediawiki = (
-            Fandom(data.useragent, data.plugin_path, prefs["fandom"])
-            if prefs["fandom"]
-            else Wikipedia(
-                data.book_lang,
-                data.useragent,
-                data.plugin_path,
-                prefs["zh_wiki_variant"],
-            )
+        mediawiki = MediaWiki(
+            prefs["mediawiki_api"],
+            data.book_lang,
+            data.useragent,
+            data.plugin_path,
+            prefs["zh_wiki_variant"],
         )
         wikidata = (
-            None if prefs["fandom"] else Wikidata(data.plugin_path, data.useragent)
+            None
+            if len(prefs["mediawiki_api"]) > 0
+            else Wikidata(data.plugin_path, data.useragent)
         )
         custom_x_ray = load_custom_x_desc(data.book_path)
 
     if is_epub:
         if data.create_x:
             wiki_commons = None
-            if not prefs["fandom"] and prefs["add_locator_map"]:
+            if prefs["mediawiki_api"] == "" and prefs["add_locator_map"]:
                 wiki_commons = Wikimedia_Commons(data.plugin_path, data.useragent)
             epub = EPUB(
                 data.book_path,
@@ -338,6 +337,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
             data.book_lang,
             data.plugin_path,
             prefs,
+            mediawiki.sitename,
         )
         x_ray = X_Ray(x_ray_conn, mediawiki, wikidata, custom_x_ray)
 

@@ -1,5 +1,6 @@
 import sqlite3
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
@@ -18,23 +19,40 @@ MEDIAWIKI_API_EXLIMIT = 20
 GPE_LABELS = frozenset(["GPE", "GPE_LOC", "GPE_ORG", "placeName", "LC"])
 
 
-class WikipediaCache(TypedDict):
+@dataclass
+class MediaWikiCache:
     intro: str
-    item_id: str | None
+    wikidata_item_id: str | None
 
 
-class Wikipedia:
+class MediaWiki:
     def __init__(
-        self, lang: str, useragent: str, plugin_path: Path, zh_wiki_variant: str
+        self,
+        api_url: str,
+        lang: str,
+        useragent: str,
+        plugin_path: Path,
+        lang_variant: str,
     ) -> None:
         self.lang = lang
-        self.source_id = 1
-        self.wiki_api = f"https://{lang}.wikipedia.org/w/api.php"
-        self.db_conn = self.init_db(plugin_path, lang)
-        self.session = self.init_requests_session(useragent, lang, zh_wiki_variant)
+        self.is_wikipedia = api_url == ""
+        self.api_url = (
+            f"https://{lang}.wikipedia.org/w/api.php" if self.is_wikipedia else api_url
+        )
+        self.db_conn = self.init_db(plugin_path)
+        self.session = self.init_requests_session(useragent, lang_variant)
+        self.sitename = "Wikipedia" if self.is_wikipedia else ""
+        self.has_extracts_api = True if self.is_wikipedia else False
+        if not self.is_wikipedia:
+            self.get_api_info()
 
-    def init_db(self, plugin_path: Path, lang: str) -> sqlite3.Connection:
-        db_path = plugin_path.parent.joinpath(f"worddumb-wikimedia/{lang}.db")
+    def init_db(self, plugin_path: Path) -> sqlite3.Connection:
+        domain = (
+            self.api_url.removeprefix("https://")
+            .removeprefix("http://")
+            .split("/", 1)[0]
+        )
+        db_path = plugin_path.parent.joinpath(f"worddumb-mediawiki/{domain}.db")
         if not db_path.parent.exists():
             db_path.parent.mkdir()
 
@@ -50,14 +68,12 @@ class Wikipedia:
         )
         return db_conn
 
-    def init_requests_session(self, useragent: str, lang: str, zh_wiki_variant: str):
+    def init_requests_session(self, useragent: str, lang_variant: str):
         import requests
 
         session = requests.Session()
         session.headers.update({"user-agent": useragent})
-        session.params = {"format": "json", "formatversion": 2}
-        if lang == "zh":
-            session.params["variant"] = f"zh-{zh_wiki_variant}"
+        session.params = {"format": "json", "formatversion": 2, "variant": lang_variant}
         return session
 
     def close(self):
@@ -65,6 +81,26 @@ class Wikipedia:
         self.db_conn.execute("CREATE INDEX IF NOT EXISTS idx_titles ON titles(desc_id)")
         self.db_conn.commit()
         self.db_conn.close()
+
+    def get_api_info(self) -> None:
+        # https://www.mediawiki.org/wiki/API:Siteinfo
+        result = self.session.get(
+            self.api_url,
+            params={"action": "query", "meta": "siteinfo", "siprop": "general"},
+        )
+        if result.ok:
+            data = result.json()
+            self.sitename = data.get("query", {}).get("general", {}).get("sitename", "")
+
+        # https://www.mediawiki.org/wiki/API:Parameter_information
+        result = self.session.get(
+            self.api_url, params={"action": "paraminfo", "modules": "query+extracts"}
+        )
+        if result.ok:
+            data = result.json()
+            for module in data.get("paraminfo", {}).get("modules", []):
+                if module.get("name", "") == "extracts":
+                    self.has_extracts_api = True
 
     def add_cache(self, title: str, intro: str, wikidata_item: str | None) -> int:
         desc_id = 0
@@ -82,7 +118,7 @@ class Wikipedia:
             return True
         return False
 
-    def get_cache(self, title: str) -> WikipediaCache | None:
+    def get_cache(self, title: str) -> MediaWikiCache | None:
         for desc, wikidata_item in self.db_conn.execute(
             """
             SELECT description, wikidata_item
@@ -91,7 +127,7 @@ class Wikipedia:
             """,
             (title,),
         ):
-            return {"intro": desc, "item_id": wikidata_item}
+            return MediaWikiCache(intro=desc, wikidata_item_id=wikidata_item)
         return None
 
     def add_title(self, title: str, desc_id: int | None) -> None:
@@ -112,9 +148,10 @@ class Wikipedia:
             )
         ]
 
-    def query(self, titles: set[str]) -> None:
+    def query_extracts_api(self, titles: set[str]) -> None:
+        # https://www.mediawiki.org/wiki/Extension:TextExtracts#API
         result = self.session.get(
-            self.wiki_api,
+            self.api_url,
             params={
                 "action": "query",
                 "prop": "extracts|pageprops",
@@ -148,6 +185,10 @@ class Wikipedia:
             if "pageprops" in v and "disambiguation" in v["pageprops"]:
                 continue
             wikibase_item = v.get("pageprops", {}).get("wikibase_item")
+            if summary == "":  # some wikis return empty string
+                self.query_parse_api(title)
+                if title in titles:
+                    titles.remove(title)
             desc_id = self.add_cache(title, summary, wikibase_item)
             if title in titles:
                 titles.remove(title)
@@ -174,7 +215,7 @@ class Wikipedia:
 
         for page, section_to_titles in redirect_to_sections.items():
             r = self.session.get(
-                self.wiki_api,
+                self.api_url,
                 params={
                     "action": "parse",
                     "prop": "sections",
@@ -187,7 +228,7 @@ class Wikipedia:
             for section in result.get("parse", {}).get("sections", []):
                 if section["line"] in section_to_titles:
                     r = self.session.get(
-                        self.wiki_api,
+                        self.api_url,
                         params={
                             "action": "parse",
                             "prop": "text",
@@ -219,108 +260,27 @@ class Wikipedia:
                         if converted_title in titles:
                             titles.remove(converted_title)
 
-
-class Fandom:
-    def __init__(self, useragent: str, plugin_path: Path, fandom_url: str) -> None:
-        self.source_id = 2
-        self.wiki_api = f"{fandom_url}/api.php"
-        self.db_conn = self.init_db(plugin_path, fandom_url)
-        self.session = self.init_requests_session(useragent)
-
-    def init_db(self, plugin_path: Path, fandom_url: str) -> sqlite3.Connection:
-        # Remove "https://" from Fandom URL
-        db_path = plugin_path.parent.joinpath(
-            f"worddumb-fandom/{fandom_url[8:].replace('/', '')}.db"
-        )
-        if not db_path.parent.exists():
-            db_path.parent.mkdir()
-        db_conn = sqlite3.connect(db_path)
-        db_conn.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS titles
-            (title TEXT PRIMARY KEY COLLATE NOCASE, desc_id INTEGER);
-
-            CREATE TABLE IF NOT EXISTS descriptions
-            (id INTEGER PRIMARY KEY, description TEXT);
-            """
-        )
-        return db_conn
-
-    def init_requests_session(self, useragent: str):
-        import requests
-
-        session = requests.Session()
-        session.headers.update({"user-agent": useragent})
-        # Fandom doesn't have TextExtract extension
-        # https://www.mediawiki.org/wiki/API:Parse
-        session.params = {
-            "format": "json",
-            "action": "parse",
-            "prop": "text|properties|links",
-            "section": 0,
-            "redirects": 1,
-            "disablelimitreport": 1,
-            "formatversion": 2,
-        }
-        return session
-
-    def close(self):
-        self.session.close()
-        self.db_conn.execute("CREATE INDEX IF NOT EXISTS idx_titles ON titles(desc_id)")
-        self.db_conn.commit()
-        self.db_conn.close()
-
-    def add_cache(self, title: str, intro: str) -> int:
-        desc_id = 0
-        for (new_desc_id,) in self.db_conn.execute(
-            "INSERT INTO descriptions (description) VALUES(?) RETURNING id",
-            (intro,),
-        ):
-            desc_id = new_desc_id
-        self.add_title(title, desc_id)
-        return desc_id
-
-    def has_cache(self, title: str) -> bool:
-        for _ in self.db_conn.execute("SELECT * FROM titles WHERE title = ?", (title,)):
-            return True
-        return False
-
-    def get_cache(self, title: str) -> str | None:
-        for (desc,) in self.db_conn.execute(
-            """
-            SELECT description FROM titles JOIN descriptions
-            ON titles.desc_id = descriptions.id WHERE title = ?
-            """,
-            (title,),
-        ):
-            return desc
-        return None
-
-    def add_title(self, title: str, desc_id: int | None) -> None:
-        self.db_conn.execute(
-            "INSERT OR IGNORE INTO titles VALUES(?, ?)", (title, desc_id)
-        )
-
-    def redirected_titles(self, title: str) -> list[str]:
-        return [
-            other_title
-            for (other_title,) in self.db_conn.execute(
-                """
-                SELECT title FROM titles
-                WHERE title != ? AND
-                desc_id = (SELECT desc_id FROM titles WHERE title = ?)
-                """,
-                (title, title),
-            )
-        ]
-
-    def query(self, page: str, from_disambiguation_title: str | None = None) -> None:
+    def query_parse_api(
+        self, page: str, from_disambiguation_title: str | None = None
+    ) -> None:
         from lxml import etree
         from rapidfuzz.fuzz import token_set_ratio
         from rapidfuzz.process import extractOne
         from rapidfuzz.utils import default_process
 
-        result = self.session.get(self.wiki_api, params={"page": page})
+        # some wikis don't have TextExtract extension
+        # https://www.mediawiki.org/wiki/API:Parse
+        result = self.session.get(
+            self.api_url,
+            params={
+                "action": "parse",
+                "prop": "text|properties|links",
+                "section": 0,
+                "redirects": 1,
+                "disablelimitreport": 1,
+                "page": page,
+            },
+        )
         if not result.ok:
             return
         data = result.json()
@@ -345,7 +305,7 @@ class Fandom:
                 )
                 if r is not None:
                     chosen_title = r[0]
-                    self.query(chosen_title, page)
+                    self.query_parse_api(chosen_title, page)
                 else:
                     self.add_title(page, None)
                 return
@@ -359,13 +319,29 @@ class Fandom:
             ):
                 e.getparent().remove(e)
             intro = html.xpath("string()").strip()
-            desc_id = self.add_cache(page, intro)
+            desc_id = self.add_cache(page, intro, None)
             for redirect in data.get("redirects", []):
                 self.add_title(redirect["to"], desc_id)
             if from_disambiguation_title is not None:
                 self.add_title(from_disambiguation_title, desc_id)
         else:
             self.add_title(page, None)  # Not found
+
+    def query(self, entities: dict[str, XRayEntity], search_people: bool) -> None:
+        pending_entities: set[str] = set()
+        for entity, data in entities.items():
+            if self.has_extracts_api and len(pending_entities) == MEDIAWIKI_API_EXLIMIT:
+                self.query_extracts_api(pending_entities)
+                pending_entities.clear()
+            elif not self.has_cache(entity) and (
+                search_people or data["label"] not in PERSON_LABELS
+            ):
+                if self.has_extracts_api:
+                    pending_entities.add(entity)
+                else:
+                    self.query_parse_api(entity)
+        if len(pending_entities) > 0:
+            self.query_extracts_api(pending_entities)
 
 
 class Wikimedia_Commons:
@@ -409,6 +385,8 @@ class Wikidata:
         self.session.headers.update({"user-agent": useragent})
 
         cache_db_path = plugin_path.parent.joinpath("worddumb-wikimedia/wikidata.db")
+        if not cache_db_path.parent.is_dir():
+            cache_db_path.parent.mkdir()
         self.init_db(cache_db_path)
 
     def init_db(self, db_path: Path) -> None:
@@ -494,39 +472,17 @@ def inception_text(inception_str: str) -> str:
         )
 
 
-def query_mediawiki(
-    entities: dict[str, XRayEntity], mediawiki: Wikipedia | Fandom, search_people: bool
-) -> None:
-    pending_entities: set[str] = set()
-    for entity, data in entities.items():
-        if (
-            isinstance(mediawiki, Wikipedia)
-            and len(pending_entities) == MEDIAWIKI_API_EXLIMIT
-        ):
-            mediawiki.query(pending_entities)
-            pending_entities.clear()
-        elif not mediawiki.has_cache(entity) and (
-            search_people or data["label"] not in PERSON_LABELS
-        ):
-            if isinstance(mediawiki, Wikipedia):
-                pending_entities.add(entity)
-            else:
-                mediawiki.query(entity)
-    if len(pending_entities) and isinstance(mediawiki, Wikipedia):
-        mediawiki.query(pending_entities)
-
-
 def query_wikidata(
-    entities: dict[str, XRayEntity], mediawiki: Wikipedia, wikidata: Wikidata
+    entities: dict[str, XRayEntity], mediawiki: MediaWiki, wikidata: Wikidata
 ) -> None:
     pending_item_ids: list[str] = []
     for entity, data in entities.items():
         if not is_gpe_label(mediawiki.lang, data["label"]):
             continue
         mediawiki_cache = mediawiki.get_cache(entity)
-        if mediawiki_cache is None or mediawiki_cache["item_id"] is None:
+        if mediawiki_cache is None or mediawiki_cache.wikidata_item_id is None:
             continue
-        item_id = mediawiki_cache["item_id"]
+        item_id = mediawiki_cache.wikidata_item_id
         if wikidata.has_cache(item_id):
             continue
         if len(pending_item_ids) == MEDIAWIKI_API_EXLIMIT:

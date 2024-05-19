@@ -8,13 +8,13 @@ Set preferences
 
 - The "Use POS type to find Word Wise definition" option should be disabled for languages that spaCy's lemmatizer doesn't work well, like Korean and stressed Russian.
 
-- Enable "Fetch X-Ray people descriptions from Wikipedia or Fandom" option for nonfiction books and novels that have character pages on Wikipedia or Fandom. A quote from the book will be used if it's disabled or the page is not found.
+- Enable "Fetch X-Ray people descriptions from Wikipedia or other MediaWiki server" option for nonfiction books and novels that have character pages on Wikipedia or any other MediaWiki server. A quote from the book will be used if it's disabled or the page is not found.
 
 - Enable "Run spaCy with GPU" option if your machine has `CUDA <https://developer.nvidia.com/cuda-downloads>`_. GPU will be used when creating X-Ray file if spaCy has transformer model for the book language with ner component.
 
 - Larger spaCy model has higher `Named-entity recognition <https://en.wikipedia.org/wiki/Named-entity_recognition>`_ precision therefore improves X-Ray quality, more details at https://spacy.io/models/en
 
-- Enter a Fandom link to get X-Ray descriptions from Fandom, delete the link to search Wikipedia. This option also supports Fandom Wiki that has multiple languages by appending the language code to URL, for example https://lotr.fandom.com/fr.
+- Enter a `MediaWiki Action API <https://www.mediawiki.org/wiki/API:Main_page>`_ link to get X-Ray descriptions from a MediaWiki server, delete the link to search Wikipedia. Most MediaWiki Action API endpoint is ``https://wiki.domain/w/api.php`` but some servers don't have the ``/w`` part, you can check the API URL in a browser.
 
 - Enable "Add locator map to EPUB footnotes" if your e-reader supports image in footnotes.
 

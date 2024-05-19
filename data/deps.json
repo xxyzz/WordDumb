@@ -1,7 +1,7 @@
 {
   "cupy": "12.3.0",
-  "lxml": "5.2.1",
-  "rapidfuzz": "3.8.1",
+  "lxml": "5.2.2",
+  "rapidfuzz": "3.9.0",
   "spacy": "3.7.4",
   "spacy_cpu_model": "3.7.0",
   "spacy_trf_model": "3.7.2",

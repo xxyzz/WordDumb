@@ -9,16 +9,14 @@ from functools import partial
 from html import escape, unescape
 from pathlib import Path
 from typing import Iterator
-from urllib.parse import quote, unquote
+from urllib.parse import unquote
 
 try:
     from .mediawiki import (
-        Fandom,
+        MediaWiki,
         Wikidata,
         Wikimedia_Commons,
-        Wikipedia,
         inception_text,
-        query_mediawiki,
         query_wikidata,
     )
     from .utils import CJK_LANGS, Prefs
@@ -28,16 +26,13 @@ try:
         CustomX,
         XRayEntity,
         is_full_name,
-        x_ray_source,
     )
 except ImportError:
     from mediawiki import (
-        Fandom,
+        MediaWiki,
         Wikidata,
         Wikimedia_Commons,
-        Wikipedia,
         inception_text,
-        query_mediawiki,
         query_wikidata,
     )
     from utils import CJK_LANGS, Prefs
@@ -47,7 +42,6 @@ except ImportError:
         CustomX,
         XRayEntity,
         is_full_name,
-        x_ray_source,
     )
 
 
@@ -82,7 +76,7 @@ class EPUB:
     def __init__(
         self,
         book_path_str: str,
-        mediawiki: Wikipedia | Fandom | None,
+        mediawiki: MediaWiki | None,
         wiki_commons: Wikimedia_Commons | None,
         wikidata: Wikidata | None,
         custom_x_ray: CustomX,
@@ -277,9 +271,9 @@ class EPUB:
         self.lemma_lang = lemma_lang
         self.gloss_lang = gloss_lang
         self.gloss_source = gloss_source
-        if self.entities:
-            query_mediawiki(self.entities, self.mediawiki, prefs["search_people"])
-            if self.wikidata:
+        if len(self.entities) > 0 and self.mediawiki is not None:
+            self.mediawiki.query(self.entities, prefs["search_people"])
+            if self.wikidata is not None:
                 query_wikidata(self.entities, self.mediawiki, self.wikidata)
             if prefs["minimal_x_ray_count"] > 1:
                 self.remove_entities(prefs["minimal_x_ray_count"])
@@ -395,9 +389,6 @@ class EPUB:
     def create_x_ray_footnotes(self) -> None:
         if self.mediawiki is None:  # just let mypy know it's not None
             return
-        source_name, source_link = x_ray_source(
-            self.mediawiki.source_id, self.prefs, self.lemma_lang
-        )
         image_prefix = ""
         if self.xhtml_href_has_folder:
             image_prefix += "../"
@@ -417,33 +408,25 @@ class EPUB:
                     f'<aside id="{data["id"]}" epub:type="footnote">'
                     f"{create_p_tags(custom_desc)}"
                 )
-                if custom_source_id:
-                    custom_source_name, custom_source_link = x_ray_source(
-                        custom_source_id, self.prefs, self.lemma_lang
+                if custom_source_id is not None:
+                    s += "<p>Source: "
+                    s += (
+                        "Wikipedia"
+                        if custom_source_id == 1
+                        else self.mediawiki.sitename
                     )
-                    if custom_source_link:
-                        s += (
-                            f'<p>Source: <a href="{custom_source_link}{quote(entity)}'
-                            f'">{custom_source_name}</a></p>'
-                        )
-                    else:
-                        s += f"<p>Source: {custom_source_name}</p>"
+                    s += "</p>"
                 s += "</aside>"
             elif (
                 self.prefs["search_people"] or data["label"] not in PERSON_LABELS
             ) and (intro_cache := self.mediawiki.get_cache(entity)):
                 s += f'<aside id="{data["id"]}" epub:type="footnote">'
-                s += create_p_tags(
-                    intro_cache
-                    if isinstance(intro_cache, str)
-                    else intro_cache["intro"]
-                )
-                s += (
-                    f'<p>Source: <a href="{source_link}{quote(entity)}">'
-                    f"{source_name}</a></p>"
-                )
+                s += create_p_tags(intro_cache.intro)
+                s += f"<p>Source: {self.mediawiki.sitename}</p>"
                 if self.wikidata and (
-                    wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])
+                    wikidata_cache := self.wikidata.get_cache(
+                        intro_cache.wikidata_item_id
+                    )
                 ):
                     add_wikidata_source = False
                     if inception := wikidata_cache.get("inception"):
@@ -462,10 +445,7 @@ class EPUB:
                             self.image_filenames.add(filename)
                             add_wikidata_source = True
                     if add_wikidata_source:
-                        s += (
-                            '<p>Source: <a href="https://www.wikidata.org/wiki/'
-                            f'{intro_cache["item_id"]}">Wikidata</a></p>'
-                        )
+                        s += "<p>Source: Wikidata</p>"
                 s += "</aside>"
             else:
                 s += (

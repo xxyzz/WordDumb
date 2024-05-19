@@ -37,7 +37,11 @@ NER_LABEL_EXPLANATIONS = {
     "PRODUCT": _("Objects, vehicles, foods, etc. (not services)"),
 }
 
-DESC_SOURCES = {None: _("Book quote"), 1: _("Wikipedia"), 2: "Fandom"}
+DESC_SOURCES = {
+    None: _("Book quote"),
+    1: _("Wikipedia"),
+    2: _("Other MediaWiki server"),
+}
 
 
 class CustomXRayDialog(QDialog):
@@ -250,7 +254,10 @@ class AddXRayDialog(QDialog):
         self.description = QPlainTextEdit()
         form_layout.addRow(_("Description"), self.description)
         self.description.setPlaceholderText(
-            _("Leave this empty to use description from Wikipedia or Fandom")
+            _(
+                "Leave this empty to use description from Wikipedia or other "
+                "MediaWiki server"
+            )
         )
 
         self.source = QComboBox()

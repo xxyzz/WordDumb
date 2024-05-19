@@ -16,11 +16,9 @@ try:
         save_db,
     )
     from .mediawiki import (
-        Fandom,
+        MediaWiki,
         Wikidata,
-        Wikipedia,
         inception_text,
-        query_mediawiki,
         query_wikidata,
     )
     from .metadata import KFXJson
@@ -38,11 +36,9 @@ except ImportError:
         save_db,
     )
     from mediawiki import (
-        Fandom,
+        MediaWiki,
         Wikidata,
-        Wikipedia,
         inception_text,
-        query_mediawiki,
         query_wikidata,
     )
     from metadata import KFXJson
@@ -54,8 +50,8 @@ class X_Ray:
     def __init__(
         self,
         conn: Connection,
-        mediawiki: Wikipedia | Fandom,
-        wikidata: Wikidata,
+        mediawiki: MediaWiki,
+        wikidata: Wikidata | None,
         custom_x_ray: dict[str, tuple[str, int, bool]],
     ) -> None:
         self.conn = conn
@@ -84,18 +80,22 @@ class X_Ray:
             if (search_people or data["label"] not in PERSON_LABELS) and (
                 intro_cache := self.mediawiki.get_cache(entity)
             ):
-                summary = (
-                    intro_cache
-                    if isinstance(intro_cache, str)
-                    else intro_cache["intro"]
-                )
-                if self.wikidata and (
-                    wikidata_cache := self.wikidata.get_cache(intro_cache["item_id"])
+                summary = intro_cache.intro
+                if self.wikidata is not None and (
+                    wikidata_cache := self.wikidata.get_cache(
+                        intro_cache.wikidata_item_id
+                    )
                 ):
                     if inception := wikidata_cache.get("inception"):
                         summary += "\n" + inception_text(inception)
                 insert_x_entity_description(
-                    self.conn, (summary, entity, self.mediawiki.source_id, data["id"])
+                    self.conn,
+                    (
+                        summary,
+                        entity,
+                        1 if self.mediawiki.is_wikipedia else 2,
+                        data["id"],
+                    ),
                 )
             else:
                 insert_x_entity_description(
@@ -194,8 +194,8 @@ class X_Ray:
         def top_mentioned(counter: Counter[str]) -> str:
             return ",".join(map(str, [e[0] for e in counter.most_common(10)]))
 
-        query_mediawiki(self.entities, self.mediawiki, prefs["search_people"])
-        if self.wikidata:
+        self.mediawiki.query(self.entities, prefs["search_people"])
+        if self.wikidata is not None:
             query_wikidata(self.entities, self.mediawiki, self.wikidata)
         self.merge_entities(prefs["minimal_x_ray_count"])
 

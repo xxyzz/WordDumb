@@ -58,6 +58,7 @@ class CustomLemmasDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self.lemma_lang = lemma_lang
+        self.gloss_lang = gloss_lang
         self.db_path = db_path
         if is_kindle:
             window_title = _("Customize Kindle Word Wise")
@@ -198,7 +199,9 @@ class CustomLemmasDialog(QDialog):
             custom_db_conn.close()
             return
         plugin_path = get_plugin_path()
-        klld_path = get_kindle_klld_path(plugin_path)
+        klld_path = get_kindle_klld_path(
+            plugin_path, self.gloss_lang in ("zh", "zh_cn")
+        )
         if klld_path is None:
             gui = self.parent()
             while gui.parent() is not None:

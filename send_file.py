@@ -12,6 +12,7 @@ from .database import get_ll_path, get_x_ray_path, is_same_klld
 from .error_dialogs import kindle_epub_dialog
 from .parse_job import ParseJobData
 from .utils import (
+    get_kindle_klld_path,
     get_plugin_path,
     get_wiktionary_klld_path,
     mac_bin_path,
@@ -249,9 +250,12 @@ def copy_klld_from_kindle(device_manager: Any, dest_path: Path) -> None:
         download_file_from_mtp(
             device_manager, Path("system/kll/kll.en.en.klld"), dest_path
         )
+        download_file_from_mtp(
+            device_manager, Path("system/kll/kll.en.zh.klld"), dest_path
+        )
     else:
         for klld_path in Path(f"{device_manager.device._main_prefix}/system/kll").glob(
-            "*.en.klld"
+            "*.klld"
         ):
             shutil.copy(klld_path, dest_path)
 
@@ -266,10 +270,16 @@ def copy_klld_to_device(
 
     plugin_path = get_plugin_path()
     if use_kindle_ww_db(book_lang, prefs):
-        return
-    local_klld_path = get_wiktionary_klld_path(
-        plugin_path, book_lang, prefs["kindle_gloss_lang"]
-    )
+        if prefs["kindle_gloss_lang"] in ("zh", "zh_cn"):  # restore origin ww db
+            local_klld_path = get_kindle_klld_path(plugin_path, True)
+            if local_klld_path is None:
+                return
+        else:
+            return
+    else:
+        local_klld_path = get_wiktionary_klld_path(
+            plugin_path, book_lang, prefs["kindle_gloss_lang"]
+        )
 
     if adb_path is not None:
         run_subprocess([adb_path, "push", str(local_klld_path), str(device_klld_path)])

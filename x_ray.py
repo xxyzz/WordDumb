@@ -1,5 +1,5 @@
 import re
-from collections import Counter, defaultdict
+from collections import defaultdict
 from functools import partial
 from pathlib import Path
 from sqlite3 import Connection
@@ -12,7 +12,7 @@ try:
         insert_x_entity_description,
         insert_x_excerpt_image,
         insert_x_occurrences,
-        insert_x_type,
+        insert_x_types,
         save_db,
     )
     from .mediawiki import (
@@ -23,7 +23,13 @@ try:
     )
     from .metadata import KFXJson
     from .utils import Prefs
-    from .x_ray_share import FUZZ_THRESHOLD, PERSON_LABELS, XRayEntity, is_full_name
+    from .x_ray_share import (
+        FUZZ_THRESHOLD,
+        PERSON_LABELS,
+        CustomXDict,
+        XRayEntity,
+        is_full_name,
+    )
 except ImportError:
     from database import (
         create_x_indices,
@@ -32,7 +38,7 @@ except ImportError:
         insert_x_entity_description,
         insert_x_excerpt_image,
         insert_x_occurrences,
-        insert_x_type,
+        insert_x_types,
         save_db,
     )
     from mediawiki import (
@@ -43,7 +49,13 @@ except ImportError:
     )
     from metadata import KFXJson
     from utils import Prefs
-    from x_ray_share import FUZZ_THRESHOLD, PERSON_LABELS, XRayEntity, is_full_name
+    from x_ray_share import (
+        FUZZ_THRESHOLD,
+        PERSON_LABELS,
+        CustomXDict,
+        XRayEntity,
+        is_full_name,
+    )
 
 
 class X_Ray:
@@ -52,15 +64,11 @@ class X_Ray:
         conn: Connection,
         mediawiki: MediaWiki,
         wikidata: Wikidata | None,
-        custom_x_ray: dict[str, tuple[str, int, bool]],
+        custom_x_ray: CustomXDict,
     ) -> None:
         self.conn = conn
         self.entity_id = 1
-        self.num_people = 0
-        self.num_terms = 0
         self.entities: dict[str, XRayEntity] = {}
-        self.people_counter: Counter[str] = Counter()
-        self.terms_counter: Counter[str] = Counter()
         self.num_images = 0
         self.mediawiki = mediawiki
         self.wikidata = wikidata
@@ -68,17 +76,22 @@ class X_Ray:
         self.custom_x_ray = custom_x_ray
 
     def insert_descriptions(self, search_people: bool) -> None:
-        for entity, data in self.entities.items():
-            if custom_data := self.custom_x_ray.get(entity):
-                custom_desc, custom_source, _ = custom_data
-                if custom_desc:
+        for entity_name, entity_data in self.entities.items():
+            if custom_data := self.custom_x_ray.get(entity_name):
+                if custom_data.desc is not None and len(custom_data.desc) > 0:
                     insert_x_entity_description(
-                        self.conn, (custom_desc, entity, custom_source, data["id"])
+                        self.conn,
+                        (
+                            custom_data.desc,
+                            entity_name,
+                            custom_data.source_id,
+                            entity_data.id,
+                        ),
                     )
                     continue
 
-            if (search_people or data["label"] not in PERSON_LABELS) and (
-                intro_cache := self.mediawiki.get_cache(entity)
+            if (search_people or entity_data.label not in PERSON_LABELS) and (
+                intro_cache := self.mediawiki.get_cache(entity_name)
             ):
                 summary = intro_cache.intro
                 if self.wikidata is not None and (
@@ -92,14 +105,14 @@ class X_Ray:
                     self.conn,
                     (
                         summary,
-                        entity,
+                        entity_name,
                         1 if self.mediawiki.is_wikipedia else 2,
-                        data["id"],
+                        entity_data.id,
                     ),
                 )
             else:
                 insert_x_entity_description(
-                    self.conn, (data["quote"], entity, None, data["id"])
+                    self.conn, (entity_data.quote, entity_name, None, entity_data.id)
                 )
 
     def add_entity(
@@ -110,8 +123,8 @@ class X_Ray:
         from rapidfuzz.utils import default_process
 
         if entity_data := self.entities.get(entity):
-            entity_id = entity_data["id"]
-            ner_label = entity_data["label"]
+            entity_id = entity_data.id
+            entity_data.count += 1
         elif entity not in self.custom_x_ray and (
             r := extractOne(
                 entity,
@@ -122,65 +135,36 @@ class X_Ray:
         ):
             matched_name = r[0]
             matched_entity = self.entities[matched_name]
-            matched_label = matched_entity["label"]
-            entity_id = matched_entity["id"]
-            if is_full_name(matched_name, matched_label, entity, ner_label):
+            matched_entity.count += 1
+            entity_id = matched_entity.id
+            if is_full_name(matched_name, matched_entity.label, entity, ner_label):
                 # replace partial name with full name
                 self.entities[entity] = self.entities[matched_name]
                 del self.entities[matched_name]
-            ner_label = matched_label
         else:
             entity_id = self.entity_id
-            self.entities[entity] = {
-                "id": entity_id,
-                "label": ner_label,
-                "quote": quote,
-            }
+            self.entities[entity] = XRayEntity(entity_id, quote, ner_label, 1)
             self.entity_id += 1
 
-        if ner_label in PERSON_LABELS:
-            self.people_counter[entity_id] += 1
-        else:
-            self.terms_counter[entity_id] += 1
         self.entity_occurrences[entity_id].append((start, entity_len))
 
     def merge_entities(self, minimal_count: int) -> None:
-        for src_name, src_entity in self.entities.copy().items():
-            if src_name not in self.entities:
+        for entity_name, entity_data in self.entities.copy().items():
+            if entity_name in self.custom_x_ray:
                 continue
-            src_counter = self.get_entity_counter(src_entity["label"])
-            src_count = src_counter[src_entity["id"]]
-
-            for dest_name in self.mediawiki.redirected_titles(src_name):
-                if dest_name not in self.entities:
-                    continue
-                dest_entity = self.entities[dest_name]
-                dest_counter = self.get_entity_counter(dest_entity["label"])
-                src_counter[src_entity["id"]] += dest_counter[dest_entity["id"]]
-                self.entity_occurrences[src_entity["id"]].extend(
-                    self.entity_occurrences[dest_entity["id"]]
+            redirect_to = self.mediawiki.redirect_to_page(entity_name)
+            if redirect_to in self.entities:
+                self.entity_occurrences[self.entities[redirect_to].id].extend(
+                    self.entity_occurrences[entity_data.id]
                 )
-                del self.entity_occurrences[dest_entity["id"]]
-                del self.entities[dest_name]
-                del dest_counter[dest_entity["id"]]
-
-            if (
-                src_count < minimal_count
-                and self.mediawiki.get_cache(src_name) is None
-                and src_name not in self.custom_x_ray
-            ):
-                del src_counter[src_entity["id"]]
-                del self.entity_occurrences[src_entity["id"]]
-                del self.entities[src_name]
-            elif src_entity["label"] in PERSON_LABELS:
-                self.num_people += 1
-            else:
-                self.num_terms += 1
-
-    def get_entity_counter(self, entity_label: str) -> Counter[str]:
-        return (
-            self.people_counter if entity_label in PERSON_LABELS else self.terms_counter
-        )
+                self.entities[redirect_to].count += entity_data.count
+                del self.entity_occurrences[entity_data.id]
+                del self.entities[entity_name]
+                continue
+            entity_cache = self.mediawiki.get_cache(entity_name)
+            if entity_cache is None and entity_data.count < minimal_count:
+                del self.entity_occurrences[entity_data.id]
+                del self.entities[entity_name]
 
     def finish(
         self,
@@ -191,9 +175,6 @@ class X_Ray:
         mobi_codec: str,
         prefs: Prefs,
     ) -> None:
-        def top_mentioned(counter: Counter[str]) -> str:
-            return ",".join(map(str, [e[0] for e in counter.most_common(10)]))
-
         self.mediawiki.query(self.entities, prefs["search_people"])
         if self.wikidata is not None:
             query_wikidata(self.entities, self.mediawiki, self.wikidata)
@@ -203,14 +184,12 @@ class X_Ray:
             self.conn,
             (
                 (
-                    data["id"],
-                    entity,
-                    1 if data["label"] in PERSON_LABELS else 2,
-                    self.people_counter[data["id"]]
-                    if data["label"] in PERSON_LABELS
-                    else self.terms_counter[data["id"]],
+                    entity_data.id,
+                    entity_name,
+                    1 if entity_data.label in PERSON_LABELS else 2,
+                    entity_data.count,
                 )
-                for entity, data in self.entities.items()
+                for entity_name, entity_data in self.entities.items()
             ),
         )
         insert_x_occurrences(
@@ -233,18 +212,11 @@ class X_Ray:
             preview_images = None
         insert_x_book_metadata(
             self.conn,
-            (
-                erl,
-                1 if self.num_images else 0,
-                self.num_people,
-                self.num_terms,
-                self.num_images,
-                preview_images,
-            ),
+            erl,
+            self.num_images,
+            preview_images,
         )
-        insert_x_type(self.conn, (1, 14, 15, 1, top_mentioned(self.people_counter)))
-        insert_x_type(self.conn, (2, 16, 17, 2, top_mentioned(self.terms_counter)))
-
+        insert_x_types(self.conn)
         create_x_indices(self.conn)
         save_db(self.conn, db_path)
         self.mediawiki.close()

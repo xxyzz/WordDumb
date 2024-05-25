@@ -44,7 +44,12 @@ try:
         wiktionary_db_path,
     )
     from .x_ray import X_Ray
-    from .x_ray_share import NER_LABELS, CustomX, get_custom_x_path, load_custom_x_desc
+    from .x_ray_share import (
+        NER_LABELS,
+        CustomXDict,
+        get_custom_x_path,
+        load_custom_x_desc,
+    )
 except ImportError:
     isfrozen = False
     from database import (
@@ -71,7 +76,12 @@ except ImportError:
         wiktionary_db_path,
     )
     from x_ray import X_Ray
-    from x_ray_share import NER_LABELS, CustomX, get_custom_x_path, load_custom_x_desc
+    from x_ray_share import (
+        NER_LABELS,
+        CustomXDict,
+        get_custom_x_path,
+        load_custom_x_desc,
+    )
 
 
 @dataclass
@@ -681,7 +691,7 @@ def find_named_entity(
     mobi_codec: str,
     lang: str,
     escaped_text: str | None,
-    custom_x_ray: CustomX,
+    custom_x_ray: CustomXDict,
     xhtml_path: Path | None = None,
     end: int = 0,
 ) -> list[Interval]:
@@ -694,7 +704,7 @@ def find_named_entity(
             if ent.ent_id_
             else process_entity(ent.text, lang, len_limit)
         )
-        if text is None or (ent.ent_id_ and custom_x_ray.get(ent.ent_id_)[2]):
+        if text is None or (ent.ent_id_ and custom_x_ray.get(ent.ent_id_).omit):
             continue
 
         ent_text = ent.text if ent.ent_id_ else text

@@ -23,7 +23,7 @@ try:
     from .x_ray_share import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
-        CustomX,
+        CustomXDict,
         XRayEntity,
         is_full_name,
     )
@@ -39,7 +39,7 @@ except ImportError:
     from x_ray_share import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
-        CustomX,
+        CustomXDict,
         XRayEntity,
         is_full_name,
     )
@@ -79,7 +79,7 @@ class EPUB:
         mediawiki: MediaWiki | None,
         wiki_commons: Wikimedia_Commons | None,
         wikidata: Wikidata | None,
-        custom_x_ray: CustomX,
+        custom_x_ray: CustomXDict,
         lemmas_conn: sqlite3.Connection | None,
     ) -> None:
         self.book_path = Path(book_path_str)
@@ -172,7 +172,7 @@ class EPUB:
 
     def add_entity(
         self,
-        entity: str,
+        entity_name: str,
         ner_label: str,
         book_quote: str,
         paragraph_start: int,
@@ -185,12 +185,12 @@ class EPUB:
         from rapidfuzz.process import extractOne
         from rapidfuzz.utils import default_process
 
-        if entity_data := self.entities.get(entity):
-            entity_id = entity_data["id"]
-            entity_data["count"] += 1
-        elif entity not in self.custom_x_ray and (
+        if entity_data := self.entities.get(entity_name):
+            entity_id = entity_data.id
+            entity_data.count += 1
+        elif entity_name not in self.custom_x_ray and (
             r := extractOne(
-                entity,
+                entity_name,
                 self.entities.keys(),
                 score_cutoff=FUZZ_THRESHOLD,
                 scorer=partial(token_set_ratio, processor=default_process),
@@ -198,19 +198,16 @@ class EPUB:
         ):
             matched_name = r[0]
             matched_entity = self.entities[matched_name]
-            matched_entity["count"] += 1
-            entity_id = matched_entity["id"]
-            if is_full_name(matched_name, matched_entity["label"], entity, ner_label):
-                self.entities[entity] = matched_entity
+            matched_entity.count += 1
+            entity_id = matched_entity.id
+            if is_full_name(matched_name, matched_entity.label, entity_name, ner_label):
+                self.entities[entity_name] = matched_entity
                 del self.entities[matched_name]
         else:
             entity_id = self.entity_id
-            self.entities[entity] = {
-                "id": self.entity_id,
-                "label": ner_label,
-                "quote": book_quote,
-                "count": 1,
-            }
+            self.entities[entity_name] = XRayEntity(
+                self.entity_id, book_quote, ner_label, 1
+            )
             self.entity_id += 1
 
         self.entity_occurrences[xhtml_path].append(
@@ -254,15 +251,15 @@ class EPUB:
         )
 
     def remove_entities(self, minimal_count: int) -> None:
-        for entity, data in self.entities.copy().items():
+        for entity_name, entity_data in self.entities.copy().items():
             if (
-                data["count"] < minimal_count
+                entity_data.count < minimal_count
                 and self.mediawiki is not None  # mypy
-                and self.mediawiki.get_cache(entity) is None
-                and entity not in self.custom_x_ray
+                and self.mediawiki.get_cache(entity_name) is None
+                and entity_name not in self.custom_x_ray
             ):
-                del self.entities[entity]
-                self.removed_entity_ids.add(data["id"])
+                del self.entities[entity_name]
+                self.removed_entity_ids.add(entity_data.id)
 
     def modify_epub(
         self, prefs: Prefs, lemma_lang: str, gloss_lang: str, gloss_source: str
@@ -401,29 +398,30 @@ class EPUB:
         <head><title>X-Ray</title><meta charset="utf-8"/></head>
         <body>
         """
-        for entity, data in self.entities.items():
-            if custom_data := self.custom_x_ray.get(entity):
-                custom_desc, custom_source_id, _ = custom_data
+        for entity_name, entity_data in self.entities.items():
+            if entity_data.id in self.removed_entity_ids:
+                continue
+            elif custom_data := self.custom_x_ray.get(entity_name):
                 s += (
-                    f'<aside id="{data["id"]}" epub:type="footnote">'
-                    f"{create_p_tags(custom_desc)}"
+                    f'<aside id="{entity_data.id}" epub:type="footnote">'
+                    f"{create_p_tags(custom_data.desc)}"
                 )
-                if custom_source_id is not None:
+                if custom_data.source_id is not None:
                     s += "<p>Source: "
                     s += (
                         "Wikipedia"
-                        if custom_source_id == 1
+                        if custom_data.source_id == 1
                         else self.mediawiki.sitename
                     )
                     s += "</p>"
                 s += "</aside>"
             elif (
-                self.prefs["search_people"] or data["label"] not in PERSON_LABELS
-            ) and (intro_cache := self.mediawiki.get_cache(entity)):
-                s += f'<aside id="{data["id"]}" epub:type="footnote">'
+                self.prefs["search_people"] or entity_data.label not in PERSON_LABELS
+            ) and (intro_cache := self.mediawiki.get_cache(entity_name)):
+                s += f'<aside id="{entity_data.id}" epub:type="footnote">'
                 s += create_p_tags(intro_cache.intro)
                 s += f"<p>Source: {self.mediawiki.sitename}</p>"
-                if self.wikidata and (
+                if self.wikidata is not None and (
                     wikidata_cache := self.wikidata.get_cache(
                         intro_cache.wikidata_item_id
                     )
@@ -432,7 +430,7 @@ class EPUB:
                     if inception := wikidata_cache.get("inception"):
                         s += f"<p>{inception_text(inception)}</p>"
                         add_wikidata_source = True
-                    if self.wiki_commons and (
+                    if self.wiki_commons is not None and (
                         filename := wikidata_cache.get("map_filename")
                     ):
                         file_path = self.wiki_commons.get_image(filename)
@@ -449,8 +447,8 @@ class EPUB:
                 s += "</aside>"
             else:
                 s += (
-                    f'<aside id="{data["id"]}" epub:type="footnote"><p>'
-                    f'{escape(data["quote"])}</p></aside>'
+                    f'<aside id="{entity_data.id}" epub:type="footnote"><p>'
+                    f"{escape(entity_data.quote)}</p></aside>"
                 )
 
         s += "</body></html>"

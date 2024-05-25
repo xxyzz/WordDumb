@@ -1,7 +1,7 @@
 import json
 import re
+from dataclasses import dataclass
 from pathlib import Path
-from typing import TypedDict
 
 FUZZ_THRESHOLD = 85.7
 
@@ -46,14 +46,16 @@ def is_full_name(
     partial_name: str, partial_label: str, full_name: str, full_label: str
 ) -> bool:
     return (
-        re.search(NAME_DIVISION_REG, partial_name) is None
+        len(partial_name) < len(full_name)
+        and re.search(NAME_DIVISION_REG, partial_name) is None
         and re.search(NAME_DIVISION_REG, full_name) is not None
         and partial_label in PERSON_LABELS
         and full_label in PERSON_LABELS
     )
 
 
-class XRayEntity(TypedDict):
+@dataclass
+class XRayEntity:
     id: int
     quote: str
     label: str
@@ -66,15 +68,22 @@ def get_custom_x_path(book_path: str | Path) -> Path:
     return book_path.parent.joinpath("worddumb-custom-x-ray.json")
 
 
-CustomX = dict[str, tuple[str, int, bool]]
+@dataclass
+class CustomX:
+    desc: str
+    source_id: int
+    omit: bool
 
 
-def load_custom_x_desc(book_path: str | Path) -> CustomX:
+CustomXDict = dict[str, CustomX]
+
+
+def load_custom_x_desc(book_path: str | Path) -> CustomXDict:
     custom_path = get_custom_x_path(book_path)
     if custom_path.exists():
         with custom_path.open(encoding="utf-8") as f:
             return {
-                name: (desc, source_id, omit)
+                name: CustomX(desc, source_id, omit)
                 for name, *_, desc, source_id, omit in json.load(f)
             }
     else:

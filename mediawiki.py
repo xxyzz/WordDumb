@@ -57,13 +57,14 @@ class MediaWiki:
             db_path.parent.mkdir()
 
         db_conn = sqlite3.connect(db_path)
-        db_conn.executescript(
+        db_conn.execute(
             """
-            CREATE TABLE IF NOT EXISTS titles
-            (title TEXT PRIMARY KEY COLLATE NOCASE, desc_id INTEGER);
-
-            CREATE TABLE IF NOT EXISTS descriptions
-            (id INTEGER PRIMARY KEY, description TEXT, wikidata_item TEXT);
+            CREATE TABLE IF NOT EXISTS pages (
+              title TEXT PRIMARY KEY COLLATE NOCASE,
+              description TEXT,
+              wikidata_item TEXT,
+              redirect_to TEXT
+            )
             """
         )
         return db_conn
@@ -78,7 +79,6 @@ class MediaWiki:
 
     def close(self):
         self.session.close()
-        self.db_conn.execute("CREATE INDEX IF NOT EXISTS idx_titles ON titles(desc_id)")
         self.db_conn.commit()
         self.db_conn.close()
 
@@ -102,19 +102,19 @@ class MediaWiki:
                 if module.get("name", "") == "extracts":
                     self.has_extracts_api = True
 
-    def add_cache(self, title: str, intro: str, wikidata_item: str | None) -> int:
-        desc_id = 0
-        for (new_desc_id,) in self.db_conn.execute(
-            "INSERT INTO descriptions (description, wikidata_item) "
-            "VALUES(?, ?) RETURNING id",
-            (intro, wikidata_item),
-        ):
-            desc_id = new_desc_id
-        self.add_title(title, desc_id)
-        return desc_id
+    def add_cache(self, title: str, intro: str, wikidata_item: str | None) -> None:
+        self.db_conn.execute(
+            """
+            INSERT OR IGNORE INTO pages
+            (title, description, wikidata_item) VALUES(?, ?, ?)
+            """,
+            (title, intro, wikidata_item),
+        )
 
     def has_cache(self, title: str) -> bool:
-        for _ in self.db_conn.execute("SELECT * FROM titles WHERE title = ?", (title,)):
+        for _ in self.db_conn.execute(
+            "SELECT title FROM pages WHERE title = ? LIMIT 1", (title,)
+        ):
             return True
         return False
 
@@ -122,31 +122,38 @@ class MediaWiki:
         for desc, wikidata_item in self.db_conn.execute(
             """
             SELECT description, wikidata_item
-            FROM titles JOIN descriptions ON titles.desc_id = descriptions.id
-            WHERE title = ?
+            FROM pages WHERE title = ?
+            UNION ALL
+            SELECT a.description, a.wikidata_item
+            FROM pages a JOIN pages b ON a.title = b.redirect_to
+            WHERE b.title = ?
+            LIMIT 1
             """,
-            (title,),
+            (title, title),
         ):
+            if desc is None:
+                return None
             return MediaWikiCache(intro=desc, wikidata_item_id=wikidata_item)
         return None
 
-    def add_title(self, title: str, desc_id: int | None) -> None:
+    def add_redirect(self, source_title: str, dest_title: str) -> None:
         self.db_conn.execute(
-            "INSERT OR IGNORE INTO titles VALUES(?, ?)", (title, desc_id)
+            "INSERT OR IGNORE INTO pages (title, redirect_to) VALUES(?, ?)",
+            (source_title, dest_title),
         )
 
-    def redirected_titles(self, title: str) -> list[str]:
-        return [
-            other_title
-            for (other_title,) in self.db_conn.execute(
-                """
-                SELECT title FROM titles
-                WHERE title != ? AND
-                desc_id = (SELECT desc_id FROM titles WHERE title = ?)
-                """,
-                (title, title),
-            )
-        ]
+    def add_no_desc_titles(self, titles: set[str]) -> None:
+        # not found this title from MediaWiki
+        self.db_conn.executemany(
+            "INSERT OR IGNORE INTO pages (title) VALUES(?)", ((t,) for t in titles)
+        )
+
+    def redirect_to_page(self, title: str) -> str:
+        for (redirect_to,) in self.db_conn.execute(
+            "SELECT redirect_to FROM pages WHERE title = ?", (title,)
+        ):
+            return redirect_to
+        return ""
 
     def query_extracts_api(self, titles: set[str]) -> None:
         # https://www.mediawiki.org/wiki/Extension:TextExtracts#API
@@ -187,23 +194,20 @@ class MediaWiki:
             wikibase_item = v.get("pageprops", {}).get("wikibase_item")
             if summary == "":  # some wikis return empty string
                 self.query_parse_api(title)
-                if title in titles:
-                    titles.remove(title)
-            desc_id = self.add_cache(title, summary, wikibase_item)
+            self.add_cache(title, summary, wikibase_item)
             if title in titles:
                 titles.remove(title)
-            for key in converts.get(title, []):
-                self.add_title(key, desc_id)
-                if key in titles:
-                    titles.remove(key)
-                for k in converts.get(key, []):
-                    self.add_title(k, desc_id)
-                    if k in titles:  # normalize then redirect
-                        titles.remove(k)
+            for source_title in converts.get(title, []):
+                self.add_redirect(source_title, title)
+                if source_title in titles:
+                    titles.remove(source_title)
+                for another_source_title in converts.get(source_title, []):
+                    self.add_redirect(another_source_title, title)
+                    if another_source_title in titles:  # normalize then redirect
+                        titles.remove(another_source_title)
 
         self.get_section_text(redirect_to_sections, converts, titles)
-        for title in titles:  # use quote next time
-            self.add_title(title, None)
+        self.add_no_desc_titles(titles)
 
     def get_section_text(
         self,
@@ -251,14 +255,14 @@ class MediaWiki:
                     if not text:
                         continue
                     text = text.strip()
-                    redirected_title = section_to_titles[section["line"]]
-                    desc_id = self.add_cache(redirected_title, text, None)
-                    if redirected_title in titles:
-                        titles.remove(redirected_title)
-                    for converted_title in converts.get(redirected_title, []):
-                        self.add_title(converted_title, desc_id)
-                        if converted_title in titles:
-                            titles.remove(converted_title)
+                    redirected_from = section_to_titles[section["line"]]
+                    self.add_cache(redirected_from, text, None)
+                    if redirected_from in titles:
+                        titles.remove(redirected_from)
+                    for source_title in converts.get(redirected_from, []):
+                        self.add_redirect(source_title, page)
+                        if source_title in titles:
+                            titles.remove(source_title)
 
     def query_parse_api(
         self, page: str, from_disambiguation_title: str | None = None
@@ -307,7 +311,7 @@ class MediaWiki:
                     chosen_title = r[0]
                     self.query_parse_api(chosen_title, page)
                 else:
-                    self.add_title(page, None)
+                    self.add_no_desc_titles({page})
                 return
 
             text = data["text"]
@@ -319,22 +323,22 @@ class MediaWiki:
             ):
                 e.getparent().remove(e)
             intro = html.xpath("string()").strip()
-            desc_id = self.add_cache(page, intro, None)
-            for redirect in data.get("redirects", []):
-                self.add_title(redirect["to"], desc_id)
+            self.add_cache(page, intro, None)
+            for redirect_data in data.get("redirects", []):
+                self.add_redirect(redirect_data["from"], redirect_data["to"])
             if from_disambiguation_title is not None:
-                self.add_title(from_disambiguation_title, desc_id)
+                self.add_redirect(from_disambiguation_title, page)
         else:
-            self.add_title(page, None)  # Not found
+            self.add_no_desc_titles({page})
 
     def query(self, entities: dict[str, XRayEntity], search_people: bool) -> None:
         pending_entities: set[str] = set()
-        for entity, data in entities.items():
+        for entity, entity_data in entities.items():
             if self.has_extracts_api and len(pending_entities) == MEDIAWIKI_API_EXLIMIT:
                 self.query_extracts_api(pending_entities)
                 pending_entities.clear()
             elif not self.has_cache(entity) and (
-                search_people or data["label"] not in PERSON_LABELS
+                search_people or entity_data.label not in PERSON_LABELS
             ):
                 if self.has_extracts_api:
                     pending_entities.add(entity)
@@ -476,10 +480,10 @@ def query_wikidata(
     entities: dict[str, XRayEntity], mediawiki: MediaWiki, wikidata: Wikidata
 ) -> None:
     pending_item_ids: list[str] = []
-    for entity, data in entities.items():
-        if not is_gpe_label(mediawiki.lang, data["label"]):
+    for entity_name, entity_data in entities.items():
+        if not is_gpe_label(mediawiki.lang, entity_data.label):
             continue
-        mediawiki_cache = mediawiki.get_cache(entity)
+        mediawiki_cache = mediawiki.get_cache(entity_name)
         if mediawiki_cache is None or mediawiki_cache.wikidata_item_id is None:
             continue
         item_id = mediawiki_cache.wikidata_item_id

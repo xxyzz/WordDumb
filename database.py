@@ -178,9 +178,18 @@ def create_x_indices(conn: sqlite3.Connection) -> None:
 
 
 def insert_x_book_metadata(
-    conn: sqlite3.Connection, data: tuple[int, int, int, int, int, str | None]
+    conn: sqlite3.Connection, erl: int, num_images: int, preview_images: str | None
 ) -> None:
-    conn.execute("INSERT INTO book_metadata VALUES(0, ?, ?, 0, 0, ?, ?, ?, ?)", data)
+    num_people = 0
+    num_terms = 0
+    for (num,) in conn.execute("SELECT count(*) FROM entity WHERE type = 1"):
+        num_people = num
+    for (num,) in conn.execute("SELECT count(*) FROM entity WHERE type = 2"):
+        num_terms = num
+    conn.execute(
+        "INSERT INTO book_metadata VALUES(0, ?, ?, 0, 0, ?, ?, ?, ?)",
+        (erl, num_images > 0, num_people, num_terms, num_images, preview_images),
+    )
 
 
 def insert_x_entities(
@@ -205,6 +214,21 @@ def insert_x_occurrences(
     conn: sqlite3.Connection, data: Iterator[tuple[int, int, int]]
 ) -> None:
     conn.executemany("INSERT INTO occurrence VALUES(?, ?, ?)", data)
+
+
+def get_top_ten_entities(conn: sqlite3.Connection, entity_type: int) -> str:
+    entity_ids = []
+    for (entity_id,) in conn.execute(
+        "SELECT id FROM entity WHERE type = ? ORDER BY count DESC LIMIT 10",
+        (entity_type,),
+    ):
+        entity_ids.append(entity_id)
+    return ",".join(map(str, entity_ids))
+
+
+def insert_x_types(conn: sqlite3.Connection) -> None:
+    insert_x_type(conn, (1, 14, 15, 1, get_top_ten_entities(conn, 1)))
+    insert_x_type(conn, (2, 16, 17, 2, get_top_ten_entities(conn, 2)))
 
 
 def insert_x_type(

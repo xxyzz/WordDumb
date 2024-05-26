@@ -35,6 +35,7 @@ class Prefs(TypedDict):
     last_opened_wiktionary_lemmas_language: str
     use_wiktionary_for_kindle: bool
     python_path: str
+    show_change_kindle_ww_lang_warning: bool
 
 
 def load_plugin_json(plugin_path: Path, filepath: str) -> Any:

@@ -212,3 +212,19 @@ def unsupported_ww_lang_dialog() -> None:
         _("Unsupported language"),
         _("Book language is not supported for the selected Word Wise gloss language."),
     )
+
+
+def change_kindle_ww_lang_dialog(
+    checked: bool, parent: Any = None, prefs: Any = None
+) -> None:
+    if checked and prefs["show_change_kindle_ww_lang_warning"]:
+        warning_dialog(
+            "",
+            _(
+                "Word Wise language must be set to Chinese on Kindle to display the "
+                'correct definitions when the "Use Wiktionary definition" option is '
+                "enabled."
+            ),
+            parent,
+        )
+        prefs["show_change_kindle_ww_lang_warning"] = False

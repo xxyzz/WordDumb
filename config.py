@@ -30,7 +30,7 @@ from PyQt6.QtWidgets import (
 from .custom_lemmas import CustomLemmasDialog
 from .deps import download_word_wise_file, install_deps, which_python
 from .dump_lemmas import dump_spacy_docs
-from .error_dialogs import GITHUB_URL, job_failed
+from .error_dialogs import GITHUB_URL, change_kindle_ww_lang_dialog, job_failed
 from .import_lemmas import apply_imported_lemmas_data, export_lemmas_job
 from .utils import (
     donate,
@@ -62,6 +62,7 @@ prefs.defaults["cuda"] = "cu121"
 prefs.defaults["use_wiktionary_for_kindle"] = False
 prefs.defaults["remove_link_styles"] = False
 prefs.defaults["python_path"] = ""
+prefs.defaults["show_change_kindle_ww_lang_warning"] = True
 for code in load_plugin_json(get_plugin_path(), "data/languages.json").keys():
     prefs.defaults[f"{code}_wiktionary_difficulty_limit"] = 5
 
@@ -504,17 +505,13 @@ class ChooseLemmaLangDialog(QDialog):
 
         if is_kindle:
             self.use_wiktionary_box = QCheckBox("")
-            self.kindle_lang_changed()
+            self.kindle_lang_changed(True)
             self.lemma_lang_box.currentIndexChanged.connect(self.kindle_lang_changed)
             self.gloss_lang_box.currentIndexChanged.connect(self.kindle_lang_changed)
-            wiktionary_gloss_label = QLabel(_("Use Wiktionary definition 🛈"))
-            wiktionary_gloss_label.setToolTip(
-                _(
-                    "Change Word Wise language to Chinese on your Kindle device to "
-                    "view definition from Wiktionary"
-                )
+            self.use_wiktionary_box.toggled.connect(
+                partial(change_kindle_ww_lang_dialog, parent=self, prefs=prefs)
             )
-            form_layout.addRow(wiktionary_gloss_label, self.use_wiktionary_box)
+            form_layout.addRow(_("Use Wiktionary definition"), self.use_wiktionary_box)
 
         confirm_button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -527,7 +524,7 @@ class ChooseLemmaLangDialog(QDialog):
         vl.addWidget(confirm_button_box)
         self.setLayout(vl)
 
-    def kindle_lang_changed(self) -> None:
+    def kindle_lang_changed(self, first_call: bool = False) -> None:
         if (
             self.lemma_lang_box.currentData() == "en"
             and self.gloss_lang_box.currentData() in ["en", "zh", "zh_cn"]
@@ -537,6 +534,8 @@ class ChooseLemmaLangDialog(QDialog):
         else:
             self.use_wiktionary_box.setChecked(True)
             self.use_wiktionary_box.setDisabled(True)
+            if not first_call:
+                change_kindle_ww_lang_dialog(True, self, prefs)
 
     def gloss_lang_changed(self, lang_dict) -> None:
         gloss_lang = self.gloss_lang_box.currentData()

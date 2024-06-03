@@ -26,4 +26,4 @@ jobs:
           python -m pip install ruff
           python -m ruff .
           python -m ruff format --diff .
-      - uses: crate-ci/typos@v1.21.0
+      - uses: crate-ci/typos@v1.22.0

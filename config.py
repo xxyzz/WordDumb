@@ -38,7 +38,6 @@ from .utils import (
     get_plugin_path,
     kindle_db_path,
     load_languages_data,
-    load_plugin_json,
     run_subprocess,
     spacy_model_name,
     wiktionary_db_path,
@@ -63,7 +62,7 @@ prefs.defaults["use_wiktionary_for_kindle"] = False
 prefs.defaults["remove_link_styles"] = False
 prefs.defaults["python_path"] = ""
 prefs.defaults["show_change_kindle_ww_lang_warning"] = True
-for code in load_plugin_json(get_plugin_path(), "data/languages.json").keys():
+for code in load_languages_data(get_plugin_path(), False).keys():
     prefs.defaults[f"{code}_wiktionary_difficulty_limit"] = 5
 
 load_translations()  # type: ignore
@@ -356,9 +355,7 @@ def dump_lemmas_job(
     notifications: Any = None,
 ) -> None:
     plugin_path = get_plugin_path()
-    model_name = spacy_model_name(
-        lemma_lang, load_plugin_json(plugin_path, "data/languages.json"), prefs
-    )
+    model_name = spacy_model_name(lemma_lang, prefs)
     install_deps(model_name, notifications)
     if isfrozen:
         options = {

@@ -128,9 +128,7 @@ def do_job(
     get_asin_etc(data, set_en_lang=set_en_lang)
     data.plugin_path = get_plugin_path()
     data.useragent = get_user_agent()
-    data.spacy_model = spacy_model_name(
-        data.book_lang, load_plugin_json(data.plugin_path, "data/languages.json"), prefs
-    )
+    data.spacy_model = spacy_model_name(data.book_lang, prefs)
     if data.book_fmt == "EPUB":
         new_epub_path = Path(data.book_path)
         new_file_stem = new_epub_path.stem

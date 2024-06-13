@@ -161,9 +161,8 @@ def dump_prefs(prefs: Any) -> str:
     return json.dumps(prefs_dict)
 
 
-def spacy_model_name(
-    lemma_lang: str, languages: dict[str, dict[str, str]], prefs: Prefs
-) -> str:
+def spacy_model_name(lemma_lang: str, prefs: Prefs) -> str:
+    languages = load_languages_data(get_plugin_path(), False)
     spacy_model = languages[lemma_lang]["spacy"]
     if spacy_model == "":
         return ""
@@ -175,12 +174,14 @@ def spacy_model_name(
 
 
 def load_languages_data(
-    plugin_path: Path,
-) -> dict[str, dict[str, str | bool | list[str]]]:
+    plugin_path: Path, add_zh_cn: bool = True
+) -> dict[str, dict[str, Any]]:
     """
-    Add Simplified Chinese `zh_cn` key to languages dict
+    Add Simplified Chinese `zh_cn` key to languages dict for code uses `zh_cn`
+    gloss language, don't add `zh_cn` for code dealing with lemma language code.
     """
     supported_languages = load_plugin_json(plugin_path, "data/languages.json")
-    supported_languages["zh_cn"] = supported_languages["zh"].copy()
-    supported_languages["zh_cn"]["name"] = "Simplified Chinese"
+    if add_zh_cn:
+        supported_languages["zh_cn"] = supported_languages["zh"].copy()
+        supported_languages["zh_cn"]["name"] = "Simplified Chinese"
     return supported_languages

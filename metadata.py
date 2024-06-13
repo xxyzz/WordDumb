@@ -27,7 +27,7 @@ def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult
     from .utils import get_plugin_path, load_languages_data
 
     db = gui.current_db.new_api
-    lang_dict = load_languages_data(get_plugin_path())
+    lang_dict = load_languages_data(get_plugin_path(), False)
     supported_languages = {v["639-2"]: k for k, v in lang_dict.items()}
     mi = db.get_metadata(book_id, get_cover=True)
     # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
@@ -75,9 +75,9 @@ def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult
 
 def cli_check_metadata(book_path_str: str, log: Any) -> MetaDataResult | None:
     from .config import prefs
-    from .utils import get_plugin_path, load_plugin_json
+    from .utils import get_plugin_path, load_languages_data
 
-    lang_dict = load_plugin_json(get_plugin_path(), "data/languages.json")
+    lang_dict = load_languages_data(get_plugin_path(), False)
     supported_languages = {v["639-2"]: k for k, v in lang_dict.items()}
     book_path = Path(book_path_str)
     book_fmt = book_path.suffix.upper()[1:]

@@ -10,7 +10,7 @@ Set preferences
 
 - Enable "Fetch X-Ray people descriptions from Wikipedia or other MediaWiki server" option for nonfiction books and novels that have character pages on Wikipedia or any other MediaWiki server. A quote from the book will be used if it's disabled or the page is not found.
 
-- Enable "Run spaCy with GPU" option if your machine has `CUDA <https://developer.nvidia.com/cuda-downloads>`_. GPU will be used when creating X-Ray file if spaCy has transformer model for the book language with ner component.
+- Enable "Run spaCy with GPU" option if your machine has `CUDA <https://developer.nvidia.com/cuda-toolkit-archive>`_. GPU will be used when creating X-Ray file if spaCy has transformer model for the book language with ner component.
 
 - Larger spaCy model has higher `Named-entity recognition <https://en.wikipedia.org/wiki/Named-entity_recognition>`_ precision therefore improves X-Ray quality, more details at https://spacy.io/models/en
 

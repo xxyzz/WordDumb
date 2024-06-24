@@ -77,9 +77,10 @@ Use Chocolatey or download from https://www.python.org/downloads
 Install CUDA(optional)
 ----------------------
 
-`CUDA <https://en.wikipedia.org/wiki/CUDA>`_ is required for the "Run spaCy with GPU" feature, you can download CUDA from https://developer.nvidia.com/cuda-downloads
+`CUDA <https://en.wikipedia.org/wiki/CUDA>`_ is required for the "Run spaCy with GPU" feature, you can download CUDA from https://developer.nvidia.com/cuda-toolkit-archive
 
 .. attention::
+   - The latest CUDA release usually is not supported by PyTorch, read https://pytorch.org/get-started/locally to find the supported CUDA versions.
 
    - C/C++ compiler is needed for Windows, download from https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022
 

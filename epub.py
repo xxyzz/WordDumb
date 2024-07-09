@@ -20,6 +20,7 @@ try:
         query_wikidata,
     )
     from .utils import CJK_LANGS, Prefs
+    from .wsd import ws_disambiguation
     from .x_ray_share import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
@@ -36,6 +37,7 @@ except ImportError:
         query_wikidata,
     )
     from utils import CJK_LANGS, Prefs
+    from wsd import ws_disambiguation
     from x_ray_share import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
@@ -61,6 +63,7 @@ class Occurrence:
     word_end: int
     entity_id: int = -1
     sense_ids: tuple[int, ...] = ()
+    wsd_sense_id: int = -1
 
 
 @dataclass
@@ -81,6 +84,10 @@ class EPUB:
         wikidata: Wikidata | None,
         custom_x_ray: CustomXDict,
         lemmas_conn: sqlite3.Connection | None,
+        prefs: Prefs,
+        lemma_lang: str,
+        gloss_lang: str,
+        gloss_source: str,
     ) -> None:
         self.book_path = Path(book_path_str)
         self.mediawiki = mediawiki
@@ -102,10 +109,10 @@ class EPUB:
         self.sense_id_dict: dict[tuple[int, ...], int] = {}
         self.word_wise_id = 0
         self.lemmas_conn: sqlite3.Connection | None = lemmas_conn
-        self.prefs: Prefs = {}
-        self.lemma_lang: str = ""
-        self.gloss_lang: str = ""
-        self.gloss_source: str = ""
+        self.prefs = prefs
+        self.lemma_lang = lemma_lang
+        self.gloss_lang = gloss_lang
+        self.gloss_source = gloss_source
 
     def extract_epub(self) -> Iterator[tuple[str, tuple[int, int, Path]]]:
         from lxml import etree
@@ -229,6 +236,7 @@ class EPUB:
         word_start: int,
         word_end: int,
         xhtml_path: Path,
+        sent: str,
     ) -> None:
         sense_ids = self.find_sense_ids(lemma, pos)
         if len(sense_ids) == 0:
@@ -247,6 +255,7 @@ class EPUB:
                 word_start=word_start,
                 word_end=word_end,
                 sense_ids=sense_ids,
+                wsd_sense_id=self.wsd(lemma, sent, sense_ids),
             )
         )
 
@@ -261,19 +270,13 @@ class EPUB:
                 del self.entities[entity_name]
                 self.removed_entity_ids.add(entity_data.id)
 
-    def modify_epub(
-        self, prefs: Prefs, lemma_lang: str, gloss_lang: str, gloss_source: str
-    ) -> None:
-        self.prefs = prefs
-        self.lemma_lang = lemma_lang
-        self.gloss_lang = gloss_lang
-        self.gloss_source = gloss_source
+    def modify_epub(self) -> None:
         if len(self.entities) > 0 and self.mediawiki is not None:
-            self.mediawiki.query(self.entities, prefs["search_people"])
+            self.mediawiki.query(self.entities, self.prefs["search_people"])
             if self.wikidata is not None:
                 query_wikidata(self.entities, self.mediawiki, self.wikidata)
-            if prefs["minimal_x_ray_count"] > 1:
-                self.remove_entities(prefs["minimal_x_ray_count"])
+            if self.prefs["minimal_x_ray_count"] > 1:
+                self.remove_entities(self.prefs["minimal_x_ray_count"])
             self.create_x_ray_footnotes()
         self.insert_anchor_elements()
         if len(self.sense_id_dict) > 0:
@@ -338,9 +341,7 @@ class EPUB:
                         f'{occurrence.entity_id}">{escape(word)}</a>'
                     )
                 else:
-                    new_xhtml_str += self.build_word_wise_tag(
-                        occurrence.sense_ids, word
-                    )
+                    new_xhtml_str += self.build_word_wise_tag(occurrence, word)
                 last_w_end = occurrence.word_end
                 if occurrence.paragraph_end != last_p_end:
                     last_p_end = occurrence.paragraph_end
@@ -362,14 +363,13 @@ class EPUB:
                     )
                 f.write(new_xhtml_str)
 
-    def build_word_wise_tag(
-        self,
-        sense_ids: tuple[int, ...],
-        word: str,
-    ) -> str:
-        ww_id = self.sense_id_dict[sense_ids]
-        sense_list = self.get_sense_data(sense_ids[:1])
-        short_def = sense_list[0].short_def
+    def build_word_wise_tag(self, occurrence: Occurrence, word: str) -> str:
+        ww_id = self.sense_id_dict[occurrence.sense_ids]
+        if occurrence.wsd_sense_id != -1:
+            short_def = self.get_sense_data([occurrence.wsd_sense_id])[0].short_def
+        else:
+            sense_list = self.get_sense_data(occurrence.sense_ids[:1])
+            short_def = sense_list[0].short_def
         len_ratio = 3 if self.lemma_lang in CJK_LANGS else 2.5
         if len(short_def) / len(word) > len_ratio:
             return (
@@ -640,6 +640,14 @@ class EPUB:
             sense_data.ipas = list(data[4:])
             sense_list.append(sense_data)
         return sense_list
+
+    def wsd(self, word: str, sent: str, sense_ids: list[int]) -> int:
+        senses = self.get_sense_data(sense_ids)
+        glosses = [s.full_def for s in senses]
+        sense_id = ws_disambiguation(
+            "http://127.0.0.1:8080/completion", word, sent, glosses
+        )
+        return sense_ids[sense_id]
 
 
 def spacy_to_wiktionary_pos(pos: str) -> str:

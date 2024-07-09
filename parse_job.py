@@ -274,6 +274,9 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
         custom_x_ray = load_custom_x_desc(data.book_path)
 
     if is_epub:
+        supported_languages = load_languages_data(data.plugin_path)
+        gloss_lang = prefs["wiktionary_gloss_lang"]
+        gloss_source = supported_languages[gloss_lang]["gloss_source"]
         if data.create_x:
             wiki_commons = None
             if prefs["mediawiki_api"] == "" and prefs["add_locator_map"]:
@@ -285,9 +288,24 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                 wikidata,
                 custom_x_ray,
                 lemmas_conn,
+                prefs,
+                data.book_lang,
+                gloss_lang,
+                gloss_source,
             )
         elif data.create_ww:
-            epub = EPUB(data.book_path, None, None, None, None, lemmas_conn)
+            epub = EPUB(
+                data.book_path,
+                None,
+                None,
+                None,
+                None,
+                lemmas_conn,
+                prefs,
+                data.book_lang,
+                gloss_lang,
+                gloss_source,
+            )
 
         for doc, (start, end, xhtml_path) in nlp.pipe(
             epub.extract_epub(), as_tuples=True
@@ -325,7 +343,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
         supported_languages = load_languages_data(data.plugin_path)
         gloss_lang = prefs["wiktionary_gloss_lang"]
         gloss_source = supported_languages[gloss_lang]["gloss_source"]
-        epub.modify_epub(prefs, data.book_lang, gloss_lang, gloss_source)
+        epub.modify_epub()
         return
 
     # Kindle
@@ -496,6 +514,7 @@ def epub_find_lemma(
             span.start_char,
             span.end_char,
             xhtml_path,
+            span.sent.text,
         )
 
 
@@ -773,13 +792,13 @@ def load_spacy(
 
     if model.endswith("_trf"):
         spacy.require_gpu()
-    else:
-        excluded_components.append("parser")
+    # else:
+    #     excluded_components.append("parser")
 
     nlp = spacy.load(model, exclude=excluded_components)
-    if not model.endswith("_trf") and book_path is not None:
-        # simpler and faster https://spacy.io/usage/linguistic-features#sbd
-        nlp.enable_pipe("senter")
+    # if not model.endswith("_trf") and book_path is not None:
+    # simpler and faster https://spacy.io/usage/linguistic-features#sbd
+    # nlp.enable_pipe("senter")
 
     if book_path is not None:
         custom_x_path = get_custom_x_path(book_path)

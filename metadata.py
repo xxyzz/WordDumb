@@ -21,6 +21,13 @@ class MetaDataResult:
     support_x_ray: bool = False
 
 
+def is_ww_supported(book_lang: str, gloss_lang: str) -> bool:
+    from .utils import get_plugin_path, load_languages_data
+
+    lang_dict = load_languages_data(get_plugin_path())
+    return book_lang in lang_dict.get(gloss_lang, {}).get("lemma_languages", [])
+
+
 def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult | None:
     from .config import prefs
     from .error_dialogs import unsupported_format_dialog, unsupported_language_dialog
@@ -58,9 +65,7 @@ def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult
         gloss_lang = prefs[
             "kindle_gloss_lang" if fmt != "EPUB" else "wiktionary_gloss_lang"
         ]
-        support_ww_list.append(
-            book_lang in lang_dict[gloss_lang].get("lemma_languages", [])
-        )
+        support_ww_list.append(is_ww_supported(book_lang, gloss_lang))
 
     return MetaDataResult(
         book_id=book_id,
@@ -120,9 +125,7 @@ def cli_check_metadata(book_path_str: str, log: Any) -> MetaDataResult | None:
             book_fmts=[book_fmt],
             mi=mi,
             book_lang=book_lang,
-            support_ww_list=[
-                book_lang in lang_dict[gloss_lang].get("lemma_languages", [])
-            ],
+            support_ww_list=[is_ww_supported(book_lang, gloss_lang)],
             support_x_ray=lang_dict[book_lang]["spacy"] != "",
         )
 

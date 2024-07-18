@@ -47,7 +47,9 @@ Connect your e-reader, select one book or multiple books then click the plugin i
    <video controls width="100%" src="https://user-images.githubusercontent.com/21101839/202723395-c84ed588-5fba-43f7-880c-70667efc9fca.mov"></video>
 
 .. attention::
-   Click calibre's "Send to device" menu won't send created files to e-reader. Always use the WordDumb plugin to send books to your device.
+   - Click calibre's "Send to device" menu won't send created files to e-reader. Always use the WordDumb plugin to send books to your device.
+
+   - Word Wise file created from this plugin is not supported for Kindle devices login with amazon.cn account.
 
 .. tip::
    If you forget to connect your device before generating files, connect your device then click the plugin icon or menu again and the created files will be moved to your e-reader.

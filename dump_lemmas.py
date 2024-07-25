@@ -6,6 +6,7 @@ try:
     from .utils import (
         Prefs,
         custom_lemmas_folder,
+        get_spacy_model_version,
         insert_installed_libs,
         load_plugin_json,
         use_kindle_ww_db,
@@ -14,6 +15,7 @@ except ImportError:
     from utils import (
         Prefs,
         custom_lemmas_folder,
+        get_spacy_model_version,
         insert_installed_libs,
         load_plugin_json,
         use_kindle_ww_db,
@@ -74,9 +76,7 @@ def dump_spacy_docs(
     save_spacy_docs(
         nlp,
         spacy_model,
-        pkg_versions[
-            "spacy_trf_model" if spacy_model.endswith("_trf") else "spacy_cpu_model"
-        ],
+        get_spacy_model_version(spacy_model, pkg_versions),
         lemma_lang,
         is_kindle,
         lemmas_conn,

@@ -32,6 +32,7 @@ try:
         Prefs,
         dump_prefs,
         get_plugin_path,
+        get_spacy_model_version,
         get_user_agent,
         get_wiktionary_klld_path,
         insert_installed_libs,
@@ -68,6 +69,7 @@ except ImportError:
     from utils import (
         CJK_LANGS,
         Prefs,
+        get_spacy_model_version,
         insert_installed_libs,
         kindle_db_path,
         load_languages_data,
@@ -795,9 +797,7 @@ def create_spacy_matcher(
 
     disabled_pipes = list(set(["ner", "parser", "senter"]) & set(nlp.pipe_names))
     pkg_versions = load_plugin_json(plugin_path, "data/deps.json")
-    model_version = pkg_versions[
-        "spacy_trf_model" if model.endswith("_trf") else "spacy_cpu_model"
-    ]
+    model_version = get_spacy_model_version(model, pkg_versions)
     # Chinese words don't have inflection forms, only use phrase matcher
     use_lemma_matcher = prefs["use_pos"] and lemma_lang != "zh" and model != ""
     phrase_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")

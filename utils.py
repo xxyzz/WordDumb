@@ -185,3 +185,14 @@ def load_languages_data(
         supported_languages["zh_cn"] = supported_languages["zh"].copy()
         supported_languages["zh_cn"]["name"] = "Simplified Chinese"
     return supported_languages
+
+
+def get_spacy_model_version(
+    model_name: str, dependency_versions: dict[str, str]
+) -> str:
+    key = "spacy_trf_model" if model_name.endswith("_trf") else "spacy_cpu_model"
+    lang_code = model_name[:2]
+    lang_key = f"{lang_code}_{key}"
+    if lang_key in dependency_versions:
+        return dependency_versions[lang_key]
+    return dependency_versions.get(key, "")

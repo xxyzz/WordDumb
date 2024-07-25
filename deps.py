@@ -11,6 +11,7 @@ from .utils import (
     PROFICIENCY_RELEASE_URL,
     Prefs,
     get_plugin_path,
+    get_spacy_model_version,
     get_wiktionary_klld_path,
     kindle_db_path,
     load_plugin_json,
@@ -44,9 +45,7 @@ def install_deps(pkg: str, notif: Any) -> None:
         if pkg == "":
             pip_install("spacy", dep_versions["spacy"], notif=notif)
         else:
-            model_version = dep_versions[
-                "spacy_trf_model" if pkg.endswith("_trf") else "spacy_cpu_model"
-            ]
+            model_version = get_spacy_model_version(pkg, dep_versions)
             url = (
                 "https://github.com/explosion/spacy-models/releases/download/"
                 f"{pkg}-{model_version}/{pkg}-{model_version}-py3-none-any.whl"

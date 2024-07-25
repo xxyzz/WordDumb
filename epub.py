@@ -580,7 +580,10 @@ class EPUB:
             query_values = (word, pos)
         for (sense_id,) in self.lemmas_conn.execute(sql, query_values):
             sense_ids.append(sense_id)
-        return tuple(sense_ids)
+        if len(sense_ids) > 0:
+            return tuple(sense_ids)
+
+        return self.find_sense_ids_without_pos(word)
 
     def find_sense_ids_without_pos(self, word: str) -> tuple[int, ...]:
         if self.lemmas_conn is None:

@@ -564,18 +564,7 @@ def get_kindle_lemma_with_pos(
             (lemma,),
         ):
             return data
-    if lemma_lang == "zh":  # Check simplified form
-        for data in conn.execute(
-            """
-            SELECT difficulty, senses.id
-            FROM senses JOIN forms
-            ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos
-            WHERE form = ? AND senses.pos = ? LIMIT 1
-            """,
-            (lemma, pos),
-        ):
-            return data
-    return None
+    return get_kindle_lemma_without_pos(lemma, conn)
 
 
 def get_kindle_lemma_without_pos(

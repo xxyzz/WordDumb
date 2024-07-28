@@ -453,6 +453,7 @@ def kindle_find_lemma(
         pos = getattr(span.doc[span.start], "pos_", "")
         data = get_kindle_lemma_data(
             span.lemma_ if prefs["use_pos"] and lemma != "" else span.text,
+            span.text,
             pos if prefs["use_pos"] and pos != "" else "",
             lemmas_conn,
             lemma_lang,
@@ -488,10 +489,10 @@ def epub_find_lemma(
             Interval(span.start_char, span.end_char - 1)
         ):
             return
-        lemma = getattr(span, "lemma_", "")
         pos = getattr(span.doc[span.start], "pos_", "")
         epub.add_lemma(
-            lemma if use_pos and lemma != "" else span.text,
+            getattr(span, "lemma_", ""),
+            span.text,
             spacy_to_wiktionary_pos(pos) if use_pos and pos != "" else "",
             paragraph_start,
             paragraph_end,
@@ -524,19 +525,21 @@ def spacy_to_kindle_pos(pos: str) -> str:
 
 def get_kindle_lemma_data(
     lemma: str,
+    word: str,
     pos: str,
     conn: sqlite3.Connection,
     lemma_lang: str,
     prefs: Prefs,
 ) -> tuple[int, int] | None:
     if pos != "":
-        return get_kindle_lemma_with_pos(lemma, pos, conn, lemma_lang, prefs)
+        return get_kindle_lemma_with_pos(lemma, word, pos, conn, lemma_lang, prefs)
     else:
-        return get_kindle_lemma_without_pos(lemma, conn)
+        return get_kindle_lemma_without_pos(word, conn)
 
 
 def get_kindle_lemma_with_pos(
     lemma: str,
+    word: str,
     pos: str,
     conn: sqlite3.Connection,
     lemma_lang: str,
@@ -555,22 +558,11 @@ def get_kindle_lemma_with_pos(
         (lemma, pos),
     ):
         return data
-    if " " in lemma:
-        for data in conn.execute(
-            """
-            SELECT difficulty, senses.id
-            FROM senses JOIN forms
-            ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos
-            WHERE form = ? LIMIT 1
-            """,
-            (lemma,),
-        ):
-            return data
-    return get_kindle_lemma_without_pos(lemma, conn)
+    return get_kindle_lemma_without_pos(word, conn)
 
 
 def get_kindle_lemma_without_pos(
-    lemma: str, conn: sqlite3.Connection
+    word: str, conn: sqlite3.Connection
 ) -> tuple[int, int] | None:
     for data in conn.execute(
         """
@@ -579,7 +571,7 @@ def get_kindle_lemma_without_pos(
         ON senses.lemma_id = lemmas.id
         WHERE lemma = ? AND enabled = 1 LIMIT 1
         """,
-        (lemma,),
+        (word,),
     ):
         return data
     for data in conn.execute(
@@ -589,7 +581,7 @@ def get_kindle_lemma_without_pos(
         ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos
         WHERE form = ? AND enabled = 1 LIMIT 1
         """,
-        (lemma,),
+        (word,),
     ):
         return data
     return None
@@ -825,7 +817,7 @@ def create_spacy_matcher(
         )
     phrases_doc_bin = DocBin().from_disk(phrases_doc_path)
     if use_lemma_matcher:
-        lemma_matcher = PhraseMatcher(nlp.vocab, attr="LEMMA")
+        lemma_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
         lemmas_doc_path = spacy_doc_path(
             model, model_version, lemma_lang, is_kindle, False, plugin_path, prefs, True
         )

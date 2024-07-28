@@ -102,7 +102,7 @@ def save_spacy_docs(
 
     phrases_doc_bin = DocBin(attrs=["LOWER"])
     if use_lemma_matcher:
-        lemmas_doc_bin = DocBin(attrs=["LEMMA"])
+        lemmas_doc_bin = DocBin(attrs=["LOWER"])
     difficulty_limit = (
         5 if is_kindle else prefs[f"{lemma_lang}_wiktionary_difficulty_limit"]
     )
@@ -169,7 +169,6 @@ def create_lemma_patterns_with_pos(lemma_lang, conn, nlp, difficulty_limit):
         JOIN forms f ON l.id = f.lemma_id
         JOIN senses s ON l.id = s.lemma_id AND f.pos = s.pos
         AND enabled = 1 AND difficulty <= :difficulty
-        WHERE lemma LIKE '% %'
         """
     yield from nlp.pipe(
         map(itemgetter(0), conn.execute(query_sql, {"difficulty": difficulty_limit}))

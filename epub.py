@@ -223,6 +223,7 @@ class EPUB:
     def add_lemma(
         self,
         lemma: str,
+        word: str,
         pos: str,
         paragraph_start: int,
         paragraph_end: int,
@@ -230,7 +231,7 @@ class EPUB:
         word_end: int,
         xhtml_path: Path,
     ) -> None:
-        sense_ids = self.find_sense_ids(lemma, pos)
+        sense_ids = self.find_sense_ids(lemma, word, pos)
         if len(sense_ids) == 0:
             return
         if sense_ids in self.sense_id_dict:
@@ -546,13 +547,15 @@ class EPUB:
         self.extract_folder.with_suffix(".zip").replace(self.book_path)
         shutil.rmtree(self.extract_folder)
 
-    def find_sense_ids(self, word: str, pos: str) -> tuple[int, ...]:
+    def find_sense_ids(self, lemma: str, word: str, pos: str) -> tuple[int, ...]:
         if pos != "":
-            return self.find_sense_ids_with_pos(word, pos)
+            return self.find_sense_ids_with_pos(lemma, word, pos)
         else:
             return self.find_sense_ids_without_pos(word)
 
-    def find_sense_ids_with_pos(self, word: str, pos: str) -> tuple[int, ...]:
+    def find_sense_ids_with_pos(
+        self, lemma: str, word: str, pos: str
+    ) -> tuple[int, ...]:
         if self.lemmas_conn is None:
             return ()
         sense_ids = []
@@ -562,27 +565,11 @@ class EPUB:
             FROM senses s JOIN lemmas l ON s.lemma_id = l.id
             WHERE lemma = ? AND pos = ?
             """,
-            (word, pos),
+            (lemma, pos),
         ):
             sense_ids.append(sense_id)
         if len(sense_ids) > 0:
             return tuple(sense_ids)
-
-        sql = """
-            SELECT DISTINCT s.id
-            FROM senses s JOIN forms f
-            ON s.lemma_id = f.lemma_id AND s.pos = f.pos
-            WHERE form = ?
-            """
-        query_values: tuple[str, ...] = (word,)
-        if " " not in word:  # not limit pos for phrase
-            sql += " AND f.pos = ?"
-            query_values = (word, pos)
-        for (sense_id,) in self.lemmas_conn.execute(sql, query_values):
-            sense_ids.append(sense_id)
-        if len(sense_ids) > 0:
-            return tuple(sense_ids)
-
         return self.find_sense_ids_without_pos(word)
 
     def find_sense_ids_without_pos(self, word: str) -> tuple[int, ...]:

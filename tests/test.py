@@ -21,7 +21,6 @@ class TestDumbCode(unittest.TestCase):
         prefs["mediawiki_api"] = ""
         prefs["add_locator_map"] = True
         prefs["minimal_x_ray_count"] = 1
-        prefs["use_pos"] = False
         prefs["kindle_gloss_lang"] = "en"
         prefs["use_wiktionary_for_kindle"] = False
 

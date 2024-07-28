@@ -17,7 +17,6 @@ PROFICIENCY_MAJOR_VERSION = PROFICIENCY_VERSION.split(".", 1)[0]
 
 
 class Prefs(TypedDict):
-    use_pos: bool
     search_people: bool
     model_size: str
     zh_wiki_variant: str

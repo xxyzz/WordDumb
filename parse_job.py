@@ -5,7 +5,6 @@ import shutil
 import sqlite3
 from dataclasses import asdict, dataclass
 from html import escape, unescape
-from itertools import chain
 from pathlib import Path
 from sqlite3 import Connection
 from typing import Any, Iterator
@@ -237,7 +236,6 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
     nlp = load_spacy(
         data.spacy_model,
         data.book_path if data.create_x else None,
-        prefs["use_pos"],
         data.book_lang,
     )
     lemmas_conn = None
@@ -250,7 +248,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
             else kindle_db_path(data.plugin_path, data.book_lang, prefs)
         )
         lemmas_conn = sqlite3.connect(lemmas_db_path)
-        lemma_matcher, phrase_matcher = create_spacy_matcher(
+        lemma_matcher = create_spacy_matcher(
             nlp,
             data.spacy_model,
             data.book_lang,
@@ -316,13 +314,11 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                 epub_find_lemma(
                     doc,
                     lemma_matcher,
-                    phrase_matcher,
                     start,
                     end,
                     interval_tree,
                     epub,
                     xhtml_path,
-                    prefs["use_pos"],
                 )
         supported_languages = load_languages_data(data.plugin_path)
         gloss_lang = prefs["wiktionary_gloss_lang"]
@@ -371,7 +367,6 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
             kindle_find_lemma(
                 doc,
                 lemma_matcher,
-                phrase_matcher,
                 start,
                 data.mobi_codec,
                 escaped_text,
@@ -425,20 +420,9 @@ def index_in_escaped_text(
         return None
 
 
-def match_lemmas(doc, lemma_matcher, phrase_matcher):
-    from spacy.util import filter_spans
-
-    phrase_spans = phrase_matcher(doc, as_spans=True)
-    if lemma_matcher is not None:
-        return filter_spans(chain(phrase_spans, lemma_matcher(doc, as_spans=True)))
-    else:
-        return filter_spans(phrase_spans)
-
-
 def kindle_find_lemma(
     doc,
     lemma_matcher,
-    phrase_matcher,
     start,
     mobi_codec,
     escaped_text,
@@ -447,14 +431,14 @@ def kindle_find_lemma(
     lemma_lang,
     prefs,
 ):
+    from spacy.util import filter_spans
+
     lemma_starts: set[int] = set()
-    for span in match_lemmas(doc, lemma_matcher, phrase_matcher):
-        lemma = getattr(span, "lemma_", "")
-        pos = getattr(span.doc[span.start], "pos_", "")
+    for span in filter_spans(lemma_matcher(doc, as_spans=True)):
         data = get_kindle_lemma_data(
-            span.lemma_ if prefs["use_pos"] and lemma != "" else span.text,
+            getattr(span, "lemma_", ""),
             span.text,
-            pos if prefs["use_pos"] and pos != "" else "",
+            getattr(span.doc[span.start], "pos_", ""),
             lemmas_conn,
             lemma_lang,
             prefs,
@@ -476,15 +460,15 @@ def kindle_find_lemma(
 def epub_find_lemma(
     doc,
     lemma_matcher,
-    phrase_matcher,
     paragraph_start,
     paragraph_end,
     interval_tree,
     epub,
     xhtml_path,
-    use_pos,
 ):
-    for span in match_lemmas(doc, lemma_matcher, phrase_matcher):
+    from spacy.util import filter_spans
+
+    for span in filter_spans(lemma_matcher(doc, as_spans=True)):
         if interval_tree is not None and interval_tree.is_overlap(
             Interval(span.start_char, span.end_char - 1)
         ):
@@ -493,7 +477,7 @@ def epub_find_lemma(
         epub.add_lemma(
             getattr(span, "lemma_", ""),
             span.text,
-            spacy_to_wiktionary_pos(pos) if use_pos and pos != "" else "",
+            spacy_to_wiktionary_pos(pos) if pos != "" else "",
             paragraph_start,
             paragraph_end,
             span.start_char,
@@ -738,19 +722,13 @@ def find_named_entity(
     return intervals
 
 
-def load_spacy(
-    model: str, book_path: str | None, use_pos: bool, lemma_lang: str
-) -> Any:
+def load_spacy(model: str, book_path: str | None, lemma_lang: str) -> Any:
     import spacy
 
     if model == "":
         return spacy.blank(lemma_lang)
 
     excluded_components = []
-    if not use_pos:
-        excluded_components.extend(
-            ["tok2vec", "morphologizer", "tagger", "attribute_ruler", "lemmatizer"]
-        )
     if book_path is None:
         excluded_components.append("ner")
 
@@ -790,20 +768,11 @@ def create_spacy_matcher(
     disabled_pipes = list(set(["ner", "parser", "senter"]) & set(nlp.pipe_names))
     pkg_versions = load_plugin_json(plugin_path, "data/deps.json")
     model_version = get_spacy_model_version(model, pkg_versions)
-    # Chinese words don't have inflection forms, only use phrase matcher
-    use_lemma_matcher = prefs["use_pos"] and lemma_lang != "zh" and model != ""
-    phrase_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
-    phrases_doc_path = spacy_doc_path(
-        model,
-        model_version,
-        lemma_lang,
-        is_kindle,
-        True,
-        plugin_path,
-        prefs,
-        use_lemma_matcher,
+    lemma_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
+    lemmas_doc_path = spacy_doc_path(
+        model, model_version, lemma_lang, is_kindle, plugin_path, prefs
     )
-    if not phrases_doc_path.exists():
+    if not lemmas_doc_path.exists():
         save_spacy_docs(
             nlp,
             model,
@@ -813,20 +782,8 @@ def create_spacy_matcher(
             lemmas_conn,
             plugin_path,
             prefs,
-            use_lemma_matcher,
         )
-    phrases_doc_bin = DocBin().from_disk(phrases_doc_path)
-    if use_lemma_matcher:
-        lemma_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")
-        lemmas_doc_path = spacy_doc_path(
-            model, model_version, lemma_lang, is_kindle, False, plugin_path, prefs, True
-        )
-        lemmas_doc_bin = DocBin().from_disk(lemmas_doc_path)
-
+    lemmas_doc_bin = DocBin().from_disk(lemmas_doc_path)
     with nlp.select_pipes(disable=disabled_pipes):
-        phrase_matcher.add("phrases", phrases_doc_bin.get_docs(nlp.vocab))
-        if use_lemma_matcher:
-            lemma_matcher.add("lemmas", lemmas_doc_bin.get_docs(nlp.vocab))
-            return lemma_matcher, phrase_matcher
-        else:
-            return None, phrase_matcher
+        lemma_matcher.add("lemmas", lemmas_doc_bin.get_docs(nlp.vocab))
+        return lemma_matcher

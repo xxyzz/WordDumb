@@ -44,7 +44,6 @@ from .utils import (
 )
 
 prefs = JSONConfig("plugins/worddumb")
-prefs.defaults["use_pos"] = True
 prefs.defaults["search_people"] = False
 prefs.defaults["model_size"] = "md"
 prefs.defaults["zh_wiki_variant"] = "cn"
@@ -93,10 +92,6 @@ class ConfigWidget(QWidget):
             partial(self.open_choose_lemma_lang_dialog, is_kindle=False)
         )
         vl.addWidget(custom_wiktionary_button)
-
-        self.use_pos_box = QCheckBox(_("Use POS type to find Word Wise definition"))
-        self.use_pos_box.setChecked(prefs["use_pos"])
-        vl.addWidget(self.use_pos_box)
 
         self.search_people_box = QCheckBox(
             _(
@@ -231,7 +226,6 @@ class ConfigWidget(QWidget):
 
     def save_settings(self) -> None:
         prefs["python_path"] = self.python_path.text()
-        prefs["use_pos"] = self.use_pos_box.isChecked()
         prefs["search_people"] = self.search_people_box.isChecked()
         prefs["model_size"] = self.model_size_box.currentData()
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()

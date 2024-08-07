@@ -4,7 +4,7 @@ from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from calibre.constants import isfrozen, ismacos
+from calibre.constants import isfrozen
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig
@@ -55,8 +55,6 @@ prefs.defaults["minimal_x_ray_count"] = 1
 prefs.defaults["choose_format_manually"] = True
 prefs.defaults["wiktionary_gloss_lang"] = "en"
 prefs.defaults["kindle_gloss_lang"] = "en"
-prefs.defaults["use_gpu"] = False
-prefs.defaults["cuda"] = "cu121"
 prefs.defaults["use_wiktionary_for_kindle"] = False
 prefs.defaults["remove_link_styles"] = False
 prefs.defaults["python_path"] = ""
@@ -123,30 +121,6 @@ class ConfigWidget(QWidget):
         self.python_path = QLineEdit()
         self.python_path.setText(prefs["python_path"])
         form_layout.addRow(python_path_label, self.python_path)
-
-        if not ismacos:
-            self.use_gpu_box = QCheckBox(_("Run spaCy with GPU(requires CUDA)"))
-            self.use_gpu_box.setToolTip(
-                _(
-                    "GPU will be used when creating X-Ray file if spaCy has transformer"
-                    " model for the book language with ner component."
-                )
-            )
-            self.use_gpu_box.setChecked(prefs["use_gpu"])
-            vl.addWidget(self.use_gpu_box)
-
-            cuda_versions = {"cu121": "CUDA 12.1", "cu118": "CUDA 11.8"}
-            self.cuda_version_box = QComboBox()
-            for cuda_version, text in cuda_versions.items():
-                self.cuda_version_box.addItem(text, cuda_version)
-            if prefs["cuda"] not in cuda_versions:
-                prefs["cuda"] = "cu121"
-            self.cuda_version_box.setCurrentText(cuda_versions[prefs["cuda"]])
-            cuda_version_label = QLabel(_("CUDA version"))
-            cuda_version_label.setToolTip(
-                _('Use command "nvcc --version" to check CUDA version')
-            )
-            form_layout.addRow(cuda_version_label, self.cuda_version_box)
 
         model_size_label = QLabel(
             _('<a href="https://spacy.io/models/en">spaCy model</a> size')
@@ -232,9 +206,6 @@ class ConfigWidget(QWidget):
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
         prefs["remove_link_styles"] = self.remove_link_styles.isChecked()
-        if not ismacos:
-            prefs["use_gpu"] = self.use_gpu_box.isChecked()
-            prefs["cuda"] = self.cuda_version_box.currentData()
         mediawiki_api = self.mediawiki_api.text().strip("/ ")
         if mediawiki_api.endswith("/api.php") or mediawiki_api == "":
             prefs["mediawiki_api"] = mediawiki_api

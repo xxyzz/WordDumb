@@ -728,17 +728,12 @@ def load_spacy(model: str, book_path: str | None, lemma_lang: str) -> Any:
     if model == "":
         return spacy.blank(lemma_lang)
 
-    excluded_components = []
+    excluded_components = ["parser"]
     if book_path is None:
         excluded_components.append("ner")
 
-    if model.endswith("_trf"):
-        spacy.require_gpu()
-    else:
-        excluded_components.append("parser")
-
     nlp = spacy.load(model, exclude=excluded_components)
-    if not model.endswith("_trf") and book_path is not None:
+    if book_path is not None:
         # simpler and faster https://spacy.io/usage/linguistic-features#sbd
         nlp.enable_pipe("senter")
 

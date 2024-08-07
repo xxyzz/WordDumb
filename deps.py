@@ -51,26 +51,6 @@ def install_deps(pkg: str, notif: Any) -> None:
                 f"{pkg}-{model_version}/{pkg}-{model_version}-py3-none-any.whl"
             )
             pip_install(pkg, model_version, url=url, notif=notif)
-            if pkg.endswith("_trf"):
-                from .config import prefs
-
-                pip_install("cupy-wheel", dep_versions["cupy"], notif=notif)
-                # PyTorch's Windows package on pypi.org is CPU build version,
-                # reintall the CUDA build version
-                if iswindows or prefs["cuda"] == "cu118":
-                    pip_install(
-                        "torch",
-                        dep_versions["torch"],
-                        extra_index=f"https://download.pytorch.org/whl/{prefs['cuda']}",
-                        notif=notif,
-                    )
-                    # an old version of typing-extensions(4.4.0) is installed
-                    # from pytorch's index which is incompatible with pydantic 2.4.2
-                    pip_install(
-                        "typing-extensions",
-                        dep_versions["typing-extensions"],
-                        notif=notif,
-                    )
 
         if ismacos and platform.machine() == "arm64":
             pip_install(
@@ -125,8 +105,6 @@ def pip_install(
     notif: Any = None,
 ) -> None:
     pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
-    if pkg == "torch" and extra_index:
-        pattern = f"torch-{pkg_version}+{extra_index.split('/')[-1]}*"
     if not any(LIBS_PATH.glob(pattern)):
         if notif:
             notif.put((0, f"Installing {pkg}"))

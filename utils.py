@@ -28,8 +28,6 @@ class Prefs(TypedDict):
     choose_format_manually: bool
     wiktionary_gloss_lang: str
     kindle_gloss_lang: str
-    use_gpu: bool
-    cuda: str
     last_opened_kindle_lemmas_language: str
     last_opened_wiktionary_lemmas_language: str
     use_wiktionary_for_kindle: bool
@@ -165,11 +163,7 @@ def spacy_model_name(lemma_lang: str, prefs: Prefs) -> str:
     spacy_model = languages[lemma_lang]["spacy"]
     if spacy_model == "":
         return ""
-    if prefs["use_gpu"] and languages[lemma_lang]["has_trf"]:
-        spacy_model += "trf"
-    else:
-        spacy_model += prefs["model_size"]
-    return spacy_model
+    return spacy_model + prefs["model_size"]
 
 
 def load_languages_data(
@@ -189,9 +183,8 @@ def load_languages_data(
 def get_spacy_model_version(
     model_name: str, dependency_versions: dict[str, str]
 ) -> str:
-    key = "spacy_trf_model" if model_name.endswith("_trf") else "spacy_cpu_model"
     lang_code = model_name[:2]
-    lang_key = f"{lang_code}_{key}"
+    lang_key = f"{lang_code}_spacy_cpu_model"
     if lang_key in dependency_versions:
         return dependency_versions[lang_key]
-    return dependency_versions.get(key, "")
+    return dependency_versions.get("spacy_cpu_model", "")

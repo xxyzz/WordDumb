@@ -174,5 +174,9 @@ def download_word_wise_file(
 
 def download_and_extract(url: str, extract_path: Path) -> None:
     extract_path.parent.mkdir(parents=True, exist_ok=True)
-    with urlopen(url) as r, bz2.open(r) as bz2_f, extract_path.open("wb") as f:
+    download_path = extract_path.with_name(url.rsplit("/", 1)[-1])
+    with urlopen(url) as r, open(download_path, "wb") as f:
+        shutil.copyfileobj(r, f)
+    with bz2.open(download_path) as bz2_f, extract_path.open("wb") as f:
         shutil.copyfileobj(bz2_f, f)
+    download_path.unlink()

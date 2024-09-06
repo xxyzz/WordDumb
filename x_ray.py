@@ -148,7 +148,7 @@ class X_Ray:
 
         self.entity_occurrences[entity_id].append((start, entity_len))
 
-    def merge_entities(self, minimal_count: int) -> None:
+    def merge_entities(self, prefs: Prefs) -> None:
         for entity_name, entity_data in self.entities.copy().items():
             if entity_name in self.custom_x_ray:
                 continue
@@ -161,8 +161,15 @@ class X_Ray:
                 del self.entity_occurrences[entity_data.id]
                 del self.entities[entity_name]
                 continue
-            entity_cache = self.mediawiki.get_cache(entity_name)
-            if entity_cache is None and entity_data.count < minimal_count:
+            has_cache = self.mediawiki.get_cache(entity_name) is not None
+            is_person = entity_data.label in PERSON_LABELS
+            if entity_data.count < prefs["minimal_x_ray_count"] and (
+                (prefs["search_people"] and not has_cache)
+                or (
+                    not prefs["search_people"]
+                    and (is_person or (not is_person and not has_cache))
+                )
+            ):
                 del self.entity_occurrences[entity_data.id]
                 del self.entities[entity_name]
 
@@ -178,7 +185,7 @@ class X_Ray:
         self.mediawiki.query(self.entities, prefs["search_people"])
         if self.wikidata is not None:
             query_wikidata(self.entities, self.mediawiki, self.wikidata)
-        self.merge_entities(prefs["minimal_x_ray_count"])
+        self.merge_entities(prefs)
 
         insert_x_entities(
             self.conn,

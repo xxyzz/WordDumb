@@ -25,7 +25,11 @@ def is_ww_supported(book_lang: str, gloss_lang: str) -> bool:
     from .utils import get_plugin_path, load_languages_data
 
     lang_dict = load_languages_data(get_plugin_path())
-    return book_lang in lang_dict.get(gloss_lang, {}).get("lemma_languages", [])
+    lang_data = lang_dict.get(gloss_lang, {})
+    supported_codes = lang_data.get("lemma_languages", [])
+    if len(supported_codes) == 0 and lang_data["gloss_source"] == "kaikki":
+        supported_codes = lang_dict.keys()
+    return book_lang in supported_codes
 
 
 def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult | None:
@@ -62,9 +66,7 @@ def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult
     book_lang = supported_languages[calibre_book_lang]
     support_ww_list = []
     for fmt in supported_fmts:
-        gloss_lang = prefs[
-            "kindle_gloss_lang" if fmt != "EPUB" else "wiktionary_gloss_lang"
-        ]
+        gloss_lang = prefs["gloss_lang"]
         support_ww_list.append(is_ww_supported(book_lang, gloss_lang))
 
     return MetaDataResult(
@@ -118,9 +120,7 @@ def cli_check_metadata(book_path_str: str, log: Any) -> MetaDataResult | None:
             )
             return None
         book_lang = supported_languages[calibre_book_lang]
-        gloss_lang = prefs[
-            "kindle_gloss_lang" if book_fmt != "EPUB" else "wiktionary_gloss_lang"
-        ]
+        gloss_lang = prefs["gloss_lang"]
         return MetaDataResult(
             book_fmts=[book_fmt],
             mi=mi,

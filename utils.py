@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 CJK_LANGS = ["zh", "ja", "ko"]
-PROFICIENCY_VERSION = "0.5.20"
+PROFICIENCY_VERSION = "0.5.21"
 PROFICIENCY_RELEASE_URL = (
     f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}"
 )
@@ -26,10 +26,7 @@ class Prefs(TypedDict):
     use_all_formats: bool
     mal_x_ray_count: int
     choose_format_manually: bool
-    wiktionary_gloss_lang: str
-    kindle_gloss_lang: str
-    last_opened_kindle_lemmas_language: str
-    last_opened_wiktionary_lemmas_language: str
+    gloss_lang: str
     use_wiktionary_for_kindle: bool
     python_path: str
     show_change_kindle_ww_lang_warning: bool
@@ -93,14 +90,14 @@ def get_plugin_path() -> Path:
     return Path(config_dir) / "plugins/WordDumb.zip"
 
 
-def custom_lemmas_folder(plugin_path: Path, lemma_lang: str) -> Path:
-    return plugin_path.parent / "worddumb-lemmas" / lemma_lang
+def custom_lemmas_folder(plugin_path: Path) -> Path:
+    return plugin_path.parent / "worddumb-lemmas"
 
 
 def use_kindle_ww_db(lemma_lang: str, prefs: Prefs) -> bool:
     return (
         lemma_lang == "en"
-        and prefs["kindle_gloss_lang"] in ["en", "zh", "zh_cn"]
+        and prefs["gloss_lang"] in ["en", "zh", "zh_cn"]
         and not prefs["use_wiktionary_for_kindle"]
     )
 
@@ -108,22 +105,22 @@ def use_kindle_ww_db(lemma_lang: str, prefs: Prefs) -> bool:
 def kindle_db_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -> Path:
     if use_kindle_ww_db(lemma_lang, prefs):
         return (
-            custom_lemmas_folder(plugin_path, lemma_lang)
+            custom_lemmas_folder(plugin_path)
             / f"kindle_en_en_v{PROFICIENCY_MAJOR_VERSION}.db"
         )
     else:
-        return wiktionary_db_path(plugin_path, lemma_lang, prefs["kindle_gloss_lang"])
+        return wiktionary_db_path(plugin_path, lemma_lang, prefs["gloss_lang"])
 
 
 def wiktionary_db_path(plugin_path: Path, lemma_lang: str, gloss_lang: str) -> Path:
     return (
-        custom_lemmas_folder(plugin_path, lemma_lang)
+        custom_lemmas_folder(plugin_path)
         / f"wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.db"
     )
 
 
 def get_kindle_klld_path(plugin_path: Path, zh_gloss: bool = False) -> Path | None:
-    custom_folder = custom_lemmas_folder(plugin_path, "en")
+    custom_folder = custom_lemmas_folder(plugin_path)
     for path in custom_folder.glob("*.zh.klld" if zh_gloss else "*.en.klld"):
         return path
     for path in custom_folder.glob("*.zh.db" if zh_gloss else "*.en.db"):
@@ -135,7 +132,7 @@ def get_wiktionary_klld_path(
     plugin_path: Path, lemma_lang: str, gloss_lang: str
 ) -> Path:
     return (
-        custom_lemmas_folder(plugin_path, lemma_lang)
+        custom_lemmas_folder(plugin_path)
         / f"kll.{lemma_lang}.{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.klld"
     )
 

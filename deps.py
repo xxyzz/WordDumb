@@ -1,6 +1,6 @@
-import bz2
 import platform
 import shutil
+import tarfile
 from pathlib import Path
 from typing import Any
 from urllib.request import urlopen
@@ -10,14 +10,12 @@ from calibre.constants import isfrozen, ismacos, iswindows
 from .utils import (
     PROFICIENCY_RELEASE_URL,
     Prefs,
+    custom_lemmas_folder,
     get_plugin_path,
     get_spacy_model_version,
-    get_wiktionary_klld_path,
-    kindle_db_path,
     load_plugin_json,
     mac_bin_path,
     run_subprocess,
-    wiktionary_db_path,
 )
 
 PY_PATH = ""
@@ -146,7 +144,7 @@ def download_word_wise_file(
     log=None,
     notifications=None,
 ) -> None:
-    gloss_lang = prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"]
+    gloss_lang = prefs["gloss_lang"]
     if notifications:
         notifications.put(
             (
@@ -156,27 +154,14 @@ def download_word_wise_file(
             )
         )
     plugin_path = get_plugin_path()
-    if is_kindle:
-        db_path = kindle_db_path(plugin_path, lemma_lang, prefs)
-    else:
-        db_path = wiktionary_db_path(plugin_path, lemma_lang, gloss_lang)
-
-    if not db_path.exists():
-        bz2_filename = db_path.with_suffix(db_path.suffix + ".bz2").name
-        download_and_extract(f"{PROFICIENCY_RELEASE_URL}/{bz2_filename}", db_path)
-
-    if is_kindle:
-        klld_path = get_wiktionary_klld_path(plugin_path, lemma_lang, gloss_lang)
-        if not klld_path.exists():
-            bz2_filename = klld_path.with_suffix(klld_path.suffix + ".bz2").name
-            download_and_extract(f"{PROFICIENCY_RELEASE_URL}/{bz2_filename}", klld_path)
-
-
-def download_and_extract(url: str, extract_path: Path) -> None:
-    extract_path.parent.mkdir(parents=True, exist_ok=True)
-    download_path = extract_path.with_name(url.rsplit("/", 1)[-1])
+    bz2_filename = f"{lemma_lang}_{gloss_lang}.tar.bz2"
+    url = f"{PROFICIENCY_RELEASE_URL}/{bz2_filename}"
+    download_folder = custom_lemmas_folder(plugin_path)
+    if not download_folder.is_dir():
+        download_folder.mkdir()
+    download_path = download_folder / bz2_filename
     with urlopen(url) as r, open(download_path, "wb") as f:
         shutil.copyfileobj(r, f)
-    with bz2.open(download_path) as bz2_f, extract_path.open("wb") as f:
-        shutil.copyfileobj(bz2_f, f)
+    with tarfile.open(name=download_path, mode="r:bz2") as tar_f:
+        tar_f.extractall(download_folder)
     download_path.unlink()

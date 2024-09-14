@@ -210,7 +210,7 @@ class CustomLemmasDialog(QDialog):
             if not package_name:
                 device_not_found_dialog(self)
                 return
-            custom_folder = custom_lemmas_folder(plugin_path, "en")
+            custom_folder = custom_lemmas_folder(plugin_path)
             if isinstance(package_name, str):
                 copy_klld_from_android(package_name, custom_folder)
             else:

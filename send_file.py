@@ -270,7 +270,7 @@ def copy_klld_to_device(
 
     plugin_path = get_plugin_path()
     if use_kindle_ww_db(book_lang, prefs):
-        if prefs["kindle_gloss_lang"] in ("zh", "zh_cn"):  # restore origin ww db
+        if prefs["gloss_lang"] in ("zh", "zh_cn"):  # restore origin ww db
             local_klld_path = get_kindle_klld_path(plugin_path, True)
             if local_klld_path is None:
                 return
@@ -278,7 +278,7 @@ def copy_klld_to_device(
             return
     else:
         local_klld_path = get_wiktionary_klld_path(
-            plugin_path, book_lang, prefs["kindle_gloss_lang"]
+            plugin_path, book_lang, prefs["gloss_lang"]
         )
 
     if adb_path is not None:

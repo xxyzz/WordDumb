@@ -145,7 +145,7 @@ def do_job(
         if (
             data.create_ww
             and not wiktionary_db_path(
-                data.plugin_path, data.book_lang, prefs["wiktionary_gloss_lang"]
+                data.plugin_path, data.book_lang, prefs["gloss_lang"]
             ).exists()
         ):
             download_word_wise_file(
@@ -161,7 +161,7 @@ def do_job(
         if data.create_ww and (
             not kindle_db_path(data.plugin_path, data.book_lang, prefs).exists()
             or not get_wiktionary_klld_path(
-                data.plugin_path, data.book_lang, prefs["kindle_gloss_lang"]
+                data.plugin_path, data.book_lang, prefs["gloss_lang"]
             ).exists()
         ):
             download_word_wise_file(
@@ -241,9 +241,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
     lemmas_conn = None
     if data.create_ww:
         lemmas_db_path = (
-            wiktionary_db_path(
-                data.plugin_path, data.book_lang, prefs["wiktionary_gloss_lang"]
-            )
+            wiktionary_db_path(data.plugin_path, data.book_lang, prefs["gloss_lang"])
             if is_epub
             else kindle_db_path(data.plugin_path, data.book_lang, prefs)
         )
@@ -321,7 +319,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                     xhtml_path,
                 )
         supported_languages = load_languages_data(data.plugin_path)
-        gloss_lang = prefs["wiktionary_gloss_lang"]
+        gloss_lang = prefs["gloss_lang"]
         gloss_source = supported_languages[gloss_lang]["gloss_source"]
         epub.modify_epub(prefs, data.book_lang, gloss_lang, gloss_source)
         return

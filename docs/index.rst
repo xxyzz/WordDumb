@@ -40,36 +40,38 @@ Features
 Supported languages
 -------------------
 
-============= ===== ===================================================
-Book language X-Ray Word Wise gloss languages
-============= ===== ===================================================
-Bokmål        ✅    Bokmål, English, Français, 中文
-Català        ✅    English, Français, 中文
-Dansk         ✅    English, Français, 中文
-Deutsch       ✅    Deutsch, English, Français, 中文
-English       ✅    English, Español, Français, Italiano, Ελληνικά, עִבְרִית‎, 中文
-Español       ✅    Español, English, Français, 中文
-Français      ✅    English, Français, Ελληνικά, 中文
-Hrvatski      ✅    English, Français, Hrvatski, 中文
-Italiano      ✅    English, Français, Italiano, 中文
-Lietuvių      ✅    English, Français, Lietuvių, 中文
-Nederlands    ✅    English, Français, Nederlands, 中文
-Polski        ✅    English, Français, Polski, 中文
-Português     ✅    English, Français, Português, 中文
-Română        ✅    English, Français, 中文
-Slovenščina   ✅    English, Français, 中文
-Suomi         ✅    English, Français, Suomi, 中文
-Svenska       ✅    English, Français, Svenska, 中文
-čeština       ❌    English, Français, 中文
-Ελληνικά      ✅    English, Français, Ελληνικά, 中文
-Македонски    ✅    English, Français, 中文
-Русский       ✅    English, Français, Русский, 中文
-Українська    ✅    English, Français, 中文
-עִבְֿרִית‎          ❌    English, Français, 中文
-中文          ✅     English, Français, 中文
-日本語         ✅    English, Français, 中文, 日本語
-한국어         ✅     English, Français, 中文
-============= ===== ===================================================
+Supported Word Wise definition languages are listed in the plugin's customize window.
+
+============= =====
+Book language X-Ray
+============= =====
+Bokmål        ✅
+Català        ✅
+Dansk         ✅
+Deutsch       ✅
+English       ✅
+Español       ✅
+Français      ✅
+Hrvatski      ✅
+Italiano      ✅
+Lietuvių      ✅
+Nederlands    ✅
+Polski        ✅
+Português     ✅
+Română        ✅
+Slovenščina   ✅
+Suomi         ✅
+Svenska       ✅
+čeština       ❌
+Ελληνικά      ✅
+Македонски    ✅
+Русский       ✅
+Українська    ✅
+עִבְֿרִית‎          ❌
+中文          ✅
+日本語         ✅
+한국어         ✅
+============= =====
 
 Community
 ---------

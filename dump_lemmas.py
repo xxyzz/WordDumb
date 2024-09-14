@@ -31,11 +31,11 @@ def spacy_doc_path(
 ):
     import platform
 
-    gloss_lang = prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"]
+    gloss_lang = prefs["gloss_lang"]
     if is_kindle and not use_kindle_ww_db(lemma_lang, prefs):
         is_kindle = False
     py_version = ".".join(platform.python_version_tuple()[:2])
-    path = custom_lemmas_folder(plugin_path, lemma_lang).joinpath(
+    path = custom_lemmas_folder(plugin_path).joinpath(
         f"{spacy_model or lemma_lang}_{'kindle' if is_kindle else 'wiktionary'}"
         f"_{gloss_lang}_{model_version}_{py_version}"
     )

@@ -53,8 +53,7 @@ prefs.defaults["preferred_formats"] = ["KFX", "AZW3", "AZW", "MOBI", "EPUB"]
 prefs.defaults["use_all_formats"] = False
 prefs.defaults["minimal_x_ray_count"] = 1
 prefs.defaults["choose_format_manually"] = True
-prefs.defaults["wiktionary_gloss_lang"] = "en"
-prefs.defaults["kindle_gloss_lang"] = "en"
+prefs.defaults["gloss_lang"] = "en"
 prefs.defaults["use_wiktionary_for_kindle"] = False
 prefs.defaults["remove_link_styles"] = False
 prefs.defaults["python_path"] = ""
@@ -220,9 +219,7 @@ class ConfigWidget(QWidget):
         if choose_lang_dlg.exec():
             lemma_lang = choose_lang_dlg.lemma_lang_box.currentData()
             gloss_lang = choose_lang_dlg.gloss_lang_box.currentData()
-            prefs["kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"] = (
-                gloss_lang
-            )
+            prefs["gloss_lang"] = gloss_lang
             if is_kindle and lemma_lang == "en" and gloss_lang in ["en", "zh", "zh_cn"]:
                 prefs["use_wiktionary_for_kindle"] = (
                     choose_lang_dlg.use_wiktionary_box.isChecked()
@@ -436,10 +433,6 @@ class ChooseLemmaLangDialog(QDialog):
     def __init__(self, parent: QObject, is_kindle: bool):
         super().__init__(parent)
         self.setWindowTitle(_("Choose language"))
-        self.prefer_gloss_code = prefs[
-            "kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"
-        ]
-
         form_layout = QFormLayout()
         form_layout.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -448,14 +441,12 @@ class ChooseLemmaLangDialog(QDialog):
         self.lemma_lang_box = QComboBox()
         self.gloss_lang_box = QComboBox()
         language_dict = load_languages_data(get_plugin_path())
-        selected_gloss_code = prefs[
-            "kindle_gloss_lang" if is_kindle else "wiktionary_gloss_lang"
-        ]
+        selected_gloss_code = prefs["gloss_lang"]
         self.gloss_lang_box.currentIndexChanged.connect(
             partial(self.gloss_lang_changed, language_dict)
         )
         for gloss_lang, lang_value in language_dict.items():
-            if len(lang_value.get("lemma_languages", [])) == 0:
+            if lang_value.get("gloss_source", []) == "":
                 continue
             gloss_lang_name = _(lang_value["name"])
             self.gloss_lang_box.addItem(gloss_lang_name, gloss_lang)
@@ -503,6 +494,8 @@ class ChooseLemmaLangDialog(QDialog):
         gloss_lang = self.gloss_lang_box.currentData()
         self.lemma_lang_box.clear()
         lemma_langs = lang_dict[gloss_lang].get("lemma_languages", [])
+        if len(lemma_langs) == 0:
+            lemma_langs = lang_dict.keys()
         for index, lemma_lang in enumerate(lemma_langs):
             lemma_lang_name = _(lang_dict[lemma_lang]["name"])
             self.lemma_lang_box.addItem(lemma_lang_name, lemma_lang)

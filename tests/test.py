@@ -21,7 +21,7 @@ class TestDumbCode(unittest.TestCase):
         prefs["mediawiki_api"] = ""
         prefs["add_locator_map"] = True
         prefs["minimal_x_ray_count"] = 1
-        prefs["kindle_gloss_lang"] = "en"
+        prefs["gloss_lang"] = "en"
         prefs["use_wiktionary_for_kindle"] = False
 
         lib_db = db("~/Calibre Library").new_api

@@ -33,17 +33,18 @@ def is_ww_supported(book_lang: str, gloss_lang: str) -> bool:
 
 
 def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult | None:
+    from calibre.utils.localization import lang_as_iso639_1
+
     from .config import prefs
     from .error_dialogs import unsupported_format_dialog, unsupported_language_dialog
     from .utils import get_plugin_path, load_languages_data
 
     db = gui.current_db.new_api
     lang_dict = load_languages_data(get_plugin_path(), False)
-    supported_languages = {v["639-2"]: k for k, v in lang_dict.items()}
     mi = db.get_metadata(book_id, get_cover=True)
     # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-    calibre_book_lang = mi.get("language")
-    if calibre_book_lang not in supported_languages:
+    book_lang = lang_as_iso639_1(mi.get("language"))
+    if book_lang not in lang_dict:
         unsupported_language_dialog(mi.get("title"))
         return None
 
@@ -63,7 +64,6 @@ def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult
     if not prefs["use_all_formats"]:
         supported_fmts = [supported_fmts[0]]
 
-    book_lang = supported_languages[calibre_book_lang]
     support_ww_list = []
     for fmt in supported_fmts:
         gloss_lang = prefs["gloss_lang"]
@@ -81,11 +81,11 @@ def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult
 
 
 def cli_check_metadata(book_path_str: str, log: Any) -> MetaDataResult | None:
+    from calibre.utils.localization import lang_as_iso639_1
+
     from .config import prefs
     from .utils import get_plugin_path, load_languages_data
 
-    lang_dict = load_languages_data(get_plugin_path(), False)
-    supported_languages = {v["639-2"]: k for k, v in lang_dict.items()}
     book_path = Path(book_path_str)
     book_fmt = book_path.suffix.upper()[1:]
     mi = None
@@ -112,14 +112,14 @@ def cli_check_metadata(book_path_str: str, log: Any) -> MetaDataResult | None:
             mi = get_metadata(f)
 
     if mi is not None:
-        calibre_book_lang = mi.get("language")
-        if calibre_book_lang not in supported_languages:
+        lang_dict = load_languages_data(get_plugin_path(), False)
+        book_lang = lang_as_iso639_1(mi.get("language"))
+        if book_lang not in lang_dict:
             log.prints(
                 log.WARN,
                 f"The language of the book {mi.get('title')} is not supported.",
             )
             return None
-        book_lang = supported_languages[calibre_book_lang]
         gloss_lang = prefs["gloss_lang"]
         return MetaDataResult(
             book_fmts=[book_fmt],

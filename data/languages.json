@@ -1,36 +1,26 @@
 {
   "ca": {
-    "639-2": "cat",
     "gloss_source": "",
-    "has_trf": true,
     "name": "Catalan",
     "spacy": "ca_core_news_"
   },
   "cs": {
-    "639-2": "ces",
     "gloss_source": "",
-    "has_trf": false,
     "name": "Czech",
     "spacy": ""
   },
   "da": {
-    "639-2": "dan",
     "gloss_source": "",
-    "has_trf": true,
     "name": "Danish",
     "spacy": "da_core_news_"
   },
   "de": {
-    "639-2": "deu",
     "gloss_source": "kaikki",
-    "has_trf": false,
     "name": "German",
     "spacy": "de_core_news_"
   },
   "el": {
-    "639-2": "ell",
     "gloss_source": "dbnary",
-    "has_trf": false,
     "lemma_languages": [
       "el",
       "en",
@@ -40,23 +30,17 @@
     "spacy": "el_core_news_"
   },
   "en": {
-    "639-2": "eng",
     "gloss_source": "kaikki",
-    "has_trf": true,
     "name": "English",
     "spacy": "en_core_web_"
   },
   "es": {
-    "639-2": "spa",
     "gloss_source": "kaikki",
-    "has_trf": false,
     "name": "Spanish",
     "spacy": "es_core_news_"
   },
   "fi": {
-    "639-2": "fin",
     "gloss_source": "dbnary",
-    "has_trf": false,
     "lemma_languages": [
       "fi"
     ],
@@ -64,36 +48,38 @@
     "spacy": "fi_core_news_"
   },
   "fr": {
-    "639-2": "fra",
     "gloss_source": "kaikki",
-    "has_trf": false,
     "name": "French",
     "spacy": "fr_core_news_"
   },
   "he": {
-    "639-2": "heb",
     "gloss_source": "kaikki",
-    "has_trf": false,
     "lemma_languages": [
       "en"
     ],
     "name": "Hebrew",
     "spacy": ""
   },
+  "hi": {
+    "gloss_source": "",
+    "name": "Hindi",
+    "spacy": ""
+  },
   "hr": {
-    "639-2": "hrv",
     "gloss_source": "dbnary",
-    "has_trf": false,
     "lemma_languages": [
       "hr"
     ],
     "name": "Serbo-Croatian",
     "spacy": "hr_core_news_"
   },
+  "id": {
+    "gloss_source": "",
+    "name": "Indonesian",
+    "spacy": ""
+  },
   "it": {
-    "639-2": "ita",
     "gloss_source": "dbnary",
-    "has_trf": false,
     "lemma_languages": [
       "en",
       "it"
@@ -102,23 +88,17 @@
     "spacy": "it_core_news_"
   },
   "ja": {
-    "639-2": "jpn",
     "gloss_source": "kaikki",
-    "has_trf": true,
     "name": "Japanese",
     "spacy": "ja_core_news_"
   },
   "ko": {
-    "639-2": "kor",
     "gloss_source": "",
-    "has_trf": false,
     "name": "Korean",
     "spacy": "ko_core_news_"
   },
   "lt": {
-    "639-2": "lit",
     "gloss_source": "dbnary",
-    "has_trf": false,
     "lemma_languages": [
       "lt"
     ],
@@ -126,16 +106,17 @@
     "spacy": "lt_core_news_"
   },
   "mk": {
-    "639-2": "mkd",
     "gloss_source": "",
-    "has_trf": false,
     "name": "Macedonian",
     "spacy": "mk_core_news_"
   },
+  "ms": {
+    "gloss_source": "",
+    "name": "Malay",
+    "spacy": ""
+  },
   "nl": {
-    "639-2": "nld",
     "gloss_source": "dbnary",
-    "has_trf": false,
     "lemma_languages": [
       "nl"
     ],
@@ -143,9 +124,7 @@
     "spacy": "nl_core_news_"
   },
   "nb": {
-    "639-2": "nob",
     "gloss_source": "dbnary",
-    "has_trf": false,
     "lemma_languages": [
       "no"
     ],
@@ -153,16 +132,12 @@
     "spacy": "nb_core_news_"
   },
   "pl": {
-    "639-2": "pol",
     "gloss_source": "kaikki",
-    "has_trf": false,
     "name": "Polish",
     "spacy": "pl_core_news_"
   },
   "pt": {
-    "639-2": "por",
     "gloss_source": "dbnary",
-    "has_trf": false,
     "lemma_languages": [
       "pt"
     ],
@@ -170,30 +145,22 @@
     "spacy": "pt_core_news_"
   },
   "ro": {
-    "639-2": "ron",
     "gloss_source": "",
-    "has_trf": false,
     "name": "Romanian",
     "spacy": "ro_core_news_"
   },
   "ru": {
-    "639-2": "rus",
     "gloss_source": "kaikki",
-    "has_trf": false,
     "name": "Russian",
     "spacy": "ru_core_news_"
   },
   "sl": {
-    "639-2": "slv",
     "gloss_source": "",
-    "has_trf": true,
     "name": "Slovene",
     "spacy": "sl_core_news_"
   },
   "sv": {
-    "639-2": "swe",
     "gloss_source": "dbnary",
-    "has_trf": false,
     "lemma_languages": [
       "sv"
     ],
@@ -201,16 +168,12 @@
     "spacy": "sv_core_news_"
   },
   "uk": {
-    "639-2": "ukr",
     "gloss_source": "",
-    "has_trf": true,
     "name": "Ukrainian",
     "spacy": "uk_core_news_"
   },
   "zh": {
-    "639-2": "zho",
     "gloss_source": "kaikki",
-    "has_trf": true,
     "name": "Chinese",
     "spacy": "zh_core_web_"
   }

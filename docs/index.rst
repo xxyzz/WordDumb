@@ -42,36 +42,39 @@ Supported languages
 
 Supported Word Wise definition languages are listed in the plugin's customize window.
 
-============= =====
-Book language X-Ray
-============= =====
-Bokmål        ✅
-Català        ✅
-Dansk         ✅
-Deutsch       ✅
-English       ✅
-Español       ✅
-Français      ✅
-Hrvatski      ✅
-Italiano      ✅
-Lietuvių      ✅
-Nederlands    ✅
-Polski        ✅
-Português     ✅
-Română        ✅
-Slovenščina   ✅
-Suomi         ✅
-Svenska       ✅
-čeština       ❌
-Ελληνικά      ✅
-Македонски    ✅
-Русский       ✅
-Українська    ✅
-עִבְֿרִית‎          ❌
-中文          ✅
-日本語         ✅
-한국어         ✅
-============= =====
+================ =====
+Book language    X-Ray
+================ =====
+Bahasa Indonesia ❌
+Bahasa Melayu    ❌
+Bokmål           ✅
+Català           ✅
+Dansk            ✅
+Deutsch          ✅
+English          ✅
+Español          ✅
+Français         ✅
+Hrvatski         ✅
+Italiano         ✅
+Lietuvių         ✅
+Nederlands       ✅
+Polski           ✅
+Português        ✅
+Română           ✅
+Slovenščina      ✅
+Suomi            ✅
+Svenska          ✅
+čeština          ❌
+Ελληνικά         ✅
+Македонски       ✅
+Русский          ✅
+Українська       ✅
+עִבְֿרִית‎             ❌
+हिन्दी              ❌
+中文             ✅
+日本語            ✅
+한국어            ✅
+================ =====
 
 Community
 ---------

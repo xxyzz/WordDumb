@@ -563,7 +563,7 @@ class EPUB:
             """
             SELECT DISTINCT s.id
             FROM senses s JOIN lemmas l ON s.lemma_id = l.id
-            WHERE lemma = ? AND pos = ?
+            WHERE lemma = ? AND pos = ? AND enabled = 1
             """,
             (lemma, pos),
         ):
@@ -580,7 +580,7 @@ class EPUB:
             """
         SELECT DISTINCT s.id
         FROM senses s JOIN lemmas l ON s.lemma_id = l.id
-        WHERE lemma = ?
+        WHERE lemma = ? AND enabled = 1
         """,
             (word,),
         ):
@@ -591,7 +591,7 @@ class EPUB:
             """
         SELECT DISTINCT s.id
         FROM senses s JOIN forms f ON s.lemma_id = f.lemma_id AND s.pos = f.pos
-        WHERE form = ?
+        WHERE form = ? AND enabled = 1
         """,
             (word,),
         ):

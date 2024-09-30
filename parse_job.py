@@ -535,7 +535,7 @@ def get_kindle_lemma_with_pos(
         """
         SELECT difficulty, senses.id
         FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id
-        WHERE lemma = ? AND pos = ? LIMIT 1
+        WHERE lemma = ? AND pos = ? AND enabled = 1 LIMIT 1
         """,
         (lemma, pos),
     ):

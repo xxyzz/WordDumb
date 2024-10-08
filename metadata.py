@@ -170,7 +170,7 @@ def get_asin_etc(data: "ParseJobData", set_en_lang: bool = False) -> None:
             update_lang = True
             book_lang = "en"
         if update_asin or update_lang:
-            yj_book = update_kfx_metedata(data.book_path, data.asin, book_lang)
+            yj_book = update_kfx_metadata(data.book_path, data.asin, book_lang)
         data.kfx_json = json.loads(yj_book.convert_to_json_content())["data"]
     elif data.book_fmt != "EPUB":
         from calibre.ebooks.metadata.mobi import MetadataUpdater
@@ -232,7 +232,7 @@ def extract_mobi(book_path: str) -> bytes:
         return html
 
 
-def update_kfx_metedata(book_path: str, asin: str, lang: str) -> Any:
+def update_kfx_metadata(book_path: str, asin: str, lang: str) -> Any:
     from calibre_plugins.kfx_input.kfxlib import YJ_Book, YJ_Metadata
 
     yj_book = YJ_Book(book_path)

@@ -6,6 +6,7 @@ import sys
 import unittest
 from itertools import zip_longest
 from pathlib import Path
+from shutil import which
 
 from calibre.library import db
 from calibre_plugins.worddumb.config import prefs
@@ -23,6 +24,7 @@ class TestDumbCode(unittest.TestCase):
         prefs["minimal_x_ray_count"] = 1
         prefs["gloss_lang"] = "en"
         prefs["use_wiktionary_for_kindle"] = False
+        prefs["python_path"] = which("python3")
 
         lib_db = db("~/Calibre Library").new_api
         for book_id in lib_db.all_book_ids():

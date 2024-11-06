@@ -357,16 +357,16 @@ class FormatOrderDialog(QDialog):
         self.format_list.addItems(prefs["preferred_formats"])
         vl.addWidget(self.format_list)
 
-        self.choose_format_maunally = QCheckBox(_("Choose format manually"))
-        self.choose_format_maunally.setChecked(prefs["choose_format_manually"])
-        self.choose_format_maunally.stateChanged.connect(
+        self.choose_format_manually = QCheckBox(_("Choose format manually"))
+        self.choose_format_manually.setChecked(prefs["choose_format_manually"])
+        self.choose_format_manually.stateChanged.connect(
             self.disable_all_formats_button
         )
-        vl.addWidget(self.choose_format_maunally)
+        vl.addWidget(self.choose_format_manually)
 
         self.use_all_formats = QCheckBox(_("Create files for all available formats"))
         self.use_all_formats.setChecked(prefs["use_all_formats"])
-        self.disable_all_formats_button(self.choose_format_maunally.checkState().value)
+        self.disable_all_formats_button(self.choose_format_manually.checkState().value)
         vl.addWidget(self.use_all_formats)
 
         save_button_box = QDialogButtonBox(
@@ -382,7 +382,7 @@ class FormatOrderDialog(QDialog):
             self.format_list.item(index).text()
             for index in range(self.format_list.count())
         ]
-        prefs["choose_format_manually"] = self.choose_format_maunally.isChecked()
+        prefs["choose_format_manually"] = self.choose_format_manually.isChecked()
         prefs["use_all_formats"] = self.use_all_formats.isChecked()
 
     def disable_all_formats_button(self, choose_format_state: int) -> None:

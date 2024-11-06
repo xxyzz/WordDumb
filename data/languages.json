@@ -167,6 +167,14 @@
     "name": "Swedish",
     "spacy": "sv_core_news_"
   },
+  "th": {
+    "gloss_source": "kaikki",
+    "lemma_languages": [
+      "en"
+    ],
+    "name": "Thai",
+    "spacy": ""
+  },
   "uk": {
     "gloss_source": "",
     "name": "Ukrainian",

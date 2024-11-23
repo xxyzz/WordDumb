@@ -196,6 +196,7 @@ def do_job(
         data.plugin_path = str(data.plugin_path)
         args = [
             py_path,
+            "-I",  # isolate user env
             str(data.plugin_path),
             json.dumps(asdict(data)),
             dump_prefs(prefs),

@@ -40,6 +40,9 @@ Install Python 3.11+ and pip
 
 You could set the Python interpreter path in the plugin preferences window if you don't use the following methods to install Python.
 
+.. attention::
+   Python 3.13 is not supported, it should be supported in the next spaCy release.
+
 - Arch Linux:
 
 .. code-block:: console

@@ -63,9 +63,10 @@ class TestDumbCode(unittest.TestCase):
                 return path
 
     def check_db(self, test_json_path, created_db_path, table, sql):
-        with open(test_json_path, encoding="utf-8") as test_json, sqlite3.connect(
-            created_db_path
-        ) as created_db:
+        with (
+            open(test_json_path, encoding="utf-8") as test_json,
+            sqlite3.connect(created_db_path) as created_db,
+        ):
             for expected_value, value_in_db in zip_longest(
                 json.load(test_json)[table], created_db.execute(sql)
             ):

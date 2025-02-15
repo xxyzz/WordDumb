@@ -27,7 +27,7 @@ def convert(path, table_sql_list):
     test_db.close()
 
     with open(
-        f'{".".join(db_file.stem.split(".")[:2])}.{db_file.suffix.split("_")[-1]}.json',
+        f"{'.'.join(db_file.stem.split('.')[:2])}.{db_file.suffix.split('_')[-1]}.json",
         "w",
         encoding="utf_8",
     ) as f:

@@ -79,11 +79,7 @@
     "spacy": ""
   },
   "it": {
-    "gloss_source": "dbnary",
-    "lemma_languages": [
-      "en",
-      "it"
-    ],
+    "gloss_source": "kaikki",
     "name": "Italian",
     "spacy": "it_core_news_"
   },
@@ -93,7 +89,7 @@
     "spacy": "ja_core_news_"
   },
   "ko": {
-    "gloss_source": "",
+    "gloss_source": "kaikki",
     "name": "Korean",
     "spacy": "ko_core_news_"
   },
@@ -116,10 +112,7 @@
     "spacy": ""
   },
   "nl": {
-    "gloss_source": "dbnary",
-    "lemma_languages": [
-      "nl"
-    ],
+    "gloss_source": "kaikki",
     "name": "Dutch",
     "spacy": "nl_core_news_"
   },
@@ -137,10 +130,7 @@
     "spacy": "pl_core_news_"
   },
   "pt": {
-    "gloss_source": "dbnary",
-    "lemma_languages": [
-      "pt"
-    ],
+    "gloss_source": "kaikki",
     "name": "Portuguese",
     "spacy": "pt_core_news_"
   },

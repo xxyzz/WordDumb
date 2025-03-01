@@ -40,6 +40,17 @@ def job_failed(job: Any, parent: Any = None) -> bool:
                 job.details,
                 parent,
             )
+        elif "UnsupportedPython" in job.details:
+            error_dialog(
+                "Unsupported Python",
+                _(
+                    "Python 3.13 is not supported. Please install an older version "
+                    "and put the Python binary file path in the plugin's "
+                    "preferences window."
+                ),
+                job.details,
+                parent,
+            )
         elif "CalledProcessError" in job.details:
             subprocess_error(job, parent)
         elif "ModuleNotFoundError" in job.details:

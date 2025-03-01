@@ -74,7 +74,7 @@ def which_python() -> tuple[str, str]:
     if shutil.which(py) is None:
         raise Exception("PythonNotFound")
 
-    if isfrozen:
+    if isfrozen or prefs["python_path"] != "":
         r = run_subprocess(
             [
                 py,
@@ -85,10 +85,11 @@ def which_python() -> tuple[str, str]:
         py_v = r.stdout.decode().strip()
     else:
         py_v = ".".join(platform.python_version_tuple()[:2])
-    if tuple(map(int, py_v.split("."))) < tuple(
-        map(int, platform.python_version_tuple()[:2])
-    ):
+    py_v_tuple = tuple(map(int, py_v.split(".")))
+    if py_v_tuple < tuple(map(int, platform.python_version_tuple()[:2])):
         raise Exception("OutdatedPython")
+    elif py_v_tuple >= (3, 13):
+        raise Exception("UnsupportedPython")
     return py, py_v
 
 

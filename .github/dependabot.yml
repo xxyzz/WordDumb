@@ -4,6 +4,3 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    ignore:
-      - dependency-name: "crate-ci/typos"  # ignore patch updates
-        update-types: ["version-update:semver-patch"]

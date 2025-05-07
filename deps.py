@@ -86,9 +86,10 @@ def which_python() -> tuple[str, str]:
     else:
         py_v = ".".join(platform.python_version_tuple()[:2])
     py_v_tuple = tuple(map(int, py_v.split(".")))
-    if py_v_tuple < tuple(map(int, platform.python_version_tuple()[:2])):
+    if py_v_tuple < (3, 11):
+        # https://github.com/kovidgoyal/calibre/blob/master/bypy/sources.json
         raise Exception("OutdatedPython")
-    elif py_v_tuple >= (3, 13):
+    elif py_v_tuple >= (3, 13):  # spaCy
         raise Exception("UnsupportedPython")
     return py, py_v
 

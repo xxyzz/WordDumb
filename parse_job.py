@@ -171,7 +171,9 @@ def do_job(
     if not data.create_ww and not data.create_x:
         return data
 
-    if isfrozen and (data.book_fmt == "EPUB" or data.create_x):
+    if (isfrozen or prefs["python_path"] != "") and (
+        data.book_fmt == "EPUB" or data.create_x
+    ):
         # parse MediaWiki page and Wikipedia section requires lxml
         install_deps("lxml", notifications)
     install_deps(data.spacy_model, notifications)
@@ -184,7 +186,7 @@ def do_job(
     # official calibre build: calibre's optimize level is 2 which removes docstring,
     # but the "transformers" package formats docstrings in their code
     # and calibre-debug can't be used as Python interpreter for pip
-    if isfrozen:
+    if isfrozen or prefs["python_path"] != "":
         py_path, _ = which_python()
         # copy data can't be converted by `asdict`
         copy_mi = data.mi

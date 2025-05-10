@@ -294,9 +294,9 @@ class EPUB:
         css_rules = ""
         if len(self.sense_id_dict) > 0:
             css_rules += """
-            body {line-height: 2.5;}
+            body {line-height: 2;}
             ruby.wordwise {text-decoration: overline;}
-            ruby.wordwise a {text-decoration: none;}
+            ruby.wordwise * {text-decoration: none;}
             """
         if self.prefs["remove_link_styles"]:
             css_rules += """

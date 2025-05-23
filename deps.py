@@ -48,14 +48,6 @@ def install_deps(pkg: str, notif: Any) -> None:
             )
             pip_install(pkg, model_version, url=url, notif=notif)
 
-        if ismacos and platform.machine() == "arm64":
-            pip_install(
-                "thinc-apple-ops",
-                dep_versions["thinc-apple-ops"],
-                no_deps=True,
-                notif=notif,
-            )
-
 
 def which_python() -> tuple[str, str]:
     """

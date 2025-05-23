@@ -20,12 +20,7 @@
     "spacy": "de_core_news_"
   },
   "el": {
-    "gloss_source": "dbnary",
-    "lemma_languages": [
-      "el",
-      "en",
-      "fr"
-    ],
+    "gloss_source": "kaikki",
     "name": "Greek",
     "spacy": "el_core_news_"
   },
@@ -159,9 +154,6 @@
   },
   "th": {
     "gloss_source": "kaikki",
-    "lemma_languages": [
-      "en"
-    ],
     "name": "Thai",
     "spacy": ""
   },

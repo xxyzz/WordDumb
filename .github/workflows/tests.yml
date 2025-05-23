@@ -28,7 +28,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     env:
-      PY_VERSION: 3.12
+      PY_VERSION: 3.13
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

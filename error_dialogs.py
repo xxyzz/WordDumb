@@ -44,9 +44,8 @@ def job_failed(job: Any, parent: Any = None) -> bool:
             error_dialog(
                 "Unsupported Python",
                 _(
-                    "Python 3.13 is not supported. Please install an older version "
-                    "and put the Python binary file path in the plugin's "
-                    "preferences window."
+                    "Please install an older version and put the Python binary file "
+                    "path in the plugin's preferences window."
                 ),
                 job.details,
                 parent,

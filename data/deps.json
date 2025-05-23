@@ -1,7 +1,7 @@
 {
   "lxml": "5.4.0",
   "rapidfuzz": "3.13.0",
-  "spacy": "3.8.4",
+  "spacy": "3.8.7",
   "spacy_cpu_model": "3.8.0",
   "thinc-apple-ops": "1.0.0"
 }

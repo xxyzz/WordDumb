@@ -1,6 +1,6 @@
 from calibre.customize import InterfaceActionBase
 
-VERSION = (3, 33, 3)
+VERSION = (3, 33, 4)
 
 
 class WordDumbDumb(InterfaceActionBase):

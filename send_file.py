@@ -1,12 +1,8 @@
 import shutil
-import subprocess
-import traceback
 from pathlib import Path
 from typing import Any
 
-from calibre.constants import ismacos
 from calibre.gui2 import FunctionDispatcher
-from calibre.gui2.dialogs.message_box import JobError
 
 from .database import get_ll_path, get_x_ray_path, is_same_klld
 from .error_dialogs import kindle_epub_dialog
@@ -15,16 +11,13 @@ from .utils import (
     get_kindle_klld_path,
     get_plugin_path,
     get_wiktionary_klld_path,
-    mac_bin_path,
     run_subprocess,
     use_kindle_ww_db,
 )
 
 
 class SendFile:
-    def __init__(
-        self, gui: Any, data: ParseJobData, package_name: str | bool, notif: Any
-    ) -> None:
+    def __init__(self, gui: Any, data: ParseJobData, notif: Any) -> None:
         self.gui = gui
         self.device_manager = gui.device_manager
         self.is_mtp = is_mtp_device(self.device_manager.device)
@@ -32,26 +25,11 @@ class SendFile:
         self.job_data = data
         self.ll_path = get_ll_path(data.asin, data.book_path)
         self.x_ray_path = get_x_ray_path(data.asin, data.book_path)
-        self.package_name = package_name
         if data.acr is None:
             self.job_data.acr = "_"
 
     # use some code from calibre.gui2.device:DeviceMixin.upload_books
     def send_files(self, job: Any) -> None:
-        if isinstance(self.package_name, str):
-            try:
-                adb_path = which_adb()
-                if adb_path is None:
-                    return
-                self.push_files_to_android(adb_path)
-                self.gui.status_bar.show_message(self.notif)
-            except subprocess.CalledProcessError as e:
-                stderr = e.stderr.decode("utf-8")
-                JobError(self.gui).show_error(
-                    "adb failed", stderr, det_msg=traceback.format_exc() + stderr
-                )
-            return
-
         if job is not None:
             if job.failed:
                 self.gui.job_exception(job, dialog_title="Upload book failed")
@@ -133,50 +111,8 @@ class SendFile:
                 dest_path = sidecar_folder / file_path.name
                 move_file_to_kindle_usbms(file_path, dest_path)
 
-    def push_files_to_android(self, adb_path: str) -> None:
-        device_book_folder = f"/sdcard/Android/data/{self.package_name}/files/"
-        run_subprocess(
-            [
-                adb_path,
-                "push",
-                self.job_data.book_path,
-                f"{device_book_folder}/{Path(self.job_data.book_path).name}",
-            ]
-        )
-        if self.x_ray_path.exists():
-            run_subprocess(
-                [
-                    adb_path,
-                    "push",
-                    self.x_ray_path,
-                    f"{device_book_folder}/{self.job_data.asin}/XRAY."
-                    f"{self.job_data.asin}.{self.job_data.acr}.db",
-                ]
-            )
-            self.x_ray_path.unlink()
-        if self.ll_path.exists():
-            run_subprocess([adb_path, "root"])
-            run_subprocess(
-                [
-                    adb_path,
-                    "push",
-                    self.ll_path,
-                    f"/data/data/{self.package_name}/databases/WordWise.en."
-                    f"{self.job_data.asin}.{self.job_data.acr.replace('!', '_')}.db",
-                ]
-            )
-            self.ll_path.unlink()
-            copy_klld_to_device(
-                self.job_data.book_lang,
-                Path(
-                    f"/data/data/{self.package_name}"
-                    "/databases/wordwise/WordWise.kll.en.zh.db"
-                ),
-                adb_path,
-            )
 
-
-def device_connected(gui: Any, book_fmt: str) -> str | bool:
+def device_connected(gui: Any, book_fmt: str) -> bool:
     if gui.device_manager.is_device_present:
         is_kindle = False
         device = gui.device_manager.device
@@ -195,11 +131,6 @@ def device_connected(gui: Any, book_fmt: str) -> str | bool:
                 return True
         elif is_kindle:
             return True
-    if book_fmt == "KFX":
-        adb_path = which_adb()
-        if adb_path and adb_connected(adb_path):
-            package_name = get_package_name(adb_path)
-            return package_name if package_name else False
     return False
 
 
@@ -208,41 +139,6 @@ def is_mtp_device(device_driver: Any) -> bool:
     if hasattr(device_driver, "DEVICE_PLUGBOARD_NAME"):
         return device_driver.DEVICE_PLUGBOARD_NAME == "MTP_DEVICE"
     return False
-
-
-def adb_connected(adb_path: str) -> bool:
-    r = run_subprocess([adb_path, "devices"])
-    return r.stdout.decode().strip().endswith("device") if r else False
-
-
-def which_adb() -> str | None:
-    return shutil.which(mac_bin_path("adb") if ismacos else "adb")
-
-
-def get_package_name(adb_path: str) -> str | None:
-    r = run_subprocess(
-        [adb_path, "shell", "pm", "list", "packages", "com.amazon.kindle"]
-    )
-    result = r.stdout.decode().strip()
-    if len(result.split(":")) > 1:
-        return result.split(":")[1]  # China version: com.amazon.kindlefc
-    return None
-
-
-def copy_klld_from_android(package_name: str, dest_path: Path) -> None:
-    adb_path = which_adb()
-    run_subprocess([adb_path, "root"])
-    run_subprocess(
-        [
-            adb_path,
-            "pull",
-            f"/data/data/{package_name}/databases/wordwise",
-            dest_path,
-        ]
-    )
-    for path in dest_path.joinpath("wordwise").iterdir():
-        shutil.move(path, dest_path)
-    dest_path.joinpath("wordwise").rmdir()
 
 
 def copy_klld_from_kindle(device_manager: Any, dest_path: Path) -> None:

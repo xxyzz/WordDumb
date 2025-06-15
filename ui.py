@@ -154,7 +154,7 @@ def done(job, gui=None, notif=None):
     if job_failed(job, gui):
         return
 
-    if package_name := device_connected(gui, job.result.book_fmt):
-        SendFile(gui, job.result, package_name, notif).send_files(None)
+    if device_connected(gui, job.result.book_fmt):
+        SendFile(gui, job.result, notif).send_files(None)
     else:
         gui.status_bar.show_message(notif)

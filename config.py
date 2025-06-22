@@ -55,7 +55,6 @@ prefs.defaults["minimal_x_ray_count"] = 1
 prefs.defaults["choose_format_manually"] = True
 prefs.defaults["gloss_lang"] = "en"
 prefs.defaults["use_wiktionary_for_kindle"] = False
-prefs.defaults["remove_link_styles"] = False
 prefs.defaults["python_path"] = ""
 prefs.defaults["show_change_kindle_ww_lang_warning"] = True
 for code in load_languages_data(get_plugin_path(), False).keys():
@@ -173,12 +172,6 @@ class ConfigWidget(QWidget):
         self.locator_map_box.setChecked(prefs["add_locator_map"])
         vl.addWidget(self.locator_map_box)
 
-        self.remove_link_styles = QCheckBox(
-            _("Remove Word Wise and X-Ray links underline and color in EPUB books")
-        )
-        self.remove_link_styles.setChecked(prefs["remove_link_styles"])
-        vl.addWidget(self.remove_link_styles)
-
         donate_button = QPushButton(QIcon.ic("donate.png"), "Tree-fiddy?")
         donate_button.clicked.connect(donate)
         vl.addWidget(donate_button)
@@ -204,7 +197,6 @@ class ConfigWidget(QWidget):
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
-        prefs["remove_link_styles"] = self.remove_link_styles.isChecked()
         mediawiki_api = self.mediawiki_api.text().strip("/ ")
         if mediawiki_api.endswith("/api.php") or mediawiki_api == "":
             prefs["mediawiki_api"] = mediawiki_api

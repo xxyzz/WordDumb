@@ -295,11 +295,8 @@ class EPUB:
         if len(self.sense_id_dict) > 0:
             css_rules += """
             body {line-height: 2;}
-            ruby.wordwise {text-decoration: overline;}
             ruby.wordwise * {text-decoration: none;}
-            """
-        if self.prefs["remove_link_styles"]:
-            css_rules += """
+
             a.x-ray, a.wordwise, ruby.wordwise a {
               text-decoration: none;
               color: inherit;

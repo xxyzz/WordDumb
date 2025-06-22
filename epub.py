@@ -473,24 +473,25 @@ class EPUB:
             f.write(page_text)
 
     def create_ww_aside_tag(self, sense_ids: tuple[int, ...], ww_id: int) -> str:
-        sense_list = self.get_sense_data(sense_ids, True)
+        sense_list = self.get_sense_data(sense_ids)
         tag_str = ""
         tag_str += f'<aside id="{ww_id}" epub:type="footnote">'
         last_pos = ""
+        last_ipas = []
         for sense_data in sense_list:
-            if sense_data.pos != last_pos:
+            if sense_data.pos != last_pos or sense_data.ipas != last_ipas:
                 if last_pos != "":
                     tag_str += "</ol><hr/>"
-                tag_str += f"<p>{sense_data.pos}</p>"
-                if last_pos == "":
-                    for ipa in sense_data.ipas:
-                        tag_str += f"<p>{escape(ipa)}</p>"
+                tag_str += f"<p>{sense_data.pos.title()}</p>"
+                for ipa in sense_data.ipas:
+                    tag_str += f"<p>{escape(ipa)}</p>"
                 tag_str += f"<ol><li>{escape(sense_data.full_def)}"
                 last_pos = sense_data.pos
+                last_ipas = sense_data.ipas
             else:
                 tag_str += f"<li>{escape(sense_data.full_def)}"
             if sense_data.example != "":
-                tag_str += f" <i>{escape(sense_data.example)}</i>"
+                tag_str += f"<dl><dd><i>{escape(sense_data.example)}</i></dd></dl>"
             tag_str += "</li>"
         tag_str += "</ol><hr/><p>Source: Wiktionary</p></aside>"
         return tag_str
@@ -599,36 +600,30 @@ class EPUB:
 
         return tuple(sense_ids)
 
-    def get_sense_data(
-        self, sense_ids: tuple[int, ...], order_by_pos: bool = False
-    ) -> list[Sense]:
+    def get_sense_data(self, sense_ids: tuple[int, ...]) -> list[Sense]:
         if self.lemmas_conn is None:
             return []
-        sql = "SELECT pos, short_def, full_def, example, "
-        if self.gloss_source == "kaikki":
-            if self.lemma_lang == "en":
-                sql += "ga_ipa, rp_ipa "
-            elif self.lemma_lang == "zh":
-                sql += "pinyin, bopomofo "
-            else:
-                sql += "ipa "
-        else:
-            sql += "ipa "
-        sql += "FROM senses s JOIN lemmas l ON s.lemma_id = l.id WHERE s.id IN ("
-        sql += ",".join("?" * len(sense_ids))
-        sql += ") "
-        if order_by_pos:
-            sql += "ORDER BY pos"
+        sql = """
+        SELECT pos, short_def, full_def, example, ipa, ga_ipa, rp_ipa, pinyin, bopomofo
+        FROM senses LEFT JOIN sounds ON senses.sound_id = sounds.id
+        WHERE senses.id = ?
+        """
         sense_list: list[Sense] = []
-        for data in self.lemmas_conn.execute(sql, sense_ids):
-            sense_data = Sense(
-                pos=data[0] or "",
-                short_def=data[1] or "",
-                full_def=data[2] or "",
-                example=data[3] or "",
-            )
-            sense_data.ipas = list(data[4:])
-            sense_list.append(sense_data)
+        for sense_id in sense_ids:
+            for pos, short_def, full_def, example, *ipas in self.lemmas_conn.execute(
+                sql, (sense_id,)
+            ):
+                sense_list.append(
+                    Sense(
+                        pos=pos,
+                        short_def=short_def,
+                        full_def=full_def,
+                        example=example,
+                        ipas=[
+                            ipa for ipa in ipas if isinstance(ipa, str) and len(ipa) > 0
+                        ],
+                    )
+                )
         return sense_list
 
 

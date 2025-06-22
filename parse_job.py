@@ -138,6 +138,10 @@ def do_job(
         if data.create_ww:
             new_file_stem += "_word_wise"
         new_epub_path = new_epub_path.with_stem(new_file_stem)
+        extract_path = new_epub_path.with_name("extract")
+        if extract_path.is_dir():  # last time failed
+            shutil.rmtree(extract_path)
+            new_epub_path.unlink(missing_ok=True)
         data.create_x = data.create_x and not new_epub_path.exists()
         data.create_ww = data.create_ww and not new_epub_path.exists()
         shutil.copy(data.book_path, new_epub_path)

@@ -18,7 +18,6 @@ class TestDumbCode(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         prefs["search_people"] = True
-        prefs["model_size"] = "md"
         prefs["mediawiki_api"] = ""
         prefs["add_locator_map"] = True
         prefs["minimal_x_ray_count"] = 1

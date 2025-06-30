@@ -18,7 +18,6 @@ PROFICIENCY_MAJOR_VERSION = PROFICIENCY_VERSION.split(".", 1)[0]
 
 class Prefs(TypedDict):
     search_people: bool
-    model_size: str
     zh_wiki_variant: str
     mediawiki_api: str
     add_locator_map: str
@@ -160,7 +159,7 @@ def spacy_model_name(lemma_lang: str, prefs: Prefs) -> str:
     spacy_model = languages[lemma_lang]["spacy"]
     if spacy_model == "":
         return ""
-    return spacy_model + prefs["model_size"]
+    return spacy_model
 
 
 def load_languages_data(

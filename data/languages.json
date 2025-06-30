@@ -2,7 +2,7 @@
   "ca": {
     "gloss_source": "",
     "name": "Catalan",
-    "spacy": "ca_core_news_"
+    "spacy": "ca_core_news_lg"
   },
   "cs": {
     "gloss_source": "",
@@ -12,40 +12,37 @@
   "da": {
     "gloss_source": "",
     "name": "Danish",
-    "spacy": "da_core_news_"
+    "spacy": "da_core_news_lg"
   },
   "de": {
     "gloss_source": "kaikki",
     "name": "German",
-    "spacy": "de_core_news_"
+      "spacy": "de_core_news_lg"
   },
   "el": {
     "gloss_source": "kaikki",
     "name": "Greek",
-    "spacy": "el_core_news_"
+    "spacy": "el_core_news_lg"
   },
   "en": {
     "gloss_source": "kaikki",
     "name": "English",
-    "spacy": "en_core_web_"
+    "spacy": "en_core_web_lg"
   },
   "es": {
     "gloss_source": "kaikki",
     "name": "Spanish",
-    "spacy": "es_core_news_"
+    "spacy": "es_core_news_lg"
   },
   "fi": {
-    "gloss_source": "dbnary",
-    "lemma_languages": [
-      "fi"
-    ],
+    "gloss_source": "",
     "name": "Finnish",
-    "spacy": "fi_core_news_"
+    "spacy": "fi_core_news_lg"
   },
   "fr": {
     "gloss_source": "kaikki",
     "name": "French",
-    "spacy": "fr_core_news_"
+    "spacy": "fr_core_news_lg"
   },
   "he": {
     "gloss_source": "kaikki",
@@ -61,12 +58,9 @@
     "spacy": ""
   },
   "hr": {
-    "gloss_source": "dbnary",
-    "lemma_languages": [
-      "hr"
-    ],
+    "gloss_source": "",
     "name": "Serbo-Croatian",
-    "spacy": "hr_core_news_"
+    "spacy": "hr_core_news_lg"
   },
   "id": {
     "gloss_source": "",
@@ -76,30 +70,27 @@
   "it": {
     "gloss_source": "kaikki",
     "name": "Italian",
-    "spacy": "it_core_news_"
+    "spacy": "it_core_news_lg"
   },
   "ja": {
     "gloss_source": "kaikki",
     "name": "Japanese",
-    "spacy": "ja_core_news_"
+    "spacy": "ja_core_news_lg"
   },
   "ko": {
     "gloss_source": "kaikki",
     "name": "Korean",
-    "spacy": "ko_core_news_"
+    "spacy": "ko_core_news_lg"
   },
   "lt": {
-    "gloss_source": "dbnary",
-    "lemma_languages": [
-      "lt"
-    ],
+    "gloss_source": "",
     "name": "Lithuanian",
-    "spacy": "lt_core_news_"
+    "spacy": "lt_core_news_lg"
   },
   "mk": {
     "gloss_source": "",
     "name": "Macedonian",
-    "spacy": "mk_core_news_"
+    "spacy": "mk_core_news_lg"
   },
   "ms": {
     "gloss_source": "",
@@ -109,48 +100,42 @@
   "nl": {
     "gloss_source": "kaikki",
     "name": "Dutch",
-    "spacy": "nl_core_news_"
+    "spacy": "nl_core_news_lg"
   },
   "nb": {
-    "gloss_source": "dbnary",
-    "lemma_languages": [
-      "no"
-    ],
+    "gloss_source": "",
     "name": "Norwegian Bokmål",
-    "spacy": "nb_core_news_"
+    "spacy": "nb_core_news_lg"
   },
   "pl": {
     "gloss_source": "kaikki",
     "name": "Polish",
-    "spacy": "pl_core_news_"
+    "spacy": "pl_core_news_lg"
   },
   "pt": {
     "gloss_source": "kaikki",
     "name": "Portuguese",
-    "spacy": "pt_core_news_"
+    "spacy": "pt_core_news_lg"
   },
   "ro": {
     "gloss_source": "",
     "name": "Romanian",
-    "spacy": "ro_core_news_"
+    "spacy": "ro_core_news_lg"
   },
   "ru": {
     "gloss_source": "kaikki",
     "name": "Russian",
-    "spacy": "ru_core_news_"
+    "spacy": "ru_core_news_lg"
   },
   "sl": {
     "gloss_source": "",
     "name": "Slovene",
-    "spacy": "sl_core_news_"
+    "spacy": "sl_core_news_lg"
   },
   "sv": {
-    "gloss_source": "dbnary",
-    "lemma_languages": [
-      "sv"
-    ],
+    "gloss_source": "",
     "name": "Swedish",
-    "spacy": "sv_core_news_"
+    "spacy": "sv_core_news_lg"
   },
   "th": {
     "gloss_source": "kaikki",
@@ -160,11 +145,11 @@
   "uk": {
     "gloss_source": "",
     "name": "Ukrainian",
-    "spacy": "uk_core_news_"
+    "spacy": "uk_core_news_lg"
   },
   "zh": {
     "gloss_source": "kaikki",
     "name": "Chinese",
-    "spacy": "zh_core_web_"
+    "spacy": "zh_core_web_lg"
   }
 }

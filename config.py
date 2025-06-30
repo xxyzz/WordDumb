@@ -45,7 +45,6 @@ from .utils import (
 
 prefs = JSONConfig("plugins/worddumb")
 prefs.defaults["search_people"] = False
-prefs.defaults["model_size"] = "md"
 prefs.defaults["zh_wiki_variant"] = "cn"
 prefs.defaults["mediawiki_api"] = ""
 prefs.defaults["add_locator_map"] = False
@@ -120,18 +119,6 @@ class ConfigWidget(QWidget):
         self.python_path.setText(prefs["python_path"])
         form_layout.addRow(python_path_label, self.python_path)
 
-        model_size_label = QLabel(
-            _('<a href="https://spacy.io/models/en">spaCy model</a> size')
-        )
-        model_size_label.setOpenExternalLinks(True)
-        model_size_label.setToolTip(_("Larger model improves X-Ray quality"))
-        self.model_size_box = QComboBox()
-        spacy_model_sizes = {"sm": _("Small"), "md": _("Medium"), "lg": _("Large")}
-        for size, text in spacy_model_sizes.items():
-            self.model_size_box.addItem(text, size)
-        self.model_size_box.setCurrentText(spacy_model_sizes[prefs["model_size"]])
-        form_layout.addRow(model_size_label, self.model_size_box)
-
         self.minimal_x_ray_count = QSpinBox()
         self.minimal_x_ray_count.setMinimum(1)
         self.minimal_x_ray_count.setValue(prefs["minimal_x_ray_count"])
@@ -193,7 +180,6 @@ class ConfigWidget(QWidget):
     def save_settings(self) -> None:
         prefs["python_path"] = self.python_path.text()
         prefs["search_people"] = self.search_people_box.isChecked()
-        prefs["model_size"] = self.model_size_box.currentData()
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()

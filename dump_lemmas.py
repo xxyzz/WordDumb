@@ -87,13 +87,10 @@ def save_spacy_docs(
     )
     query_sql = """
     SELECT DISTINCT lemma
-    FROM lemmas l
-    JOIN senses s ON l.id = s.lemma_id AND enabled = 1 AND difficulty <= :difficulty
+    FROM senses WHERE enabled = 1 AND difficulty <= :difficulty
     UNION ALL
     SELECT DISTINCT form
-    FROM lemmas l
-    JOIN forms f ON l.id = f.lemma_id
-    JOIN senses s ON l.id = s.lemma_id AND f.pos = s.pos
+    FROM senses s JOIN forms f ON s.form_group_id = f.form_group_id
     AND enabled = 1 AND difficulty <= :difficulty
     """
     for doc in nlp.tokenizer.pipe(

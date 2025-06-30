@@ -8,7 +8,6 @@ from PyQt6.QtCore import QModelIndex, QObject, Qt, QVariant
 from PyQt6.QtGui import QIcon
 from PyQt6.QtSql import (
     QSqlDatabase,
-    QSqlRelation,
     QSqlRelationalTableModel,
     QSqlTableModel,
 )
@@ -91,9 +90,6 @@ class CustomLemmasDialog(QDialog):
         self.lemmas_model = LemmasTableModel(db, is_kindle)
         self.lemmas_model.setEditStrategy(QSqlTableModel.EditStrategy.OnFieldChange)
         self.lemmas_model.setTable("senses")
-        self.lemmas_model.setRelation(
-            self.lemmas_model.lemma_column, QSqlRelation("lemmas", "id", "lemma")
-        )
         self.lemmas_model.setSort(
             self.lemmas_model.lemma_column, Qt.SortOrder.AscendingOrder
         )
@@ -326,11 +322,14 @@ class LemmasTableModel(QSqlRelationalTableModel):
             "full_def",
             "example",
             _("Difficulty"),
+            "sound_id",
+            "embed_vector",
+            "form_group_id",
         ]
         self.checkable_column = 1
         self.lemma_column = 2
         self.difficulty_column = 7
-        self.hide_columns = [0, 5, 6]
+        self.hide_columns = [0, 5, 6, 8, 9, 10]
         self.tooltip_columns = [2, 4]
         self.editable_columns = [7] if is_kindle else [4, 7]
 

@@ -474,7 +474,7 @@ class EPUB:
         tag_str = ""
         tag_str += f'<aside id="{ww_id}" epub:type="footnote">'
         last_pos = ""
-        last_ipas = []
+        last_ipas: list[str] = []
         for sense_data in sense_list:
             if sense_data.pos != last_pos or sense_data.ipas != last_ipas:
                 if last_pos != "":
@@ -558,28 +558,18 @@ class EPUB:
             return ()
         sense_ids = []
         for (sense_id,) in self.lemmas_conn.execute(
-            """
-            SELECT DISTINCT s.id
-            FROM senses s JOIN lemmas l ON s.lemma_id = l.id
-            WHERE lemma = ? AND pos = ? AND enabled = 1
-            """,
+            "SELECT id FROM senses WHERE lemma = ? AND pos = ? AND enabled = 1",
             (lemma, pos),
         ):
             sense_ids.append(sense_id)
-        if len(sense_ids) > 0:
-            return tuple(sense_ids)
-        return self.find_sense_ids_without_pos(word)
+        return tuple(sense_ids)
 
     def find_sense_ids_without_pos(self, word: str) -> tuple[int, ...]:
         if self.lemmas_conn is None:
             return ()
         sense_ids = []
         for (sense_id,) in self.lemmas_conn.execute(
-            """
-        SELECT DISTINCT s.id
-        FROM senses s JOIN lemmas l ON s.lemma_id = l.id
-        WHERE lemma = ? AND enabled = 1
-        """,
+            "SELECT id FROM senses WHERE lemma = ? AND enabled = 1",
             (word,),
         ):
             sense_ids.append(sense_id)
@@ -587,10 +577,10 @@ class EPUB:
             return tuple(sense_ids)
         for (sense_id,) in self.lemmas_conn.execute(
             """
-        SELECT DISTINCT s.id
-        FROM senses s JOIN forms f ON s.lemma_id = f.lemma_id AND s.pos = f.pos
-        WHERE form = ? AND enabled = 1
-        """,
+            SELECT DISTINCT s.id
+            FROM senses s JOIN forms f ON s.form_group_id = f.form_group_id
+            WHERE form = ? AND enabled = 1
+            """,
             (word,),
         ):
             sense_ids.append(sense_id)
@@ -601,15 +591,22 @@ class EPUB:
         if self.lemmas_conn is None:
             return []
         sql = """
-        SELECT pos, short_def, full_def, example, ipa, ga_ipa, rp_ipa, pinyin, bopomofo
+        SELECT
+        pos, short_def, full_def, example, embed_vector,
+        ipa, ga_ipa, rp_ipa, pinyin, bopomofo
         FROM senses LEFT JOIN sounds ON senses.sound_id = sounds.id
         WHERE senses.id = ?
         """
         sense_list: list[Sense] = []
         for sense_id in sense_ids:
-            for pos, short_def, full_def, example, *ipas in self.lemmas_conn.execute(
-                sql, (sense_id,)
-            ):
+            for (
+                pos,
+                short_def,
+                full_def,
+                example,
+                embed,
+                *ipas,
+            ) in self.lemmas_conn.execute(sql, (sense_id,)):
                 sense_list.append(
                     Sense(
                         pos=pos,

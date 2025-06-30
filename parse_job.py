@@ -540,8 +540,8 @@ def get_kindle_lemma_with_pos(
         pos = spacy_to_wiktionary_pos(pos)
     for data in conn.execute(
         """
-        SELECT difficulty, senses.id
-        FROM senses JOIN lemmas ON senses.lemma_id = lemmas.id
+        SELECT difficulty, id
+        FROM senses
         WHERE lemma = ? AND pos = ? AND enabled = 1 LIMIT 1
         """,
         (lemma, pos),
@@ -555,9 +555,8 @@ def get_kindle_lemma_without_pos(
 ) -> tuple[int, int] | None:
     for data in conn.execute(
         """
-        SELECT difficulty, senses.id
-        FROM senses JOIN lemmas
-        ON senses.lemma_id = lemmas.id
+        SELECT difficulty, id
+        FROM senses
         WHERE lemma = ? AND enabled = 1 LIMIT 1
         """,
         (word,),
@@ -565,9 +564,8 @@ def get_kindle_lemma_without_pos(
         return data
     for data in conn.execute(
         """
-        SELECT difficulty, senses.id
-        FROM senses JOIN forms
-        ON senses.lemma_id = forms.lemma_id AND senses.pos = forms.pos
+        SELECT difficulty, s.id
+        FROM senses s JOIN forms f ON s.form_group_id = f.form_group_id
         WHERE form = ? AND enabled = 1 LIMIT 1
         """,
         (word,),

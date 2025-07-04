@@ -19,7 +19,8 @@ try:
         inception_text,
         query_wikidata,
     )
-    from .utils import CJK_LANGS, Prefs
+    from .utils import CJK_LANGS, Prefs, is_wsd_enabled
+    from .wsd import load_wsd_model, wsd
     from .x_ray_share import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
@@ -35,7 +36,8 @@ except ImportError:
         inception_text,
         query_wikidata,
     )
-    from utils import CJK_LANGS, Prefs
+    from utils import CJK_LANGS, Prefs, is_wsd_enabled
+    from wsd import load_wsd_model, wsd
     from x_ray_share import (
         FUZZ_THRESHOLD,
         PERSON_LABELS,
@@ -61,6 +63,9 @@ class Occurrence:
     word_end: int
     entity_id: int = -1
     sense_ids: tuple[int, ...] = ()
+    sent: str = ""
+    start_in_sent: int = 0
+    end_in_sent: int = 0
 
 
 @dataclass
@@ -69,6 +74,7 @@ class Sense:
     short_def: str
     full_def: str
     example: str
+    embed: str
     ipas: list[str] = field(default_factory=list)
 
 
@@ -105,7 +111,9 @@ class EPUB:
         self.prefs: Prefs = {}
         self.lemma_lang: str = ""
         self.gloss_lang: str = ""
-        self.gloss_source: str = ""
+        self.enable_wsd: bool = False
+        self.wsd_model = None
+        self.wsd_tokenizer = None
 
     def extract_epub(self) -> Iterator[tuple[str, tuple[int, int, Path]]]:
         from lxml import etree
@@ -230,6 +238,7 @@ class EPUB:
         word_start: int,
         word_end: int,
         xhtml_path: Path,
+        sent,
     ) -> None:
         sense_ids = self.find_sense_ids(lemma, word, pos)
         if len(sense_ids) == 0:
@@ -248,6 +257,9 @@ class EPUB:
                 word_start=word_start,
                 word_end=word_end,
                 sense_ids=sense_ids,
+                sent=sent.text,
+                start_in_sent=word_start - sent.start_char,
+                end_in_sent=word_end - sent.start_char,
             )
         )
 
@@ -262,13 +274,10 @@ class EPUB:
                 del self.entities[entity_name]
                 self.removed_entity_ids.add(entity_data.id)
 
-    def modify_epub(
-        self, prefs: Prefs, lemma_lang: str, gloss_lang: str, gloss_source: str
-    ) -> None:
+    def modify_epub(self, prefs: Prefs, lemma_lang: str) -> None:
         self.prefs = prefs
         self.lemma_lang = lemma_lang
-        self.gloss_lang = gloss_lang
-        self.gloss_source = gloss_source
+        self.gloss_lang = prefs["gloss_lang"]
         if len(self.entities) > 0 and self.mediawiki is not None:
             self.mediawiki.query(self.entities, prefs["search_people"])
             if self.wikidata is not None:
@@ -276,6 +285,11 @@ class EPUB:
             if prefs["minimal_x_ray_count"] > 1:
                 self.remove_entities(prefs["minimal_x_ray_count"])
             self.create_x_ray_footnotes()
+
+        if is_wsd_enabled(prefs, lemma_lang):
+            self.enable_wsd = True
+            self.wsd_model, self.wsd_tokenizer = load_wsd_model()
+
         self.insert_anchor_elements()
         if len(self.sense_id_dict) > 0:
             self.create_word_wise_footnotes()
@@ -336,9 +350,7 @@ class EPUB:
                         f'{occurrence.entity_id}">{escape(word)}</a>'
                     )
                 else:
-                    new_xhtml_str += self.build_word_wise_tag(
-                        occurrence.sense_ids, word
-                    )
+                    new_xhtml_str += self.build_word_wise_tag(occurrence, word)
                 last_w_end = occurrence.word_end
                 if occurrence.paragraph_end != last_p_end:
                     last_p_end = occurrence.paragraph_end
@@ -362,14 +374,25 @@ class EPUB:
 
     def build_word_wise_tag(
         self,
-        sense_ids: tuple[int, ...],
+        occurrence: Occurrence,
         word: str,
     ) -> str:
-        ww_id = self.sense_id_dict[sense_ids]
-        sense_list = self.get_sense_data(sense_ids[:1])
-        short_def = sense_list[0].short_def
-        len_ratio = 3 if self.lemma_lang in CJK_LANGS else 2.5
-        if len(short_def) / len(word) > len_ratio:
+        ww_id = self.sense_id_dict[occurrence.sense_ids]
+        sense_list = self.get_sense_data(occurrence.sense_ids)
+        if self.enable_wsd and len(sense_list) > 1 and occurrence.sent.strip() != word:
+            use_sense_index = wsd(
+                self.wsd_model,
+                self.wsd_tokenizer,
+                occurrence.sent,
+                (occurrence.start_in_sent, occurrence.end_in_sent),
+                [s.embed for s in sense_list],
+            )
+            short_def = sense_list[use_sense_index].short_def
+            len_ratio = 0.0
+        else:
+            short_def = sense_list[0].short_def
+            len_ratio = 3.0 if self.lemma_lang in CJK_LANGS else 2.5
+        if not self.enable_wsd and len(short_def) / len(word) > len_ratio:
             return (
                 '<a class="wordwise" epub:type="noteref" href="word_wise.xhtml#'
                 f'{ww_id}">{escape(word)}</a>'
@@ -562,6 +585,17 @@ class EPUB:
             (lemma, pos),
         ):
             sense_ids.append(sense_id)
+        if len(sense_ids) == 0:
+            for (sense_id,) in self.lemmas_conn.execute(
+                """
+                SELECT DISTINCT s.id
+                FROM senses s JOIN forms f ON s.form_group_id = f.form_group_id
+                WHERE form = ? AND pos = ? AND enabled = 1
+                """,
+                (word, pos),
+            ):
+                sense_ids.append(sense_id)
+
         return tuple(sense_ids)
 
     def find_sense_ids_without_pos(self, word: str) -> tuple[int, ...]:
@@ -616,6 +650,7 @@ class EPUB:
                         ipas=[
                             ipa for ipa in ipas if isinstance(ipa, str) and len(ipa) > 0
                         ],
+                        embed=embed,
                     )
                 )
         return sense_list

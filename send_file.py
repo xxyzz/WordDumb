@@ -173,9 +173,7 @@ def copy_klld_to_device(
         else:
             return
     else:
-        local_klld_path = get_wiktionary_klld_path(
-            plugin_path, book_lang, prefs["gloss_lang"]
-        )
+        local_klld_path = get_wiktionary_klld_path(plugin_path, book_lang, prefs)
 
     if adb_path is not None:
         run_subprocess([adb_path, "push", str(local_klld_path), str(device_klld_path)])

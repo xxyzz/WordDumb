@@ -9,11 +9,12 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 CJK_LANGS = ["zh", "ja", "ko"]
-PROFICIENCY_VERSION = "1.0.0"
+PROFICIENCY_VERSION = "1.0.0-beta"
 PROFICIENCY_RELEASE_URL = (
     f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}"
 )
 PROFICIENCY_MAJOR_VERSION = PROFICIENCY_VERSION.split(".", 1)[0]
+WSD_LANGUAGES = {"en-en"}
 
 
 class Prefs(TypedDict):
@@ -29,6 +30,7 @@ class Prefs(TypedDict):
     use_wiktionary_for_kindle: bool
     python_path: str
     show_change_kindle_ww_lang_warning: bool
+    test_wsd: bool
 
 
 def load_plugin_json(plugin_path: Path, filepath: str) -> Any:
@@ -108,14 +110,17 @@ def kindle_db_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -> Path:
             / f"kindle_en_en_v{PROFICIENCY_MAJOR_VERSION}.db"
         )
     else:
-        return wiktionary_db_path(plugin_path, lemma_lang, prefs["gloss_lang"])
+        return wiktionary_db_path(plugin_path, lemma_lang, prefs)
 
 
-def wiktionary_db_path(plugin_path: Path, lemma_lang: str, gloss_lang: str) -> Path:
-    return (
+def wiktionary_db_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -> Path:
+    path = (
         custom_lemmas_folder(plugin_path)
-        / f"wiktionary_{lemma_lang}_{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.db"
+        / f"wiktionary_{lemma_lang}_{prefs['gloss_lang']}_v{PROFICIENCY_MAJOR_VERSION}.db"  # noqa:E501
     )
+    if is_wsd_enabled(prefs, lemma_lang):
+        path = path.with_stem(path.stem + "_wsd")
+    return path
 
 
 def get_kindle_klld_path(plugin_path: Path, zh_gloss: bool = False) -> Path | None:
@@ -127,17 +132,18 @@ def get_kindle_klld_path(plugin_path: Path, zh_gloss: bool = False) -> Path | No
     return None
 
 
-def get_wiktionary_klld_path(
-    plugin_path: Path, lemma_lang: str, gloss_lang: str
-) -> Path:
-    return (
+def get_wiktionary_klld_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -> Path:
+    path = (
         custom_lemmas_folder(plugin_path)
-        / f"kll.{lemma_lang}.{gloss_lang}_v{PROFICIENCY_MAJOR_VERSION}.klld"
+        / f"kll.{lemma_lang}.{prefs['gloss_lang']}_v{PROFICIENCY_MAJOR_VERSION}.klld"
     )
+    if is_wsd_enabled(prefs, lemma_lang):
+        path = path.with_stem(path.stem + "_wsd")
+    return path
 
 
 def donate() -> None:
-    webbrowser.open("https://liberapay.com/xxyzz/donate")
+    webbrowser.open("https://xxyzz.github.io/WordDumb/#donate")
 
 
 def get_user_agent() -> str:
@@ -184,3 +190,7 @@ def get_spacy_model_version(
     if lang_key in dependency_versions:
         return dependency_versions[lang_key]
     return dependency_versions.get("spacy_cpu_model", "")
+
+
+def is_wsd_enabled(prefs: Prefs, lemma_lang: str) -> bool:
+    return prefs["test_wsd"] and f"{lemma_lang}-{prefs['gloss_lang']}" in WSD_LANGUAGES

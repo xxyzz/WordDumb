@@ -52,6 +52,18 @@ ignore_missing_imports = true
 module = "__main__.*"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "transformers"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "torch"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "numpy"
+ignore_missing_imports = true
+
 [tool.typos]
 type.json.check-file = false
 type.po.check-file = false

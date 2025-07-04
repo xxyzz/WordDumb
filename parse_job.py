@@ -35,14 +35,15 @@ try:
         get_user_agent,
         get_wiktionary_klld_path,
         insert_installed_libs,
+        is_wsd_enabled,
         kindle_db_path,
-        load_languages_data,
         load_plugin_json,
         run_subprocess,
         spacy_model_name,
         use_kindle_ww_db,
         wiktionary_db_path,
     )
+    from .wsd import load_wsd_model, wsd
     from .x_ray import X_Ray
     from .x_ray_share import (
         NER_LABELS,
@@ -70,12 +71,13 @@ except ImportError:
         Prefs,
         get_spacy_model_version,
         insert_installed_libs,
+        is_wsd_enabled,
         kindle_db_path,
-        load_languages_data,
         load_plugin_json,
         use_kindle_ww_db,
         wiktionary_db_path,
     )
+    from wsd import load_wsd_model, wsd
     from x_ray import X_Ray
     from x_ray_share import (
         NER_LABELS,
@@ -148,9 +150,7 @@ def do_job(
         data.book_path = str(new_epub_path)
         if (
             data.create_ww
-            and not wiktionary_db_path(
-                data.plugin_path, data.book_lang, prefs["gloss_lang"]
-            ).exists()
+            and not wiktionary_db_path(data.plugin_path, data.book_lang, prefs).exists()
         ):
             download_word_wise_file(
                 False, data.book_lang, prefs, notifications=notifications
@@ -165,7 +165,7 @@ def do_job(
         if data.create_ww and (
             not kindle_db_path(data.plugin_path, data.book_lang, prefs).exists()
             or not get_wiktionary_klld_path(
-                data.plugin_path, data.book_lang, prefs["gloss_lang"]
+                data.plugin_path, data.book_lang, prefs
             ).exists()
         ):
             download_word_wise_file(
@@ -181,6 +181,8 @@ def do_job(
         # parse MediaWiki page and Wikipedia section requires lxml
         install_deps("lxml", notifications)
     install_deps(data.spacy_model, notifications)
+    if data.create_ww and is_wsd_enabled(prefs, data.book_lang):
+        install_deps("wsd", notifications)
 
     if notifications:
         notifications.put((0, "Creating files"))
@@ -248,7 +250,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
     lemmas_conn = None
     if data.create_ww:
         lemmas_db_path = (
-            wiktionary_db_path(data.plugin_path, data.book_lang, prefs["gloss_lang"])
+            wiktionary_db_path(data.plugin_path, data.book_lang, prefs)
             if is_epub
             else kindle_db_path(data.plugin_path, data.book_lang, prefs)
         )
@@ -325,14 +327,13 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                     epub,
                     xhtml_path,
                 )
-        supported_languages = load_languages_data(data.plugin_path)
-        gloss_lang = prefs["gloss_lang"]
-        gloss_source = supported_languages[gloss_lang]["gloss_source"]
-        epub.modify_epub(prefs, data.book_lang, gloss_lang, gloss_source)
+        epub.modify_epub(prefs, data.book_lang)
         return
 
     # Kindle
     final_start = calculate_final_start(data)
+    wsd_model = None
+    wsd_tokenizer = None
     if data.create_ww:
         ll_conn, ll_path = create_lang_layer(
             data.asin,
@@ -340,6 +341,10 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
             data.acr,
             data.revision,
         )
+        if is_wsd_enabled(prefs, data.book_lang) and not use_kindle_ww_db(
+            data.book_lang, prefs
+        ):
+            wsd_model, wsd_tokenizer = load_wsd_model()
 
     if data.create_x:
         x_ray_conn, x_ray_path = create_x_ray_db(
@@ -379,6 +384,8 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                 ll_conn,
                 data.book_lang,
                 prefs,
+                wsd_model,
+                wsd_tokenizer,
             )
         if notif:
             notif.put((start / final_start, "Creating files"))
@@ -435,6 +442,8 @@ def kindle_find_lemma(
     ll_conn,
     lemma_lang,
     prefs,
+    model,
+    tokenizer,
 ):
     from spacy.util import filter_spans
 
@@ -447,6 +456,13 @@ def kindle_find_lemma(
             lemmas_conn,
             lemma_lang,
             prefs,
+            span.sent.text,
+            (
+                span.start_char - span.sent.start_char,
+                span.end_char - span.sent.start_char,
+            ),
+            model,
+            tokenizer,
         )
         if data is not None:
             kindle_add_lemma(
@@ -488,6 +504,7 @@ def epub_find_lemma(
             span.start_char,
             span.end_char,
             xhtml_path,
+            span.sent,
         )
 
 
@@ -519,11 +536,32 @@ def get_kindle_lemma_data(
     conn: sqlite3.Connection,
     lemma_lang: str,
     prefs: Prefs,
+    sent: str,
+    offsets: tuple[int, int],
+    model,
+    tokenizer,
 ) -> tuple[int, int] | None:
+    data_list = []
     if pos != "":
-        return get_kindle_lemma_with_pos(lemma, word, pos, conn, lemma_lang, prefs)
+        data_list = get_kindle_lemma_with_pos(
+            lemma, word, pos, conn, lemma_lang, prefs, model is None
+        )
     else:
-        return get_kindle_lemma_without_pos(word, conn)
+        data_list = get_kindle_lemma_without_pos(word, conn, model is None)
+
+    if len(data_list) == 0:
+        return None
+    embeds = []
+    options = []
+    for difficulty, id, embed_vector in data_list:
+        if model is None:
+            return difficulty, id
+        embeds.append(embed_vector)
+        options.append((difficulty, id))
+    choose_index = 0
+    if len(options) > 1 and sent.strip() != word:
+        choose_index = wsd(model, tokenizer, sent, offsets, embeds)
+    return options[choose_index]
 
 
 def get_kindle_lemma_with_pos(
@@ -533,45 +571,65 @@ def get_kindle_lemma_with_pos(
     conn: sqlite3.Connection,
     lemma_lang: str,
     prefs: Prefs,
-) -> tuple[int, int] | None:
+    limit_one: bool,
+) -> list[tuple[int, int, str]]:
+    results = []
     if use_kindle_ww_db(lemma_lang, prefs):
         pos = spacy_to_kindle_pos(pos)
     else:
         pos = spacy_to_wiktionary_pos(pos)
-    for data in conn.execute(
-        """
-        SELECT difficulty, id
-        FROM senses
-        WHERE lemma = ? AND pos = ? AND enabled = 1 LIMIT 1
-        """,
-        (lemma, pos),
-    ):
-        return data
-    return get_kindle_lemma_without_pos(word, conn)
+    sql = """
+    SELECT difficulty, id, embed_vector
+    FROM senses
+    WHERE lemma = ? AND pos = ? AND enabled = 1
+    """
+    if limit_one:
+        sql += " LIMIT 1"
+    for data in conn.execute(sql, (lemma, pos)):
+        results.append(data)
+    if len(results) > 0:
+        return results
+
+    sql = """
+    SELECT difficulty, s.id, embed_vector
+    FROM senses s JOIN forms f ON s.form_group_id = f.form_group_id
+    WHERE form = ? AND pos = ? AND enabled = 1
+    """
+    if limit_one:
+        sql += " LIMIT 1"
+    for data in conn.execute(sql, (word, pos)):
+        results.append(data)
+
+    return results
 
 
 def get_kindle_lemma_without_pos(
-    word: str, conn: sqlite3.Connection
-) -> tuple[int, int] | None:
-    for data in conn.execute(
-        """
-        SELECT difficulty, id
-        FROM senses
-        WHERE lemma = ? AND enabled = 1 LIMIT 1
-        """,
-        (word,),
-    ):
-        return data
-    for data in conn.execute(
-        """
-        SELECT difficulty, s.id
-        FROM senses s JOIN forms f ON s.form_group_id = f.form_group_id
-        WHERE form = ? AND enabled = 1 LIMIT 1
-        """,
-        (word,),
-    ):
-        return data
-    return None
+    word: str, conn: sqlite3.Connection, limit_one: bool
+) -> list[tuple[int, int, str]]:
+    results = []
+    sql = """
+    SELECT difficulty, id, embed_vector
+    FROM senses
+    WHERE lemma = ? AND enabled = 1
+    """
+    if limit_one:
+        sql += " LIMIT 1"
+    for data in conn.execute(sql, (word,)):
+        results.append(data)
+    if len(results) > 0:
+        return results
+
+    sql = """
+    SELECT difficulty, s.id, embed_vector
+    FROM senses s JOIN forms f ON s.form_group_id = f.form_group_id
+    WHERE form = ? AND enabled = 1
+    """
+    if limit_one:
+        sql += " LIMIT 1"
+    for data in conn.execute(sql, (word,)):
+        results.append(data)
+
+    return results
 
 
 def kindle_add_lemma(
@@ -736,9 +794,8 @@ def load_spacy(model: str, book_path: str | None, lemma_lang: str) -> Any:
         excluded_components.append("ner")
 
     nlp = spacy.load(model, exclude=excluded_components)
-    if book_path is not None:
-        # simpler and faster https://spacy.io/usage/linguistic-features#sbd
-        nlp.enable_pipe("senter")
+    # simpler and faster https://spacy.io/usage/linguistic-features#sbd
+    nlp.enable_pipe("senter")
 
     if book_path is not None:
         custom_x_path = get_custom_x_path(book_path)

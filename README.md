@@ -10,9 +10,10 @@ Test plugin will be uploaded to [GitHub Actions Artifacts](https://github.com/xx
 
 [xxyzz.github.io/WordDumb](https://xxyzz.github.io/WordDumb)
 
-## I need about tree-fiddy
+## Donate
 
-<a href="https://liberapay.com/xxyzz/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
+- Liberapay: https://liberapay.com/xxyzz/donate
+- Paypal: https://paypal.me/worddumb
 
 ## License
 

@@ -56,6 +56,7 @@ prefs.defaults["gloss_lang"] = "en"
 prefs.defaults["use_wiktionary_for_kindle"] = False
 prefs.defaults["python_path"] = ""
 prefs.defaults["show_change_kindle_ww_lang_warning"] = True
+prefs.defaults["test_wsd"] = True
 for code in load_languages_data(get_plugin_path(), False).keys():
     prefs.defaults[f"{code}_wiktionary_difficulty_limit"] = 5
 
@@ -159,7 +160,7 @@ class ConfigWidget(QWidget):
         self.locator_map_box.setChecked(prefs["add_locator_map"])
         vl.addWidget(self.locator_map_box)
 
-        donate_button = QPushButton(QIcon.ic("donate.png"), "Tree-fiddy?")
+        donate_button = QPushButton(QIcon.ic("donate.png"), _("Donate"))
         donate_button.clicked.connect(donate)
         vl.addWidget(donate_button)
 
@@ -206,7 +207,7 @@ class ConfigWidget(QWidget):
             db_path = (
                 kindle_db_path(self.plugin_path, lemma_lang, prefs)
                 if is_kindle
-                else wiktionary_db_path(self.plugin_path, lemma_lang, gloss_lang)
+                else wiktionary_db_path(self.plugin_path, lemma_lang, prefs)
             )
             if not db_path.exists():
                 self.run_threaded_job(

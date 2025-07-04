@@ -36,6 +36,9 @@ def install_deps(pkg: str, notif: Any) -> None:
     dep_versions = load_plugin_json(plugin_path, "data/deps.json")
     if pkg == "lxml":
         pip_install("lxml", dep_versions["lxml"], notif=notif)
+    elif pkg == "wsd":
+        for p in ["transformers", "accelerate"]:
+            pip_install(p, dep_versions[p], notif=notif)
     else:
         # Install X-Ray dependencies
         pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
@@ -136,6 +139,8 @@ def download_word_wise_file(
     log=None,
     notifications=None,
 ) -> None:
+    from .utils import is_wsd_enabled
+
     gloss_lang = prefs["gloss_lang"]
     if notifications:
         notifications.put(
@@ -152,8 +157,17 @@ def download_word_wise_file(
     if not download_folder.is_dir():
         download_folder.mkdir()
     download_path = download_folder / bz2_filename
+    download_extract_bz2(url, download_path)
+    if is_wsd_enabled(prefs, lemma_lang):
+        bz2_filename = f"{lemma_lang}_{gloss_lang}_wsd.tar.bz2"
+        url = f"{PROFICIENCY_RELEASE_URL}/{bz2_filename}"
+        download_path = download_folder / bz2_filename
+        download_extract_bz2(url, download_path)
+
+
+def download_extract_bz2(url: str, download_path: Path) -> None:
     with urlopen(url) as r, open(download_path, "wb") as f:
         shutil.copyfileobj(r, f)
     with tarfile.open(name=download_path, mode="r:bz2") as tar_f:
-        tar_f.extractall(download_folder)
+        tar_f.extractall(download_path.parent)
     download_path.unlink()

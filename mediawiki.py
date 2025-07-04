@@ -80,6 +80,7 @@ class MediaWiki:
     def close(self):
         self.session.close()
         self.db_conn.commit()
+        self.db_conn.execute("PRAGMA optimize")
         self.db_conn.close()
 
     def get_api_info(self) -> None:

@@ -173,6 +173,7 @@ def create_x_indices(conn: sqlite3.Connection) -> None:
         CREATE INDEX idx_entity_type ON entity(type ASC);
         CREATE INDEX idx_entity_excerpt ON entity_excerpt(entity ASC);
         CREATE INDEX idx_occurrence_start ON occurrence(start ASC);
+        PRAGMA optimize;
         """
     )
 
@@ -251,6 +252,7 @@ def save_db(source: sqlite3.Connection, dest_path: Path) -> None:
     dest = sqlite3.connect(dest_path)
     with dest:
         source.backup(dest)
+        dest.execute("PRAGMA optimize")
     source.close()
     dest.close()
 

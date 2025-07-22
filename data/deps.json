@@ -1,8 +1,8 @@
 {
-  "accelerate": "1.8.1",
+  "accelerate": "1.9.0",
   "lxml": "6.0.0",
   "rapidfuzz": "3.13.0",
   "spacy": "3.8.7",
   "spacy_cpu_model": "3.8.0",
-  "transformers": "4.53.1"
+  "transformers": "4.53.3"
 }

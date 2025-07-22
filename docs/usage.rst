@@ -8,8 +8,6 @@ Set preferences
 
 - Enable "Fetch X-Ray people descriptions from Wikipedia or other MediaWiki server" option for nonfiction books and novels that have character pages on Wikipedia or any other MediaWiki server. A quote from the book will be used if it's disabled or the page is not found.
 
-- Larger spaCy model has higher `Named-entity recognition <https://en.wikipedia.org/wiki/Named-entity_recognition>`_ precision therefore improves X-Ray quality, more details at https://spacy.io/models/en
-
 - Enter a `MediaWiki Action API <https://www.mediawiki.org/wiki/API:Main_page>`_ link to get X-Ray descriptions from a MediaWiki server, delete the link to search Wikipedia. Most MediaWiki Action API endpoint is ``https://wiki.domain/w/api.php`` but some servers don't have the ``/w`` part, you can check the API URL in a browser.
 
 - Enable "Add locator map to EPUB footnotes" if your e-reader supports image in footnotes.

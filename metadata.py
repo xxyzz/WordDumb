@@ -169,7 +169,7 @@ def get_asin_etc(data: "ParseJobData", set_en_lang: bool = False) -> None:
         if set_en_lang and book_lang != "en":
             update_lang = True
             book_lang = "en"
-        if update_asin or update_lang:
+        if update_asin or update_lang or yj_md.cde_content_type != "EBOK":
             yj_book = update_kfx_metadata(data.book_path, data.asin, book_lang)
         data.kfx_json = json.loads(yj_book.convert_to_json_content())["data"]
     elif data.book_fmt != "EPUB":
@@ -239,7 +239,7 @@ def update_kfx_metadata(book_path: str, asin: str, lang: str) -> Any:
     yj_md = YJ_Metadata()
     yj_md.asin = asin
     yj_md.language = lang
-    yj_md.content_type = "EBOK"
+    yj_md.cde_content_type = "EBOK"
     yj_book.decode_book(set_metadata=yj_md)
     with open(book_path, "wb") as f:
         f.write(yj_book.convert_to_single_kfx())

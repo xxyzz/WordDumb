@@ -83,3 +83,6 @@ Install `KFX Input <https://www.mobileread.com/forums/showthread.php?t=291290>`_
 -------------------------------------------------------------------------------------------------
 
 This step is optional if you don't use the KFX format. The installation steps are similar to the above video.
+
+.. attention::
+   "Create book (EBOK) instead of personal document (PDOC)" option must be selected when converting book to KFX format.

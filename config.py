@@ -476,6 +476,8 @@ class ChooseLemmaLangDialog(QDialog):
         if len(lemma_langs) == 0:
             lemma_langs = lang_dict.keys()
         for index, lemma_lang in enumerate(lemma_langs):
+            if lemma_lang == "zh_cn":
+                continue
             lemma_lang_name = _(lang_dict[lemma_lang]["name"])
             self.lemma_lang_box.addItem(lemma_lang_name, lemma_lang)
             if index == 0:

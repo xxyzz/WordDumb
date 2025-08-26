@@ -33,7 +33,7 @@ jobs:
 
       - run: make html
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         if: github.ref_name == 'master'
         with:
           path: docs/_build/html

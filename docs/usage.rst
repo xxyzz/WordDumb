@@ -66,7 +66,7 @@ You can also run the plugin in terminal:
 Import Word Wise
 ----------------
 
-Update difficulty levels from Anki Deck Package, CSV file or Kindle Vocabulary Builder. Words inside the imported file will be enabled.
+Update difficulty levels from Anki Deck Package, CSV file or Kindle Vocabulary Builder. Words inside the imported file will be enabled. New words can't be added.
 
 - Select the "Include scheduling information" option when exporting the .apkg file from Anki so the card schedule state can be used as Word Wise difficulty.
 

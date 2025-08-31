@@ -55,5 +55,4 @@ html_theme_options = {
             """,
         },
     ],
-    "announcement": "Word-sense disambiguation feature released in <a href='https://github.com/xxyzz/WordDumb/releases/tag/v3.34.0-beta'>beta version</a>!",
 }

@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 from urllib.request import urlopen
 
-from calibre.constants import isfrozen, ismacos, iswindows
+from calibre.constants import isfrozen, islinux, ismacos, iswindows
 
 from .utils import (
     PROFICIENCY_RELEASE_URL,
@@ -20,6 +20,20 @@ from .utils import (
 
 PY_PATH = ""
 LIBS_PATH = Path()
+# https://pytorch.org/get-started/locally
+PYTORCH_LINUX_PLATFORMS = {
+    "cpu": "https://download.pytorch.org/whl/cpu",
+    "cuda12.6": "https://download.pytorch.org/whl/cu126",
+    "cuda12.8": None,
+    "cuda12.9": "https://download.pytorch.org/whl/cu129",
+    "rocm6.4": "https://download.pytorch.org/whl/rocm6.4",
+}
+PYTORCH_WINDOWS_PLATFORMS = {
+    "cpu": None,
+    "cuda12.6": "https://download.pytorch.org/whl/cu126",
+    "cuda12.8": "https://download.pytorch.org/whl/cu128",
+    "cuda12.9": "https://download.pytorch.org/whl/cu129",
+}
 
 
 def install_deps(pkg: str, notif: Any) -> None:
@@ -37,8 +51,16 @@ def install_deps(pkg: str, notif: Any) -> None:
     if pkg == "lxml":
         pip_install("lxml", dep_versions["lxml"], notif=notif)
     elif pkg == "wsd":
+        from .config import prefs
+
         for p in ["transformers", "accelerate"]:
             pip_install(p, dep_versions[p], notif=notif)
+        index_url = None
+        if iswindows:
+            index_url = PYTORCH_WINDOWS_PLATFORMS.get(prefs["torch_compute_platform"])
+        elif islinux:
+            index_url = PYTORCH_LINUX_PLATFORMS.get(prefs["torch_compute_platform"])
+        pip_install("torch", dep_versions["torch"], extra_index=index_url, notif=notif)
     else:
         # Install X-Ray dependencies
         pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
@@ -98,6 +120,8 @@ def pip_install(
     notif: Any = None,
 ) -> None:
     pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
+    if pkg == "torch" and extra_index:
+        pattern = f"torch-{pkg_version}+{extra_index.split('/')[-1]}*"
     if not any(LIBS_PATH.glob(pattern)):
         if notif:
             notif.put((0, f"Installing {pkg}"))
@@ -112,7 +136,6 @@ def pip_install(
             "-t",
             str(LIBS_PATH),
             "--no-user",  # disable "--user" option which conflicts with "-t"
-            "--no-cache-dir",
         ]
 
         if no_deps:
@@ -125,7 +148,7 @@ def pip_install(
         else:
             args.append(pkg)
 
-        if extra_index:
+        if extra_index is not None:
             args.extend(["--extra-index-url", extra_index])
 
         run_subprocess(args)

@@ -4,7 +4,7 @@ from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from calibre.constants import isfrozen
+from calibre.constants import isfrozen, islinux, iswindows
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig
@@ -57,6 +57,7 @@ prefs.defaults["use_wiktionary_for_kindle"] = False
 prefs.defaults["python_path"] = ""
 prefs.defaults["show_change_kindle_ww_lang_warning"] = True
 prefs.defaults["test_wsd"] = True
+prefs.defaults["torch_compute_platform"] = "cpu"
 for code in load_languages_data(get_plugin_path(), False).keys():
     prefs.defaults[f"{code}_wiktionary_difficulty_limit"] = 5
 
@@ -151,6 +152,27 @@ class ConfigWidget(QWidget):
         self.mediawiki_api.setPlaceholderText("https://wiki.domain/w/api.php")
         form_layout.addRow(_("MediaWiki Action API"), self.mediawiki_api)
 
+        if islinux or iswindows:
+            compute_platform_lb = QLabel(_("PyTorch compute platform"))
+            compute_platforms = {
+                "cpu": "CPU",
+                "cuda12.9": "CUDA 12.9",
+                "cuda12.8": "CUDA 12.8",
+                "cuda12.6": "CUDA 12.6",
+                "rocm6.4": "ROCm 6.4",
+            }
+            self.compute_platform_box = QComboBox()
+            for version, text in compute_platforms.items():
+                if iswindows and text.startswith("ROCm"):
+                    continue
+                self.compute_platform_box.addItem(text, version)
+            if prefs["torch_compute_platform"] not in compute_platforms:
+                prefs["torch_compute_platform"] = "cpu"
+            self.compute_platform_box.setCurrentText(
+                compute_platforms[prefs["torch_compute_platform"]]
+            )
+            form_layout.addRow(compute_platform_lb, self.compute_platform_box)
+
         vl.addLayout(form_layout)
 
         self.locator_map_box = QCheckBox(_("Add locator map to EPUB footnotes"))
@@ -187,6 +209,8 @@ class ConfigWidget(QWidget):
         mediawiki_api = self.mediawiki_api.text().strip("/ ")
         if mediawiki_api.endswith("/api.php") or mediawiki_api == "":
             prefs["mediawiki_api"] = mediawiki_api
+        if islinux or iswindows:
+            prefs["torch_compute_platform"] = self.compute_platform_box.currentData()
 
     def open_format_order_dialog(self):
         format_order_dialog = FormatOrderDialog(self)

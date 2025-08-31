@@ -71,6 +71,20 @@ Use Chocolatey or download from https://www.python.org/downloads
 
 .. attention::
    - Do not change the default installation settings in the Python installer.
+   - `PyTorch <https://pytorch.org/get-started/locally>`_ may not support the latest Python and CUDA version.
+
+Install CUDA or ROCm(optional)
+------------------------------
+
+`CUDA <https://en.wikipedia.org/wiki/CUDA>`_ or `ROCm <https://en.wikipedia.org/wiki/ROCm>`_ can be installed to shorten `WSD <https://en.wikipedia.org/wiki/Word-sense_disambiguation>`_ processing time if you have supported GPU. You can download CUDA from https://developer.nvidia.com/cuda-toolkit-archive and ROCm from https://rocm.docs.amd.com/projects/install-on-linux/en/latest/install/quick-start.html
+
+- CUDA supported GPUs: https://developer.nvidia.com/cuda-gpus
+- ROCm supported GPUs: https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html
+
+.. attention::
+   - The latest CUDA and ROCm release usually is not supported by PyTorch, read https://pytorch.org/get-started/locally to find the supported versions.
+   - C/C++ compiler is needed for Windows, download from https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022
+   - Read the installation guide on the CUDA download page for more information.
 
 Install WordDumb plugin
 -----------------------

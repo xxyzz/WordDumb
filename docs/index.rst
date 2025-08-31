@@ -23,6 +23,8 @@ Features
 
 - Add Word Wise annotations and X-Ray footnotes to EPUB books.
 
+- Word-sense disambiguation.
+
 - Add locator map of countries and cities to EPUB X-Ray footnotes.
 
 - Add inception date of countries and cities to X-Ray descriptions.

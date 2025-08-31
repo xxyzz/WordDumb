@@ -12,6 +12,8 @@ Set preferences
 
 - Enable "Add locator map to EPUB footnotes" if your e-reader supports image in footnotes.
 
+- Select CUDA or ROCm version if you have supported GPU and also successfully installed these software, otherwise select CPU.
+
 .. raw:: html
 
    <video controls width="100%" src="https://user-images.githubusercontent.com/21101839/202723256-36b96e53-fbf0-4a38-ba35-27fe331d7f1d.mov"></video>

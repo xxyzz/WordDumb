@@ -6,7 +6,7 @@ def load_wsd_model():
 
     model_name = "google-bert/bert-base-multilingual-cased"
     model = AutoModel.from_pretrained(
-        model_name, output_hidden_states=True, torch_dtype="auto", device_map="auto"
+        model_name, output_hidden_states=True, dtype="auto", device_map="auto"
     )
     model.eval()
     tokenizer = AutoTokenizer.from_pretrained(model_name)

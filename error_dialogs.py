@@ -76,6 +76,13 @@ def job_failed(job: Any, parent: Any = None) -> bool:
                 job.datails,
                 parent,
             )
+        elif "DownloadFiled" in job.details:
+            error_dialog(
+                _("Download failed"),
+                _("Download failed, please retry."),
+                job.details,
+                parent,
+            )
         else:
             check_network_error(job.details, parent)
         return True

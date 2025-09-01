@@ -179,18 +179,39 @@ def download_word_wise_file(
     download_folder = custom_lemmas_folder(plugin_path)
     if not download_folder.is_dir():
         download_folder.mkdir()
+    checksum = download_checksum(False)
     download_path = download_folder / bz2_filename
-    download_extract_bz2(url, download_path)
+    download_extract_bz2(url, download_path, checksum.get(bz2_filename, ""))
     if is_wsd_enabled(prefs, lemma_lang):
         bz2_filename = f"{lemma_lang}_{gloss_lang}_wsd.tar.bz2"
         url = f"{PROFICIENCY_RELEASE_URL}/{bz2_filename}"
         download_path = download_folder / bz2_filename
-        download_extract_bz2(url, download_path)
+        checksum = download_checksum(True)
+        download_extract_bz2(url, download_path, checksum.get(bz2_filename, ""))
 
 
-def download_extract_bz2(url: str, download_path: Path) -> None:
+def download_extract_bz2(url: str, download_path: Path, sha256: str) -> None:
+    import hashlib
+
     with urlopen(url) as r, open(download_path, "wb") as f:
         shutil.copyfileobj(r, f)
+    if not download_path.is_file():
+        raise Exception("DownloadFiled")
+    with download_path.open("rb", buffering=0) as f:
+        if hashlib.file_digest(f, "sha256").hexdigest() != sha256:
+            download_path.unlink()
+            raise Exception("DownloadFiled")
     with tarfile.open(name=download_path, mode="r:bz2") as tar_f:
         tar_f.extractall(download_path.parent)
     download_path.unlink()
+
+
+def download_checksum(is_wsd: bool) -> dict[str, str]:
+    import json
+
+    if not is_wsd:
+        url = f"{PROFICIENCY_RELEASE_URL}/sha256.json"
+    else:
+        url = f"{PROFICIENCY_RELEASE_URL}/sha256_wsd.json"
+    with urlopen(url) as r:
+        return json.load(r)

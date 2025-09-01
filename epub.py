@@ -87,6 +87,8 @@ class EPUB:
         wikidata: Wikidata | None,
         custom_x_ray: CustomXDict,
         lemmas_conn: sqlite3.Connection | None,
+        prefs: Prefs,
+        lemma_lang: str,
     ) -> None:
         self.book_path = Path(book_path_str)
         self.mediawiki = mediawiki
@@ -108,9 +110,9 @@ class EPUB:
         self.sense_id_dict: dict[tuple[int, ...], int] = {}
         self.word_wise_id = 0
         self.lemmas_conn: sqlite3.Connection | None = lemmas_conn
-        self.prefs: Prefs = {}
-        self.lemma_lang: str = ""
-        self.gloss_lang: str = ""
+        self.prefs = prefs
+        self.lemma_lang = lemma_lang
+        self.gloss_lang = prefs["gloss_lang"]
         self.enable_wsd: bool = False
         self.wsd_model = None
         self.wsd_tokenizer = None
@@ -274,19 +276,16 @@ class EPUB:
                 del self.entities[entity_name]
                 self.removed_entity_ids.add(entity_data.id)
 
-    def modify_epub(self, prefs: Prefs, lemma_lang: str) -> None:
-        self.prefs = prefs
-        self.lemma_lang = lemma_lang
-        self.gloss_lang = prefs["gloss_lang"]
+    def modify_epub(self) -> None:
         if len(self.entities) > 0 and self.mediawiki is not None:
-            self.mediawiki.query(self.entities, prefs["search_people"])
+            self.mediawiki.query(self.entities, self.prefs["search_people"])
             if self.wikidata is not None:
                 query_wikidata(self.entities, self.mediawiki, self.wikidata)
-            if prefs["minimal_x_ray_count"] > 1:
-                self.remove_entities(prefs["minimal_x_ray_count"])
+            if self.prefs["minimal_x_ray_count"] > 1:
+                self.remove_entities(self.prefs["minimal_x_ray_count"])
             self.create_x_ray_footnotes()
 
-        if is_wsd_enabled(prefs, lemma_lang):
+        if is_wsd_enabled(self.prefs, self.lemma_lang):
             self.enable_wsd = True
             self.wsd_model, self.wsd_tokenizer = load_wsd_model()
 
@@ -579,10 +578,16 @@ class EPUB:
     ) -> tuple[int, ...]:
         if self.lemmas_conn is None:
             return ()
+        difficulty_limit = self.prefs.get(
+            f"{self.lemma_lang}_wiktionary_difficulty_limit", 5
+        )
         sense_ids = []
         for (sense_id,) in self.lemmas_conn.execute(
-            "SELECT id FROM senses WHERE lemma = ? AND pos = ? AND enabled = 1",
-            (lemma, pos),
+            """
+            SELECT id FROM senses
+            WHERE lemma = ? AND pos = ? AND difficulty <= ? AND enabled = 1
+            """,
+            (lemma, pos, difficulty_limit),
         ):
             sense_ids.append(sense_id)
         if len(sense_ids) == 0:
@@ -590,9 +595,9 @@ class EPUB:
                 """
                 SELECT DISTINCT s.id
                 FROM senses s JOIN forms f ON s.form_group_id = f.form_group_id
-                WHERE form = ? AND pos = ? AND enabled = 1
+                WHERE form = ? AND pos = ? AND difficulty <= ? AND enabled = 1
                 """,
-                (word, pos),
+                (word, pos, difficulty_limit),
             ):
                 sense_ids.append(sense_id)
 
@@ -601,10 +606,13 @@ class EPUB:
     def find_sense_ids_without_pos(self, word: str) -> tuple[int, ...]:
         if self.lemmas_conn is None:
             return ()
+        difficulty_limit = self.prefs.get(
+            f"{self.lemma_lang}_wiktionary_difficulty_limit", 5
+        )
         sense_ids = []
         for (sense_id,) in self.lemmas_conn.execute(
-            "SELECT id FROM senses WHERE lemma = ? AND enabled = 1",
-            (word,),
+            "SELECT id FROM senses WHERE lemma = ? AND difficulty <= ? AND enabled = 1",
+            (word, difficulty_limit),
         ):
             sense_ids.append(sense_id)
         if len(sense_ids) > 0:
@@ -613,9 +621,9 @@ class EPUB:
             """
             SELECT DISTINCT s.id
             FROM senses s JOIN forms f ON s.form_group_id = f.form_group_id
-            WHERE form = ? AND enabled = 1
+            WHERE form = ? AND difficulty <= ? AND enabled = 1
             """,
-            (word,),
+            (word, difficulty_limit),
         ):
             sense_ids.append(sense_id)
 

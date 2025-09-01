@@ -292,9 +292,20 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                 wikidata,
                 custom_x_ray,
                 lemmas_conn,
+                prefs,
+                data.book_lang,
             )
         elif data.create_ww:
-            epub = EPUB(data.book_path, None, None, None, None, lemmas_conn)
+            epub = EPUB(
+                data.book_path,
+                None,
+                None,
+                None,
+                None,
+                lemmas_conn,
+                prefs,
+                data.book_lang,
+            )
 
         for doc, (start, end, xhtml_path) in nlp.pipe(
             epub.extract_epub(), as_tuples=True
@@ -327,7 +338,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                     epub,
                     xhtml_path,
                 )
-        epub.modify_epub(prefs, data.book_lang)
+        epub.modify_epub()
         return
 
     # Kindle

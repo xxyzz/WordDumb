@@ -33,6 +33,7 @@ from .dump_lemmas import dump_spacy_docs
 from .error_dialogs import GITHUB_URL, change_kindle_ww_lang_dialog, job_failed
 from .import_lemmas import apply_imported_lemmas_data, export_lemmas_job
 from .utils import (
+    custom_lemmas_folder,
     donate,
     dump_prefs,
     get_plugin_path,
@@ -182,6 +183,10 @@ class ConfigWidget(QWidget):
         self.locator_map_box.setChecked(prefs["add_locator_map"])
         vl.addWidget(self.locator_map_box)
 
+        delete_file_button = QPushButton(_("Delete downloaded files"))
+        delete_file_button.clicked.connect(self.open_delete_files_dialog)
+        vl.addWidget(delete_file_button)
+
         donate_button = QPushButton(QIcon.ic("donate.png"), _("Donate"))
         donate_button.clicked.connect(donate)
         vl.addWidget(donate_button)
@@ -295,6 +300,21 @@ class ConfigWidget(QWidget):
             killable=False,
         )
         gui.job_manager.run_threaded_job(job)
+
+    def open_delete_files_dialog(self):
+        dialog = DeleteFilesDialog(self)
+        if dialog.exec():
+            paths = []
+            plugin_path = get_plugin_path()
+            if dialog.delete_dependencies.isChecked():
+                paths.extend(list(plugin_path.parent.glob("worddumb-libs-py*")))
+            if dialog.delete_definitions.isChecked():
+                paths.append(custom_lemmas_folder(plugin_path))
+            if dialog.delete_mediawiki.isChecked():
+                paths.append(plugin_path.parent / "worddumb-mediawiki")
+                paths.append(plugin_path.parent / "worddumb-wikimedia")
+            if len(paths) > 0:
+                self.run_threaded_job(delete_files, (paths,), _("Deleting files"))
 
 
 def import_lemmas_job(
@@ -506,3 +526,38 @@ class ChooseLemmaLangDialog(QDialog):
             self.lemma_lang_box.addItem(lemma_lang_name, lemma_lang)
             if index == 0:
                 self.lemma_lang_box.setCurrentText(lemma_lang_name)
+
+
+class DeleteFilesDialog(QDialog):
+    def __init__(self, parent: QObject):
+        super().__init__(parent)
+        self.setWindowTitle(_("Delete downloaded files"))
+        vl = QVBoxLayout()
+        self.setLayout(vl)
+
+        self.delete_dependencies = QCheckBox(_("Delete dependency packages"))
+        vl.addWidget(self.delete_dependencies)
+        self.delete_definitions = QCheckBox(_("Delete definition files"))
+        vl.addWidget(self.delete_definitions)
+        self.delete_mediawiki = QCheckBox(_("Delete MediaWiki files"))
+        vl.addWidget(self.delete_mediawiki)
+
+        confirm_button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        confirm_button_box.accepted.connect(self.accept)
+        confirm_button_box.rejected.connect(self.reject)
+        vl.addWidget(confirm_button_box)
+
+
+def delete_files(
+    paths: list[Path],
+    abort: Any = None,
+    log: Any = None,
+    notifications: Any = None,
+):
+    import shutil
+
+    for path in paths:
+        if path.is_dir():
+            shutil.rmtree(path)

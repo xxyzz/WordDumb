@@ -47,7 +47,6 @@ from .utils import (
 prefs = JSONConfig("plugins/worddumb")
 prefs.defaults["search_people"] = False
 prefs.defaults["zh_wiki_variant"] = "cn"
-prefs.defaults["mediawiki_api"] = ""
 prefs.defaults["add_locator_map"] = False
 prefs.defaults["preferred_formats"] = ["KFX", "AZW3", "AZW", "MOBI", "EPUB"]
 prefs.defaults["use_all_formats"] = False
@@ -148,11 +147,6 @@ class ConfigWidget(QWidget):
         self.zh_wiki_box.setCurrentText(zh_variants[prefs["zh_wiki_variant"]])
         form_layout.addRow(_("Chinese Wikipedia variant"), self.zh_wiki_box)
 
-        self.mediawiki_api = QLineEdit()
-        self.mediawiki_api.setText(prefs["mediawiki_api"])
-        self.mediawiki_api.setPlaceholderText("https://wiki.domain/w/api.php")
-        form_layout.addRow(_("MediaWiki Action API"), self.mediawiki_api)
-
         if islinux or iswindows:
             compute_platform_lb = QLabel(_("PyTorch compute platform"))
             compute_platforms = {
@@ -211,9 +205,6 @@ class ConfigWidget(QWidget):
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
-        mediawiki_api = self.mediawiki_api.text().strip("/ ")
-        if mediawiki_api.endswith("/api.php") or mediawiki_api == "":
-            prefs["mediawiki_api"] = mediawiki_api
         if islinux or iswindows:
             prefs["torch_compute_platform"] = self.compute_platform_box.currentData()
 
@@ -561,3 +552,46 @@ def delete_files(
     for path in paths:
         if path.is_dir():
             shutil.rmtree(path)
+
+
+class BookSettingsDialog(QDialog):
+    def __init__(self, parent: QObject, config_path: Path):
+        super().__init__(parent)
+        self.setWindowTitle(_("Book settings"))
+        vl = QVBoxLayout()
+        self.setLayout(vl)
+        form_layout = QFormLayout()
+        form_layout.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
+        vl.addLayout(form_layout)
+        self.config_path = config_path
+        self.settings = {}
+        if self.config_path.is_file():
+            with self.config_path.open() as f:
+                self.settings = json.load(f)
+
+        self.mediawiki_api = QLineEdit()
+        self.mediawiki_api.setText(self.settings.get("mediawiki_api", ""))
+        self.mediawiki_api.setPlaceholderText("https://wiki.domain/w/api.php")
+        mediawiki_api_lb = QLabel(_("MediaWiki Action API"))
+        mediawiki_api_lb.setToolTip(_("Level this empty to use Wikipedia API"))
+        form_layout.addRow(mediawiki_api_lb, self.mediawiki_api)
+
+        confirm_button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        confirm_button_box.accepted.connect(self.accept)
+        confirm_button_box.rejected.connect(self.reject)
+        vl.addWidget(confirm_button_box)
+        vl.addWidget(confirm_button_box)
+
+    def save(self):
+        mediawiki_api = self.mediawiki_api.text().strip("/ ")
+        if (
+            mediawiki_api.startswith(("https://", "http://"))
+            and mediawiki_api.endswith("/api.php")
+        ) or mediawiki_api == "":
+            self.settings["mediawiki_api"] = mediawiki_api
+        with self.config_path.open("w", encoding="utf-8") as f:
+            json.dump(self.settings, f, indent=2)

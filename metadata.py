@@ -32,7 +32,9 @@ def is_ww_supported(book_lang: str, gloss_lang: str) -> bool:
     return book_lang in supported_codes
 
 
-def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult | None:
+def check_metadata(
+    gui: Any, book_id: int, choose_format: bool
+) -> MetaDataResult | None:
     from calibre.utils.localization import lang_as_iso639_1
 
     from .config import prefs
@@ -53,7 +55,7 @@ def check_metadata(gui: Any, book_id: int, custom_x_ray: bool) -> MetaDataResult
     if not supported_fmts:
         unsupported_format_dialog()
         return None
-    if len(supported_fmts) > 1 and prefs["choose_format_manually"] and not custom_x_ray:
+    if len(supported_fmts) > 1 and prefs["choose_format_manually"] and choose_format:
         from .config import ChooseFormatDialog
 
         choose_format_dlg = ChooseFormatDialog(supported_fmts)

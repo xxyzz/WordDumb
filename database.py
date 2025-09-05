@@ -70,6 +70,7 @@ def create_x_ray_db(
     plugin_path: Path,
     prefs: dict[str, str],
     wiki_name: str,
+    mediawiki_api: str,
 ) -> tuple[sqlite3.Connection, Path]:
     db_path = get_x_ray_path(asin, book_path)
     x_ray_conn = sqlite3.connect(":memory:")
@@ -154,7 +155,7 @@ def create_x_ray_db(
             else f"https://{lang}.wikipedia.org/wiki/%s",
         ]
     )
-    str_list.append([22, "en", f"{prefs['mediawiki_api'].split('/', 1)[0]}/wiki/%s"])
+    str_list.append([22, "en", f"{mediawiki_api.split('/', 1)[0]}/wiki/%s"])
     x_ray_conn.execute(
         """
         INSERT INTO source (id, label, url, license_label, license_url)

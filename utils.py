@@ -20,7 +20,6 @@ WSD_LANGUAGES = {"en-en"}
 class Prefs(TypedDict):
     search_people: bool
     zh_wiki_variant: str
-    mediawiki_api: str
     add_locator_map: str
     preferred_formats: list[str]
     use_all_formats: bool
@@ -195,3 +194,7 @@ def get_spacy_model_version(
 
 def is_wsd_enabled(prefs: Prefs, lemma_lang: str) -> bool:
     return prefs["test_wsd"] and f"{lemma_lang}-{prefs['gloss_lang']}" in WSD_LANGUAGES
+
+
+def get_book_settings_path(book_path: Path) -> Path:
+    return book_path.parent / "worddumb_settings.json"

@@ -1,4 +1,6 @@
+import json
 from functools import partial
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterator
 
 from calibre.gui2 import Dispatcher
@@ -11,7 +13,7 @@ from .error_dialogs import job_failed, unsupported_ww_lang_dialog
 from .metadata import MetaDataResult, check_metadata
 from .parse_job import ParseJobData, do_job
 from .send_file import SendFile, device_connected
-from .utils import donate
+from .utils import donate, get_book_settings_path
 
 load_translations()  # type: ignore
 if TYPE_CHECKING:
@@ -53,6 +55,13 @@ class WordDumb(InterfaceAction):
         )
         self.create_menu_action(
             self.menu,
+            "Book settings",
+            _("Book settings"),
+            icon=QIcon.ic("polish.png"),
+            triggered=partial(open_book_settings_dialog, self.gui),
+        )
+        self.create_menu_action(
+            self.menu,
             "Preferences",
             _("Preferences"),
             icon=QIcon.ic("config.png"),
@@ -74,7 +83,7 @@ class WordDumb(InterfaceAction):
         self.interface_action_base_plugin.do_user_config(self.gui)
 
     def open_custom_x_ray_dialog(self) -> None:
-        for md_result in get_metadata_of_selected_books(self.gui, True):
+        for md_result in get_metadata_of_selected_books(self.gui, False):
             custom_x_dlg = CustomXRayDialog(
                 md_result.book_paths[0], md_result.mi.get("title"), self.gui
             )
@@ -83,12 +92,12 @@ class WordDumb(InterfaceAction):
 
 
 def get_metadata_of_selected_books(
-    gui: Any, custom_x_ray: bool
+    gui: Any, choose_format: bool
 ) -> Iterator[MetaDataResult]:
     return filter(
         None,
         [
-            check_metadata(gui, book_id, custom_x_ray)
+            check_metadata(gui, book_id, choose_format)
             for book_id in map(
                 gui.library_view.model().id,
                 gui.library_view.selectionModel().selectedRows(),
@@ -100,7 +109,7 @@ def get_metadata_of_selected_books(
 def run(gui: Any, create_ww: bool, create_x: bool) -> None:
     if not create_ww and not create_x:
         return
-    for md_result in get_metadata_of_selected_books(gui, False):
+    for md_result in get_metadata_of_selected_books(gui, True):
         for book_fmt, book_path, support_ww in zip(
             md_result.book_fmts, md_result.book_paths, md_result.support_ww_list
         ):
@@ -122,6 +131,15 @@ def run(gui: Any, create_ww: bool, create_x: bool) -> None:
                 notif.append(_("Word Wise"))
             if create_x:
                 notif.append("X-Ray")
+
+            config_path = get_book_settings_path(Path(book_path))
+            if not config_path.is_file():
+                open_book_settings_dialog(gui)
+            book_settings = {}
+            if config_path.is_file():
+                with config_path.open() as f:
+                    book_settings = json.load(f)
+
             notif = _(" and ").join(notif)
             job_data = ParseJobData(
                 book_id=md_result.book_id,
@@ -131,6 +149,7 @@ def run(gui: Any, create_ww: bool, create_x: bool) -> None:
                 book_lang=md_result.book_lang,
                 create_ww=create_ww,
                 create_x=create_x,
+                book_settings=book_settings,
             )
             job = ThreadedJob(
                 "WordDumb's dumb job",
@@ -158,3 +177,16 @@ def done(job, gui=None, notif=None):
         SendFile(gui, job.result, notif).send_files(None)
     else:
         gui.status_bar.show_message(notif)
+
+
+def open_book_settings_dialog(gui):
+    from pathlib import Path
+
+    from .config import BookSettingsDialog
+
+    for md_result in get_metadata_of_selected_books(gui, False):
+        settings_dlg = BookSettingsDialog(
+            gui, get_book_settings_path(Path(md_result.book_paths[0]))
+        )
+        if settings_dlg.exec():
+            settings_dlg.save()

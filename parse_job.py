@@ -3,7 +3,7 @@ import random
 import re
 import shutil
 import sqlite3
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from html import escape, unescape
 from pathlib import Path
 from sqlite3 import Connection
@@ -105,6 +105,7 @@ class ParseJobData:
     kfx_json: KFXJson | None = None
     mobi_html: bytes | None = b""
     mobi_codec: str = ""
+    book_settings: dict[str, str] = field(default_factory=dict)
 
 
 def do_job(
@@ -265,25 +266,24 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
             prefs,
         )
 
+    mediawiki_api = data.book_settings.get("mediawiki_api", "")
     if data.create_x:
         mediawiki = MediaWiki(
-            prefs["mediawiki_api"],
+            mediawiki_api,
             data.book_lang,
             data.useragent,
             data.plugin_path,
             prefs["zh_wiki_variant"],
         )
         wikidata = (
-            None
-            if len(prefs["mediawiki_api"]) > 0
-            else Wikidata(data.plugin_path, data.useragent)
+            None if mediawiki_api != "" else Wikidata(data.plugin_path, data.useragent)
         )
         custom_x_ray = load_custom_x_desc(data.book_path)
 
     if is_epub:
         if data.create_x:
             wiki_commons = None
-            if prefs["mediawiki_api"] == "" and prefs["add_locator_map"]:
+            if mediawiki_api == "" and prefs["add_locator_map"]:
                 wiki_commons = Wikimedia_Commons(data.plugin_path, data.useragent)
             epub = EPUB(
                 data.book_path,
@@ -365,6 +365,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
             data.plugin_path,
             prefs,
             mediawiki.sitename,
+            mediawiki_api,
         )
         x_ray = X_Ray(x_ray_conn, mediawiki, wikidata, custom_x_ray)
 

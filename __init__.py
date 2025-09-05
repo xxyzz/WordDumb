@@ -28,11 +28,14 @@ class WordDumbDumb(InterfaceActionBase):
 
     def cli_main(self, argv):
         import argparse
+        import json
+        from pathlib import Path
 
         from calibre.utils.logging import Log
 
         from .metadata import cli_check_metadata
         from .parse_job import ParseJobData, do_job
+        from .utils import get_book_settings_path
 
         parser = argparse.ArgumentParser(prog="calibre-debug -r WordDumb --")
         parser.add_argument("-w", help="Create Word Wise", action="store_true")
@@ -70,6 +73,12 @@ class WordDumbDumb(InterfaceActionBase):
             if not create_w and not create_x:
                 continue
 
+            config_path = get_book_settings_path(Path(file_path))
+            book_settings = {}
+            if config_path.is_file():
+                with config_path.open() as f:
+                    book_settings = json.load(f)
+
             notif = []
             if create_w:
                 notif.append("Word Wise")
@@ -87,5 +96,6 @@ class WordDumbDumb(InterfaceActionBase):
                 book_lang=md_result.book_lang,
                 create_ww=create_w,
                 create_x=create_x,
+                book_settings=book_settings,
             )
             do_job(job_data)

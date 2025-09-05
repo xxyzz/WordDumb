@@ -195,7 +195,7 @@ class MediaWiki:
             wikibase_item = v.get("pageprops", {}).get("wikibase_item")
             if summary == "":  # some wikis return empty string
                 self.query_parse_api(title)
-            self.add_cache(title, summary, wikibase_item)
+            self.add_cache(title, summary.splitlines()[0], wikibase_item)
             if title in titles:
                 titles.remove(title)
             for source_title in converts.get(title, []):

@@ -6,11 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from PyQt6.QtCore import QModelIndex, QObject, Qt, QVariant
 from PyQt6.QtGui import QIcon
-from PyQt6.QtSql import (
-    QSqlDatabase,
-    QSqlRelationalTableModel,
-    QSqlTableModel,
-)
+from PyQt6.QtSql import QSqlDatabase, QSqlTableModel
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
@@ -239,11 +235,7 @@ class CustomLemmasDialog(QDialog):
         filter_lemma = self.filter_lemma_line.text()
         filter_enabled = self.filter_enabled_box.currentData()
         filter_difficulty = self.filter_difficulty_box.currentData()
-        filter_sql = (
-            f"relTblAl_{self.lemmas_model.lemma_column}.lemma LIKE '{filter_lemma}%'"
-            if filter_lemma
-            else ""
-        )
+        filter_sql = f"lemma LIKE '{filter_lemma}%'" if filter_lemma else ""
         if filter_enabled != "all":
             if filter_sql:
                 filter_sql += " AND "
@@ -310,7 +302,7 @@ class CustomLemmasDialog(QDialog):
         self.lemmas_model.select()
 
 
-class LemmasTableModel(QSqlRelationalTableModel):
+class LemmasTableModel(QSqlTableModel):
     def __init__(self, db: QSqlDatabase, is_kindle: bool) -> None:
         super().__init__(db=db)
         self.headers = [

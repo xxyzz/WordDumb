@@ -31,6 +31,7 @@ class Prefs(TypedDict):
     show_change_kindle_ww_lang_warning: bool
     test_wsd: bool
     torch_compute_platform: str
+    custom_entity_only: bool
 
 
 def load_plugin_json(plugin_path: Path, filepath: str) -> Any:

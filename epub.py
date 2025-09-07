@@ -277,10 +277,11 @@ class EPUB:
                 self.removed_entity_ids.add(entity_data.id)
 
     def modify_epub(self) -> None:
-        if len(self.entities) > 0 and self.mediawiki is not None:
-            self.mediawiki.query(self.entities, self.prefs["search_people"])
-            if self.wikidata is not None:
-                query_wikidata(self.entities, self.mediawiki, self.wikidata)
+        if len(self.entities) > 0:
+            if self.mediawiki is not None:
+                self.mediawiki.query(self.entities, self.prefs["search_people"])
+                if self.wikidata is not None:
+                    query_wikidata(self.entities, self.mediawiki, self.wikidata)
             if self.prefs["minimal_x_ray_count"] > 1:
                 self.remove_entities(self.prefs["minimal_x_ray_count"])
             self.create_x_ray_footnotes()

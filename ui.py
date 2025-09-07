@@ -107,6 +107,8 @@ def get_metadata_of_selected_books(
 
 
 def run(gui: Any, create_ww: bool, create_x: bool) -> None:
+    from .config import prefs
+
     if not create_ww and not create_x:
         return
     for md_result in get_metadata_of_selected_books(gui, True):
@@ -133,7 +135,7 @@ def run(gui: Any, create_ww: bool, create_x: bool) -> None:
                 notif.append("X-Ray")
 
             config_path = get_book_settings_path(Path(book_path))
-            if not config_path.is_file():
+            if not config_path.is_file() and not prefs["custom_entity_only"]:
                 open_book_settings_dialog(gui)
             book_settings = {}
             if config_path.is_file():

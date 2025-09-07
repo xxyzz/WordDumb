@@ -268,16 +268,21 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
 
     mediawiki_api = data.book_settings.get("mediawiki_api", "")
     if data.create_x:
-        mediawiki = MediaWiki(
-            mediawiki_api,
-            data.book_lang,
-            data.useragent,
-            data.plugin_path,
-            prefs["zh_wiki_variant"],
-        )
-        wikidata = (
-            None if mediawiki_api != "" else Wikidata(data.plugin_path, data.useragent)
-        )
+        mediawiki = None
+        wikidata = None
+        if not prefs["custom_entity_only"]:
+            mediawiki = MediaWiki(
+                mediawiki_api,
+                data.book_lang,
+                data.useragent,
+                data.plugin_path,
+                prefs["zh_wiki_variant"],
+            )
+            wikidata = (
+                None
+                if mediawiki_api != ""
+                else Wikidata(data.plugin_path, data.useragent)
+            )
         custom_x_ray = load_custom_x_desc(data.book_path)
 
     if is_epub:
@@ -320,6 +325,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                     data.book_lang,
                     None,
                     custom_x_ray,
+                    prefs,
                     xhtml_path,
                     end,
                 )
@@ -364,7 +370,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
             data.book_lang,
             data.plugin_path,
             prefs,
-            mediawiki.sitename,
+            mediawiki.sitename if mediawiki is not None else "",
             mediawiki_api,
         )
         x_ray = X_Ray(x_ray_conn, mediawiki, wikidata, custom_x_ray)
@@ -384,6 +390,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                 data.book_lang,
                 escaped_text,
                 custom_x_ray,
+                prefs,
             )
         if data.create_ww:
             kindle_find_lemma(
@@ -730,6 +737,7 @@ def find_named_entity(
     lang: str,
     escaped_text: str | None,
     custom_x_ray: CustomXDict,
+    prefs: Prefs,
     xhtml_path: Path | None = None,
     end: int = 0,
 ) -> list[Interval]:
@@ -742,7 +750,11 @@ def find_named_entity(
             if ent.ent_id_
             else process_entity(ent.text, lang, len_limit)
         )
-        if text is None or (ent.ent_id_ and custom_x_ray.get(ent.ent_id_).omit):
+        if (
+            text is None
+            or (ent.ent_id_ and custom_x_ray.get(ent.ent_id_).omit)
+            or (prefs["custom_entity_only"] and ent.ent_id_ == "")
+        ):
             continue
 
         ent_text = ent.text if ent.ent_id_ else text

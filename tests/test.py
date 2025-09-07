@@ -24,6 +24,7 @@ class TestDumbCode(unittest.TestCase):
         prefs["use_wiktionary_for_kindle"] = False
         prefs["test_wsd"] = False
         prefs["python_path"] = which("python3")
+        prefs["custom_entity_only"] = False
 
         lib_db = db("~/Calibre Library").new_api
         for book_id in lib_db.all_book_ids():

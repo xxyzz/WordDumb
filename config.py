@@ -58,6 +58,7 @@ prefs.defaults["python_path"] = ""
 prefs.defaults["show_change_kindle_ww_lang_warning"] = True
 prefs.defaults["test_wsd"] = True
 prefs.defaults["torch_compute_platform"] = "cpu"
+prefs.defaults["custom_entity_only"] = False
 for code in load_languages_data(get_plugin_path(), False).keys():
     prefs.defaults[f"{code}_wiktionary_difficulty_limit"] = 5
 
@@ -177,6 +178,10 @@ class ConfigWidget(QWidget):
         self.locator_map_box.setChecked(prefs["add_locator_map"])
         vl.addWidget(self.locator_map_box)
 
+        self.custom_entity_only = QCheckBox(_("Only use cutomized X-Ray entities"))
+        self.custom_entity_only.setChecked(prefs["custom_entity_only"])
+        vl.addWidget(self.custom_entity_only)
+
         delete_file_button = QPushButton(_("Delete downloaded files"))
         delete_file_button.clicked.connect(self.open_delete_files_dialog)
         vl.addWidget(delete_file_button)
@@ -205,6 +210,7 @@ class ConfigWidget(QWidget):
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
+        prefs["custom_entity_only"] = self.custom_entity_only.isChecked()
         if islinux or iswindows:
             prefs["torch_compute_platform"] = self.compute_platform_box.currentData()
 

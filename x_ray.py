@@ -62,7 +62,7 @@ class X_Ray:
     def __init__(
         self,
         conn: Connection,
-        mediawiki: MediaWiki,
+        mediawiki: MediaWiki | None,
         wikidata: Wikidata | None,
         custom_x_ray: CustomXDict,
     ) -> None:
@@ -90,8 +90,10 @@ class X_Ray:
                     )
                     continue
 
-            if (search_people or entity_data.label not in PERSON_LABELS) and (
-                intro_cache := self.mediawiki.get_cache(entity_name)
+            if (
+                self.mediawiki is not None
+                and (search_people or entity_data.label not in PERSON_LABELS)
+                and (intro_cache := self.mediawiki.get_cache(entity_name))
             ):
                 summary = intro_cache.intro
                 if self.wikidata is not None and (
@@ -152,16 +154,20 @@ class X_Ray:
         for entity_name, entity_data in self.entities.copy().items():
             if entity_name in self.custom_x_ray:
                 continue
-            redirect_to = self.mediawiki.redirect_to_page(entity_name)
-            if redirect_to in self.entities:
-                self.entity_occurrences[self.entities[redirect_to].id].extend(
-                    self.entity_occurrences[entity_data.id]
-                )
-                self.entities[redirect_to].count += entity_data.count
-                del self.entity_occurrences[entity_data.id]
-                del self.entities[entity_name]
-                continue
-            has_cache = self.mediawiki.get_cache(entity_name) is not None
+            if self.mediawiki is not None:
+                redirect_to = self.mediawiki.redirect_to_page(entity_name)
+                if redirect_to in self.entities:
+                    self.entity_occurrences[self.entities[redirect_to].id].extend(
+                        self.entity_occurrences[entity_data.id]
+                    )
+                    self.entities[redirect_to].count += entity_data.count
+                    del self.entity_occurrences[entity_data.id]
+                    del self.entities[entity_name]
+                    continue
+            has_cache = (
+                self.mediawiki is not None
+                and self.mediawiki.get_cache(entity_name) is not None
+            )
             is_person = entity_data.label in PERSON_LABELS
             if entity_data.count < prefs["minimal_x_ray_count"] and (
                 (prefs["search_people"] and not has_cache)
@@ -182,7 +188,8 @@ class X_Ray:
         mobi_codec: str,
         prefs: Prefs,
     ) -> None:
-        self.mediawiki.query(self.entities, prefs["search_people"])
+        if self.mediawiki is not None:
+            self.mediawiki.query(self.entities, prefs["search_people"])
         if self.wikidata is not None:
             query_wikidata(self.entities, self.mediawiki, self.wikidata)
         self.merge_entities(prefs)
@@ -226,7 +233,8 @@ class X_Ray:
         insert_x_types(self.conn)
         create_x_indices(self.conn)
         save_db(self.conn, db_path)
-        self.mediawiki.close()
+        if self.mediawiki is not None:
+            self.mediawiki.close()
         if self.wikidata is not None:
             self.wikidata.close()
 

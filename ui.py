@@ -129,18 +129,17 @@ def run(gui: Any, create_ww: bool, create_x: bool) -> None:
                 else md_result.mi.get("title")
             )
             notif = []
+            book_settings = {}
             if create_ww:
                 notif.append(_("Word Wise"))
             if create_x:
                 notif.append("X-Ray")
-
-            config_path = get_book_settings_path(Path(book_path))
-            if not config_path.is_file() and not prefs["custom_entity_only"]:
-                open_book_settings_dialog(gui)
-            book_settings = {}
-            if config_path.is_file():
-                with config_path.open() as f:
-                    book_settings = json.load(f)
+                config_path = get_book_settings_path(Path(book_path))
+                if not config_path.is_file() and not prefs["custom_entity_only"]:
+                    open_book_settings_dialog(gui)
+                if config_path.is_file():
+                    with config_path.open() as f:
+                        book_settings = json.load(f)
 
             notif = _(" and ").join(notif)
             job_data = ParseJobData(

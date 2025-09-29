@@ -3,7 +3,7 @@ import shutil
 import tarfile
 from pathlib import Path
 from typing import Any
-from urllib.request import urlopen
+from urllib.request import ProxyHandler, build_opener, getproxies
 
 from calibre.constants import isfrozen, islinux, ismacos, iswindows
 
@@ -13,6 +13,7 @@ from .utils import (
     custom_lemmas_folder,
     get_plugin_path,
     get_spacy_model_version,
+    get_user_agent,
     load_plugin_json,
     mac_bin_path,
     run_subprocess,
@@ -191,16 +192,7 @@ def download_word_wise_file(
 
 
 def download_extract_bz2(url: str, download_path: Path, sha256: str) -> None:
-    import hashlib
-
-    with urlopen(url) as r, open(download_path, "wb") as f:
-        shutil.copyfileobj(r, f)
-    if not download_path.is_file():
-        raise Exception("DownloadFiled")
-    with download_path.open("rb", buffering=0) as f:
-        if hashlib.file_digest(f, "sha256").hexdigest() != sha256:
-            download_path.unlink()
-            raise Exception("DownloadFiled")
+    download_file(url, download_path, sha256)
     with tarfile.open(name=download_path, mode="r:bz2") as tar_f:
         tar_f.extractall(download_path.parent)
     download_path.unlink()
@@ -213,5 +205,40 @@ def download_checksum(is_wsd: bool) -> dict[str, str]:
         url = f"{PROFICIENCY_RELEASE_URL}/sha256.json"
     else:
         url = f"{PROFICIENCY_RELEASE_URL}/sha256_wsd.json"
-    with urlopen(url) as r:
+    opener = build_opener(ProxyHandler(getproxies()))
+    opener.addheaders = [("User-agent", get_user_agent())]
+    with opener.open(url) as r:
         return json.load(r)
+
+
+def download_file(
+    url: str, download_path: Path, sha256: str, range: int = 0, retry: int = 10
+):
+    import hashlib
+
+    opener = build_opener(ProxyHandler(getproxies()))
+    headers = [("User-agent", get_user_agent())]
+    if range > 0:
+        headers.append(("Range", f"bytes={range}-"))
+    opener.addheaders = headers
+    saved_bytes = 0
+    content_length = 0
+    with opener.open(url) as r, open(download_path, "wb" if range == 0 else "ab") as f:
+        shutil.copyfileobj(r, f)
+        saved_bytes = f.tell()
+        content_length = int(r.headers.get("content-length"))
+
+    if saved_bytes < content_length + range:
+        if retry == 1:
+            download_path.unlink()
+            raise Exception("DownloadFailed")
+        else:
+            download_file(url, download_path, sha256, saved_bytes, retry - 1)
+    else:
+        with download_path.open("rb", buffering=0) as f:
+            if hashlib.file_digest(f, "sha256").hexdigest() != sha256:
+                download_path.unlink()
+                if retry == 1:
+                    raise Exception("DownloadFailed")
+                else:
+                    download_file(url, download_path, sha256, retry=retry - 1)

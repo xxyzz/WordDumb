@@ -178,7 +178,7 @@ class ConfigWidget(QWidget):
         self.locator_map_box.setChecked(prefs["add_locator_map"])
         vl.addWidget(self.locator_map_box)
 
-        self.custom_entity_only = QCheckBox(_("Only use cutomized X-Ray entities"))
+        self.custom_entity_only = QCheckBox(_("Only use customized X-Ray entities"))
         self.custom_entity_only.setChecked(prefs["custom_entity_only"])
         vl.addWidget(self.custom_entity_only)
 

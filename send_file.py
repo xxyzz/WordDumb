@@ -11,7 +11,6 @@ from .utils import (
     get_kindle_klld_path,
     get_plugin_path,
     get_wiktionary_klld_path,
-    run_subprocess,
     use_kindle_ww_db,
 )
 
@@ -97,7 +96,6 @@ class SendFile:
             copy_klld_to_device(
                 self.job_data.book_lang,
                 device_klld_path,
-                None,
                 device_manager if self.is_mtp else None,
             )
         sidecar_folder = device_book_path.with_suffix(".sdr")
@@ -157,10 +155,7 @@ def copy_klld_from_kindle(device_manager: Any, dest_path: Path) -> None:
 
 
 def copy_klld_to_device(
-    book_lang: str,
-    device_klld_path: Path,
-    adb_path: str | None,
-    device_manager: Any = None,
+    book_lang: str, device_klld_path: Path, device_manager: Any = None
 ) -> None:
     from .config import prefs
 
@@ -175,9 +170,7 @@ def copy_klld_to_device(
     else:
         local_klld_path = get_wiktionary_klld_path(plugin_path, book_lang, prefs)
 
-    if adb_path is not None:
-        run_subprocess([adb_path, "push", str(local_klld_path), str(device_klld_path)])
-    elif device_manager is not None:
+    if device_manager is not None:
         upload_file_to_mtp(device_manager, local_klld_path, device_klld_path)
     else:
         copy = False

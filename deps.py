@@ -137,6 +137,7 @@ def pip_install(
             "-t",
             str(LIBS_PATH),
             "--no-user",  # disable "--user" option which conflicts with "-t"
+            "--no-cache-dir",
         ]
 
         if no_deps:

@@ -151,7 +151,7 @@ class EPUB:
                 f'opf:manifest/opf:item[@id="{idref}"]', NAMESPACES
             )
             xhtml_href = unquote(item.get("href"))
-            xhtml_path = self.extract_folder.joinpath(xhtml_href)
+            xhtml_path = self.opf_path.parent.joinpath(xhtml_href)
             if not xhtml_path.exists():
                 xhtml_path = next(self.extract_folder.rglob(xhtml_href))
             if not xhtml_path.parent.samefile(self.extract_folder):
@@ -405,8 +405,6 @@ class EPUB:
             )
 
     def create_x_ray_footnotes(self) -> None:
-        if self.mediawiki is None:  # just let mypy know it's not None
-            return
         image_prefix = ""
         if self.xhtml_href_has_folder:
             image_prefix += "../"
@@ -427,7 +425,7 @@ class EPUB:
                     f'<aside id="{entity_data.id}" epub:type="footnote">'
                     f"{create_p_tags(custom_data.desc)}"
                 )
-                if custom_data.source_id is not None:
+                if custom_data.source_id is not None and self.mediawiki is not None:
                     s += "<p>Source: "
                     s += (
                         "Wikipedia"
@@ -437,8 +435,13 @@ class EPUB:
                     s += "</p>"
                 s += "</aside>"
             elif (
-                self.prefs["search_people"] or entity_data.label not in PERSON_LABELS
-            ) and (intro_cache := self.mediawiki.get_cache(entity_name)):
+                self.mediawiki is not None
+                and (
+                    self.prefs["search_people"]
+                    or entity_data.label not in PERSON_LABELS
+                )
+                and (intro_cache := self.mediawiki.get_cache(entity_name))
+            ):
                 s += f'<aside id="{entity_data.id}" epub:type="footnote">'
                 s += create_p_tags(intro_cache.intro)
                 s += f"<p>Source: {self.mediawiki.sitename}</p>"

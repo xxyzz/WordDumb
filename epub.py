@@ -288,7 +288,9 @@ class EPUB:
 
         if is_wsd_enabled(self.prefs, self.lemma_lang):
             self.enable_wsd = True
-            self.wsd_model, self.wsd_tokenizer = load_wsd_model()
+            self.wsd_model, self.wsd_tokenizer = load_wsd_model(
+                self.prefs["torch_compute_platform"]
+            )
 
         self.insert_anchor_elements()
         if len(self.sense_id_dict) > 0:

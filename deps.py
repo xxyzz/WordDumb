@@ -54,8 +54,9 @@ def install_deps(pkg: str, notif: Any) -> None:
     elif pkg == "wsd":
         from .config import prefs
 
-        for p in ["transformers", "accelerate"]:
-            pip_install(p, dep_versions[p], notif=notif)
+        pip_install("transformers", dep_versions["transformers"], notif=notif)
+        if prefs["torch_compute_platform"] != "cpu":
+            pip_install("accelerate", dep_versions["accelerate"], notif=notif)
         index_url = None
         if iswindows:
             index_url = PYTORCH_WINDOWS_PLATFORMS.get(prefs["torch_compute_platform"])

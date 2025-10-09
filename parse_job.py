@@ -361,7 +361,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
         if is_wsd_enabled(prefs, data.book_lang) and not use_kindle_ww_db(
             data.book_lang, prefs
         ):
-            wsd_model, wsd_tokenizer = load_wsd_model()
+            wsd_model, wsd_tokenizer = load_wsd_model(prefs["torch_compute_platform"])
 
     if data.create_x:
         x_ray_conn, x_ray_path = create_x_ray_db(

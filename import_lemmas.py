@@ -105,16 +105,16 @@ def apply_imported_lemmas_data(
             return
 
     conn = sqlite3.connect(db_path)
-    for lemma_id, lemma in conn.execute("SELECT id, lemma FROM lemmas"):
+    for sense_id, lemma in conn.execute("SELECT id, lemma FROM senses"):
         if lemma in lemmas_dict:
             conn.execute(
-                "UPDATE senses SET enabled = 1, difficulty = ? WHERE lemma_id = ?",
-                (lemmas_dict.get(lemma), lemma_id),
+                "UPDATE senses SET enabled = 1, difficulty = ? WHERE id = ?",
+                (lemmas_dict.get(lemma), sense_id),
             )
         elif not retain_lemmas:
             conn.execute(
-                "UPDATE senses SET enabled = 0, difficulty = 1 WHERE lemma_id = ?",
-                (lemma_id,),
+                "UPDATE senses SET enabled = 0, difficulty = 1 WHERE id = ?",
+                (sense_id,),
             )
     conn.commit()
     conn.close()

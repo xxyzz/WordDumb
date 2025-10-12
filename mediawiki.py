@@ -193,9 +193,11 @@ class MediaWiki:
             if "pageprops" in v and "disambiguation" in v["pageprops"]:
                 continue
             wikibase_item = v.get("pageprops", {}).get("wikibase_item")
-            if summary == "":  # some wikis return empty string
+            summary_lines = list(filter(None, map(str.strip, summary.splitlines())))
+            if len(summary_lines) == 0:  # some wikis return empty string
                 self.query_parse_api(title)
-            self.add_cache(title, summary.splitlines()[0], wikibase_item)
+            else:
+                self.add_cache(title, summary_lines[0], wikibase_item)
             if title in titles:
                 titles.remove(title)
             for source_title in converts.get(title, []):

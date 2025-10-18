@@ -152,7 +152,7 @@ class ConfigWidget(QWidget):
             compute_platform_lb = QLabel(_("PyTorch compute platform"))
             compute_platforms = {
                 "cpu": "CPU",
-                "cuda12.9": "CUDA 12.9",
+                "cuda13.0": "CUDA 13.0",
                 "cuda12.8": "CUDA 12.8",
                 "cuda12.6": "CUDA 12.6",
                 "rocm6.4": "ROCm 6.4",

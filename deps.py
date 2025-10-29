@@ -26,14 +26,14 @@ PYTORCH_LINUX_PLATFORMS = {
     "cpu": "https://download.pytorch.org/whl/cpu",
     "cuda12.6": "https://download.pytorch.org/whl/cu126",
     "cuda12.8": None,
-    "cuda13.0": "https://download.pytorch.org/whl/cu130",
+    "cuda12.9": "https://download.pytorch.org/whl/cu129",
     "rocm6.4": "https://download.pytorch.org/whl/rocm6.4",
 }
 PYTORCH_WINDOWS_PLATFORMS = {
     "cpu": None,
     "cuda12.6": "https://download.pytorch.org/whl/cu126",
     "cuda12.8": "https://download.pytorch.org/whl/cu128",
-    "cuda13.0": "https://download.pytorch.org/whl/cu130",
+    "cuda12.9": "https://download.pytorch.org/whl/cu129",
 }
 
 

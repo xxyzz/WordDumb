@@ -105,7 +105,7 @@ jobs:
 
       - name: Restore dependencies and Wikipedia cache(Ubuntu)
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.config/calibre/plugins/worddumb-libs-py*
@@ -114,7 +114,7 @@ jobs:
 
       - name: Restore dependencies and Wikipedia cache(macOS)
         if: matrix.os == 'macos-latest'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/Library/Preferences/calibre/plugins/worddumb-libs-py*
@@ -123,7 +123,7 @@ jobs:
 
       - name: Restore dependencies and Wikipedia cache(Windows)
         if: matrix.os == 'windows-latest'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/AppData/Roaming/calibre/plugins/worddumb-libs-py*
@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload plugin
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           # Don't upload the zip file directly cuz GitHub will zip it again
           name: worddumb-${{ github.sha }}

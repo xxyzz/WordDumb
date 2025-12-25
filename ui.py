@@ -124,7 +124,7 @@ def run(gui: Any, create_ww: bool, create_x: bool) -> None:
                 continue
 
             title = (
-                f"{md_result.mi.get('title')}({md_result.book_fmt})"
+                f"{md_result.mi.get('title')}({book_fmt})"
                 if len(md_result.book_fmts) > 1
                 else md_result.mi.get("title")
             )

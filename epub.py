@@ -286,7 +286,7 @@ class EPUB:
                 self.remove_entities(self.prefs["minimal_x_ray_count"])
             self.create_x_ray_footnotes()
 
-        if is_wsd_enabled(self.prefs, self.lemma_lang):
+        if self.word_wise_id > 0 and is_wsd_enabled(self.prefs, self.lemma_lang):
             self.enable_wsd = True
             self.wsd_model, self.wsd_tokenizer = load_wsd_model(
                 self.prefs["torch_compute_platform"]

@@ -26,14 +26,14 @@ PYTORCH_LINUX_PLATFORMS = {
     "cpu": "https://download.pytorch.org/whl/cpu",
     "cuda12.6": "https://download.pytorch.org/whl/cu126",
     "cuda12.8": None,
-    "cuda12.9": "https://download.pytorch.org/whl/cu129",
+    "cuda13.0": "https://download.pytorch.org/whl/cu130",
     "rocm6.4": "https://download.pytorch.org/whl/rocm6.4",
 }
 PYTORCH_WINDOWS_PLATFORMS = {
     "cpu": None,
     "cuda12.6": "https://download.pytorch.org/whl/cu126",
     "cuda12.8": "https://download.pytorch.org/whl/cu128",
-    "cuda12.9": "https://download.pytorch.org/whl/cu129",
+    "cuda13.0": "https://download.pytorch.org/whl/cu130",
 }
 
 
@@ -108,7 +108,7 @@ def which_python() -> tuple[str, str]:
     if py_v_tuple < (3, 11):
         # https://github.com/kovidgoyal/calibre/blob/master/bypy/sources.json
         raise Exception("OutdatedPython")
-    elif py_v_tuple > (3, 13):  # spaCy
+    elif py_v_tuple > (3, 14):  # spaCy
         raise Exception("UnsupportedPython")
     return py, py_v
 

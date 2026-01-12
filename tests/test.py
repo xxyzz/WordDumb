@@ -22,7 +22,7 @@ class TestDumbCode(unittest.TestCase):
         prefs["minimal_x_ray_count"] = 1
         prefs["gloss_lang"] = "en"
         prefs["use_wiktionary_for_kindle"] = False
-        prefs["test_wsd"] = False
+        prefs["test_wsd"] = True
         prefs["python_path"] = which("python3")
         prefs["custom_entity_only"] = False
 

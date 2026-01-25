@@ -87,6 +87,11 @@ Here, select "Style tweaks" -> "In-page footnotes" and remove all checkmarks. (B
 For an even better footnote experience, enable pop-up footnotes. Do this by opening the top menu again, clicking on the "gear" symbol (third from left).
 Then select "Taps and gestures" -> "Links" and then check "Show footnotes in popup"
 
+Connect KOReader device to calibre wirelessly
+---------------------------------------------
+
+Please read `KOReader's wiki <https://github.com/koreader/koreader/wiki/calibre#2-wireless-client>`_.
+
 HTTP proxy
 ----------
 

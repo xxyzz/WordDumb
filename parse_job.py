@@ -1,4 +1,5 @@
 import json
+import platform
 import random
 import re
 import shutil
@@ -10,7 +11,7 @@ from sqlite3 import Connection
 from typing import Any, Iterator
 
 try:
-    from calibre.constants import isfrozen
+    from calibre.constants import isfrozen, ismacos
 
     from .database import (
         create_lang_layer,
@@ -116,6 +117,10 @@ def do_job(
 ) -> ParseJobData:
     from .config import prefs
     from .metadata import get_asin_etc
+
+    if ismacos and platform.machine() == "x86_64":
+        # pytorch removed x86 macos wheel files since v2.3.0
+        prefs["test_wsd"] = False
 
     set_en_lang = (
         True

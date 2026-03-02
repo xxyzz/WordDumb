@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload plugin
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           # Don't upload the zip file directly cuz GitHub will zip it again
           name: worddumb-${{ github.sha }}

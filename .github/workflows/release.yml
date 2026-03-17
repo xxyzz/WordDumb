@@ -12,7 +12,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: dawidd6/action-download-artifact@v16
+      - uses: dawidd6/action-download-artifact@v18
         with:
           workflow: tests.yml
           skip_unpack: true

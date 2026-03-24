@@ -12,16 +12,22 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: dawidd6/action-download-artifact@v11
-        with:
-          workflow: tests.yml
-          skip_unpack: true
-          commit: ${{ github.sha }}
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
 
-      - name: Rename zip file
-        run: mv worddumb-*.zip worddumb-${GITHUB_REF_NAME}.zip
+      - name: Install calibre
+        run: |
+          sudo apt update
+          sudo apt install libegl1 libopengl0 libxcb-cursor0
+          sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
-      - uses: softprops/action-gh-release@v2
-        with:
-          prerelease: ${{ contains(github.ref_name, 'beta') }}
-          files: worddumb-*.zip
+      - name: Compile translation file
+        run: calibre-debug -c "from calibre.translations.msgfmt import main; main()" translations/*.po
+
+      - name: Build plugin
+        run: zip -r worddumb-${{ github.ref_name }}.zip * -x@exclude.lst
+
+      - name: Create relase
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create ${{ github.ref_name }} worddumb-${{ github.ref_name }}.zip

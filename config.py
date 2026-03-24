@@ -155,7 +155,7 @@ class ConfigWidget(QWidget):
                 "cuda13.0": "CUDA 13.0",
                 "cuda12.8": "CUDA 12.8",
                 "cuda12.6": "CUDA 12.6",
-                "rocm6.4": "ROCm 6.4",
+                "rocm7.2": "ROCm 7.2",
             }
             self.compute_platform_box = QComboBox()
             for version, text in compute_platforms.items():

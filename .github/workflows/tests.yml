@@ -28,17 +28,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-    env:
-      PY_VERSION: 3.13
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          submodules: 'true'
-
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
-        with:
-          python-version: ${{ env.PY_VERSION }}
 
       - name: Install calibre on Ubuntu
         if: matrix.os == 'ubuntu-latest'
@@ -99,9 +91,7 @@ jobs:
         run: 7z a -x@exclude.lst -x!.* -tzip worddumb-${{ github.sha }}.zip
 
       - name: Add plugin
-        run: |
-          calibre-customize -a worddumb-${{ github.sha }}.zip
-          rm worddumb-${{ github.sha }}.zip
+        run: calibre-customize -a worddumb-${{ github.sha }}.zip
 
       - name: Restore dependencies and Wikipedia cache(Ubuntu)
         if: matrix.os == 'ubuntu-latest'
@@ -110,7 +100,7 @@ jobs:
           path: |
             ~/.config/calibre/plugins/worddumb-libs-py*
             ~/.config/calibre/plugins/worddumb-wikimedia
-          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ env.PY_VERSION }}
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}
 
       - name: Restore dependencies and Wikipedia cache(macOS)
         if: matrix.os == 'macos-latest'
@@ -119,7 +109,7 @@ jobs:
           path: |
             ~/Library/Preferences/calibre/plugins/worddumb-libs-py*
             ~/Library/Preferences/calibre/plugins/worddumb-wikimedia
-          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ env.PY_VERSION }}
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}
 
       - name: Restore dependencies and Wikipedia cache(Windows)
         if: matrix.os == 'windows-latest'
@@ -128,7 +118,7 @@ jobs:
           path: |
             ~/AppData/Roaming/calibre/plugins/worddumb-libs-py*
             ~/AppData/Roaming/calibre/plugins/worddumb-wikimedia
-          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ env.PY_VERSION }}
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}
 
       - name: Run test
         run: cd tests && calibre-debug test.py
@@ -139,18 +129,8 @@ jobs:
 
       - name: Upload plugin
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
-          # Don't upload the zip file directly cuz GitHub will zip it again
           name: worddumb-${{ github.sha }}
-          path: |
-            .
-            !.*
-            !docs/*
-            !tests/*
-            !**/__pycache__/*
-            !__pycache__/*
-            !exclude.lst
-            !translations/*.po
-            !pyproject.toml
-            !__MACOSX
+          path: worddumb-${{ github.sha }}.zip
+          archive: false

@@ -30,4 +30,5 @@ jobs:
       - name: Create relase
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TELEMETRY: false
         run: gh release create ${{ github.ref_name }} worddumb-${{ github.ref_name }}.zip

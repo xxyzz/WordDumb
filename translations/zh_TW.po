@@ -1,0 +1,675 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2026-06-01 02:38+0800\n"
+"PO-Revision-Date: 2026-06-01 02:38+0800\n"
+"Last-Translator: Peter Dave Hello <hsu@peterdavehello.org>\n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.5\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: docs\n"
+
+#: config.py:78 config.py:364
+msgid "Preferred format order"
+msgstr "偏好格式順序"
+
+#: config.py:82 custom_lemmas.py:58
+msgid "Customize Kindle Word Wise"
+msgstr "自訂 Kindle 生詞提示"
+
+#: config.py:88
+msgid "Customize EPUB Wiktionary"
+msgstr "自訂 EPUB 維基詞典"
+
+#: config.py:95
+msgid ""
+"Fetch X-Ray people descriptions from Wikipedia or other "
+"MediaWiki server"
+msgstr "從維基百科或其他 MediaWiki 伺服器取得 X-Ray 人物描述"
+
+#: config.py:101
+msgid ""
+"Enable this option for nonfiction books and novels that have character"
+" pages on Wikipedia or other MediaWiki server"
+msgstr ""
+"如果非虛構類書籍或小說在維基百科或其他 MediaWiki 伺服器上有人物頁面，請啟用"
+"此選項"
+
+#: config.py:114
+msgid "Python path"
+msgstr "Python 路徑"
+
+#: config.py:116
+msgid ""
+"Absolute path of the executable binary for the Python interpreter, "
+"leave this empty to find Python in PATH."
+msgstr ""
+"Python 直譯器可執行檔的絕對路徑，留空則自動從 PATH 中尋找 Python。"
+
+#: config.py:128
+msgid "Minimal X-Ray occurrences"
+msgstr "X-Ray 最少出現次數"
+
+#: config.py:130
+msgid ""
+"X-Ray entities that appear less then this number and don't have "
+"description from Wikipedia or other MediaWiki server will be removed"
+msgstr ""
+"出現次數少於此數值且沒有來自維基百科或其他 MediaWiki 伺服器描述的 X-Ray 實體"
+"會自動移除"
+
+#: config.py:149
+msgid "Chinese Wikipedia variant"
+msgstr "中文維基百科變體"
+
+#: config.py:152
+msgid "PyTorch compute platform"
+msgstr "PyTorch 運算平台"
+
+#: config.py:174
+msgid "Add locator map to EPUB footnotes"
+msgstr "將定位地圖加入 EPUB 註腳"
+
+#: config.py:176
+msgid "Enable this option if your e-reader supports image in footnotes"
+msgstr "如果電子閱讀器支援註腳中的圖片，請啟用此選項"
+
+#: config.py:181
+msgid "Only use customized X-Ray entities"
+msgstr "僅使用自訂的 X-Ray 實體"
+
+#: config.py:185 config.py:531
+msgid "Delete downloaded files"
+msgstr "刪除已下載的檔案"
+
+#: config.py:189 ui.py:75
+msgid "Donate"
+msgstr "贊助"
+
+#: config.py:193
+msgid "Document"
+msgstr "文件"
+
+#: config.py:197
+msgid "Source code"
+msgstr "原始程式碼"
+
+#: config.py:242
+msgid "Downloading Word Wise file"
+msgstr "正在下載生詞提示檔案"
+
+#: config.py:253 config.py:266
+msgid "Saving customized lemmas"
+msgstr "正在儲存自訂詞條"
+
+#: config.py:281
+msgid "Exporting customized lemmas"
+msgstr "正在匯出自訂詞條"
+
+#: config.py:314
+msgid "Deleting files"
+msgstr "正在刪除檔案"
+
+#: config.py:380
+msgid "Choose format manually"
+msgstr "手動選擇格式"
+
+#: config.py:387
+msgid "Create files for all available formats"
+msgstr "為所有可用格式建立檔案"
+
+#: config.py:419
+msgid "Choose book format"
+msgstr "選擇書籍格式"
+
+#: config.py:424
+msgid ""
+"This book has multiple supported formats. Choose the format "
+"you want to use."
+msgstr "這本書有多種支援的格式，請選擇要使用的格式。"
+
+#: config.py:432
+msgid "Always ask when more than one format is available"
+msgstr "有多種可用格式時一律詢問"
+
+#: config.py:455
+msgid "Choose language"
+msgstr "選擇語言"
+
+#: config.py:476
+msgid "Definition language"
+msgstr "釋義語言"
+
+#: config.py:477
+msgid "Book language"
+msgstr "書籍語言"
+
+#: config.py:487
+msgid "Use Wiktionary definition"
+msgstr "使用維基詞典釋義"
+
+#: config.py:535
+msgid "Delete dependency packages"
+msgstr "刪除相依套件"
+
+#: config.py:537
+msgid "Delete definition files"
+msgstr "刪除釋義檔案"
+
+#: config.py:539
+msgid "Delete MediaWiki files"
+msgstr "刪除 MediaWiki 檔案"
+
+#: config.py:566 ui.py:59
+msgid "Book settings"
+msgstr "書籍設定"
+
+#: config.py:583
+msgid "MediaWiki Action API"
+msgstr "MediaWiki Action API"
+
+#: config.py:584
+msgid "Level this empty to use Wikipedia API"
+msgstr "留空則使用維基百科 API"
+
+#: custom_lemmas.py:60
+msgid "Customize Wiktionary"
+msgstr "自訂維基詞典"
+
+#: custom_lemmas.py:100
+msgid "Fewer Hints"
+msgstr "較少提示"
+
+#: custom_lemmas.py:100
+msgid "More Hints"
+msgstr "較多提示"
+
+#: custom_lemmas.py:114
+msgid "Filter lemma"
+msgstr "篩選詞條"
+
+#: custom_lemmas.py:117 custom_lemmas.py:124
+msgid "All"
+msgstr "全部"
+
+#: custom_lemmas.py:118 custom_lemmas.py:310
+msgid "Enabled"
+msgstr "已啟用"
+
+#: custom_lemmas.py:119
+msgid "Disabled"
+msgstr "已停用"
+
+#: custom_lemmas.py:121
+msgid "Filter enabled"
+msgstr "篩選啟用狀態"
+
+#: custom_lemmas.py:128
+msgid "Filter difficulty"
+msgstr "篩選難度"
+
+#: custom_lemmas.py:132
+msgid "Enable all"
+msgstr "全部啟用"
+
+#: custom_lemmas.py:133
+msgid "Disable all"
+msgstr "全部停用"
+
+#: custom_lemmas.py:145 custom_lemmas.py:446
+msgid "Difficulty limit"
+msgstr "難度限制"
+
+#: custom_lemmas.py:147
+msgid ""
+"Difficult words have lower value. Words have difficulty value higher "
+"than this value are disabled."
+msgstr "困難詞彙的數值較低。難度值高於此數值的詞彙會自動停用。"
+
+#: custom_lemmas.py:169
+msgid "Import"
+msgstr "匯入"
+
+#: custom_lemmas.py:174
+msgid "Export"
+msgstr "匯出"
+
+#: custom_lemmas.py:257
+msgid "Select import file"
+msgstr "選擇匯入檔案"
+
+#: custom_lemmas.py:278
+msgid "Set export file path"
+msgstr "設定匯出檔案路徑"
+
+#: custom_lemmas.py:311
+msgid "Lemma"
+msgstr "詞條"
+
+#: custom_lemmas.py:312
+msgid "POS"
+msgstr "詞類"
+
+#: custom_lemmas.py:313
+msgid "Gloss"
+msgstr "釋義"
+
+#: custom_lemmas.py:316
+msgid "Difficulty"
+msgstr "難度等級"
+
+#: custom_lemmas.py:430
+msgid "Set export options"
+msgstr "設定匯出選項"
+
+#: custom_lemmas.py:435
+msgid ""
+"Export text separated by tab, can be imported to Anki.<br/> "
+"\"Allow HTML in fields\" option needs to be enabled in Anki."
+msgstr ""
+"匯出以 Tab 分隔的文字，可匯入至 Anki。<br/> 需要在 Anki 中啟用「允許欄位中"
+"的 HTML」選項。"
+
+#: custom_lemmas.py:442
+msgid "Only export enabled lemmas"
+msgstr "僅匯出已啟用的詞條"
+
+#: custom_lemmas.py:448
+msgid "Difficulty higher than this value will not be exported"
+msgstr "難度高於此數值的詞條將不會匯出"
+
+#: custom_lemmas.py:467
+msgid "Set import options"
+msgstr "設定匯入選項"
+
+#: custom_lemmas.py:471
+msgid "Retain current enabled lemmas"
+msgstr "保留目前已啟用的詞條"
+
+#: custom_x_ray.py:30
+msgid "Named hurricanes, battles, wars, sports events, etc."
+msgstr "颶風、戰役、戰爭、體育賽事等"
+
+#: custom_x_ray.py:31
+msgid "Buildings, airports, highways, bridges, etc."
+msgstr "建築物、機場、高速公路、橋樑等"
+
+#: custom_x_ray.py:32
+msgid "Countries, cities, states"
+msgstr "國家、城市、州"
+
+#: custom_x_ray.py:33
+msgid "Named documents made into laws"
+msgstr "已成為法律的具名文件"
+
+#: custom_x_ray.py:34
+msgid "Non-GPE locations, mountain ranges, bodies of water"
+msgstr "非 GPE 地點、山脈、水域"
+
+#: custom_x_ray.py:35
+msgid "Companies, agencies, institutions, etc."
+msgstr "公司、機構等"
+
+#: custom_x_ray.py:36
+msgid "People, including fictional"
+msgstr "人物，包含虛構角色"
+
+#: custom_x_ray.py:37
+msgid "Objects, vehicles, foods, etc. (not services)"
+msgstr "物品、車輛、食品等 (不含服務)"
+
+#: custom_x_ray.py:41
+msgid "Book quote"
+msgstr "書中引文"
+
+#: custom_x_ray.py:42
+msgid "Wikipedia"
+msgstr "維基百科"
+
+#: custom_x_ray.py:43
+msgid "Other MediaWiki server"
+msgstr "其他 MediaWiki 伺服器"
+
+#: custom_x_ray.py:50
+msgid "Customize X-Ray for {}"
+msgstr "自訂《{}》的 X-Ray"
+
+#: custom_x_ray.py:83
+msgid "Search"
+msgstr "搜尋"
+
+#: custom_x_ray.py:88
+msgid "Add"
+msgstr "新增"
+
+#: custom_x_ray.py:90
+msgid "Delete"
+msgstr "刪除"
+
+#: custom_x_ray.py:141 custom_x_ray.py:240
+msgid "Name"
+msgstr "名稱"
+
+#: custom_x_ray.py:142
+msgid "Named entity label"
+msgstr "命名實體標籤"
+
+#: custom_x_ray.py:143 custom_x_ray.py:252
+msgid "Aliases"
+msgstr "別名"
+
+#: custom_x_ray.py:144 custom_x_ray.py:255
+msgid "Description"
+msgstr "描述"
+
+#: custom_x_ray.py:145 custom_x_ray.py:266
+msgid "Description source"
+msgstr "描述來源"
+
+#: custom_x_ray.py:146 custom_x_ray.py:269
+msgid "Omit"
+msgstr "忽略"
+
+#: custom_x_ray.py:231
+msgid "Add new X-Ray data"
+msgstr "新增 X-Ray 資料"
+
+#: custom_x_ray.py:248
+msgid "NER label"
+msgstr "NER 標籤"
+
+#: custom_x_ray.py:251
+msgid "Separate by \",\""
+msgstr "以半形逗號分隔"
+
+#: custom_x_ray.py:257
+msgid ""
+"Leave this empty to use description from Wikipedia or other "
+"MediaWiki server"
+msgstr "留空則使用來自維基百科或其他 MediaWiki 伺服器的描述"
+
+#: error_dialogs.py:26
+msgid ""
+"Can't find Python. Please read the <a href='{}'>document</a> "
+"of how to install Python."
+msgstr "找不到 Python。請閱讀如何安裝 Python 的<a href='{}'>文件</a>。"
+
+#: error_dialogs.py:36
+msgid ""
+"Your Python version is too old, please update to a newer version "
+"and read the <a href='{}'>document</a> for more information."
+msgstr ""
+"Python 版本過舊，請更新至較新的版本，並閱讀<a href='{}'>文件</a>以取得更多"
+"資訊。"
+
+#: error_dialogs.py:46
+msgid ""
+"Please install an older version and put the Python binary file "
+"path in the plugin's preferences window."
+msgstr "請安裝較舊的版本，並在外掛程式的偏好設定視窗中填入 Python 執行檔路徑。"
+
+#: error_dialogs.py:60
+msgid ""
+"Please use "
+"<a href='https://github.com/kevinhendricks/KindleUnpack'>"
+"KindleUnpack</a>'s '-s' option to split the book."
+msgstr ""
+"請使用 <a href='https://github.com/kevinhendricks/"
+"KindleUnpack'>KindleUnpack</a> 的「-s」選項來拆分書籍。"
+
+#: error_dialogs.py:71
+msgid ""
+"Install <a href='https://support.microsoft.com/en-us/help/2977003/"
+"the-latest-supported-visual-c-downloads'>"
+"Visual C++ 2019 Redistributable</a>"
+msgstr ""
+"請安裝 <a href='https://support.microsoft.com/en-us/help/2977003/"
+"the-latest-supported-visual-c-downloads'>"
+"Visual C++ 2019 Redistributable</a>"
+
+#: error_dialogs.py:81
+msgid "Download failed"
+msgstr "下載失敗"
+
+#: error_dialogs.py:82
+msgid "Download failed, please retry."
+msgstr "下載失敗，請重試。"
+
+#: error_dialogs.py:98
+msgid ""
+"<p>Please read the friendly <a href='{}'>manual</a> of how to install "
+"pip.</p><p>If you still have this error, make sure you installed "
+"calibre with the <a href='https://calibre-ebook.com/download_linux'>"
+"binary install command</a> but not from Flathub or Snap Store.</p>"
+msgstr ""
+"<p>請閱讀如何安裝 pip 的<a href='{}'>說明文件</a>。</p>"
+"<p>如果仍然遇到此錯誤，請確認是透過"
+"<a href='https://calibre-ebook.com/download_linux'>二進位安裝指令</a>"
+"而非從 Flathub 或 Snap Store 安裝 calibre。</p>"
+
+#: error_dialogs.py:118
+msgid "Please delete the '{}/worddumb-libs-py*' folder then try again."
+msgstr "請刪除「{}/worddumb-libs-py*」資料夾後再試一次。"
+
+#: error_dialogs.py:135
+msgid ""
+"<p>Read <a href='{}'>calibre FAQ</a> first then check your proxy "
+"environment variables, they should be set by these commands:</p>"
+"<p><code>$ export HTTP_PROXY='http://host:port'</code></p>"
+"<p><code>$ export HTTPS_PROXY='http://host:port'</code></p>"
+"<p>If you're allergic to terminal, close your proxy and use a VPN.</p>"
+msgstr ""
+"<p>請先閱讀 <a href='{}'>calibre FAQ</a>，然後檢查代理伺服器環境變數，"
+"應透過以下指令設定：</p>"
+"<p><code>$ export HTTP_PROXY='http://host:port'</code></p>"
+"<p><code>$ export HTTPS_PROXY='http://host:port'</code></p>"
+"<p>如果不想用終端機，請關閉代理伺服器並改用 VPN。</p>"
+
+#: error_dialogs.py:148
+msgid ""
+"Is GitHub or Wikipedia blocked by your ISP? You might need to "
+"bypass Internet censorship. Please read <a href='{}'>calibre FAQ</a>."
+msgstr ""
+"ISP 是否封鎖了 GitHub 或維基百科？可能需要繞過網路審查。"
+"請閱讀 <a href='{}'>calibre FAQ</a>。"
+
+#: error_dialogs.py:158
+msgid ""
+"An error occurred, please copy error message then report bug at "
+"<a href=\"{}/issues\">GitHub</a>."
+msgstr ""
+"發生錯誤，請複製錯誤訊息後至 <a href=\"{}/issues\">GitHub</a> 回報問題。"
+
+#: error_dialogs.py:175 error_dialogs.py:216
+msgid "Unsupported language"
+msgstr "不支援的語言"
+
+#: error_dialogs.py:176
+msgid "The language of the book <i>{}</i> is not supported."
+msgstr "不支援書籍 <i>{}</i> 的語言。"
+
+#: error_dialogs.py:181
+msgid "Unsupported book format"
+msgstr "不支援的書籍格式"
+
+#: error_dialogs.py:181
+msgid "The book format is not supported."
+msgstr "不支援此書籍格式。"
+
+#: error_dialogs.py:186
+msgid "Device not found"
+msgstr "找不到裝置"
+
+#: error_dialogs.py:187
+msgid "Definition data will be added when Kindle device is connected."
+msgstr "連上 Kindle 裝置後，系統會自動加入釋義資料。"
+
+#: error_dialogs.py:194
+msgid "Word Wise database not found"
+msgstr "找不到生詞提示資料庫"
+
+#: error_dialogs.py:195
+msgid ""
+"Can't find Word Wise database on your device, open a Word Wise enabled "
+"book to download this file."
+msgstr ""
+"在裝置上找不到生詞提示資料庫，請開啟已啟用生詞提示的書籍來下載此檔案。"
+
+#: error_dialogs.py:205
+msgid "Kindle doesn't support EPUB"
+msgstr "Kindle 不支援 EPUB"
+
+#: error_dialogs.py:206
+msgid ""
+"Kindle doesn't support EPUB format natively, please convert the book "
+"format then try again."
+msgstr "Kindle 原生不支援 EPUB 格式，請轉換書籍格式後再試一次。"
+
+#: error_dialogs.py:217
+msgid "Book language is not supported for the selected Word Wise gloss language."
+msgstr "所選的生詞提示釋義語言不支援此書籍語言。"
+
+#: error_dialogs.py:227
+msgid ""
+"Word Wise language must be set to Chinese on Kindle to display the "
+"correct definitions when the \"Use Wiktionary definition\" option is "
+"enabled."
+msgstr ""
+"啟用「使用維基詞典釋義」選項時，必須將 Kindle 上的生詞提示語言設為中文，"
+"才能正確顯示釋義。"
+
+#: ui.py:28
+msgid "Create Word Wise and X-Ray"
+msgstr "建立生詞提示和 X-Ray"
+
+#: ui.py:38
+msgid "Create Word Wise"
+msgstr "建立生詞提示"
+
+#: ui.py:44
+msgid "Create X-Ray"
+msgstr "建立 X-Ray"
+
+#: ui.py:52
+msgid "Customize X-Ray"
+msgstr "自訂 X-Ray"
+
+#: ui.py:66
+msgid "Preferences"
+msgstr "偏好設定"
+
+#: ui.py:134
+msgid "Word Wise"
+msgstr "生詞提示"
+
+#: ui.py:144
+msgid " and "
+msgstr "和 "
+
+#: ui.py:157
+msgid "Generating {} for {}"
+msgstr "正在為《{1}》產生 {0}"
+
+#: ui.py:165
+msgid "{} generated for {}"
+msgstr "已為《{1}》產生 {0} 檔案"
+
+#: utils.py:182
+msgid "Simplified Chinese"
+msgstr "簡體中文"
+
+msgid "Catalan"
+msgstr "加泰隆尼亞語"
+
+msgid "Czech"
+msgstr "捷克語"
+
+msgid "Danish"
+msgstr "丹麥語"
+
+msgid "German"
+msgstr "德語"
+
+msgid "Greek"
+msgstr "希臘語"
+
+msgid "English"
+msgstr "英語"
+
+msgid "Spanish"
+msgstr "西班牙語"
+
+msgid "Finnish"
+msgstr "芬蘭語"
+
+msgid "French"
+msgstr "法語"
+
+msgid "Hebrew"
+msgstr "希伯來語"
+
+msgid "Hindi"
+msgstr "印地語"
+
+msgid "Serbo-Croatian"
+msgstr "塞爾維亞－克羅埃西亞語"
+
+msgid "Indonesian"
+msgstr "印尼語"
+
+msgid "Italian"
+msgstr "義大利語"
+
+msgid "Japanese"
+msgstr "日語"
+
+msgid "Korean"
+msgstr "韓語"
+
+msgid "Lithuanian"
+msgstr "立陶宛語"
+
+msgid "Macedonian"
+msgstr "馬其頓語"
+
+msgid "Malay"
+msgstr "馬來語"
+
+msgid "Norwegian Bokmål"
+msgstr "書面挪威語"
+
+msgid "Dutch"
+msgstr "荷蘭語"
+
+msgid "Polish"
+msgstr "波蘭語"
+
+msgid "Portuguese"
+msgstr "葡萄牙語"
+
+msgid "Romanian"
+msgstr "羅馬尼亞語"
+
+msgid "Russian"
+msgstr "俄語"
+
+msgid "Slovene"
+msgstr "斯洛維尼亞語"
+
+msgid "Swedish"
+msgstr "瑞典語"
+
+msgid "Thai"
+msgstr "泰語"
+
+msgid "Ukrainian"
+msgstr "烏克蘭語"
+
+msgid "Chinese"
+msgstr "中文"

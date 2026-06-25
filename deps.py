@@ -19,7 +19,7 @@ from .utils import (
     run_subprocess,
 )
 
-PY_PATH = ""
+PY_CMD: list[str] = []
 LIBS_PATH = Path()
 # https://pytorch.org/get-started/locally
 PYTORCH_LINUX_PLATFORMS = {
@@ -38,11 +38,11 @@ PYTORCH_WINDOWS_PLATFORMS = {
 
 
 def install_deps(pkg: str, notif: Any) -> None:
-    global PY_PATH, LIBS_PATH
+    global PY_CMD, LIBS_PATH
     plugin_path = get_plugin_path()
 
-    if len(PY_PATH) == 0:
-        PY_PATH, py_version = which_python()
+    if len(PY_CMD) == 0:
+        PY_CMD, py_version = which_python()
         LIBS_PATH = plugin_path.parent.joinpath(f"worddumb-libs-py{py_version}")
         if not LIBS_PATH.is_dir():
             for old_libs_path in LIBS_PATH.parent.glob("worddumb-libs-py*"):
@@ -66,6 +66,7 @@ def install_deps(pkg: str, notif: Any) -> None:
     else:
         # Install X-Ray dependencies
         pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
+        pip_install("click", "", notif=notif)
         pip_install("spacy", dep_versions["spacy"], notif=notif)
         if pkg != "":
             model_version = get_spacy_model_version(pkg, dep_versions)
@@ -76,27 +77,36 @@ def install_deps(pkg: str, notif: Any) -> None:
             pip_install(pkg, model_version, url=url, notif=notif)
 
 
-def which_python() -> tuple[str, str]:
+def which_python() -> tuple[list[str], str]:
     """
     Return Python command or file path and version string
     """
     from .config import prefs
 
-    py = "python3"
-    if len(prefs["python_path"]) > 0:
-        py = prefs["python_path"]
-    elif iswindows:
-        py = "py"
-    elif ismacos:
-        py = mac_bin_path("python3")
+    manager = prefs.get("env_manager", "python")
+    path = prefs.get("env_manager_path", prefs.get("python_path", ""))
 
-    if shutil.which(py) is None:
-        raise Exception("PythonNotFound")
+    py_cmd = []
+    if manager == "uv":
+        py_cmd = [path if path else "uv", "run", "python"]
+    elif manager == "conda":
+        py_cmd = [path if path else "conda", "run", "python"]
+    else:
+        cmd = "python3"
+        if path:
+            cmd = path
+        elif iswindows:
+            cmd = "py"
+        elif ismacos:
+            cmd = mac_bin_path("python3")
+        
+        if shutil.which(cmd) is None:
+            raise Exception("PythonNotFound")
+        py_cmd = [cmd]
 
-    if isfrozen or prefs["python_path"] != "":
+    if isfrozen or path != "":
         r = run_subprocess(
-            [
-                py,
+            py_cmd + [
                 "-c",
                 'import platform; print(".".join(platform.python_version_tuple()[:2]))',
             ]
@@ -110,7 +120,7 @@ def which_python() -> tuple[str, str]:
         raise Exception("OutdatedPython")
     elif py_v_tuple > (3, 14):  # spaCy
         raise Exception("UnsupportedPython")
-    return py, py_v
+    return py_cmd, py_v
 
 
 def pip_install(
@@ -128,21 +138,38 @@ def pip_install(
         if notif:
             notif.put((0, f"Installing {pkg}"))
 
-        args = [
-            PY_PATH,
-            "-m",
-            "pip",
-            "--disable-pip-version-check",
-            "install",
-            "-U",
-            "-t",
-            str(LIBS_PATH),
-            "--no-user",  # disable "--user" option which conflicts with "-t"
-            "--no-cache-dir",
-        ]
+        from .config import prefs
+        manager = prefs.get("env_manager", "python")
+        path = prefs.get("env_manager_path", prefs.get("python_path", ""))
 
-        if no_deps:
-            args.append("--no-deps")
+        if manager == "uv":
+            args = [
+                path if path else "uv",
+                "pip",
+                "install",
+                "-U",
+                "--reinstall",
+                "--compile-bytecode",
+                "-t",
+                str(LIBS_PATH),
+                "--no-cache",
+            ]
+            if no_deps:
+                args.append("--no-deps")
+        else:
+            args = PY_CMD + [
+                "-m",
+                "pip",
+                "--disable-pip-version-check",
+                "install",
+                "-U",
+                "-t",
+                str(LIBS_PATH),
+                "--no-user",  # disable "--user" option which conflicts with "-t"
+                "--no-cache-dir",
+            ]
+            if no_deps:
+                args.append("--no-deps")
 
         if url:
             args.append(url)

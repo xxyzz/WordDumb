@@ -32,6 +32,8 @@ class Prefs(TypedDict):
     test_wsd: bool
     torch_compute_platform: str
     custom_entity_only: bool
+    env_manager: str
+    env_manager_path: str
 
 
 def load_plugin_json(plugin_path: Path, filepath: str) -> Any:

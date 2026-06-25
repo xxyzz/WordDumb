@@ -198,8 +198,8 @@ def do_job(
     # official calibre build: calibre's optimize level is 2 which removes docstring,
     # but the "transformers" package formats docstrings in their code
     # and calibre-debug can't be used as Python interpreter for pip
-    if isfrozen or prefs["python_path"] != "":
-        py_path, _ = which_python()
+    if isfrozen or prefs.get("env_manager_path", prefs.get("python_path", "")) != "":
+        py_cmd, _ = which_python()
         # copy data can't be converted by `asdict`
         copy_mi = data.mi
         copy_mobi_html = data.mobi_html  # bytes
@@ -208,8 +208,7 @@ def do_job(
         data.mobi_html = None
         data.kfx_json = None
         data.plugin_path = str(data.plugin_path)
-        args = [
-            py_path,
+        args = py_cmd + [
             "-I",  # isolate user env
             str(data.plugin_path),
             json.dumps(asdict(data)),

@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFormLayout,
+    QHBoxLayout,
     QLabel,
     QLineEdit,
     QListWidget,
@@ -55,6 +56,8 @@ prefs.defaults["choose_format_manually"] = True
 prefs.defaults["gloss_lang"] = "en"
 prefs.defaults["use_wiktionary_for_kindle"] = False
 prefs.defaults["python_path"] = ""
+prefs.defaults["env_manager"] = "python"
+prefs.defaults["env_manager_path"] = ""
 prefs.defaults["show_change_kindle_ww_lang_warning"] = True
 prefs.defaults["test_wsd"] = True
 prefs.defaults["torch_compute_platform"] = "cpu"
@@ -111,16 +114,30 @@ class ConfigWidget(QWidget):
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
         )
 
-        python_path_label = QLabel(_("Python path"))
-        python_path_label.setToolTip(
-            _(
-                "Absolute path of the executable binary for the Python interpreter, "
-                "leave this empty to find Python in PATH."
-            )
+        env_manager_layout = QHBoxLayout()
+        self.env_manager_box = QComboBox()
+        self.env_manager_box.addItem("Python", "python")
+        self.env_manager_box.addItem("uv", "uv")
+        self.env_manager_box.addItem("Conda", "conda")
+        
+        current_manager = prefs.get("env_manager", "python")
+        self.env_manager_box.setCurrentIndex(self.env_manager_box.findData(current_manager))
+        
+        self.env_manager_path = QLineEdit()
+        current_path = prefs.get("env_manager_path", "")
+        if not current_path and prefs.get("python_path", ""):
+            current_path = prefs.get("python_path", "")
+        self.env_manager_path.setText(current_path)
+        
+        env_manager_layout.addWidget(self.env_manager_box)
+        env_manager_layout.addWidget(self.env_manager_path)
+        
+        env_manager_label = QLabel(_("Environment manager and path"))
+        env_manager_label.setToolTip(
+            _("Select the dependency manager and provide the absolute path to its executable. "
+              "Leave path empty to find it in PATH.")
         )
-        self.python_path = QLineEdit()
-        self.python_path.setText(prefs["python_path"])
-        form_layout.addRow(python_path_label, self.python_path)
+        form_layout.addRow(env_manager_label, env_manager_layout)
 
         self.minimal_x_ray_count = QSpinBox()
         self.minimal_x_ray_count.setMinimum(1)
@@ -205,7 +222,9 @@ class ConfigWidget(QWidget):
         webbrowser.open(GITHUB_URL)
 
     def save_settings(self) -> None:
-        prefs["python_path"] = self.python_path.text()
+        prefs["env_manager"] = self.env_manager_box.currentData()
+        prefs["env_manager_path"] = self.env_manager_path.text()
+        prefs["python_path"] = self.env_manager_path.text()
         prefs["search_people"] = self.search_people_box.isChecked()
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
@@ -347,8 +366,7 @@ def dump_lemmas_job(
             "plugin_path": str(plugin_path),
             "model_name": model_name,
         }
-        args = [
-            which_python()[0],
+        args = which_python()[0] + [
             str(plugin_path),
             json.dumps(options),
             dump_prefs(prefs),

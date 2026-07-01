@@ -95,7 +95,7 @@ jobs:
 
       - name: Restore dependencies and Wikipedia cache(Ubuntu)
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.config/calibre/plugins/worddumb-libs-py*
@@ -104,7 +104,7 @@ jobs:
 
       - name: Restore dependencies and Wikipedia cache(macOS)
         if: matrix.os == 'macos-latest'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/Library/Preferences/calibre/plugins/worddumb-libs-py*
@@ -113,7 +113,7 @@ jobs:
 
       - name: Restore dependencies and Wikipedia cache(Windows)
         if: matrix.os == 'windows-latest'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/AppData/Roaming/calibre/plugins/worddumb-libs-py*

@@ -9,12 +9,11 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 CJK_LANGS = ["zh", "ja", "ko"]
-PROFICIENCY_VERSION = "1.0.0"
+PROFICIENCY_VERSION = "1.1.0"
 PROFICIENCY_RELEASE_URL = (
     f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}"
 )
 PROFICIENCY_MAJOR_VERSION = PROFICIENCY_VERSION.split(".", 1)[0]
-WSD_LANGUAGES = {"en-en"}
 
 
 class Prefs(TypedDict):
@@ -29,8 +28,6 @@ class Prefs(TypedDict):
     use_wiktionary_for_kindle: bool
     python_path: str
     show_change_kindle_ww_lang_warning: bool
-    test_wsd: bool
-    torch_compute_platform: str
     custom_entity_only: bool
 
 
@@ -119,8 +116,6 @@ def wiktionary_db_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -> Path
         custom_lemmas_folder(plugin_path)
         / f"wiktionary_{lemma_lang}_{prefs['gloss_lang']}_v{PROFICIENCY_MAJOR_VERSION}.db"  # noqa:E501
     )
-    if is_wsd_enabled(prefs, lemma_lang):
-        path = path.with_stem(path.stem + "_wsd")
     return path
 
 
@@ -138,8 +133,6 @@ def get_wiktionary_klld_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -
         custom_lemmas_folder(plugin_path)
         / f"kll.{lemma_lang}.{prefs['gloss_lang']}_v{PROFICIENCY_MAJOR_VERSION}.klld"
     )
-    if is_wsd_enabled(prefs, lemma_lang):
-        path = path.with_stem(path.stem + "_wsd")
     return path
 
 
@@ -191,10 +184,6 @@ def get_spacy_model_version(
     if lang_key in dependency_versions:
         return dependency_versions[lang_key]
     return dependency_versions.get("spacy_cpu_model", "")
-
-
-def is_wsd_enabled(prefs: Prefs, lemma_lang: str) -> bool:
-    return prefs["test_wsd"] and f"{lemma_lang}-{prefs['gloss_lang']}" in WSD_LANGUAGES
 
 
 def get_book_settings_path(book_path: Path) -> Path:

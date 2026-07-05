@@ -56,8 +56,6 @@ prefs.defaults["gloss_lang"] = "en"
 prefs.defaults["use_wiktionary_for_kindle"] = False
 prefs.defaults["python_path"] = ""
 prefs.defaults["show_change_kindle_ww_lang_warning"] = True
-prefs.defaults["test_wsd"] = True
-prefs.defaults["torch_compute_platform"] = "cpu"
 prefs.defaults["custom_entity_only"] = False
 for code in load_languages_data(get_plugin_path(), False).keys():
     prefs.defaults[f"{code}_wiktionary_difficulty_limit"] = 5
@@ -147,28 +145,6 @@ class ConfigWidget(QWidget):
             self.zh_wiki_box.addItem(text, variant)
         self.zh_wiki_box.setCurrentText(zh_variants[prefs["zh_wiki_variant"]])
         form_layout.addRow(_("Chinese Wikipedia variant"), self.zh_wiki_box)
-
-        if islinux or iswindows:
-            compute_platform_lb = QLabel(_("PyTorch compute platform"))
-            compute_platforms = {
-                "cpu": "CPU",
-                "cuda13.0": "CUDA 13.0",
-                "cuda12.8": "CUDA 12.8",
-                "cuda12.6": "CUDA 12.6",
-                "rocm7.2": "ROCm 7.2",
-            }
-            self.compute_platform_box = QComboBox()
-            for version, text in compute_platforms.items():
-                if iswindows and text.startswith("ROCm"):
-                    continue
-                self.compute_platform_box.addItem(text, version)
-            if prefs["torch_compute_platform"] not in compute_platforms:
-                prefs["torch_compute_platform"] = "cpu"
-            self.compute_platform_box.setCurrentText(
-                compute_platforms[prefs["torch_compute_platform"]]
-            )
-            form_layout.addRow(compute_platform_lb, self.compute_platform_box)
-
         vl.addLayout(form_layout)
 
         self.locator_map_box = QCheckBox(_("Add locator map to EPUB footnotes"))
@@ -211,8 +187,6 @@ class ConfigWidget(QWidget):
         prefs["add_locator_map"] = self.locator_map_box.isChecked()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
         prefs["custom_entity_only"] = self.custom_entity_only.isChecked()
-        if islinux or iswindows:
-            prefs["torch_compute_platform"] = self.compute_platform_box.currentData()
 
     def open_format_order_dialog(self):
         format_order_dialog = FormatOrderDialog(self)

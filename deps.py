@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 from urllib.request import ProxyHandler, build_opener, getproxies
 
-from calibre.constants import isfrozen, islinux, ismacos, iswindows
+from calibre.constants import isfrozen, ismacos, iswindows
 
 from .utils import (
     PROFICIENCY_RELEASE_URL,
@@ -21,20 +21,6 @@ from .utils import (
 
 PY_PATH = ""
 LIBS_PATH = Path()
-# https://pytorch.org/get-started/locally
-PYTORCH_LINUX_PLATFORMS = {
-    "cpu": "https://download.pytorch.org/whl/cpu",
-    "cuda12.6": "https://download.pytorch.org/whl/cu126",
-    "cuda12.8": "https://download.pytorch.org/whl/cu128",
-    "cuda13.0": None,
-    "rocm7.2": "https://download.pytorch.org/whl/rocm7.2",
-}
-PYTORCH_WINDOWS_PLATFORMS = {
-    "cpu": None,
-    "cuda12.6": "https://download.pytorch.org/whl/cu126",
-    "cuda12.8": "https://download.pytorch.org/whl/cu128",
-    "cuda13.0": "https://download.pytorch.org/whl/cu130",
-}
 
 
 def install_deps(pkg: str, notif: Any) -> None:
@@ -51,18 +37,6 @@ def install_deps(pkg: str, notif: Any) -> None:
     dep_versions = load_plugin_json(plugin_path, "data/deps.json")
     if pkg == "lxml":
         pip_install("lxml", dep_versions["lxml"], notif=notif)
-    elif pkg == "wsd":
-        from .config import prefs
-
-        pip_install("transformers", dep_versions["transformers"], notif=notif)
-        if prefs["torch_compute_platform"] != "cpu":
-            pip_install("accelerate", dep_versions["accelerate"], notif=notif)
-        index_url = None
-        if iswindows:
-            index_url = PYTORCH_WINDOWS_PLATFORMS.get(prefs["torch_compute_platform"])
-        elif islinux:
-            index_url = PYTORCH_LINUX_PLATFORMS.get(prefs["torch_compute_platform"])
-        pip_install("torch", dep_versions["torch"], extra_index=index_url, notif=notif)
     else:
         # Install X-Ray dependencies
         pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
@@ -122,8 +96,6 @@ def pip_install(
     notif: Any = None,
 ) -> None:
     pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
-    if pkg == "torch" and extra_index:
-        pattern = f"torch-{pkg_version}+{extra_index.split('/')[-1]}*"
     if not any(LIBS_PATH.glob(pattern)):
         if notif:
             notif.put((0, f"Installing {pkg}"))
@@ -165,8 +137,6 @@ def download_word_wise_file(
     log=None,
     notifications=None,
 ) -> None:
-    from .utils import is_wsd_enabled
-
     gloss_lang = prefs["gloss_lang"]
     if notifications:
         notifications.put(
@@ -182,15 +152,9 @@ def download_word_wise_file(
     download_folder = custom_lemmas_folder(plugin_path)
     if not download_folder.is_dir():
         download_folder.mkdir()
-    checksum = download_checksum(False)
+    checksum = download_checksum()
     download_path = download_folder / bz2_filename
     download_extract_bz2(url, download_path, checksum.get(bz2_filename, ""))
-    if is_wsd_enabled(prefs, lemma_lang):
-        bz2_filename = f"{lemma_lang}_{gloss_lang}_wsd.tar.bz2"
-        url = f"{PROFICIENCY_RELEASE_URL}/{bz2_filename}"
-        download_path = download_folder / bz2_filename
-        checksum = download_checksum(True)
-        download_extract_bz2(url, download_path, checksum.get(bz2_filename, ""))
 
 
 def download_extract_bz2(url: str, download_path: Path, sha256: str) -> None:
@@ -200,16 +164,12 @@ def download_extract_bz2(url: str, download_path: Path, sha256: str) -> None:
     download_path.unlink()
 
 
-def download_checksum(is_wsd: bool) -> dict[str, str]:
+def download_checksum() -> dict[str, str]:
     import json
 
-    if not is_wsd:
-        url = f"{PROFICIENCY_RELEASE_URL}/sha256.json"
-    else:
-        url = f"{PROFICIENCY_RELEASE_URL}/sha256_wsd.json"
     opener = build_opener(ProxyHandler(getproxies()))
     opener.addheaders = [("User-agent", get_user_agent())]
-    with opener.open(url) as r:
+    with opener.open(f"{PROFICIENCY_RELEASE_URL}/sha256.json") as r:
         return json.load(r)
 
 

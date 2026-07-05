@@ -1,5 +1,4 @@
 import json
-import platform
 import random
 import re
 import shutil
@@ -11,7 +10,7 @@ from sqlite3 import Connection
 from typing import Any, Iterator
 
 try:
-    from calibre.constants import isfrozen, ismacos
+    from calibre.constants import isfrozen
 
     from .database import (
         create_lang_layer,
@@ -36,7 +35,6 @@ try:
         get_user_agent,
         get_wiktionary_klld_path,
         insert_installed_libs,
-        is_wsd_enabled,
         kindle_db_path,
         load_plugin_json,
         run_subprocess,
@@ -44,7 +42,6 @@ try:
         use_kindle_ww_db,
         wiktionary_db_path,
     )
-    from .wsd import load_wsd_model, wsd
     from .x_ray import X_Ray
     from .x_ray_share import (
         NER_LABELS,
@@ -72,13 +69,11 @@ except ImportError:
         Prefs,
         get_spacy_model_version,
         insert_installed_libs,
-        is_wsd_enabled,
         kindle_db_path,
         load_plugin_json,
         use_kindle_ww_db,
         wiktionary_db_path,
     )
-    from wsd import load_wsd_model, wsd
     from x_ray import X_Ray
     from x_ray_share import (
         NER_LABELS,
@@ -117,10 +112,6 @@ def do_job(
 ) -> ParseJobData:
     from .config import prefs
     from .metadata import get_asin_etc
-
-    if ismacos and platform.machine() == "x86_64":
-        # pytorch removed x86 macos wheel files since v2.3.0
-        prefs["test_wsd"] = False
 
     set_en_lang = (
         True
@@ -187,8 +178,6 @@ def do_job(
         # parse MediaWiki page and Wikipedia section requires lxml
         install_deps("lxml", notifications)
     install_deps(data.spacy_model, notifications)
-    if data.create_ww and is_wsd_enabled(prefs, data.book_lang):
-        install_deps("wsd", notifications)
 
     if notifications:
         notifications.put((0, "Creating files"))
@@ -354,8 +343,6 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
 
     # Kindle
     final_start = calculate_final_start(data)
-    wsd_model = None
-    wsd_tokenizer = None
     if data.create_ww:
         ll_conn, ll_path = create_lang_layer(
             data.asin,
@@ -363,10 +350,6 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
             data.acr,
             data.revision,
         )
-        if is_wsd_enabled(prefs, data.book_lang) and not use_kindle_ww_db(
-            data.book_lang, prefs
-        ):
-            wsd_model, wsd_tokenizer = load_wsd_model(prefs["torch_compute_platform"])
 
     if data.create_x:
         x_ray_conn, x_ray_path = create_x_ray_db(
@@ -408,8 +391,6 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                 ll_conn,
                 data.book_lang,
                 prefs,
-                wsd_model,
-                wsd_tokenizer,
             )
         if notif:
             notif.put((start / final_start, "Creating files"))
@@ -466,8 +447,6 @@ def kindle_find_lemma(
     ll_conn,
     lemma_lang,
     prefs,
-    model,
-    tokenizer,
 ):
     from spacy.util import filter_spans
 
@@ -485,8 +464,6 @@ def kindle_find_lemma(
                 span.start_char - span.sent.start_char,
                 span.end_char - span.sent.start_char,
             ),
-            model,
-            tokenizer,
         )
         if data is not None:
             kindle_add_lemma(
@@ -562,30 +539,18 @@ def get_kindle_lemma_data(
     prefs: Prefs,
     sent: str,
     offsets: tuple[int, int],
-    model,
-    tokenizer,
 ) -> tuple[int, int] | None:
-    data_list = []
     if pos != "":
-        data_list = get_kindle_lemma_with_pos(
-            lemma, word, pos, conn, lemma_lang, prefs, model is None
+        return get_kindle_lemma_with_pos(
+            lemma,
+            word,
+            pos,
+            conn,
+            lemma_lang,
+            prefs,
         )
     else:
-        data_list = get_kindle_lemma_without_pos(word, conn, model is None)
-
-    if len(data_list) == 0:
-        return None
-    embeds = []
-    options = []
-    for difficulty, id, embed_vector in data_list:
-        if model is None:
-            return difficulty, id
-        embeds.append(embed_vector)
-        options.append((difficulty, id))
-    choose_index = 0
-    if len(options) > 1 and sent.strip() != word:
-        choose_index = wsd(model, tokenizer, sent, offsets, embeds)
-    return options[choose_index]
+        return get_kindle_lemma_without_pos(word, conn)
 
 
 def get_kindle_lemma_with_pos(
@@ -595,65 +560,50 @@ def get_kindle_lemma_with_pos(
     conn: sqlite3.Connection,
     lemma_lang: str,
     prefs: Prefs,
-    limit_one: bool,
-) -> list[tuple[int, int, str]]:
-    results = []
+) -> tuple[int, int] | None:
     if use_kindle_ww_db(lemma_lang, prefs):
         pos = spacy_to_kindle_pos(pos)
     else:
         pos = spacy_to_wiktionary_pos(pos)
     sql = """
-    SELECT difficulty, id, embed_vector
+    SELECT difficulty, id
     FROM senses
-    WHERE lemma = ? AND pos = ? AND enabled = 1
+    WHERE lemma = ? AND pos = ? AND enabled = 1 LIMIT 1
     """
-    if limit_one:
-        sql += " LIMIT 1"
     for data in conn.execute(sql, (lemma, pos)):
-        results.append(data)
-    if len(results) > 0:
-        return results
+        return data
 
     sql = """
-    SELECT difficulty, s.id, embed_vector
+    SELECT difficulty, s.id
     FROM senses s JOIN forms f ON s.form_group_id = f.form_group_id
-    WHERE form = ? AND pos = ? AND enabled = 1
+    WHERE form = ? AND pos = ? AND enabled = 1 LIMIT 1
     """
-    if limit_one:
-        sql += " LIMIT 1"
     for data in conn.execute(sql, (word, pos)):
-        results.append(data)
+        return data
 
-    return results
+    return None
 
 
 def get_kindle_lemma_without_pos(
-    word: str, conn: sqlite3.Connection, limit_one: bool
-) -> list[tuple[int, int, str]]:
-    results = []
+    word: str, conn: sqlite3.Connection
+) -> tuple[int, int] | None:
     sql = """
-    SELECT difficulty, id, embed_vector
+    SELECT difficulty, id
     FROM senses
-    WHERE lemma = ? AND enabled = 1
+    WHERE lemma = ? AND enabled = 1 LIMIT 1
     """
-    if limit_one:
-        sql += " LIMIT 1"
     for data in conn.execute(sql, (word,)):
-        results.append(data)
-    if len(results) > 0:
-        return results
+        return data
 
     sql = """
-    SELECT difficulty, s.id, embed_vector
+    SELECT difficulty, s.id
     FROM senses s JOIN forms f ON s.form_group_id = f.form_group_id
-    WHERE form = ? AND enabled = 1
+    WHERE form = ? AND enabled = 1 LIMIT 1
     """
-    if limit_one:
-        sql += " LIMIT 1"
     for data in conn.execute(sql, (word,)):
-        results.append(data)
+        return data
 
-    return results
+    return None
 
 
 def kindle_add_lemma(

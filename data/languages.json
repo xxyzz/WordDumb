@@ -142,7 +142,11 @@
     "spacy": "hr_core_news_lg"
   },
   "id": {
-    "gloss_source": "",
+    "gloss_source": "kaikki",
+    "lemma_languages": [
+      "id",
+      "en"
+    ],
     "name": "Indonesian",
     "spacy": ""
   },

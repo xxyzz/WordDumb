@@ -4,7 +4,7 @@ from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from calibre.constants import isfrozen, islinux, iswindows
+from calibre.constants import isfrozen
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig

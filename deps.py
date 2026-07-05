@@ -41,6 +41,8 @@ def install_deps(pkg: str, notif: Any) -> None:
         # Install X-Ray dependencies
         pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
         pip_install("spacy", dep_versions["spacy"], notif=notif)
+        # remove click if spacy updated
+        pip_install("click", dep_versions["click"], notif=notif)
         if pkg != "":
             model_version = get_spacy_model_version(pkg, dep_versions)
             url = (

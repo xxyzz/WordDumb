@@ -68,6 +68,12 @@ def get_custom_x_path(book_path: str | Path) -> Path:
     return book_path.parent.joinpath("worddumb-custom-x-ray.json")
 
 
+def get_generated_x_path(book_path: str | Path) -> Path:
+    if isinstance(book_path, str):
+        book_path = Path(book_path)
+    return book_path.parent.joinpath("worddumb-generated-x-ray.json")
+
+
 @dataclass
 class CustomX:
     desc: str

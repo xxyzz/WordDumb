@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
 )
 
 from .custom_lemmas import ComboBoxDelegate
-from .x_ray_share import get_custom_x_path
+from .x_ray_share import get_custom_x_path, get_generated_x_path
 
 load_translations()  # type: ignore
 if TYPE_CHECKING:
@@ -132,8 +132,16 @@ class XRayTableModel(QAbstractTableModel):
     def __init__(self, book_path: str) -> None:
         super().__init__()
         self.custom_path = get_custom_x_path(book_path)
-        if self.custom_path.exists():
-            with open(self.custom_path, encoding="utf-8") as f:
+        self.generated_path = get_generated_x_path(book_path)
+        x_ray_path = (
+            self.custom_path
+            if self.custom_path.exists()
+            else self.generated_path
+            if self.generated_path.exists()
+            else None
+        )
+        if x_ray_path is not None:
+            with open(x_ray_path, encoding="utf-8") as f:
                 self.x_ray_data = json.load(f)
         else:
             self.x_ray_data = []

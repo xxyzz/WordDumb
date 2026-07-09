@@ -1,3 +1,4 @@
+import json
 import re
 from collections import defaultdict
 from functools import partial
@@ -28,6 +29,7 @@ try:
         PERSON_LABELS,
         CustomXDict,
         XRayEntity,
+        get_generated_x_path,
         is_full_name,
     )
 except ImportError:
@@ -54,6 +56,7 @@ except ImportError:
         PERSON_LABELS,
         CustomXDict,
         XRayEntity,
+        get_generated_x_path,
         is_full_name,
     )
 
@@ -179,6 +182,25 @@ class X_Ray:
                 del self.entity_occurrences[entity_data.id]
                 del self.entities[entity_name]
 
+    def save_generated_entities_preview(self, db_path: Path) -> None:
+        generated_path = get_generated_x_path(db_path)
+        rows = [
+            [
+                entity_name,
+                entity_data.label,
+                "",
+                entity_data.quote,
+                None,
+                False,
+            ]
+            for entity_name, entity_data in sorted(
+                self.entities.items(),
+                key=lambda item: (-item[1].count, item[0].lower()),
+            )
+        ]
+        with generated_path.open("w", encoding="utf-8") as f:
+            json.dump(rows, f, indent=2, ensure_ascii=False)
+
     def finish(
         self,
         db_path: Path,
@@ -193,6 +215,7 @@ class X_Ray:
         if self.wikidata is not None:
             query_wikidata(self.entities, self.mediawiki, self.wikidata)
         self.merge_entities(prefs)
+        self.save_generated_entities_preview(db_path)
 
         insert_x_entities(
             self.conn,

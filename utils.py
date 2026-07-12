@@ -17,9 +17,7 @@ PROFICIENCY_MAJOR_VERSION = PROFICIENCY_VERSION.split(".", 1)[0]
 
 
 class Prefs(TypedDict):
-    search_people: bool
     zh_wiki_variant: str
-    add_locator_map: str
     preferred_formats: list[str]
     use_all_formats: bool
     mal_x_ray_count: int

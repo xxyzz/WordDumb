@@ -22,7 +22,6 @@ try:
     from .utils import CJK_LANGS, Prefs
     from .x_ray_share import (
         FUZZ_THRESHOLD,
-        PERSON_LABELS,
         CustomXDict,
         XRayEntity,
         is_full_name,
@@ -38,7 +37,6 @@ except ImportError:
     from utils import CJK_LANGS, Prefs
     from x_ray_share import (
         FUZZ_THRESHOLD,
-        PERSON_LABELS,
         CustomXDict,
         XRayEntity,
         is_full_name,
@@ -273,7 +271,7 @@ class EPUB:
     def modify_epub(self) -> None:
         if len(self.entities) > 0:
             if self.mediawiki is not None:
-                self.mediawiki.query(self.entities, self.prefs["search_people"])
+                self.mediawiki.query(self.entities)
                 if self.wikidata is not None:
                     query_wikidata(self.entities, self.mediawiki, self.wikidata)
             if self.prefs["minimal_x_ray_count"] > 1:
@@ -413,13 +411,8 @@ class EPUB:
                     )
                     s += "</p>"
                 s += "</aside>"
-            elif (
-                self.mediawiki is not None
-                and (
-                    self.prefs["search_people"]
-                    or entity_data.label not in PERSON_LABELS
-                )
-                and (intro_cache := self.mediawiki.get_cache(entity_name))
+            elif self.mediawiki is not None and (
+                intro_cache := self.mediawiki.get_cache(entity_name)
             ):
                 s += f'<aside id="{entity_data.id}" epub:type="footnote">'
                 s += create_p_tags(intro_cache.intro)

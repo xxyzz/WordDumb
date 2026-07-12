@@ -17,8 +17,6 @@ from convert import LIMIT
 class TestDumbCode(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        prefs["search_people"] = True
-        prefs["add_locator_map"] = True
         prefs["minimal_x_ray_count"] = 1
         prefs["gloss_lang"] = "en"
         prefs["use_wiktionary_for_kindle"] = False

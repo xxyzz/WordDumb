@@ -8,9 +8,11 @@ from typing import TypedDict
 from urllib.parse import unquote
 
 try:
-    from .x_ray_share import FUZZ_THRESHOLD, PERSON_LABELS, XRayEntity
+    from .utils import PROFICIENCY_MAJOR_VERSION
+    from .x_ray_share import FUZZ_THRESHOLD, XRayEntity
 except ImportError:
-    from x_ray_share import FUZZ_THRESHOLD, PERSON_LABELS, XRayEntity
+    from utils import PROFICIENCY_MAJOR_VERSION
+    from x_ray_share import FUZZ_THRESHOLD, XRayEntity
 
 # https://www.mediawiki.org/wiki/API:Get_the_contents_of_a_page
 # https://www.mediawiki.org/wiki/Extension:TextExtracts#API
@@ -334,15 +336,13 @@ class MediaWiki:
         else:
             self.add_no_desc_titles({page})
 
-    def query(self, entities: dict[str, XRayEntity], search_people: bool) -> None:
+    def query(self, entities: dict[str, XRayEntity]) -> None:
         pending_entities: set[str] = set()
         for entity, entity_data in entities.items():
             if self.has_extracts_api and len(pending_entities) == MEDIAWIKI_API_EXLIMIT:
                 self.query_extracts_api(pending_entities)
                 pending_entities.clear()
-            elif not self.has_cache(entity) and (
-                search_people or entity_data.label not in PERSON_LABELS
-            ):
+            elif not self.has_cache(entity):
                 if self.has_extracts_api:
                     pending_entities.add(entity)
                 else:

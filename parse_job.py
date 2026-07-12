@@ -282,7 +282,7 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
     if is_epub:
         if data.create_x:
             wiki_commons = None
-            if mediawiki_api == "" and prefs["add_locator_map"]:
+            if mediawiki_api == "":
                 wiki_commons = Wikimedia_Commons(data.plugin_path, data.useragent)
             epub = EPUB(
                 data.book_path,

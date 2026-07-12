@@ -75,7 +75,7 @@ class X_Ray:
         self.entity_occurrences: dict[int, list[tuple[int, int]]] = defaultdict(list)
         self.custom_x_ray = custom_x_ray
 
-    def insert_descriptions(self, search_people: bool) -> None:
+    def insert_descriptions(self) -> None:
         for entity_name, entity_data in self.entities.items():
             if custom_data := self.custom_x_ray.get(entity_name):
                 if custom_data.desc is not None and len(custom_data.desc) > 0:
@@ -90,10 +90,8 @@ class X_Ray:
                     )
                     continue
 
-            if (
-                self.mediawiki is not None
-                and (search_people or entity_data.label not in PERSON_LABELS)
-                and (intro_cache := self.mediawiki.get_cache(entity_name))
+            if self.mediawiki is not None and (
+                intro_cache := self.mediawiki.get_cache(entity_name)
             ):
                 summary = intro_cache.intro
                 if self.wikidata is not None and (
@@ -168,14 +166,7 @@ class X_Ray:
                 self.mediawiki is not None
                 and self.mediawiki.get_cache(entity_name) is not None
             )
-            is_person = entity_data.label in PERSON_LABELS
-            if entity_data.count < prefs["minimal_x_ray_count"] and (
-                (prefs["search_people"] and not has_cache)
-                or (
-                    not prefs["search_people"]
-                    and (is_person or (not is_person and not has_cache))
-                )
-            ):
+            if entity_data.count < prefs["minimal_x_ray_count"] and not has_cache:
                 del self.entity_occurrences[entity_data.id]
                 del self.entities[entity_name]
 
@@ -189,7 +180,7 @@ class X_Ray:
         prefs: Prefs,
     ) -> None:
         if self.mediawiki is not None:
-            self.mediawiki.query(self.entities, prefs["search_people"])
+            self.mediawiki.query(self.entities)
         if self.wikidata is not None:
             query_wikidata(self.entities, self.mediawiki, self.wikidata)
         self.merge_entities(prefs)
@@ -214,7 +205,7 @@ class X_Ray:
                 for start, entity_length in occurrence_list
             ),
         )
-        self.insert_descriptions(prefs["search_people"])
+        self.insert_descriptions()
 
         if kfx_json:
             self.find_kfx_images(kfx_json)

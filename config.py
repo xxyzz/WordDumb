@@ -45,9 +45,7 @@ from .utils import (
 )
 
 prefs = JSONConfig("plugins/worddumb")
-prefs.defaults["search_people"] = False
 prefs.defaults["zh_wiki_variant"] = "cn"
-prefs.defaults["add_locator_map"] = False
 prefs.defaults["preferred_formats"] = ["KFX", "AZW3", "AZW", "MOBI", "EPUB"]
 prefs.defaults["use_all_formats"] = False
 prefs.defaults["minimal_x_ray_count"] = 1
@@ -88,21 +86,6 @@ class ConfigWidget(QWidget):
             partial(self.open_choose_lemma_lang_dialog, is_kindle=False)
         )
         vl.addWidget(custom_wiktionary_button)
-
-        self.search_people_box = QCheckBox(
-            _(
-                "Fetch X-Ray people descriptions from Wikipedia or other "
-                "MediaWiki server"
-            )
-        )
-        self.search_people_box.setToolTip(
-            _(
-                "Enable this option for nonfiction books and novels that have character"
-                " pages on Wikipedia or other MediaWiki server"
-            )
-        )
-        self.search_people_box.setChecked(prefs["search_people"])
-        vl.addWidget(self.search_people_box)
 
         form_layout = QFormLayout()
         form_layout.setFieldGrowthPolicy(
@@ -147,13 +130,6 @@ class ConfigWidget(QWidget):
         form_layout.addRow(_("Chinese Wikipedia variant"), self.zh_wiki_box)
         vl.addLayout(form_layout)
 
-        self.locator_map_box = QCheckBox(_("Add locator map to EPUB footnotes"))
-        self.locator_map_box.setToolTip(
-            _("Enable this option if your e-reader supports image in footnotes")
-        )
-        self.locator_map_box.setChecked(prefs["add_locator_map"])
-        vl.addWidget(self.locator_map_box)
-
         self.custom_entity_only = QCheckBox(_("Only use customized X-Ray entities"))
         self.custom_entity_only.setChecked(prefs["custom_entity_only"])
         vl.addWidget(self.custom_entity_only)
@@ -182,9 +158,7 @@ class ConfigWidget(QWidget):
 
     def save_settings(self) -> None:
         prefs["python_path"] = self.python_path.text()
-        prefs["search_people"] = self.search_people_box.isChecked()
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
-        prefs["add_locator_map"] = self.locator_map_box.isChecked()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
         prefs["custom_entity_only"] = self.custom_entity_only.isChecked()
 

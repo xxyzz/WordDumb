@@ -111,16 +111,16 @@ def subprocess_error(job: Any, parent: Any) -> None:
 
 
 def module_not_found_error(error: str, parent: Any) -> None:
-    from .utils import get_plugin_path
-
-    error_dialog(
-        "Welcome to dependency hell",
-        _("Please delete the '{}/worddumb-libs-py*' folder then try again.").format(
-            str(get_plugin_path().parent)
-        ),
-        error,
-        parent,
-    )
+    if "No module named 'calibre_plugins.kfx_input'" in error:
+        message = _("Please install KFX Input plugin.")
+    else:
+        message = (
+            _(
+                "Please delete the dependency packages folder from the plugin settings "
+                "window then try again."
+            ),
+        )
+    error_dialog("Welcome to dependency hell", message, error, parent)
 
 
 def check_network_error(error: str, parent: Any) -> None:

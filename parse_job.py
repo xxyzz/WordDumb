@@ -108,6 +108,7 @@ class ParseJobData:
     mobi_html: bytes | None = b""
     mobi_codec: str = ""
     book_settings: dict[str, str] = field(default_factory=dict)
+    after_preview_x_ray: bool = False
 
 
 def do_job(
@@ -119,6 +120,7 @@ def do_job(
     from .config import prefs
     from .metadata import get_asin_etc
 
+    origin_book_path = data.book_path
     set_en_lang = (
         True
         if data.create_ww and data.book_fmt != "EPUB" and data.book_lang != "en"
@@ -147,6 +149,8 @@ def do_job(
         if extract_path.is_dir():  # last time failed
             shutil.rmtree(extract_path)
             new_epub_path.unlink(missing_ok=True)
+        if data.after_preview_x_ray:
+            new_epub_path.unlink(missing_ok=True)
         data.create_x = data.create_x and not new_epub_path.exists()
         data.create_ww = data.create_ww and not new_epub_path.exists()
         shutil.copy(data.book_path, new_epub_path)
@@ -162,8 +166,9 @@ def do_job(
         data.create_ww = (
             data.create_ww and not get_ll_path(data.asin, data.book_path).exists()
         )
-        data.create_x = (
-            data.create_x and not get_x_ray_path(data.asin, data.book_path).exists()
+        data.create_x = data.create_x and (
+            data.after_preview_x_ray
+            or not get_x_ray_path(data.asin, data.book_path).exists()
         )
         if data.create_ww and (
             not kindle_db_path(data.plugin_path, data.book_lang, prefs).exists()
@@ -188,10 +193,19 @@ def do_job(
     if data.create_x and data.book_settings.get("mediawiki_api", "") == "":
         mediawiki_db_path = get_mediawiki_db_path(data.book_lang, "", data.plugin_path)
         if not mediawiki_db_path.exists():
-            download_wikipedia_titles_db(mediawiki_db_path)
+            download_wikipedia_titles_db(mediawiki_db_path, notifications)
 
     if notifications:
         notifications.put((0, "Creating files"))
+
+    copy_custom_x_pref = prefs["custom_entity_only"]
+    if data.after_preview_x_ray:
+        prefs["custom_entity_only"] = True
+    elif len(load_custom_x_desc(data.book_path)) == 0:
+        prefs["custom_entity_only"] = False
+    restore_job_data = (
+        data.create_x and prefs["preview_x_ray"] and not data.after_preview_x_ray
+    )
 
     # Run plugin code in another Python process
     # macOS: bypass library validation
@@ -221,11 +235,16 @@ def do_job(
             input_str = json.dumps(copy_kfx_json).encode("utf-8")
         elif data.book_fmt != "EPUB":
             input_str = copy_mobi_html
-
+        if restore_job_data:
+            data.mobi_html = copy_mobi_html
+            data.kfx_json = copy_kfx_json
         run_subprocess(args, input_str)
     else:
         create_files(data, prefs, notifications)
 
+    prefs["custom_entity_only"] = copy_custom_x_pref
+    if restore_job_data:
+        data.book_path = origin_book_path
     return data
 
 
@@ -349,7 +368,11 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
                     epub,
                     xhtml_path,
                 )
-        epub.modify_epub()
+        epub.modify_epub(
+            get_custom_x_path(data.book_path)
+            if data.create_x and prefs["preview_x_ray"] and not data.after_preview_x_ray
+            else None
+        )
         return
 
     # Kindle
@@ -415,6 +438,8 @@ def create_files(data: ParseJobData, prefs: Prefs, notif: Any) -> None:
             data.mobi_codec,
             prefs,
         )
+        if prefs["preview_x_ray"] and not data.after_preview_x_ray:
+            x_ray.create_preview_json(get_custom_x_path(data.book_path), x_ray_path)
     if data.create_ww:
         save_db(ll_conn, ll_path)
         lemmas_conn.close()  # type: ignore

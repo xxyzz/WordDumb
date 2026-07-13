@@ -84,11 +84,15 @@ class WordDumb(InterfaceAction):
 
     def open_custom_x_ray_dialog(self) -> None:
         for md_result in get_metadata_of_selected_books(self.gui, False):
-            custom_x_dlg = CustomXRayDialog(
-                md_result.book_paths[0], md_result.mi.get("title"), self.gui
-            )
-            if custom_x_dlg.exec():
-                custom_x_dlg.x_ray_model.save_data()
+            if md_result.support_x_ray:
+                custom_x_dlg = CustomXRayDialog(
+                    md_result.book_lang,
+                    md_result.book_paths[0],
+                    md_result.mi.get("title"),
+                    self.gui,
+                )
+                if custom_x_dlg.exec():
+                    custom_x_dlg.x_ray_model.save_data()
 
 
 def get_metadata_of_selected_books(
@@ -174,7 +178,30 @@ def done(job, gui=None, notif=None):
     if job_failed(job, gui):
         return
 
-    if device_connected(gui, job.result.book_fmt):
+    from .config import prefs
+
+    if (
+        job.result.create_x
+        and prefs["preview_x_ray"]
+        and not job.result.after_preview_x_ray
+    ):
+        custom_x_dlg = CustomXRayDialog(
+            job.result.book_lang, job.result.book_path, job.result.mi.get("title"), gui
+        )
+        if custom_x_dlg.exec():
+            custom_x_dlg.x_ray_model.save_data()
+            job.result.after_preview_x_ray = True
+            new_job = ThreadedJob(
+                job.type,
+                job.description,
+                do_job,
+                (job.result,),
+                {},
+                Dispatcher(partial(done, gui=gui, notif=notif)),
+                killable=False,
+            )
+            gui.job_manager.run_threaded_job(new_job)
+    elif device_connected(gui, job.result.book_fmt):
         SendFile(gui, job.result, notif).send_files(None)
     else:
         gui.status_bar.show_message(notif)

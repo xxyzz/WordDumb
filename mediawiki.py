@@ -114,13 +114,19 @@ class MediaWiki:
                     self.has_tocdata_api = True
 
     def add_cache(self, title: str, intro: str, wikidata_item: str | None) -> None:
-        self.db_conn.execute(
-            """
-            INSERT OR IGNORE INTO pages
-            (title, description, wikidata_item) VALUES(?, ?, ?)
-            """,
-            (title, intro, wikidata_item),
-        )
+        if self.is_wikipedia:
+            self.db_conn.execute(
+                "UPDATE pages SET description = ?, wikidata_item = ? WHERE title = ?",
+                (intro, wikidata_item, title),
+            )
+        else:
+            self.db_conn.execute(
+                """
+                INSERT OR IGNORE INTO pages
+                (title, description, wikidata_item) VALUES(?, ?, ?)
+                """,
+                (title, intro, wikidata_item),
+            )
 
     def has_cache(self, title: str) -> bool:
         if not self.is_wikipedia:
@@ -172,7 +178,12 @@ class MediaWiki:
         # not found this title from MediaWiki
         if not self.is_wikipedia:
             self.db_conn.executemany(
-                "INSERT OR IGNORE INTO pages (title) VALUES(?)", ((t,) for t in titles)
+                "INSERT OR IGNORE INTO pages (title) VALUES(?)",
+                ((title,) for title in titles),
+            )
+        else:
+            self.db_conn.executemany(
+                "DELETE FROM pages WHERE title = ?", ((title,) for title in titles)
             )
 
     def redirect_to_page(self, title: str) -> str:

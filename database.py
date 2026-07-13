@@ -250,6 +250,8 @@ def insert_x_excerpt_image(
 
 def save_db(source: sqlite3.Connection, dest_path: Path) -> None:
     source.commit()
+    if dest_path.is_file():
+        dest_path.unlink()
     dest = sqlite3.connect(dest_path)
     with dest:
         source.backup(dest)

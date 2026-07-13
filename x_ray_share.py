@@ -30,7 +30,7 @@ NER_LABELS = frozenset(
         "PS",  # Korean: https://arxiv.org/pdf/2105.09680.pdf#subsubsection.3.4.1
         "LC",
         "OG",
-        "EVN",  # Swedish: https://core.ac.uk/reader/33724960
+        "EVN",  # Swedish: https://aclanthology.org/2024.latechclfl-1.17.pdf
         "PRS",
         "DERIV_PER",  # Croatian: https://nl.ijs.si/janes/wp-content/uploads/2017/09/SlovenianNER-eng-v1.1.pdf
     ]
@@ -84,7 +84,7 @@ def load_custom_x_desc(book_path: str | Path) -> CustomXDict:
         with custom_path.open(encoding="utf-8") as f:
             return {
                 name: CustomX(desc, source_id, omit)
-                for name, *_, desc, source_id, omit in json.load(f)
+                for name, *_, desc, source_id, omit, _ in json.load(f)
             }
     else:
         return {}

@@ -301,3 +301,23 @@ class X_Ray:
                     ),
                 )
                 self.num_images += 1
+
+    def create_preview_json(self, json_path: Path, db_path: Path) -> None:
+        import json
+        import sqlite3
+
+        with json_path.open("w", encoding="utf-8") as f:
+            json_data = []
+            conn = sqlite3.connect(db_path)
+            for name, entity in sorted(
+                self.entities.items(), key=lambda item: item[1].count, reverse=True
+            ):
+                for desc, source in conn.execute(
+                    "SELECT text, source FROM entity_description WHERE entity = ?",
+                    (entity.id,),
+                ):
+                    json_data.append(
+                        [name, entity.label, "", desc, source, False, entity.quote]
+                    )
+            json.dump(json_data, f, indent=2, ensure_ascii=False)
+            conn.close()

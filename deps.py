@@ -208,9 +208,11 @@ def download_file(
                     download_file(url, download_path, sha256, retry=retry - 1)
 
 
-def download_wikipedia_titles_db(db_path: Path):
+def download_wikipedia_titles_db(db_path: Path, notifications=None):
     import bz2
 
+    if notifications:
+        notifications.put((0, "Downloading Wikipedia titles db"))
     checksum = download_checksum()
     bz2_path = db_path.with_name(db_path.name + ".bz2")
     if not bz2_path.parent.is_dir():

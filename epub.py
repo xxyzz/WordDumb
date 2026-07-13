@@ -268,7 +268,7 @@ class EPUB:
                 del self.entities[entity_name]
                 self.removed_entity_ids.add(entity_data.id)
 
-    def modify_epub(self) -> None:
+    def modify_epub(self, preview_x_path: Path | None) -> None:
         if len(self.entities) > 0:
             if self.mediawiki is not None:
                 self.mediawiki.query(self.entities)
@@ -283,6 +283,8 @@ class EPUB:
             self.create_word_wise_footnotes()
         self.modify_opf()
         self.zip_extract_folder()
+        if preview_x_path is not None:
+            self.create_preview_json(preview_x_path)
         if self.mediawiki is not None:
             self.mediawiki.close()
         if self.wikidata is not None:
@@ -395,20 +397,17 @@ class EPUB:
         <body>
         """
         for entity_name, entity_data in self.entities.items():
-            if entity_data.id in self.removed_entity_ids:
-                continue
-            elif custom_data := self.custom_x_ray.get(entity_name):
+            if custom_data := self.custom_x_ray.get(entity_name):
                 s += (
                     f'<aside id="{entity_data.id}" epub:type="footnote">'
                     f"{create_p_tags(custom_data.desc)}"
                 )
-                if custom_data.source_id is not None and self.mediawiki is not None:
+                if custom_data.source_id is not None:
                     s += "<p>Source: "
-                    s += (
-                        "Wikipedia"
-                        if custom_data.source_id == 1
-                        else self.mediawiki.sitename
-                    )
+                    if custom_data.source_id == 1:
+                        s += "Wikipedia"
+                    elif self.mediawiki is not None:
+                        s += self.mediawiki.sitename
                     s += "</p>"
                 s += "</aside>"
             elif self.mediawiki is not None and (
@@ -635,6 +634,55 @@ class EPUB:
                     )
                 )
         return sense_list
+
+    def create_preview_json(self, json_path: Path) -> None:
+        import json
+
+        with json_path.open("w", encoding="utf-8") as f:
+            json_data = []
+            for entity_name, entity_data in sorted(
+                self.entities.items(), key=lambda item: item[1].count, reverse=True
+            ):
+                if custom_data := self.custom_x_ray.get(entity_name):
+                    json_data.append(
+                        [
+                            entity_name,
+                            entity_data.label,
+                            "",
+                            custom_data.desc,
+                            custom_data.source_id,
+                            False,
+                            entity_data.quote,
+                        ]
+                    )
+                elif self.mediawiki is not None and (
+                    intro_cache := self.mediawiki.get_cache(entity_name)
+                ):
+                    json_data.append(
+                        [
+                            entity_name,
+                            entity_data.label,
+                            "",
+                            intro_cache.intro,
+                            1 if self.mediawiki.is_wikipedia else 2,
+                            False,
+                            entity_data.quote,
+                        ]
+                    )
+                else:
+                    json_data.append(
+                        [
+                            entity_name,
+                            entity_data.label,
+                            "",
+                            entity_data.quote,
+                            None,
+                            False,
+                            entity_data.quote,
+                        ]
+                    )
+
+            json.dump(json_data, f, indent=2, ensure_ascii=False)
 
 
 def spacy_to_wiktionary_pos(pos: str) -> str:

@@ -27,6 +27,7 @@ class Prefs(TypedDict):
     python_path: str
     show_change_kindle_ww_lang_warning: bool
     custom_entity_only: bool
+    preview_x_ray: bool
 
 
 def load_plugin_json(plugin_path: Path, filepath: str) -> Any:

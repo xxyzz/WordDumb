@@ -55,6 +55,7 @@ prefs.defaults["use_wiktionary_for_kindle"] = False
 prefs.defaults["python_path"] = ""
 prefs.defaults["show_change_kindle_ww_lang_warning"] = True
 prefs.defaults["custom_entity_only"] = False
+prefs.defaults["preview_x_ray"] = False
 for code in load_languages_data(get_plugin_path(), False).keys():
     prefs.defaults[f"{code}_wiktionary_difficulty_limit"] = 5
 
@@ -134,6 +135,10 @@ class ConfigWidget(QWidget):
         self.custom_entity_only.setChecked(prefs["custom_entity_only"])
         vl.addWidget(self.custom_entity_only)
 
+        self.preview_x_ray = QCheckBox(_("Preview X-Ray entities"))
+        self.preview_x_ray.setChecked(prefs["preview_x_ray"])
+        vl.addWidget(self.preview_x_ray)
+
         delete_file_button = QPushButton(_("Delete downloaded files"))
         delete_file_button.clicked.connect(self.open_delete_files_dialog)
         vl.addWidget(delete_file_button)
@@ -161,6 +166,7 @@ class ConfigWidget(QWidget):
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
         prefs["custom_entity_only"] = self.custom_entity_only.isChecked()
+        prefs["preview_x_ray"] = self.preview_x_ray.isChecked()
 
     def open_format_order_dialog(self):
         format_order_dialog = FormatOrderDialog(self)

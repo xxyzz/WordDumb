@@ -206,3 +206,20 @@ def download_file(
                     raise Exception("DownloadFailed")
                 else:
                     download_file(url, download_path, sha256, retry=retry - 1)
+
+
+def download_wikipedia_titles_db(db_path: Path):
+    import bz2
+
+    checksum = download_checksum()
+    bz2_path = db_path.with_name(db_path.name + ".bz2")
+    if not bz2_path.parent.is_dir():
+        bz2_path.parent.mkdir()
+    download_file(
+        f"{PROFICIENCY_RELEASE_URL}/{bz2_path.name}",
+        bz2_path,
+        checksum.get(bz2_path.name, ""),
+    )
+    with bz2.open(bz2_path, "rb") as in_f, db_path.open("wb") as out_f:
+        shutil.copyfileobj(in_f, out_f)
+    bz2_path.unlink()

@@ -20,7 +20,12 @@ try:
         insert_lemma,
         save_db,
     )
-    from .deps import download_word_wise_file, install_deps, which_python
+    from .deps import (
+        download_wikipedia_titles_db,
+        download_word_wise_file,
+        install_deps,
+        which_python,
+    )
     from .dump_lemmas import save_spacy_docs, spacy_doc_path
     from .epub import EPUB, spacy_to_wiktionary_pos
     from .interval import Interval, IntervalTree
@@ -30,6 +35,7 @@ try:
         CJK_LANGS,
         Prefs,
         dump_prefs,
+        get_mediawiki_db_path,
         get_plugin_path,
         get_spacy_model_version,
         get_user_agent,
@@ -178,6 +184,11 @@ def do_job(
         # parse MediaWiki page and Wikipedia section requires lxml
         install_deps("lxml", notifications)
     install_deps(data.spacy_model, notifications)
+
+    if data.create_x and data.book_settings.get("mediawiki_api", "") == "":
+        mediawiki_db_path = get_mediawiki_db_path(data.book_lang, "", data.plugin_path)
+        if not mediawiki_db_path.exists():
+            download_wikipedia_titles_db(mediawiki_db_path)
 
     if notifications:
         notifications.put((0, "Creating files"))

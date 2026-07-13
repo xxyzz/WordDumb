@@ -8,10 +8,10 @@ from typing import TypedDict
 from urllib.parse import unquote
 
 try:
-    from .utils import PROFICIENCY_MAJOR_VERSION
+    from .utils import get_mediawiki_db_path
     from .x_ray_share import FUZZ_THRESHOLD, XRayEntity
 except ImportError:
-    from utils import PROFICIENCY_MAJOR_VERSION
+    from utils import get_mediawiki_db_path
     from x_ray_share import FUZZ_THRESHOLD, XRayEntity
 
 # https://www.mediawiki.org/wiki/API:Get_the_contents_of_a_page
@@ -39,36 +39,32 @@ class MediaWiki:
         self.lang = lang
         self.is_wikipedia = api_url == ""
         self.api_url = (
-            f"https://{lang}.wikipedia.org/w/api.php" if self.is_wikipedia else api_url
+            f"https://{lang}.wikipedia.org/w/api.php" if api_url == "" else api_url
         )
-        self.db_conn = self.init_db(plugin_path)
+        self.db_conn = self.init_db(get_mediawiki_db_path(lang, api_url, plugin_path))
         self.session = self.init_requests_session(useragent, lang_variant)
         self.sitename = "Wikipedia" if self.is_wikipedia else ""
         self.has_extracts_api = True if self.is_wikipedia else False
+        self.has_tocdata_api = True if self.is_wikipedia else False
         if not self.is_wikipedia:
             self.get_api_info()
 
-    def init_db(self, plugin_path: Path) -> sqlite3.Connection:
-        domain = (
-            self.api_url.removeprefix("https://")
-            .removeprefix("http://")
-            .split("/", 1)[0]
-        )
-        db_path = plugin_path.parent.joinpath(f"worddumb-mediawiki/{domain}.db")
+    def init_db(self, db_path: Path) -> sqlite3.Connection:
         if not db_path.parent.exists():
             db_path.parent.mkdir()
-
+        db_exists = db_path.exists()
         db_conn = sqlite3.connect(db_path)
-        db_conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS pages (
-              title TEXT PRIMARY KEY COLLATE NOCASE,
-              description TEXT,
-              wikidata_item TEXT,
-              redirect_to TEXT
+        if not db_exists:
+            db_conn.execute(
+                """
+                CREATE TABLE pages (
+                title TEXT PRIMARY KEY COLLATE NOCASE,
+                description TEXT,
+                wikidata_item TEXT,
+                redirect_to TEXT,
+                redirect_fragment TEXT)
+                """
             )
-            """
-        )
         return db_conn
 
     def init_requests_session(self, useragent: str, lang_variant: str):
@@ -104,6 +100,18 @@ class MediaWiki:
             for module in data.get("paraminfo", {}).get("modules", []):
                 if module.get("name", "") == "extracts":
                     self.has_extracts_api = True
+        result = self.session.get(
+            self.api_url, params={"action": "paraminfo", "modules": "parse"}
+        )
+        if result.ok:
+            data = result.json()
+            for param in (
+                data.get("paraminfo", {}).get("modules", []).get("parameters", [])
+            ):
+                if param.get("name", "") == "prop" and "tocdata" in param.get(
+                    "type", ""
+                ):
+                    self.has_tocdata_api = True
 
     def add_cache(self, title: str, intro: str, wikidata_item: str | None) -> None:
         self.db_conn.execute(
@@ -115,21 +123,35 @@ class MediaWiki:
         )
 
     def has_cache(self, title: str) -> bool:
-        for _ in self.db_conn.execute(
-            "SELECT title FROM pages WHERE title = ? LIMIT 1", (title,)
-        ):
-            return True
+        if not self.is_wikipedia:
+            for _ in self.db_conn.execute(
+                "SELECT title FROM pages WHERE title = ?", (title,)
+            ):
+                return True
+        else:
+            return self.get_cache(title) is not None
         return False
+
+    def get_redirect_section(self, title: str) -> tuple[str, str] | None:
+        if self.is_wikipedia:
+            for redirect_to, redirect_fragment in self.db_conn.execute(
+                "SELECT redirect_to, redirect_fragment FROM pages WHERE title = ?",
+                (title,),
+            ):
+                if redirect_fragment is not None:
+                    return redirect_to, redirect_fragment
+        return None
 
     def get_cache(self, title: str) -> MediaWikiCache | None:
         for desc, wikidata_item in self.db_conn.execute(
             """
             SELECT description, wikidata_item
-            FROM pages WHERE title = ?
+            FROM pages WHERE title = ? AND (
+              redirect_to IS NULL OR redirect_fragment IS NOT NULL)
             UNION ALL
             SELECT a.description, a.wikidata_item
             FROM pages a JOIN pages b ON a.title = b.redirect_to
-            WHERE b.title = ?
+            WHERE b.title = ? AND b.redirect_fragment IS NULL
             LIMIT 1
             """,
             (title, title),
@@ -140,20 +162,25 @@ class MediaWiki:
         return None
 
     def add_redirect(self, source_title: str, dest_title: str) -> None:
-        self.db_conn.execute(
-            "INSERT OR IGNORE INTO pages (title, redirect_to) VALUES(?, ?)",
-            (source_title, dest_title),
-        )
+        if not self.is_wikipedia:
+            self.db_conn.execute(
+                "INSERT OR IGNORE INTO pages (title, redirect_to) VALUES(?, ?)",
+                (source_title, dest_title),
+            )
 
     def add_no_desc_titles(self, titles: set[str]) -> None:
         # not found this title from MediaWiki
-        self.db_conn.executemany(
-            "INSERT OR IGNORE INTO pages (title) VALUES(?)", ((t,) for t in titles)
-        )
+        if not self.is_wikipedia:
+            self.db_conn.executemany(
+                "INSERT OR IGNORE INTO pages (title) VALUES(?)", ((t,) for t in titles)
+            )
 
     def redirect_to_page(self, title: str) -> str:
         for (redirect_to,) in self.db_conn.execute(
-            "SELECT redirect_to FROM pages WHERE title = ?", (title,)
+            """
+            SELECT redirect_to FROM pages WHERE title = ? AND redirect_fragment IS NULL
+            """,
+            (title,),
         ):
             return redirect_to
         return ""
@@ -227,15 +254,17 @@ class MediaWiki:
                 self.api_url,
                 params={
                     "action": "parse",
-                    "prop": "sections",
+                    "prop": "tocdata" if self.has_tocdata_api else "sections",
                     "page": page,
                 },
             )
             if not r.ok:
                 return
             result = r.json()
-            for section in result.get("parse", {}).get("sections", []):
-                if section["line"] in section_to_titles:
+            for section in result.get(
+                "tocdata" if self.has_tocdata_api else "sections", {}
+            ).get("sections", []):
+                if section["anchor"] in section_to_titles:
                     r = self.session.get(
                         self.api_url,
                         params={
@@ -260,12 +289,12 @@ class MediaWiki:
                     if not text:
                         continue
                     text = text.strip()
-                    redirected_from = section_to_titles[section["line"]]
+                    redirected_from = section_to_titles[section["anchor"]]
                     self.add_cache(redirected_from, text, None)
                     if redirected_from in titles:
                         titles.remove(redirected_from)
                     for source_title in converts.get(redirected_from, []):
-                        self.add_redirect(source_title, page)
+                        self.add_redirect(source_title, redirected_from)
                         if source_title in titles:
                             titles.remove(source_title)
 
@@ -343,7 +372,12 @@ class MediaWiki:
                 self.query_extracts_api(pending_entities)
                 pending_entities.clear()
             elif not self.has_cache(entity):
-                if self.has_extracts_api:
+                if redirect_data := self.get_redirect_section(entity):
+                    redirect_to, redirect_fragment = redirect_data
+                    self.get_section_text(
+                        {redirect_to: {redirect_fragment: entity}}, {}, set()
+                    )
+                elif self.has_extracts_api:
                     pending_entities.add(entity)
                 else:
                     self.query_parse_api(entity)

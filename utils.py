@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 CJK_LANGS = ["zh", "ja", "ko"]
-PROFICIENCY_VERSION = "1.1.0"
+PROFICIENCY_VERSION = "1.2.0"
 PROFICIENCY_RELEASE_URL = (
     f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}"
 )
@@ -186,3 +186,11 @@ def get_spacy_model_version(
 
 def get_book_settings_path(book_path: Path) -> Path:
     return book_path.parent / "worddumb_settings.json"
+
+
+def get_mediawiki_db_path(lang: str, api_url: str, plugin_path: Path) -> Path:
+    api_url = f"https://{lang}.wikipedia.org/w/api.php" if api_url == "" else api_url
+    domain = api_url.removeprefix("https://").removeprefix("http://").split("/", 1)[0]
+    return plugin_path.parent.joinpath(
+        f"worddumb-mediawiki/{domain}_v{PROFICIENCY_MAJOR_VERSION}.db"
+    )

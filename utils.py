@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 CJK_LANGS = ["zh", "ja", "ko"]
-PROFICIENCY_VERSION = "1.2.0"
+PROFICIENCY_VERSION = "1.2.1"
 PROFICIENCY_RELEASE_URL = (
     f"https://github.com/xxyzz/Proficiency/releases/download/v{PROFICIENCY_VERSION}"
 )

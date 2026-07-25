@@ -132,7 +132,10 @@
     "spacy": ""
   },
   "hi": {
-    "gloss_source": "",
+    "gloss_source": "kaikki",
+    "lemma_languages": [
+      "en"
+    ],
     "name": "Hindi",
     "spacy": ""
   },

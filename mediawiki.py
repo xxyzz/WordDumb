@@ -93,25 +93,22 @@ class MediaWiki:
 
         # https://www.mediawiki.org/wiki/API:Parameter_information
         result = self.session.get(
-            self.api_url, params={"action": "paraminfo", "modules": "query+extracts"}
+            self.api_url,
+            params={"action": "paraminfo", "modules": "query+extracts|parse"},
         )
         if result.ok:
             data = result.json()
             for module in data.get("paraminfo", {}).get("modules", []):
-                if module.get("name", "") == "extracts":
+                module_name = module.get("name", "")
+                if module_name == "extracts":
                     self.has_extracts_api = True
-        result = self.session.get(
-            self.api_url, params={"action": "paraminfo", "modules": "parse"}
-        )
-        if result.ok:
-            data = result.json()
-            for param in (
-                data.get("paraminfo", {}).get("modules", []).get("parameters", [])
-            ):
-                if param.get("name", "") == "prop" and "tocdata" in param.get(
-                    "type", ""
-                ):
-                    self.has_tocdata_api = True
+                elif module_name == "parse":
+                    for param in module.get("parameters", []):
+                        if param.get("name", "") == "prop" and "tocdata" in param.get(
+                            "type", []
+                        ):
+                            self.has_tocdata_api = True
+                            break
 
     def add_cache(self, title: str, intro: str, wikidata_item: str | None) -> None:
         if self.is_wikipedia:

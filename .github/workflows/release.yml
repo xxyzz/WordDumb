@@ -11,24 +11,29 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TELEMETRY: false
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
 
-      - name: Install calibre
+      - id: get-run-id
         run: |
-          sudo apt update
-          sudo apt install libegl1 libopengl0 libxcb-cursor0
-          sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
+          echo "run_id=$(gh run list \
+            --workflow tests.yml \
+            --commit ${{ github.sha }} \
+            --status success \
+            --json databaseId \
+            --jq '.[0].databaseId')" >> "$GITHUB_OUTPUT"
 
-      - name: Compile translation file
-        run: calibre-debug -c "from calibre.translations.msgfmt import main; main()" translations/*.po
+      - uses: actions/download-artifact@v8
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.get-run-id.outputs.run_id }}
+          skip-decompress: true
 
-      - name: Build plugin
-        run: zip -r worddumb-${{ github.ref_name }}.zip * -x@exclude.lst
+      - run: mv worddumb-${{ github.sha }}.zip worddumb-${{ github.ref_name }}.zip
 
       - name: Create relase
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TELEMETRY: false
         run: gh release create ${{ github.ref_name }} worddumb-${{ github.ref_name }}.zip

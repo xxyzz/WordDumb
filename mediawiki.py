@@ -27,6 +27,22 @@ class MediaWikiCache:
     wikidata_item_id: str | None
 
 
+def init_requests_session(useragent: str):
+    from requests import Session
+    from requests.adapters import HTTPAdapter
+    from urllib3.util import Retry
+
+    s = Session()
+    s.mount(
+        "https://",
+        HTTPAdapter(
+            max_retries=Retry(total=5, backoff_factor=0.1, status_forcelist=[429])
+        ),
+    )
+    s.headers.update({"user-agent": useragent})
+    return s
+
+
 class MediaWiki:
     def __init__(
         self,
@@ -42,7 +58,12 @@ class MediaWiki:
             f"https://{lang}.wikipedia.org/w/api.php" if api_url == "" else api_url
         )
         self.db_conn = self.init_db(get_mediawiki_db_path(lang, api_url, plugin_path))
-        self.session = self.init_requests_session(useragent, lang_variant)
+        self.session = init_requests_session(useragent)
+        self.session.params = {
+            "format": "json",
+            "formatversion": 2,
+            "variant": lang_variant,
+        }
         self.sitename = "Wikipedia" if self.is_wikipedia else ""
         self.has_extracts_api = True if self.is_wikipedia else False
         self.has_tocdata_api = True if self.is_wikipedia else False
@@ -66,14 +87,6 @@ class MediaWiki:
                 """
             )
         return db_conn
-
-    def init_requests_session(self, useragent: str, lang_variant: str):
-        import requests
-
-        session = requests.Session()
-        session.headers.update({"user-agent": useragent})
-        session.params = {"format": "json", "formatversion": 2, "variant": lang_variant}
-        return session
 
     def close(self):
         self.session.close()
@@ -395,10 +408,8 @@ class MediaWiki:
 
 class Wikimedia_Commons:
     def __init__(self, plugin_path: Path, useragent: str) -> None:
-        import requests
 
-        self.session = requests.Session()
-        self.session.headers.update({"user-agent": useragent})
+        self.session = init_requests_session(useragent)
         self.cache_folder = plugin_path.parent.joinpath("worddumb-wikimedia")
 
     def get_image(self, filename: str) -> Path | None:
@@ -428,11 +439,8 @@ class WikidataCache(TypedDict):
 
 class Wikidata:
     def __init__(self, plugin_path: Path, useragent: str) -> None:
-        import requests
 
-        self.session = requests.Session()
-        self.session.headers.update({"user-agent": useragent})
-
+        self.session = init_requests_session(useragent)
         cache_db_path = plugin_path.parent.joinpath("worddumb-wikimedia/wikidata.db")
         if not cache_db_path.parent.is_dir():
             cache_db_path.parent.mkdir()

@@ -64,6 +64,10 @@ ignore_missing_imports = true
 module = "numpy"
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "urllib3.*"
+ignore_missing_imports = true
+
 [tool.typos]
 type.json.check-file = false
 type.po.check-file = false

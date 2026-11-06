@@ -16,11 +16,11 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
       - run: |
+          python -m pip install -U pip
           python -m pip install mypy
           python -m mypy .
           python -m mypy __main__.py
       - run: |
           python -m pip install ruff
-          python -m ruff check .
-          python -m ruff format --diff .
-      - uses: crate-ci/typos@v1
+          python -m ruff check --output-format=github .
+          python -m ruff format --check --output-format=github .

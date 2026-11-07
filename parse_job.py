@@ -3,11 +3,12 @@ import random
 import re
 import shutil
 import sqlite3
+from collections.abc import Iterator
 from dataclasses import asdict, dataclass, field
 from html import escape, unescape
 from pathlib import Path
 from sqlite3 import Connection
-from typing import Any, Iterator
+from typing import Any
 
 try:
     from calibre.constants import isfrozen
@@ -121,11 +122,7 @@ def do_job(
     from .metadata import get_asin_etc
 
     origin_book_path = data.book_path
-    set_en_lang = (
-        True
-        if data.create_ww and data.book_fmt != "EPUB" and data.book_lang != "en"
-        else False
-    )
+    set_en_lang = data.create_ww and data.book_fmt != "EPUB" and data.book_lang != "en"
     if set_en_lang:
         en_book_path = Path(data.book_path)
         en_book_path = en_book_path.with_stem(en_book_path.stem + "_en")
@@ -835,7 +832,7 @@ def create_spacy_matcher(
     from spacy.matcher import PhraseMatcher
     from spacy.tokens import DocBin
 
-    disabled_pipes = list(set(["ner", "parser", "senter"]) & set(nlp.pipe_names))
+    disabled_pipes = list({"ner", "parser", "senter"} & set(nlp.pipe_names))
     pkg_versions = load_plugin_json(plugin_path, "data/deps.json")
     model_version = get_spacy_model_version(model, pkg_versions)
     lemma_matcher = PhraseMatcher(nlp.vocab, attr="LOWER")

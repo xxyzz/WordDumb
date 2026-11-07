@@ -77,30 +77,36 @@ class X_Ray:
 
     def insert_descriptions(self) -> None:
         for entity_name, entity_data in self.entities.items():
-            if custom_data := self.custom_x_ray.get(entity_name):
-                if custom_data.desc is not None and len(custom_data.desc) > 0:
-                    insert_x_entity_description(
-                        self.conn,
-                        (
-                            custom_data.desc,
-                            entity_name,
-                            custom_data.source_id,
-                            entity_data.id,
-                        ),
-                    )
-                    continue
+            if (
+                (custom_data := self.custom_x_ray.get(entity_name))
+                and custom_data.desc is not None
+                and len(custom_data.desc) > 0
+            ):
+                insert_x_entity_description(
+                    self.conn,
+                    (
+                        custom_data.desc,
+                        entity_name,
+                        custom_data.source_id,
+                        entity_data.id,
+                    ),
+                )
+                continue
 
             if self.mediawiki is not None and (
                 intro_cache := self.mediawiki.get_cache(entity_name)
             ):
                 summary = intro_cache.intro
-                if self.wikidata is not None and (
-                    wikidata_cache := self.wikidata.get_cache(
-                        intro_cache.wikidata_item_id
+                if (
+                    self.wikidata is not None
+                    and (
+                        wikidata_cache := self.wikidata.get_cache(
+                            intro_cache.wikidata_item_id
+                        )
                     )
+                    and (inception := wikidata_cache.get("inception"))
                 ):
-                    if inception := wikidata_cache.get("inception"):
-                        summary += "\n" + inception_text(inception)
+                    summary += "\n" + inception_text(inception)
                 insert_x_entity_description(
                     self.conn,
                     (

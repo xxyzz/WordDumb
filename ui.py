@@ -1,7 +1,8 @@
 import json
+from collections.abc import Iterator
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterator
+from typing import TYPE_CHECKING, Any
 
 from calibre.gui2 import Dispatcher
 from calibre.gui2.actions import InterfaceAction

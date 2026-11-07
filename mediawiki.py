@@ -1,7 +1,7 @@
 import sqlite3
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
 from typing import TypedDict
@@ -65,8 +65,8 @@ class MediaWiki:
             "variant": lang_variant,
         }
         self.sitename = "Wikipedia" if self.is_wikipedia else ""
-        self.has_extracts_api = True if self.is_wikipedia else False
-        self.has_tocdata_api = True if self.is_wikipedia else False
+        self.has_extracts_api = self.is_wikipedia
+        self.has_tocdata_api = self.is_wikipedia
         if not self.is_wikipedia:
             self.get_api_info()
 
@@ -248,16 +248,13 @@ class MediaWiki:
                 self.query_parse_api(title)
             else:
                 self.add_cache(title, summary_lines[0], wikibase_item)
-            if title in titles:
-                titles.remove(title)
+            titles.discard(title)
             for source_title in converts.get(title, []):
                 self.add_redirect(source_title, title)
-                if source_title in titles:
-                    titles.remove(source_title)
+                titles.discard(source_title)
                 for another_source_title in converts.get(source_title, []):
                     self.add_redirect(another_source_title, title)
-                    if another_source_title in titles:  # normalize then redirect
-                        titles.remove(another_source_title)
+                    titles.discard(another_source_title)  # normalize then redirect
 
         self.get_section_text(redirect_to_sections, converts, titles)
         self.add_no_desc_titles(titles)
@@ -312,12 +309,10 @@ class MediaWiki:
                     text = text.strip()
                     redirected_from = section_to_titles[section["anchor"]]
                     self.add_cache(redirected_from, text, None)
-                    if redirected_from in titles:
-                        titles.remove(redirected_from)
+                    titles.discard(redirected_from)
                     for source_title in converts.get(redirected_from, []):
                         self.add_redirect(source_title, redirected_from)
-                        if source_title in titles:
-                            titles.remove(source_title)
+                        titles.discard(source_title)
 
     def query_parse_api(
         self, page: str, from_disambiguation_title: str | None = None
@@ -388,7 +383,7 @@ class MediaWiki:
 
     def query(self, entities: dict[str, XRayEntity]) -> None:
         pending_entities: set[str] = set()
-        for entity, entity_data in entities.items():
+        for entity in entities:
             if self.has_extracts_api and len(pending_entities) == MEDIAWIKI_API_EXLIMIT:
                 self.query_extracts_api(pending_entities)
                 pending_entities.clear()
@@ -480,7 +475,7 @@ class Wikidata:
         return None
 
     def query(self, items: list[str]) -> None:
-        items_str = " ".join(map(lambda x: f"wd:{x}", items))
+        items_str = " ".join(f"wd:{x}" for x in items)
         query = f"""
         SELECT ?item (SAMPLE(?maps) AS ?map) (MAX(?inceptions) AS ?inception) WHERE {{
           VALUES ?item {{ {items_str} }}
@@ -522,7 +517,7 @@ def inception_text(inception_str: str) -> str:
         return f"Inception: {bc} BC({years} years ago)"
     else:
         inception = datetime.fromisoformat(inception_str)
-        years = (datetime.now(timezone.utc) - inception).days // 365
+        years = (datetime.now(UTC) - inception).days // 365
         return (
             f"Inception: {inception.strftime('%d %B %Y').lstrip('0')}"
             f"({years} years ago)"

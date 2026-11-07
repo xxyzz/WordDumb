@@ -174,9 +174,9 @@ def copy_klld_to_device(
         upload_file_to_mtp(device_manager, local_klld_path, device_klld_path)
     else:
         copy = False
-        if not device_klld_path.exists():
-            copy = True
-        elif not is_same_klld(local_klld_path, device_klld_path):
+        if not device_klld_path.exists() or not is_same_klld(
+            local_klld_path, device_klld_path
+        ):
             copy = True
 
         if copy:

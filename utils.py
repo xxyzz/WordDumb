@@ -31,9 +31,11 @@ class Prefs(TypedDict):
 
 
 def load_plugin_json(plugin_path: Path, filepath: str) -> Any:
-    with zipfile.ZipFile(plugin_path) as zf:
-        with zipfile.Path(zf, filepath).open(encoding="utf-8") as f:
-            return json.load(f)
+    with (
+        zipfile.ZipFile(plugin_path) as zf,
+        zipfile.Path(zf, filepath).open(encoding="utf-8") as f,
+    ):
+        return json.load(f)
 
 
 def run_subprocess(
@@ -113,7 +115,7 @@ def kindle_db_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -> Path:
 def wiktionary_db_path(plugin_path: Path, lemma_lang: str, prefs: Prefs) -> Path:
     path = (
         custom_lemmas_folder(plugin_path)
-        / f"wiktionary_{lemma_lang}_{prefs['gloss_lang']}_v{PROFICIENCY_MAJOR_VERSION}.db"  # noqa:E501
+        / f"wiktionary_{lemma_lang}_{prefs['gloss_lang']}_v{PROFICIENCY_MAJOR_VERSION}.db"
     )
     return path
 

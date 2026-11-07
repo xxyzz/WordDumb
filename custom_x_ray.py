@@ -115,7 +115,7 @@ class CustomXRayDialog(QDialog):
             ),
         )
         self.x_ray_table.setItemDelegateForColumn(
-            4, ComboBoxDelegate(self.x_ray_table, DESC_SOURCES)
+            4, ComboBoxDelegate(self.x_ray_table, DESC_SOURCES, {})
         )
         self.x_ray_table.horizontalHeader().setMaximumSectionSize(400)
         self.x_ray_table.setSizeAdjustPolicy(
@@ -229,9 +229,12 @@ class XRayTableModel(QAbstractTableModel):
         row = index.row()
         column = index.column()
         value = self.x_ray_data[row][column]
-        if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
-            return value
-        elif role == Qt.ItemDataRole.ToolTipRole and column == 3:
+        if (
+            role == Qt.ItemDataRole.DisplayRole
+            or role == Qt.ItemDataRole.EditRole
+            or role == Qt.ItemDataRole.ToolTipRole
+            and column == 3
+        ):
             return value
         elif role == Qt.ItemDataRole.CheckStateRole and column == 5:
             new_value = Qt.CheckState.Checked if value else Qt.CheckState.Unchecked

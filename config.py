@@ -56,7 +56,7 @@ prefs.defaults["python_path"] = ""
 prefs.defaults["show_change_kindle_ww_lang_warning"] = True
 prefs.defaults["custom_entity_only"] = False
 prefs.defaults["preview_x_ray"] = False
-for code in load_languages_data(get_plugin_path(), False).keys():
+for code in load_languages_data(get_plugin_path(), False):
     prefs.defaults[f"{code}_wiktionary_difficulty_limit"] = 5
 
 load_translations()  # type: ignore

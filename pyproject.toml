@@ -2,14 +2,6 @@
 builtins = ["_", "load_translations", "get_icons"]
 exclude = ["docs"]
 
-[tool.ruff.lint]
-select = [
-    "E",  # pycodestyle error
-    "F",  # Pyflakes
-    "I",  # isort
-    "W",  # pycodestyle warning
-]
-
 [tool.mypy]
 exclude = ["tests", "__main__", "docs"]
 explicit_package_bases = true
@@ -72,3 +64,7 @@ ignore_missing_imports = true
 type.json.check-file = false
 type.po.check-file = false
 default.extend-words = {"BA" = "BA", "opf" = "opf", "EVN" = "EVN"}
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["N999"]
+"__main__.py" = ["N999"]

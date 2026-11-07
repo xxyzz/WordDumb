@@ -211,6 +211,10 @@ def get_mobi_revision(f: BinaryIO) -> str:
     return f.read(4).hex()  # Unique-ID MOBI header
 
 
+class JointMOBIException(Exception):
+    pass
+
+
 def extract_mobi(book_path: str) -> bytes:
     # use code from calibre.ebooks.mobi.reader.mobi8:Mobi8Reader.__call__
     # and calibre.ebook.conversion.plugins.mobi_input:MOBIInput.convert
@@ -221,7 +225,7 @@ def extract_mobi(book_path: str) -> bytes:
     with open(book_path, "rb") as f:
         mr = MobiReader(f)
         if mr.kf8_type == "joint":
-            raise Exception("JointMOBI")
+            raise JointMOBIException("JointMOBI")
         mr.check_for_drm()
         mr.extract_text()
         html = mr.mobi_html

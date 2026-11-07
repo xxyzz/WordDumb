@@ -22,6 +22,7 @@ class TestDumbCode(unittest.TestCase):
         prefs["use_wiktionary_for_kindle"] = False
         prefs["python_path"] = which("python3")
         prefs["custom_entity_only"] = False
+        logger = logging.getLogger(__name__)
 
         lib_db = db("~/Calibre Library").new_api
         for book_id in lib_db.all_book_ids():
@@ -45,8 +46,8 @@ class TestDumbCode(unittest.TestCase):
                 if fmt == "EPUB":
                     cls.epub_path = data.book_path
             except subprocess.CalledProcessError as e:
-                logging.error(e.stderr.decode("utf-8", "ignore"))
-                raise e
+                logger.error(e.stderr.decode("utf-8", "ignore"))
+                raise
 
             if fmt != "EPUB":
                 kll_path = cls.get_db_path(cls, ".kll")

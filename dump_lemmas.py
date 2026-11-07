@@ -94,10 +94,8 @@ def save_spacy_docs(
     AND enabled = 1 AND difficulty <= :difficulty
     """
     for doc in nlp.tokenizer.pipe(
-        map(
-            lambda x: x[0].lower(),
-            lemmas_conn.execute(query_sql, {"difficulty": difficulty_limit}),
-        )
+        x[0].lower()
+        for x in lemmas_conn.execute(query_sql, {"difficulty": difficulty_limit})
     ):
         lemmas_doc_bin.add(doc)
     lemmas_doc_bin.to_disk(

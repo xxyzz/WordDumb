@@ -4,11 +4,11 @@ import shutil
 import sqlite3
 import zipfile
 from collections import defaultdict
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from functools import partial
 from html import escape, unescape
 from pathlib import Path
-from typing import Iterator
 from urllib.parse import unquote
 
 try:
@@ -156,7 +156,7 @@ class EPUB:
                     r"\xad|&shy;|&#xad;|&#173;|\ufeff|\u2060|&NoBreak;",
                     "",
                     f.read(),
-                    flags=re.I,
+                    flags=re.IGNORECASE,
                 )
             with xhtml_path.open("w", encoding="utf-8") as f:
                 f.write(xhtml_text)

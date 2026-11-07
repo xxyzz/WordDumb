@@ -9,7 +9,7 @@ class WordDumbDumb(InterfaceActionBase):
         "Create Kindle Word Wise and X-Ray file and EPUB footnotes "
         "then send to e-reader."
     )
-    supported_platforms = ["linux", "osx", "windows"]
+    supported_platforms = ("linux", "osx", "windows")
     author = "xxyzz"
     version = VERSION
     minimum_calibre_version = (7, 1, 0)

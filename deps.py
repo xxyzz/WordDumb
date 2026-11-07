@@ -23,6 +23,14 @@ PY_PATH = ""
 LIBS_PATH = Path()
 
 
+class PythonVersionException(Exception):
+    pass
+
+
+class DownloadException(Exception):
+    pass
+
+
 def install_deps(pkg: str, notif: Any) -> None:
     global PY_PATH, LIBS_PATH
     plugin_path = get_plugin_path()
@@ -65,7 +73,7 @@ def which_python() -> tuple[str, str]:
         py = mac_bin_path("python3")
 
     if shutil.which(py) is None:
-        raise Exception("PythonNotFound")
+        raise PythonVersionException("PythonNotFound")
 
     if isfrozen or prefs["python_path"] != "":
         r = run_subprocess(
@@ -82,9 +90,9 @@ def which_python() -> tuple[str, str]:
     calibre_v_tuple = tuple(map(int, platform.python_version_tuple()))
     if py_v_tuple < calibre_v_tuple:
         # https://github.com/kovidgoyal/calibre/blob/master/bypy/sources.json
-        raise Exception("OutdatedPython")
+        raise PythonVersionException("OutdatedPython")
     elif py_v_tuple > (3, 15):  # spaCy
-        raise Exception("UnsupportedPython")
+        raise PythonVersionException("UnsupportedPython")
     return py, py_v
 
 
@@ -143,8 +151,7 @@ def download_word_wise_file(
         notifications.put(
             (
                 0,
-                f"Downloading {lemma_lang}-{gloss_lang} "
-                f"{'Kindle' if is_kindle else 'Wiktionary'} file",
+                f"Downloading {lemma_lang}-{gloss_lang} {'Kindle' if is_kindle else 'Wiktionary'} file",
             )
         )
     plugin_path = get_plugin_path()
@@ -194,7 +201,7 @@ def download_file(
     if saved_bytes < content_length + range:
         if retry == 1:
             download_path.unlink()
-            raise Exception("DownloadFailed")
+            raise DownloadException("DownloadFailed")
         else:
             download_file(url, download_path, sha256, saved_bytes, retry - 1)
     else:
@@ -202,7 +209,7 @@ def download_file(
             if hashlib.file_digest(f, "sha256").hexdigest() != sha256:
                 download_path.unlink()
                 if retry == 1:
-                    raise Exception("DownloadFailed")
+                    raise DownloadException("DownloadFailed")
                 else:
                     download_file(url, download_path, sha256, retry=retry - 1)
 

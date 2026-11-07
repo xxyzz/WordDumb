@@ -34,8 +34,7 @@ class IntervalTree:
         else:
             node.right = self.insert(node.right, interval)
 
-        if node.max_high < interval.high:
-            node.max_high = interval.high
+        node.max_high = max(node.max_high, interval.high)
 
         return node
 

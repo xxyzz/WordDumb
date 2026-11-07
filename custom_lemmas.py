@@ -252,7 +252,7 @@ class CustomLemmasDialog(QDialog):
         if not import_options_dialog.exec():
             return
 
-        file_path, ignored_ = QFileDialog.getOpenFileName(
+        file_path, _ignored = QFileDialog.getOpenFileName(
             self,
             _("Select import file"),
             str(Path.home()),
@@ -274,7 +274,7 @@ class CustomLemmasDialog(QDialog):
         if not option_dialog.exec():
             return
 
-        export_path, ignored_ = QFileDialog.getSaveFileName(
+        export_path, _ignored = QFileDialog.getSaveFileName(
             self, _("Set export file path"), str(Path.home())
         )
         if not export_path:
@@ -382,7 +382,7 @@ class LemmasTableModel(QSqlTableModel):
 
 
 class ComboBoxDelegate(QStyledItemDelegate):
-    def __init__(self, parent, options, tooltips={}):
+    def __init__(self, parent, options, tooltips):
         super().__init__(parent)
         self.options = options
         self.tooltips = tooltips
@@ -396,8 +396,8 @@ class ComboBoxDelegate(QStyledItemDelegate):
             for value, text in self.options.items():
                 comboBox.addItem(text, value)
 
-        for index, text in self.tooltips.items():
-            comboBox.setItemData(index, text, Qt.ItemDataRole.ToolTipRole)
+        for tooltip_index, text in self.tooltips.items():
+            comboBox.setItemData(tooltip_index, text, Qt.ItemDataRole.ToolTipRole)
         comboBox.currentIndexChanged.connect(self.commit_editor)
 
         return comboBox

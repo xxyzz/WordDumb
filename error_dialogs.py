@@ -1,9 +1,6 @@
 from typing import TYPE_CHECKING, Any
 
 GITHUB_URL = "https://github.com/xxyzz/WordDumb"
-INSTALL_PYTHON_DOC = (
-    "https://xxyzz.github.io/WordDumb/installation.html#install-python-3-11-and-pip"
-)
 
 load_translations()  # type: ignore
 if TYPE_CHECKING:
@@ -20,32 +17,11 @@ def error_dialog(title: str, message: str, error: str, parent: Any) -> None:
 
 def job_failed(job: Any, parent: Any = None) -> bool:
     if job and job.failed:
-        if "PythonNotFound" in job.details:
+        if "UvNotFound" in job.details:
             error_dialog(
                 "We want... a shrubbery!",
                 _(
-                    "Can't find Python. Please read the <a href='{}'>document</a> "
-                    "of how to install Python."
-                ).format(INSTALL_PYTHON_DOC),
-                job.details,
-                parent,
-            )
-        elif "OutdatedPython" in job.details:
-            error_dialog(
-                "Outdated Python",
-                _(
-                    "Your Python version is too old, please update to a newer version "
-                    "and read the <a href='{}'>document</a> for more information."
-                ).format(INSTALL_PYTHON_DOC),
-                job.details,
-                parent,
-            )
-        elif "UnsupportedPython" in job.details:
-            error_dialog(
-                "Unsupported Python",
-                _(
-                    "Please install an older version and put the Python binary file "
-                    "path in the plugin's preferences window."
+                    "Can't find uv. Please read the <a href='https://xxyzz.github.io/WordDumb/installation.html#install-uv'>document</a> of how to install uv."
                 ),
                 job.details,
                 parent,
@@ -91,20 +67,7 @@ def job_failed(job: Any, parent: Any = None) -> bool:
 
 def subprocess_error(job: Any, parent: Any) -> None:
     exception = job.exception.stderr.decode("utf-8", "ignore")
-    if "No module named pip" in exception:
-        error_dialog(
-            "Hello, my name is Philip, but everyone calls me Pip, "
-            "because they hate me.",
-            _(
-                "<p>Please read the friendly <a href='{}'>manual</a> of how to install "
-                "pip.</p><p>If you still have this error, make sure you installed "
-                "calibre with the <a href='https://calibre-ebook.com/download_linux'>"
-                "binary install command</a> but not from Flathub or Snap Store.</p>"
-            ).format(INSTALL_PYTHON_DOC),
-            job.details + exception,
-            parent,
-        )
-    elif "ModuleNotFoundError" in exception:
+    if "ModuleNotFoundError" in exception:
         module_not_found_error(job.details + exception, parent)
     else:
         check_network_error(job.details + exception, parent)
@@ -156,9 +119,8 @@ def check_network_error(error: str, parent: Any) -> None:
         error_dialog(
             "Tonnerre de Brest!",
             _(
-                "An error occurred, please copy error message then report bug at "
-                '<a href="{}/issues">GitHub</a>.'
-            ).format(GITHUB_URL),
+                'An error occurred, please copy error message then report bug at <a href="https://github.com/xxyzz/WordDumb/issues">GitHub</a>.'
+            ),
             error,
             parent,
         )

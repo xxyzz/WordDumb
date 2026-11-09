@@ -1,76 +1,55 @@
 Installation
 ============
 
-Install calibre 7.1.0+
-----------------------
+Install calibre (>=7.1)
+-----------------------
 
 - Arch Linux:
 
-.. code-block:: console
+.. code:: console
 
-   $ sudo pacman -Syu --needed calibre
+   sudo pacman -Syu --needed calibre
 
 - Other Linux distros:
 
-.. code-block:: console
+.. code:: console
 
-   $ sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
+   sudo -v && wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh | sudo sh /dev/stdin
 
-- macOS:
+- macOS: use `Homebrew <https://brew.sh>`_ or download from https://calibre-ebook.com/download_osx.
 
-Use `Homebrew <https://brew.sh>`_ or download from https://calibre-ebook.com/download_osx.
+.. code:: console
 
-.. code-block:: console
+   brew install calibre
 
-   $ brew install calibre
+- Windows: download from https://calibre-ebook.com/download_windows
 
-.. attention::
-   Don't use Rosetta 2.
-
-- Windows:
-
-Use `Chocolatey <https://chocolatey.org>`_ or download from https://calibre-ebook.com/download_windows
-
-.. code-block:: console
-
-   # choco install calibre
-
-Install Python 3.11+ and pip
-----------------------------
-
-You could set the Python interpreter path in the plugin preferences window if you don't use the following methods to install Python.
+Install uv
+----------
 
 - Arch Linux:
 
-.. code-block:: console
+.. code:: console
 
-   $ sudo pacman -Syu --needed python-pip
+   sudo pacman -Syu --needed uv
 
 - Debian:
 
-.. code-block:: console
+.. code:: console
 
-   $ sudo apt install python3-pip
+   curl -LsSf https://astral.sh/uv/install.sh | sh
 
 - macOS:
 
-.. code-block:: console
+.. code:: console
 
-   $ brew install python
-
-.. attention::
-   Don't use Rosetta 2.
+   brew install uv
 
 - Windows:
 
-Use Chocolatey or download from https://www.python.org/downloads
+.. code:: console
 
-.. code-block:: console
-
-   # choco install python
-
-.. attention::
-   - Do not change the default installation settings in the Python installer.
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 Install WordDumb plugin
 -----------------------

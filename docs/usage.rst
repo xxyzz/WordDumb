@@ -52,9 +52,9 @@ Connect your e-reader, select one book or multiple books then click the plugin i
 
 You can also run the plugin in terminal:
 
-.. code-block:: console
+.. code:: console
 
-   $ calibre-debug -r WordDumb -- -h
+   calibre-debug -r WordDumb -- -h
 
 .. note::
    - Don't add soft hyphens to AZW3, AZW and MOBI books, it will cause the plugin to produce mediocre Word Wise and X-Ray files.
@@ -97,9 +97,9 @@ HTTP proxy
 
 HTTP proxy can be configured by setting the `http_proxy`, and `https_proxy` environment variables:
 
-.. code-block:: console
+.. code:: bash
 
-    $ export HTTP_PROXY="http://host:port"
-    $ export HTTPS_PROXY="http://host:port"
+    export HTTP_PROXY="http://host:port"
+    export HTTPS_PROXY="http://host:port"
 
 Notice the value of `HTTPS_PROXY` starts with `http://`. For more information, check out `requests documentation <https://requests.readthedocs.io/en/latest/user/advanced/#proxies>`_ and `calibre manual <https://manual.calibre-ebook.com/faq.html#how-do-i-get-calibre-to-use-my-http-proxy>`_.

@@ -1,11 +1,10 @@
-import platform
 import shutil
 import tarfile
 from pathlib import Path
 from typing import Any
 from urllib.request import ProxyHandler, build_opener, getproxies
 
-from calibre.constants import isfrozen, ismacos, iswindows
+from calibre.constants import ismacos
 
 from .utils import (
     PROFICIENCY_RELEASE_URL,
@@ -19,84 +18,46 @@ from .utils import (
     run_subprocess,
 )
 
-PY_PATH = ""
-LIBS_PATH = Path()
-
-
-class PythonVersionException(Exception):
-    pass
+PYTHON_VERSION = "3.15"
 
 
 class DownloadException(Exception):
     pass
 
 
-def install_deps(pkg: str, notif: Any) -> None:
-    global PY_PATH, LIBS_PATH
+def install_deps(model_name: str, notif: Any) -> None:
     plugin_path = get_plugin_path()
+    uv_path = which_uv()
+    libs_path = plugin_path.parent.joinpath(f"worddumb-libs-py{PYTHON_VERSION}")
+    if not libs_path.is_dir():
+        for old_libs_path in libs_path.parent.glob("worddumb-libs-py*"):
+            shutil.rmtree(old_libs_path)
 
-    if len(PY_PATH) == 0:
-        PY_PATH, py_version = which_python()
-        LIBS_PATH = plugin_path.parent.joinpath(f"worddumb-libs-py{py_version}")
-        if not LIBS_PATH.is_dir():
-            for old_libs_path in LIBS_PATH.parent.glob("worddumb-libs-py*"):
-                shutil.rmtree(old_libs_path)
-
+    run_subprocess([uv_path, "python", "install", PYTHON_VERSION])
     dep_versions = load_plugin_json(plugin_path, "data/deps.json")
-    if pkg == "lxml":
-        pip_install("lxml", dep_versions["lxml"], notif=notif)
-    else:
-        # Install X-Ray dependencies
-        pip_install("rapidfuzz", dep_versions["rapidfuzz"], notif=notif)
-        pip_install("spacy", dep_versions["spacy"], notif=notif)
-        if pkg != "":
-            model_version = get_spacy_model_version(pkg, dep_versions)
-            url = (
-                "https://github.com/explosion/spacy-models/releases/download/"
-                f"{pkg}-{model_version}/{pkg}-{model_version}-py3-none-any.whl"
-            )
-            pip_install(pkg, model_version, url=url, notif=notif)
+    for pkg, pkg_v in dep_versions.items():
+        if pkg != "spacy_cpu_model":
+            pip_install(uv_path, libs_path, pkg, pkg_v, notif=notif)
+    model_version = get_spacy_model_version(pkg, dep_versions)
+    url = (
+        "https://github.com/explosion/spacy-models/releases/download/"
+        f"{model_name}-{model_version}/{model_name}-{model_version}-py3-none-any.whl"
+    )
+    pip_install(uv_path, libs_path, "", model_version, url=url, notif=notif)
 
 
-def which_python() -> tuple[str, str]:
-    """
-    Return Python command or file path and version string
-    """
-    from .config import prefs
-
-    py = "python3"
-    if len(prefs["python_path"]) > 0:
-        py = prefs["python_path"]
-    elif iswindows:
-        py = "py"
-    elif ismacos:
-        py = mac_bin_path("python3")
-
-    if shutil.which(py) is None:
-        raise PythonVersionException("PythonNotFound")
-
-    if isfrozen or prefs["python_path"] != "":
-        r = run_subprocess(
-            [
-                py,
-                "-c",
-                'import platform; print(".".join(platform.python_version_tuple()[:2]))',
-            ]
-        )
-        py_v = r.stdout.decode().strip()
-    else:
-        py_v = ".".join(platform.python_version_tuple()[:2])
-    py_v_tuple = tuple(map(int, py_v.split(".")))
-    calibre_v_tuple = tuple(map(int, platform.python_version_tuple()))
-    if py_v_tuple < calibre_v_tuple:
-        # https://github.com/kovidgoyal/calibre/blob/master/bypy/sources.json
-        raise PythonVersionException("OutdatedPython")
-    elif py_v_tuple > (3, 15):  # spaCy
-        raise PythonVersionException("UnsupportedPython")
-    return py, py_v
+def which_uv() -> str:
+    uv = "uv"
+    if ismacos:
+        uv = mac_bin_path("uv")
+    if shutil.which(uv) is None:
+        raise FileNotFoundError("UvNotFound")
+    return uv
 
 
 def pip_install(
+    uv_path: str,
+    libs_path: str,
     pkg: str,
     pkg_version: str,
     url: str | None = None,
@@ -104,38 +65,28 @@ def pip_install(
     no_deps: bool = False,
     notif: Any = None,
 ) -> None:
-    pattern = f"{pkg.replace('-', '_')}-{pkg_version}*"
-    if not any(LIBS_PATH.glob(pattern)):
-        if notif:
-            notif.put((0, f"Installing {pkg}"))
-
-        args = [
-            PY_PATH,
-            "-m",
-            "pip",
-            "--disable-pip-version-check",
-            "install",
-            "-U",
-            "-t",
-            str(LIBS_PATH),
-            "--no-user",  # disable "--user" option which conflicts with "-t"
-            "--no-cache-dir",
-        ]
-
-        if no_deps:
-            args.append("--no-deps")
-
-        if url:
-            args.append(url)
-        elif pkg_version:
-            args.append(f"{pkg}=={pkg_version}")
-        else:
-            args.append(pkg)
-
-        if extra_index is not None:
-            args.extend(["--extra-index-url", extra_index])
-
-        run_subprocess(args)
+    if notif:
+        notif.put((0, f"Installing {pkg}"))
+    args = [
+        uv_path,
+        "pip",
+        "install",
+        "-t",
+        libs_path,
+        "--python-version",
+        PYTHON_VERSION,
+    ]
+    if no_deps:
+        args.append("--no-deps")
+    if url:
+        args.append(url)
+    elif pkg_version:
+        args.append(f"{pkg}=={pkg_version}")
+    else:
+        args.append(pkg)
+    if extra_index is not None:
+        args.extend(["--extra-index-url", extra_index])
+    run_subprocess(args)
 
 
 def download_word_wise_file(

@@ -2,14 +2,8 @@ name: Build and deploy docs
 
 on:
   push:
-    branches:  # ignore pushed tags
-      - "*"
-    paths:
-      - 'docs/**'
-  pull_request:
-    paths:
-      - 'docs/**'
-  workflow_dispatch:
+    tags:
+      - 'v*'
 
 permissions:
   contents: read

@@ -4,22 +4,22 @@ Development
 Clone project
 -------------
 
-.. code-block:: console
+.. code:: console
 
-   $ git clone https://github.com/xxyzz/WordDumb.git
+   git clone https://github.com/xxyzz/WordDumb.git
 
 Or use SSH:
 
-.. code-block:: console
+.. code:: console
 
-   $ git clone git@github.com:xxyzz/WordDumb.git
+   git clone git@github.com:xxyzz/WordDumb.git
 
 Debug
 -----
 
-.. code-block:: console
+.. code:: console
 
-   $ calibre-customize -b . && calibre-debug -g
+   calibre-customize -b . && calibre-debug -g
 
 Add translations
 ----------------
@@ -28,9 +28,9 @@ You can use `Poedit <https://poedit.net>`_'s "New From POT/PO File..." option th
 
 Run this command to compile .mo files, you don't need to do this if you're using Poedit.
 
-.. code-block:: console
+.. code:: console
 
-   $ calibre-debug -c "from calibre.translations.msgfmt import main; main()" translations/*.po
+   calibre-debug -c "from calibre.translations.msgfmt import main; main()" translations/*.po
 
 .. note::
    Poedit's "Update from source code" feature would comment the language name translations then move them to the end of the file. You should revert this change when commit.
@@ -43,9 +43,9 @@ Check out `Proficiency <https://github.com/xxyzz/Proficiency>`_.
 Create zip file
 ---------------
 
-.. code-block:: console
+.. code:: console
 
-   $ zip -r worddumb-vx.x.x.zip * -x@exclude.lst
+   zip -r worddumb-vx.x.x.zip * -x@exclude.lst
 
 Library and API documents
 -------------------------

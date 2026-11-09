@@ -4,7 +4,6 @@ from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from calibre.constants import isfrozen
 from calibre.gui2 import Dispatcher
 from calibre.gui2.threaded_jobs import ThreadedJob
 from calibre.utils.config import JSONConfig
@@ -28,8 +27,7 @@ from PyQt6.QtWidgets import (
 )
 
 from .custom_lemmas import CustomLemmasDialog
-from .deps import download_word_wise_file, install_deps, which_python
-from .dump_lemmas import dump_spacy_docs
+from .deps import PYTHON_VERSION, download_word_wise_file, install_deps, which_uv
 from .error_dialogs import GITHUB_URL, change_kindle_ww_lang_dialog, job_failed
 from .import_lemmas import apply_imported_lemmas_data, export_lemmas_job
 from .utils import (
@@ -52,7 +50,6 @@ prefs.defaults["minimal_x_ray_count"] = 1
 prefs.defaults["choose_format_manually"] = True
 prefs.defaults["gloss_lang"] = "en"
 prefs.defaults["use_wiktionary_for_kindle"] = False
-prefs.defaults["python_path"] = ""
 prefs.defaults["show_change_kindle_ww_lang_warning"] = True
 prefs.defaults["custom_entity_only"] = False
 prefs.defaults["preview_x_ray"] = False
@@ -92,17 +89,6 @@ class ConfigWidget(QWidget):
         form_layout.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
         )
-
-        python_path_label = QLabel(_("Python path"))
-        python_path_label.setToolTip(
-            _(
-                "Absolute path of the executable binary for the Python interpreter, "
-                "leave this empty to find Python in PATH."
-            )
-        )
-        self.python_path = QLineEdit()
-        self.python_path.setText(prefs["python_path"])
-        form_layout.addRow(python_path_label, self.python_path)
 
         self.minimal_x_ray_count = QSpinBox()
         self.minimal_x_ray_count.setMinimum(1)
@@ -162,7 +148,6 @@ class ConfigWidget(QWidget):
         webbrowser.open(GITHUB_URL)
 
     def save_settings(self) -> None:
-        prefs["python_path"] = self.python_path.text()
         prefs["zh_wiki_variant"] = self.zh_wiki_box.currentData()
         prefs["minimal_x_ray_count"] = self.minimal_x_ray_count.value()
         prefs["custom_entity_only"] = self.custom_entity_only.isChecked()
@@ -293,23 +278,26 @@ def dump_lemmas_job(
     plugin_path = get_plugin_path()
     model_name = spacy_model_name(lemma_lang, prefs)
     install_deps(model_name, notifications)
-    if isfrozen:
-        options = {
-            "is_kindle": is_kindle,
-            "db_path": str(db_path),
-            "lemma_lang": lemma_lang,
-            "plugin_path": str(plugin_path),
-            "model_name": model_name,
-        }
-        args = [
-            which_python()[0],
-            str(plugin_path),
-            json.dumps(options),
-            dump_prefs(prefs),
-        ]
-        run_subprocess(args)
-    else:
-        dump_spacy_docs(model_name, is_kindle, lemma_lang, db_path, plugin_path, prefs)
+    options = {
+        "is_kindle": is_kindle,
+        "db_path": str(db_path),
+        "lemma_lang": lemma_lang,
+        "plugin_path": str(plugin_path),
+        "model_name": model_name,
+    }
+    args = [
+        which_uv(),
+        "run",
+        "--python",
+        PYTHON_VERSION,
+        "--isolated",
+        "--no-project",
+        "python",
+        str(plugin_path),
+        json.dumps(options),
+        dump_prefs(prefs),
+    ]
+    run_subprocess(args)
 
 
 class FormatOrderDialog(QDialog):

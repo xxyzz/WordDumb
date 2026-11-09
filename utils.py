@@ -20,11 +20,10 @@ class Prefs(TypedDict):
     zh_wiki_variant: str
     preferred_formats: list[str]
     use_all_formats: bool
-    mal_x_ray_count: int
+    minimal_x_ray_count: int
     choose_format_manually: bool
     gloss_lang: str
     use_wiktionary_for_kindle: bool
-    python_path: str
     show_change_kindle_ww_lang_warning: bool
     custom_entity_only: bool
     preview_x_ray: bool

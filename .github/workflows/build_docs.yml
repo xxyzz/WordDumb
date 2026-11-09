@@ -2,14 +2,8 @@ name: Build and deploy docs
 
 on:
   push:
-    branches:  # ignore pushed tags
-      - "*"
-    paths:
-      - 'docs/**'
-  pull_request:
-    paths:
-      - 'docs/**'
-  workflow_dispatch:
+    tags:
+      - 'v*'
 
 permissions:
   contents: read
@@ -29,12 +23,10 @@ jobs:
       - run: make html
 
       - uses: actions/upload-pages-artifact@v5.0.0
-        if: github.ref_name == 'master'
         with:
           path: docs/_build/html
 
   deploy:
-    if: github.ref_name == 'master'
     needs: build
     permissions:
       pages: write

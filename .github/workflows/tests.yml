@@ -32,12 +32,10 @@ jobs:
       GH_TELEMETRY: false
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: actions/setup-python@v7.1.0
       - run: |
           gh extension install github/gh-actions-lock
           gh actions-lock --verify
-
-      - run: python -m pip install -U pip
+      - uses: astral-sh/setup-uv@v10.3.3
 
       - name: Install calibre on Ubuntu
         if: matrix.os == 'ubuntu-latest'
@@ -107,7 +105,7 @@ jobs:
           path: |
             ~/.config/calibre/plugins/worddumb-libs-py*
             ~/.config/calibre/plugins/worddumb-wikimedia
-          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ hashFiles('.python-version') }}
 
       - name: Restore dependencies and Wikipedia cache(macOS)
         if: matrix.os == 'macos-latest'
@@ -116,7 +114,7 @@ jobs:
           path: |
             ~/Library/Preferences/calibre/plugins/worddumb-libs-py*
             ~/Library/Preferences/calibre/plugins/worddumb-wikimedia
-          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ hashFiles('.python-version') }}
 
       - name: Restore dependencies and Wikipedia cache(Windows)
         if: matrix.os == 'windows-latest'
@@ -125,7 +123,7 @@ jobs:
           path: |
             ~/AppData/Roaming/calibre/plugins/worddumb-libs-py*
             ~/AppData/Roaming/calibre/plugins/worddumb-wikimedia
-          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}
+          key: ${{ runner.os }}-${{ hashFiles('data/deps.json') }}-${{ hashFiles('.python-version') }}
 
       - name: Run test
         run: cd tests && calibre-debug test.py

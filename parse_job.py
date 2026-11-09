@@ -22,10 +22,11 @@ try:
         save_db,
     )
     from .deps import (
+        PYTHON_VERSION,
         download_wikipedia_titles_db,
         download_word_wise_file,
         install_deps,
-        which_python,
+        which_uv,
     )
     from .dump_lemmas import save_spacy_docs, spacy_doc_path
     from .epub import EPUB, spacy_to_wiktionary_pos
@@ -180,13 +181,7 @@ def do_job(
     if not data.create_ww and not data.create_x:
         return data
 
-    if (isfrozen or prefs["python_path"] != "") and (
-        data.book_fmt == "EPUB" or data.create_x
-    ):
-        # parse MediaWiki page and Wikipedia section requires lxml
-        install_deps("lxml", notifications)
     install_deps(data.spacy_model, notifications)
-
     if data.create_x and data.book_settings.get("mediawiki_api", "") == "":
         mediawiki_db_path = get_mediawiki_db_path(data.book_lang, "", data.plugin_path)
         if not mediawiki_db_path.exists():
@@ -204,40 +199,36 @@ def do_job(
         data.create_x and prefs["preview_x_ray"] and not data.after_preview_x_ray
     )
 
-    # Run plugin code in another Python process
-    # macOS: bypass library validation
-    # official calibre build: calibre's optimize level is 2 which removes docstring,
-    # but the "transformers" package formats docstrings in their code
-    # and calibre-debug can't be used as Python interpreter for pip
-    if isfrozen or prefs["python_path"] != "":
-        py_path, _ = which_python()
-        # copy data can't be converted by `asdict`
-        copy_mi = data.mi
-        copy_mobi_html = data.mobi_html  # bytes
-        copy_kfx_json = data.kfx_json  # too long
-        data.mi = None
-        data.mobi_html = None
-        data.kfx_json = None
-        data.plugin_path = str(data.plugin_path)
-        args = [
-            py_path,
-            "-I",  # isolate user env
-            str(data.plugin_path),
-            json.dumps(asdict(data)),
-            dump_prefs(prefs),
-        ]
-        data.mi = copy_mi
-        input_str = None
-        if data.book_fmt == "KFX":
-            input_str = json.dumps(copy_kfx_json).encode("utf-8")
-        elif data.book_fmt != "EPUB":
-            input_str = copy_mobi_html
-        if restore_job_data:
-            data.mobi_html = copy_mobi_html
-            data.kfx_json = copy_kfx_json
-        run_subprocess(args, input_str)
-    else:
-        create_files(data, prefs, notifications)
+    # copy data can't be converted by `asdict`
+    copy_mi = data.mi
+    copy_mobi_html = data.mobi_html  # bytes
+    copy_kfx_json = data.kfx_json  # too long
+    data.mi = None
+    data.mobi_html = None
+    data.kfx_json = None
+    data.plugin_path = str(data.plugin_path)
+    args = [
+        which_uv(),
+        "run",
+        "--python",
+        PYTHON_VERSION,
+        "--isolated",
+        "--no-project",
+        "python",
+        str(data.plugin_path),
+        json.dumps(asdict(data)),
+        dump_prefs(prefs),
+    ]
+    data.mi = copy_mi
+    input_str = None
+    if data.book_fmt == "KFX":
+        input_str = json.dumps(copy_kfx_json).encode("utf-8")
+    elif data.book_fmt != "EPUB":
+        input_str = copy_mobi_html
+    if restore_job_data:
+        data.mobi_html = copy_mobi_html
+        data.kfx_json = copy_kfx_json
+    run_subprocess(args, input_str)
 
     prefs["custom_entity_only"] = copy_custom_x_pref
     if restore_job_data:
